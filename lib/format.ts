@@ -1,17 +1,17 @@
 import type { CourseGrade } from "@/lib/mock-data"
 
 export function formatDate(iso: string, opts?: Intl.DateTimeFormatOptions) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
+  return new Date(iso).toLocaleDateString("vi-VN", {
     day: "numeric",
+    month: "short",
     ...opts,
   })
 }
 
 export function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString("en-US", {
-    month: "short",
+  return new Date(iso).toLocaleString("vi-VN", {
     day: "numeric",
+    month: "short",
     hour: "numeric",
     minute: "2-digit",
   })
@@ -21,10 +21,10 @@ export function relativeDue(iso: string) {
   const now = new Date("2026-07-12T10:00:00").getTime()
   const diff = new Date(iso).getTime() - now
   const days = Math.round(diff / (1000 * 60 * 60 * 24))
-  if (days < 0) return `${Math.abs(days)}d overdue`
-  if (days === 0) return "Due today"
-  if (days === 1) return "Due tomorrow"
-  return `Due in ${days}d`
+  if (days < 0) return `Quá hạn ${Math.abs(days)} ngày`
+  if (days === 0) return "Hạn hôm nay"
+  if (days === 1) return "Hạn ngày mai"
+  return `Còn ${days} ngày`
 }
 
 export function courseAverage(grade: CourseGrade) {
