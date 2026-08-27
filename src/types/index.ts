@@ -36,26 +36,28 @@ export interface User {
   active?: boolean;
   createdAt?: string;
 }
-export interface PageResp<T> {
-  items: T[];
-  total: number;
-  page: number;
+export interface SpringPage<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
   size: number;
 }
+export type PageResp<T> = SpringPage<T>;
 
 // ===== Clazz =====
 export interface Clazz {
   id: number;
-  code: string;
-  name: string;
-  description?: string;
-  lecturerId: number;
+  classCode?: string;
+  className?: string;
+  semester?: string;
+  academicYear?: string;
+  courseId?: number;
+  courseTitle?: string;
+  lecturerId?: number;
   lecturerName?: string;
-  studentCount?: number;
-  startDate?: string;
-  endDate?: string;
-  status?: 'ACTIVE' | 'CLOSED' | 'UPCOMING' | 'PENDING';
-  studentIds?: number[];
+  maxStudents?: number;
+  createdAt?: string;
 }
 
 // ===== Content =====
@@ -173,14 +175,14 @@ export interface Notification {
 // ===== Schedule =====
 export interface Schedule {
   id: number;
-  classId: number;
-  classCode?: string;
-  className?: string;
-  dayOfWeek: number; // 2=Mon..8=Sun (ISO)
-  startTime: string; // "HH:mm"
-  endTime: string;
+  clazzId: number;
+  clazzCode?: string;
+  courseCode?: string;
+  courseTitle?: string;
+  dayOfWeek?: number;
+  startPeriod?: number;
+  endPeriod?: number;
   room?: string;
-  lecturerName?: string;
 }
 
 // ===== Quiz =====
@@ -236,18 +238,18 @@ export interface ForumComment {
 // ===== Curriculum =====
 export interface Curriculum {
   id: number;
-  code: string;
   name: string;
-  description?: string;
-  totalCredits: number;
+  faculty?: string;
+  academicYear?: string;
+  isActive?: boolean;
 }
 export interface Course {
   id: number;
   code: string;
-  name: string;
-  credits: number;
+  title: string;
   description?: string;
-  prerequisites?: number[];
+  credit?: number;
+  createdAt?: string;
 }
 export interface Prerequisite {
   id: number;
@@ -259,9 +261,12 @@ export interface Prerequisite {
 export interface RegistrationPeriod {
   id: number;
   name: string;
-  startDate: string;
-  endDate: string;
-  status: 'UPCOMING' | 'ACTIVE' | 'CLOSED';
+  semester?: string;
+  academicYear?: string;
+  openAt?: string;
+  closeAt?: string;
+  maxCredits?: number;
+  isActive?: boolean;
 }
 
 // ===== Admin Reports =====
@@ -279,13 +284,19 @@ export interface ScoreReport {
 
 // ===== Academic Status =====
 export interface AcademicStatus {
-  semester: string;
-  gpa: number;
-  cumulativeGpa: number;
-  totalCredits: number;
-  earnedCredits: number;
-  warningLevel?: 'NONE' | 'WARNING' | 'CRITICAL';
-  message?: string;
+  cumulativeGpa?: number;
+  totalCredits?: number;
+  passedCredits?: number;
+  academicWarning?: boolean;
+  warningLevel?: number;
+  totalCourses?: number;
+  passedCourses?: number;
+  failedCourses?: Array<{
+    courseCode: string;
+    courseTitle: string;
+    credit: number;
+    totalScore?: number;
+  }>;
 }
 
 // ===== Transcript (bảng điểm sinh viên) =====

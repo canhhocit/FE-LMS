@@ -3,18 +3,18 @@ import { useState } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth';
 
-const DEMO: { label: string; identifier: string }[] = [
-  { label: 'Sinh viên',  identifier: 'student@lms.vn' },
-  { label: 'Giảng viên', identifier: 'lecturer@lms.vn' },
-  { label: 'Admin',      identifier: 'admin@lms.vn' },
+const DEMO: { label: string; identifier: string; password: string }[] = [
+  { label: 'Sinh viên',  identifier: 'sv20240001@student.edu.vn', password: 'password' },
+  { label: 'Giảng viên', identifier: 'gv.nguyenvana@learninghub.edu.vn', password: 'password' },
+  { label: 'Admin',      identifier: 'admin@learninghub.edu.vn', password: 'password' },
 ];
 
 export default function Login() {
   const { user, login } = useAuth();
   const nav = useNavigate();
   const loc = useLocation() as { state?: { from?: string } };
-  const [id, setId] = useState('student@lms.vn');
-  const [pw, setPw] = useState('123456');
+  const [id, setId] = useState('sv20240001@student.edu.vn');
+  const [pw, setPw] = useState('password');
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -59,11 +59,11 @@ export default function Login() {
           </button>
         </form>
         <div className="mt-6 pt-4 border-t border-slate-800">
-          <p className="text-xs text-slate-400 mb-2">Demo nhanh (mật khẩu: 123456):</p>
+          <p className="text-xs text-slate-400 mb-2">Demo nhanh (mật khẩu backend: password):</p>
           <div className="grid grid-cols-3 gap-2">
             {DEMO.map((d) => (
               <button key={d.identifier} type="button"
-                onClick={() => { setId(d.identifier); setPw('123456'); }}
+                onClick={() => { setId(d.identifier); setPw(d.password); }}
                 className="text-xs px-2 py-2 rounded bg-slate-800 hover:bg-slate-700">
                 {d.label}
               </button>

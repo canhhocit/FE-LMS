@@ -1,11 +1,7 @@
 // Schedule service
-// Luu y: backend co the dung prefix /api/v1/api/v1 tuy controller.
-// Khi goi that, can verify bang Swagger UI.
 import { USE_MOCK, apiClient, unwrap } from './api/client';
 import { delay } from './mock';
 import type { Schedule } from '../types';
-
-const BASE = '/api/v1'; // belt-and-suspenders cho cac controller bi lap prefix
 
 export const getMySchedule = async (): Promise<Schedule[]> => {
   if (USE_MOCK) {
@@ -16,7 +12,7 @@ export const getMySchedule = async (): Promise<Schedule[]> => {
       { id: 3, classId: 101, classCode: 'CS101', className: 'Nhap mon Lap trinh', dayOfWeek: 5, startTime: '13:00', endTime: '15:00', room: 'A101', lecturerName: 'Tran Thi Giang' },
     ];
   }
-  return unwrap<Schedule[]>(apiClient.get(`${BASE}/me/schedule`));
+  return unwrap<Schedule[]>(apiClient.get('/me/schedule'));
 };
 
 export const getClazzSchedule = async (clazzId: number): Promise<Schedule[]> => {
@@ -27,5 +23,5 @@ export const getClazzSchedule = async (clazzId: number): Promise<Schedule[]> => 
       { id: clazzId * 10 + 2, classId: clazzId, dayOfWeek: 4, startTime: '08:00', endTime: '10:00', room: 'A101' },
     ];
   }
-  return unwrap<Schedule[]>(apiClient.get(`${BASE}/clazzes/${clazzId}/schedules`));
+  return unwrap<Schedule[]>(apiClient.get(`/clazzes/${clazzId}/schedules`));
 };

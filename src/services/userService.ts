@@ -18,9 +18,11 @@ export const getUsers = async (params?: { page?: number; size?: number; keyword?
       { id: 3, email: 'sv001@demo.lms', fullName: 'Nguyen Van A', role: 'STUDENT', active: true, studentCode: 'SV001', createdAt: '2025-09-01' },
       { id: 4, email: 'sv002@demo.lms', fullName: 'Le Thi B', role: 'STUDENT', active: true, studentCode: 'SV002', createdAt: '2025-09-01' },
     ];
-    return { items: all, total: all.length, page: 1, size: 10 };
+    return { content: all, totalElements: all.length, totalPages: 1, number: 0, size: 10 };
   }
-  return unwrap<PageResp<AdminUser>>(apiClient.get('/admin/users', { params }));
+  const role = params?.role;
+  const endpoint = role === 'LECTURER' ? '/admin/users/lecturers' : '/admin/users/students';
+  return unwrap<PageResp<AdminUser>>(apiClient.get(endpoint, { params }));
 };
 
 export const createUser = async (data: Partial<AdminUser> & { password: string }): Promise<AdminUser> => {
@@ -58,7 +60,7 @@ export const importUsersExcel = async (file: File): Promise<{ success: number; f
   if (USE_MOCK) { await delay(); return { success: 10, failed: 0 }; }
   const form = new FormData();
   form.append('file', file);
-  return unwrap<{ success: number; failed: number }>(apiClient.post('/admin/users/import', form, {
+  return unwrap<{ success: number; failed: number }>(apiClient.post('/admin/users/import-students', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }));
 };
@@ -68,7 +70,7 @@ export const exportUsersExcel = async (): Promise<Blob> => {
     await delay();
     return new Blob(['mock,users'], { type: 'text/csv' });
   }
-  const res = await apiClient.get('/admin/users/export', { responseType: 'blob' });
+  const res = await apiClient.get('/admin/users/students/export', { responseType: 'blob' });
   return res.data as Blob;
 };
 

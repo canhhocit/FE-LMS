@@ -3,15 +3,12 @@ import { USE_MOCK, apiClient, unwrap } from './api/client';
 import { delay } from './mock';
 import type { DashboardStats, EnrollmentReport, ScoreReport, AcademicStatus, TranscriptItem } from '../types';
 
-// Luu y: backend co the lap prefix /api/v1 - verify.
-const BASE = '/api/v1';
-
 export const getDashboardStats = async (): Promise<DashboardStats> => {
   if (USE_MOCK) {
     await delay();
     return { totalUsers: 1240, totalClasses: 38, totalEnrollments: 4200, totalAssignments: 152, totalSubmissions: 3800 };
   }
-  return unwrap<DashboardStats>(apiClient.get(`${BASE}/admin/dashboard`));
+  return unwrap<DashboardStats>(apiClient.get('/admin/dashboard'));
 };
 
 export const getEnrollmentsByMonth = async (): Promise<EnrollmentReport[]> => {
@@ -23,7 +20,7 @@ export const getEnrollmentsByMonth = async (): Promise<EnrollmentReport[]> => {
       { month: '2026-02', count: 1550 },
     ];
   }
-  return unwrap<EnrollmentReport[]>(apiClient.get(`${BASE}/admin/reports/enrollments-by-month`));
+  return unwrap<EnrollmentReport[]>(apiClient.get('/admin/reports/enrollments-by-month'));
 };
 
 export const getAverageScoreByClazz = async (): Promise<ScoreReport[]> => {
@@ -34,7 +31,7 @@ export const getAverageScoreByClazz = async (): Promise<ScoreReport[]> => {
       { classId: 102, classCode: 'CS201', className: 'Cau truc du lieu', averageScore: 6.9, studentCount: 38 },
     ];
   }
-  return unwrap<ScoreReport[]>(apiClient.get(`${BASE}/admin/reports/average-score-by-clazz`));
+  return unwrap<ScoreReport[]>(apiClient.get('/admin/reports/average-score-by-clazz'));
 };
 
 export const exportEnrollmentsExcel = async (): Promise<Blob> => {
@@ -42,7 +39,7 @@ export const exportEnrollmentsExcel = async (): Promise<Blob> => {
     await delay();
     return new Blob(['mock,data\n1,2'], { type: 'text/csv' });
   }
-  const res = await apiClient.get(`${BASE}/admin/reports/enrollments/export`, { responseType: 'blob' });
+  const res = await apiClient.get('/admin/reports/enrollments/export', { responseType: 'blob' });
   return res.data as Blob;
 };
 
@@ -51,7 +48,7 @@ export const exportScorePdf = async (): Promise<Blob> => {
     await delay();
     return new Blob(['mock pdf'], { type: 'application/pdf' });
   }
-  const res = await apiClient.get(`${BASE}/admin/reports/score/export`, { responseType: 'blob' });
+  const res = await apiClient.get('/admin/reports/score/export', { responseType: 'blob' });
   return res.data as Blob;
 };
 
@@ -60,7 +57,7 @@ export const getAcademicStatus = async (): Promise<AcademicStatus> => {
     await delay();
     return { semester: 'HK2 2025-2026', gpa: 7.8, cumulativeGpa: 7.5, totalCredits: 18, earnedCredits: 18, warningLevel: 'NONE' };
   }
-  return unwrap<AcademicStatus>(apiClient.get(`${BASE}/me/academic-status`));
+  return unwrap<AcademicStatus>(apiClient.get('/me/academic-status'));
 };
 
 export const getTranscript = async (): Promise<TranscriptItem[]> => {
