@@ -4,7 +4,7 @@ import * as registrationService from '../../services/registrationService';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import type { RegistrationPeriod } from '../../types';
 
-const fmt = (s: string) => new Date(s).toLocaleDateString('vi-VN');
+const fmt = (s?: string) => s ? new Date(s).toLocaleDateString('vi-VN') : '—';
 
 export default function RegistrationPeriods() {
   const [periods, setPeriods] = useState<RegistrationPeriod[]>([]);

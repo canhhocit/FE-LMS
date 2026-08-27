@@ -3,6 +3,16 @@ import { USE_MOCK, apiClient, unwrap } from './api/client';
 import { delay } from './mock';
 import type { DashboardStats, EnrollmentReport, ScoreReport, AcademicStatus, TranscriptItem } from '../types';
 
+const normalizeAcademicStatus = (status: AcademicStatus): AcademicStatus => ({
+  ...status,
+  gpa: status.gpa ?? status.cumulativeGpa ?? 0,
+  cumulativeGpa: status.cumulativeGpa ?? status.gpa ?? 0,
+  earnedCredits: status.earnedCredits ?? status.passedCredits ?? status.totalCredits ?? 0,
+  passedCredits: status.passedCredits ?? status.earnedCredits ?? status.totalCredits ?? 0,
+  totalCredits: status.totalCredits ?? status.earnedCredits ?? 0,
+  warningLevel: typeof status.warningLevel === 'number' ? status.warningLevel : 0,
+});
+
 export const getDashboardStats = async (): Promise<DashboardStats> => {
   if (USE_MOCK) {
     await delay();
@@ -55,9 +65,9 @@ export const exportScorePdf = async (): Promise<Blob> => {
 export const getAcademicStatus = async (): Promise<AcademicStatus> => {
   if (USE_MOCK) {
     await delay();
-    return { semester: 'HK2 2025-2026', gpa: 7.8, cumulativeGpa: 7.5, totalCredits: 18, earnedCredits: 18, warningLevel: 'NONE' };
+    return normalizeAcademicStatus({ semester: 'HK2 2025-2026', gpa: 7.8, cumulativeGpa: 7.5, totalCredits: 18, earnedCredits: 18, warningLevel: 0 });
   }
-  return unwrap<AcademicStatus>(apiClient.get('/me/academic-status'));
+  return unwrap<AcademicStatus>(apiClient.get('/me/academic-status')).then(normalizeAcademicStatus);
 };
 
 export const getTranscript = async (): Promise<TranscriptItem[]> => {

@@ -23,6 +23,9 @@ import { AdminDashboard, AdminUsers, AdminClasses } from './pages/admin';
 import AdminReports from './pages/admin/Reports';
 import AdminCurricula from './pages/admin/Curricula';
 import RegistrationPeriods from './pages/admin/RegistrationPeriods';
+import NotificationsPage from './pages/shared/Notifications';
+import TuitionPage from './pages/shared/TuitionPage';
+import QuizPage from './pages/shared/QuizPage';
 
 // Component chuyen huong root theo trang thai dang nhap
 function RootRedirect() {
@@ -57,6 +60,9 @@ export default function App() {
             <Route path="/student" element={<StudentDashboard />} />
             <Route path="/student/classes" element={<StudentClasses />} />
             <Route path="/student/classes/:id" element={<ClassDetail />} />
+            <Route path="/student/notifications" element={<NotificationsPage />} />
+            <Route path="/student/tuition" element={<TuitionPage />} />
+            <Route path="/student/quizzes" element={<QuizPage />} />
             <Route path="/student/assignments" element={<StudentAssignments />} />
             <Route path="/student/grades" element={<StudentGrades />} />
             <Route path="/student/attendance" element={<StudentAttendance />} />
@@ -69,6 +75,8 @@ export default function App() {
             <Route path="/lecturer" element={<LecturerDashboard />} />
             <Route path="/lecturer/classes" element={<LecturerClasses />} />
             <Route path="/lecturer/classes/:id" element={<ClassDetail />} />
+            <Route path="/lecturer/notifications" element={<NotificationsPage />} />
+            <Route path="/lecturer/quizzes" element={<QuizPage />} />
             <Route path="/lecturer/assignments" element={<LecturerAssignments />} />
             <Route path="/lecturer/grading" element={<LecturerGrading />} />
             <Route path="/lecturer/schedule" element={<LecturerSchedule />} />

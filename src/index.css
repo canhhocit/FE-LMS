@@ -9,17 +9,17 @@
   --color-sidebar-to: #00376f;
 
   /* Semantic */
-  --background: 0 0% 98%;
+  --background: 210 40% 98%;
   --foreground: 222 47% 11%;
   --card: 0 0% 100%;
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
+  --border: 214 32% 90%;
+  --input: 214 32% 95%;
   --ring: 213 97% 40%;
 
   --primary: 213 97% 22%;
   --primary-foreground: 0 0% 100%;
 
-  --muted: 210 40% 96%;
+  --muted: 210 40% 98%;
   --muted-foreground: 215 16% 47%;
 
   --accent: 210 40% 96%;
@@ -36,7 +36,7 @@
 }
 
 body {
-  background-color: hsl(var(--background));
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   color: hsl(var(--foreground));
   font-family: 'Be Vietnam Pro', sans-serif;
   -webkit-font-smoothing: antialiased;

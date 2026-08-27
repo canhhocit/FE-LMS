@@ -3,6 +3,8 @@ import { USE_MOCK, apiClient, unwrap } from './api/client';
 import { delay } from './mock';
 import type { Notification } from '../types';
 
+type NotificationPage = { content?: Notification[]; totalElements?: number };
+
 export const getNotifications = async (): Promise<Notification[]> => {
   if (USE_MOCK) {
     await delay();
@@ -11,7 +13,13 @@ export const getNotifications = async (): Promise<Notification[]> => {
       { id: 2, title: 'Diem cap nhat', content: 'Diem giua ky CS101: 8.5', read: true, createdAt: new Date(Date.now() - 86400000).toISOString(), type: 'GRADE' },
     ];
   }
-  return unwrap<Notification[]>(apiClient.get('/me/notifications'));
+  const page = await unwrap<NotificationPage>(apiClient.get('/me/notifications'));
+  const items = page?.content ?? (Array.isArray(page) ? page : []);
+  return items.map((n) => ({
+    ...n,
+    read: n.read ?? n.isRead ?? false,
+    isRead: n.isRead ?? n.read ?? false,
+  }));
 };
 
 export const getUnreadCount = async (): Promise<number> => {

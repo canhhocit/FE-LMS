@@ -10,6 +10,9 @@ const NAV: Record<Role, NavItem[]> = {
   STUDENT: [
     { to: '/student', label: 'Tổng quan', icon: '🏠' },
     { to: '/student/classes', label: 'Lớp học', icon: '📚' },
+    { to: '/student/notifications', label: 'Thông báo', icon: '🔔' },
+    { to: '/student/tuition', label: 'Học phí', icon: '💳' },
+    { to: '/student/quizzes', label: 'Quiz', icon: '🧠' },
     { to: '/student/assignments', label: 'Bài tập', icon: '📝' },
     { to: '/student/grades', label: 'Điểm', icon: '📊' },
     { to: '/student/attendance', label: 'Điểm danh', icon: '✅' },
@@ -21,6 +24,8 @@ const NAV: Record<Role, NavItem[]> = {
   LECTURER: [
     { to: '/lecturer', label: 'Tổng quan', icon: '🏠' },
     { to: '/lecturer/classes', label: 'Lớp học', icon: '📚' },
+    { to: '/lecturer/notifications', label: 'Thông báo', icon: '🔔' },
+    { to: '/lecturer/quizzes', label: 'Quiz', icon: '🧠' },
     { to: '/lecturer/assignments', label: 'Bài tập', icon: '📝' },
     { to: '/lecturer/grading', label: 'Chấm điểm/Điểm danh', icon: '✅' },
     { to: '/lecturer/schedule', label: 'Lịch dạy', icon: '📅' },
@@ -76,7 +81,7 @@ export default function Layout() {
       <main className="flex-1 overflow-auto">
         <header className="border-b border-slate-800 bg-slate-900/40 px-6 py-3 flex items-center justify-between">
           <div className="text-sm text-slate-400">Xin chào, <span className="text-slate-200 font-medium">{user.fullName}</span></div>
-          <div className="text-xs text-slate-500">v0.1 · mock</div>
+          <div className="text-xs text-slate-500">v0.1 · backend</div>
         </header>
         <div className="p-6"><Outlet /></div>
       </main>

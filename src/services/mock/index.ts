@@ -8,26 +8,32 @@ export const delay = (ms = 350) => new Promise<void>((r) => setTimeout(r, ms + M
 
 // ===== Users =====
 export const mockUsers: User[] = [
-  { id: 1, email: 'admin@lms.vn', fullName: 'Nguyễn Văn Admin', role: 'ADMIN', active: true, createdAt: '2025-01-10T08:00:00Z' },
-  { id: 2, email: 'lecturer@lms.vn', fullName: 'Trần Thị Giảng', role: 'LECTURER', active: true, createdAt: '2025-02-15T08:00:00Z' },
-  { id: 3, email: 'student@lms.vn', fullName: 'Lê Văn Sinh', role: 'STUDENT', active: true, createdAt: '2025-03-20T08:00:00Z' },
-  { id: 4, email: 'student2@lms.vn', fullName: 'Phạm Thị Học', role: 'STUDENT', active: true, createdAt: '2025-03-22T08:00:00Z' },
-  { id: 5, email: 'student3@lms.vn', fullName: 'Hoàng Văn Trò', role: 'STUDENT', active: false, createdAt: '2025-04-01T08:00:00Z' },
+  { id: 1, email: 'admin@learninghub.edu.vn', fullName: 'Quản trị hệ thống', role: 'ADMIN', active: true, createdAt: '2025-01-10T08:00:00Z' },
+  { id: 2, email: 'gv.nguyenvana@learninghub.edu.vn', fullName: 'Nguyễn Văn An', role: 'LECTURER', active: true, createdAt: '2025-02-15T08:00:00Z' },
+  { id: 3, email: 'sv20240001@student.edu.vn', fullName: 'Phạm Hoàng Nam', role: 'STUDENT', active: true, createdAt: '2025-03-20T08:00:00Z' },
+  { id: 4, email: 'sv20240002@student.edu.vn', fullName: 'Đỗ Minh Anh', role: 'STUDENT', active: true, createdAt: '2025-03-22T08:00:00Z' },
+  { id: 5, email: 'sv20240003@student.edu.vn', fullName: 'Nguyễn Thùy Linh', role: 'STUDENT', active: false, createdAt: '2025-04-01T08:00:00Z' },
 ];
+
+export const mockDemoPasswords: Record<string, string> = {
+  'admin@learninghub.edu.vn': 'password',
+  'gv.nguyenvana@learninghub.edu.vn': 'password',
+  'sv20240001@student.edu.vn': 'password',
+};
 
 // ===== Auth (login theo identifier) =====
 export const mockAuthUsers: Record<string, AuthUser> = {
-  'admin@lms.vn':    { token: 'mock-jwt-admin-001',    type: 'Bearer', id: 1, email: 'admin@lms.vn',    fullName: 'Nguyễn Văn Admin', role: 'ADMIN',    isFirstLogin: false },
-  'lecturer@lms.vn': { token: 'mock-jwt-lecturer-001', type: 'Bearer', id: 2, email: 'lecturer@lms.vn', fullName: 'Trần Thị Giảng',  role: 'LECTURER', isFirstLogin: false },
-  'student@lms.vn':  { token: 'mock-jwt-student-001',  type: 'Bearer', id: 3, email: 'student@lms.vn',  fullName: 'Lê Văn Sinh',     role: 'STUDENT',  isFirstLogin: false },
+  'admin@learninghub.edu.vn': { token: 'mock-jwt-admin-001', type: 'Bearer', id: 1, email: 'admin@learninghub.edu.vn', fullName: 'Quản trị hệ thống', role: 'ADMIN', isFirstLogin: false },
+  'gv.nguyenvana@learninghub.edu.vn': { token: 'mock-jwt-lecturer-001', type: 'Bearer', id: 2, email: 'gv.nguyenvana@learninghub.edu.vn', fullName: 'Nguyễn Văn An', role: 'LECTURER', isFirstLogin: false },
+  'sv20240001@student.edu.vn': { token: 'mock-jwt-student-001', type: 'Bearer', id: 3, email: 'sv20240001@student.edu.vn', fullName: 'Phạm Hoàng Nam', role: 'STUDENT', isFirstLogin: false },
 };
 
 // ===== Classes =====
 export const mockClasses: Clazz[] = [
-  { id: 101, code: 'CS101', name: 'Nhập môn Lập trình',   description: 'Python cơ bản',   lecturerId: 2, lecturerName: 'Trần Thị Giảng', studentCount: 35, startDate: '2026-02-01', endDate: '2026-06-01', status: 'ACTIVE' },
-  { id: 102, code: 'CS201', name: 'Cấu trúc dữ liệu',     description: 'Array, List, Tree', lecturerId: 2, lecturerName: 'Trần Thị Giảng', studentCount: 28, startDate: '2026-02-01', endDate: '2026-06-01', status: 'ACTIVE' },
-  { id: 103, code: 'CS301', name: 'Cơ sở dữ liệu',         description: 'SQL & NoSQL',     lecturerId: 2, lecturerName: 'Trần Thị Giảng', studentCount: 0,  startDate: '2026-09-01', endDate: '2027-01-01', status: 'UPCOMING' },
-  { id: 104, code: 'CS401', name: 'Trí tuệ nhân tạo',      description: 'ML, Deep Learning', lecturerId: 2, lecturerName: 'Trần Thị Giảng', studentCount: 20, startDate: '2025-09-01', endDate: '2026-01-01', status: 'CLOSED' },
+  { id: 101, classCode: 'CS101', className: 'Nhập môn Lập trình', description: 'Python cơ bản', lecturerId: 2, lecturerName: 'Trần Thị Giảng', maxStudents: 35, studentCount: 35, startDate: '2026-02-01', endDate: '2026-06-01', status: 'ACTIVE', code: 'CS101', name: 'Nhập môn Lập trình', studentIds: [3, 4] },
+  { id: 102, classCode: 'CS201', className: 'Cấu trúc dữ liệu', description: 'Array, List, Tree', lecturerId: 2, lecturerName: 'Trần Thị Giảng', maxStudents: 35, studentCount: 28, startDate: '2026-02-01', endDate: '2026-06-01', status: 'ACTIVE', code: 'CS201', name: 'Cấu trúc dữ liệu', studentIds: [3, 4] },
+  { id: 103, classCode: 'CS301', className: 'Cơ sở dữ liệu', description: 'SQL & NoSQL', lecturerId: 2, lecturerName: 'Trần Thị Giảng', maxStudents: 40, studentCount: 0, startDate: '2026-09-01', endDate: '2027-01-01', status: 'UPCOMING', code: 'CS301', name: 'Cơ sở dữ liệu', studentIds: [] },
+  { id: 104, classCode: 'CS401', className: 'Trí tuệ nhân tạo', description: 'ML, Deep Learning', lecturerId: 2, lecturerName: 'Trần Thị Giảng', maxStudents: 30, studentCount: 20, startDate: '2025-09-01', endDate: '2026-01-01', status: 'CLOSED', code: 'CS401', name: 'Trí tuệ nhân tạo', studentIds: [3] },
 ];
 
 // ===== Chapters & Lessons =====

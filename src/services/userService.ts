@@ -56,11 +56,21 @@ export const toggleUserStatus = async (id: number, active: boolean): Promise<voi
   await unwrap<void>(apiClient.patch(`/admin/users/${id}/status`, { active }));
 };
 
-export const importUsersExcel = async (file: File): Promise<{ success: number; failed: number }> => {
-  if (USE_MOCK) { await delay(); return { success: 10, failed: 0 }; }
+export const importUsersExcel = async (file: File): Promise<User[]> => {
+  if (USE_MOCK) { await delay(); return []; }
   const form = new FormData();
   form.append('file', file);
-  return unwrap<{ success: number; failed: number }>(apiClient.post('/admin/users/import-students', form, {
+  return unwrap<User[]>(apiClient.post('/admin/users/import-students', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }));
+};
+
+export const importUsersByRole = async (role: Role, file: File): Promise<User[]> => {
+  if (USE_MOCK) { await delay(); return []; }
+  const form = new FormData();
+  form.append('file', file);
+  const endpoint = role === 'LECTURER' ? '/admin/users/import-lecturers' : '/admin/users/import-students';
+  return unwrap<User[]>(apiClient.post(endpoint, form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }));
 };
@@ -71,6 +81,16 @@ export const exportUsersExcel = async (): Promise<Blob> => {
     return new Blob(['mock,users'], { type: 'text/csv' });
   }
   const res = await apiClient.get('/admin/users/students/export', { responseType: 'blob' });
+  return res.data as Blob;
+};
+
+export const exportUsersByRole = async (role: Role): Promise<Blob> => {
+  if (USE_MOCK) {
+    await delay();
+    return new Blob(['mock,users'], { type: 'text/csv' });
+  }
+  const endpoint = role === 'LECTURER' ? '/admin/users/lecturers/export' : '/admin/users/students/export';
+  const res = await apiClient.get(endpoint, { responseType: 'blob' });
   return res.data as Blob;
 };
 

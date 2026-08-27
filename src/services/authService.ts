@@ -1,36 +1,43 @@
 // Auth service — signature khớp API_CONTRACT: /auth/login, /auth/change-password
 import { USE_MOCK, apiClient, unwrap } from './api/client';
-import { delay, mockAuthUsers } from './mock';
+import { delay, mockAuthUsers, mockDemoPasswords } from './mock';
 import type { AuthUser, LoginRequest, ChangePasswordRequest } from '../types';
+
+const normalizeIdentifier = (value: string) => value?.trim();
+
+const isValidMockPassword = (identifier: string, password: string) => {
+  const key = normalizeIdentifier(identifier);
+  if (!key) return false;
+
+  const expected = mockDemoPasswords[key];
+  return password === expected || password === '123456';
+};
 
 const mockLogin = async (body: LoginRequest): Promise<AuthUser> => {
   await delay();
-  const u = mockAuthUsers[body.identifier];
-  if (!u || body.password !== '123456') {
-    throw { code: 401, message: 'Sai tài khoản hoặc mật khẩu (gợi ý: 123456)' };
+  const identifier = normalizeIdentifier(body.identifier) ?? '';
+  const user = mockAuthUsers[identifier];
+
+  if (!user || !isValidMockPassword(identifier, body.password)) {
+    throw { code: 401, message: 'Sai tài khoản hoặc mật khẩu. Demo dùng password hoặc 123456 cho mock.' };
   }
-  return u;
+
+  return user;
 };
 
 export const login = async (body: LoginRequest): Promise<AuthUser> => {
+  const identifier = normalizeIdentifier(body.identifier) ?? '';
+
   if (USE_MOCK) return mockLogin(body);
 
   try {
     return unwrap<AuthUser>(apiClient.post('/auth/login', body));
   } catch (error: any) {
     const isMockDisabled = (import.meta.env.VITE_USE_MOCK as string | undefined)?.toLowerCase() === 'false';
-    const isDemoAccount = !!mockAuthUsers[body.identifier];
-    const wantsDemoFallback = body.password === '123456' && isDemoAccount;
+    const isDemoAccount = !!mockAuthUsers[identifier];
 
-    if (!isMockDisabled && wantsDemoFallback) {
+    if (!isMockDisabled && isDemoAccount && isValidMockPassword(identifier, body.password)) {
       return mockLogin(body);
-    }
-
-    const status = error?.response?.status ?? error?.code;
-    if (status === 401 || status === 403 || status === 500 || !status) {
-      if (!isMockDisabled && isDemoAccount && body.password === '123456') {
-        return mockLogin(body);
-      }
     }
 
     throw error;

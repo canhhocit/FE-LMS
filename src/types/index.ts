@@ -35,6 +35,9 @@ export interface User {
   role: Role;
   active?: boolean;
   createdAt?: string;
+  studentCode?: string;
+  phone?: string;
+  adminClassId?: number;
 }
 export interface SpringPage<T> {
   content: T[];
@@ -58,6 +61,14 @@ export interface Clazz {
   lecturerName?: string;
   maxStudents?: number;
   createdAt?: string;
+  status?: 'ACTIVE' | 'CLOSED' | 'PENDING' | 'UPCOMING';
+  studentCount?: number;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  studentIds?: number[];
+  code?: string;
+  name?: string;
 }
 
 // ===== Content =====
@@ -170,6 +181,33 @@ export interface Notification {
   read: boolean;
   createdAt: string;
   type: 'ASSIGNMENT' | 'GRADE' | 'ANNOUNCEMENT' | 'SYSTEM';
+  isRead?: boolean;
+  referenceId?: number;
+}
+
+export interface TuitionInvoice {
+  id: number;
+  studentId?: number;
+  studentFullName?: string;
+  semester: string;
+  academicYear: string;
+  totalCredits?: number;
+  pricePerCredit: number;
+  amount: number;
+  status: string;
+  paidAt?: string;
+}
+
+export interface TuitionRate {
+  id: number;
+  name?: string;
+  academicYear?: string;
+  effectiveFrom?: string;
+  pricePerCredit: number;
+  isActive?: boolean;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // ===== Schedule =====
@@ -183,27 +221,39 @@ export interface Schedule {
   startPeriod?: number;
   endPeriod?: number;
   room?: string;
+  classCode?: string;
+  className?: string;
+  startTime?: string;
+  endTime?: string;
+  lecturerName?: string;
 }
 
 // ===== Quiz =====
 export interface Quiz {
   id: number;
-  classId: number;
+  classId?: number;
   title: string;
   description?: string;
-  startTime: string;
-  endTime: string;
-  durationMinutes: number;
-  maxAttempts: number;
-  status: 'DRAFT' | 'PUBLISHED' | 'CLOSED';
+  startTime?: string;
+  endTime?: string;
+  durationMinutes?: number;
+  totalScore?: number;
+  maxAttempts?: number;
+  status?: 'DRAFT' | 'PUBLISHED' | 'CLOSED' | 'ACTIVE';
+  createdAt?: string;
 }
 export interface QuizQuestion {
   id: number;
   quizId: number;
   content: string;
+  questionText?: string;
   options: string[];
-  correctAnswer: number;
-  points: number;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  correctAnswer?: number;
+  points?: number;
 }
 export interface QuizAttempt {
   id: number;
@@ -212,7 +262,7 @@ export interface QuizAttempt {
   startedAt: string;
   submittedAt?: string;
   score?: number;
-  answers: Record<number, number>; // questionId -> selectedOption index
+  answers: Record<number, number | string>;
 }
 
 // ===== Forum =====
@@ -242,6 +292,9 @@ export interface Curriculum {
   faculty?: string;
   academicYear?: string;
   isActive?: boolean;
+  code?: string;
+  description?: string;
+  totalCredits?: number;
 }
 export interface Course {
   id: number;
@@ -250,6 +303,9 @@ export interface Course {
   description?: string;
   credit?: number;
   createdAt?: string;
+  name?: string;
+  credits?: number;
+  prerequisites?: string[];
 }
 export interface Prerequisite {
   id: number;
@@ -267,6 +323,9 @@ export interface RegistrationPeriod {
   closeAt?: string;
   maxCredits?: number;
   isActive?: boolean;
+  startDate?: string;
+  endDate?: string;
+  status?: 'ACTIVE' | 'CLOSED' | 'UPCOMING';
 }
 
 // ===== Admin Reports =====
@@ -284,11 +343,12 @@ export interface ScoreReport {
 
 // ===== Academic Status =====
 export interface AcademicStatus {
+  semester?: string;
   cumulativeGpa?: number;
   totalCredits?: number;
   passedCredits?: number;
   academicWarning?: boolean;
-  warningLevel?: number;
+  warningLevel?: number | 'NONE';
   totalCourses?: number;
   passedCourses?: number;
   failedCourses?: Array<{
@@ -297,6 +357,9 @@ export interface AcademicStatus {
     credit: number;
     totalScore?: number;
   }>;
+  gpa?: number;
+  earnedCredits?: number;
+  message?: string;
 }
 
 // ===== Transcript (bảng điểm sinh viên) =====
@@ -307,6 +370,7 @@ export interface TranscriptItem {
   credits: number;
   score: number;
   letter?: string;
+  gpa?: number;
 }
 
 // ===== Enrollment (lớp đã đăng ký của sinh viên) =====

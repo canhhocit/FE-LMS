@@ -55,7 +55,8 @@ export const listStudents = async (keyword = '', page = 0, size = 20): Promise<U
     const k = keyword.toLowerCase();
     return mockUsers.filter((u) => u.role === 'STUDENT' && (!k || u.fullName.toLowerCase().includes(k) || u.email.toLowerCase().includes(k))).slice(page * size, (page + 1) * size);
   }
-  return unwrap<User[]>(apiClient.get('/admin/users/students', { params: { keyword, page, size } }));
+  const result = await unwrap<{ content?: User[] }>(apiClient.get('/admin/users/students', { params: { keyword, page, size } }));
+  return result?.content ?? [];
 };
 export const listLecturers = async (keyword = '', page = 0, size = 20): Promise<User[]> => {
   if (USE_MOCK) {
@@ -63,5 +64,6 @@ export const listLecturers = async (keyword = '', page = 0, size = 20): Promise<
     const k = keyword.toLowerCase();
     return mockUsers.filter((u) => u.role === 'LECTURER' && (!k || u.fullName.toLowerCase().includes(k) || u.email.toLowerCase().includes(k))).slice(page * size, (page + 1) * size);
   }
-  return unwrap<User[]>(apiClient.get('/admin/users/lecturers', { params: { keyword, page, size } }));
+  const result = await unwrap<{ content?: User[] }>(apiClient.get('/admin/users/lecturers', { params: { keyword, page, size } }));
+  return result?.content ?? [];
 };

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import * as clazzService from '../../services/clazzService';
 import * as chatService from '../../services/chatService';
 import { PageTitle, Card, Spinner, Empty, Pill } from '../../components/Layout';
+import { importUsersByRole, exportUsersByRole } from '../../services/userService';
 import type { Clazz, User, DashboardStats } from '../../types';
 
 export function AdminDashboard() {
@@ -43,6 +44,10 @@ export function AdminUsers() {
   const [kw, setKw] = useState('');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [importing, setImporting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [importMsg, setImportMsg] = useState<string | null>(null);
+
   const load = useCallback(() => {
     let mounted = true;
     const p = tab === 'STUDENT' ? chatService.listStudents(kw) : chatService.listLecturers(kw);
@@ -54,31 +59,85 @@ export function AdminUsers() {
     const cleanup = load();
     return cleanup;
   }, [load]);
+
+  const handleImport = async () => {
+    if (!selectedFile) {
+      setImportMsg('Vui lòng chọn file Excel trước khi import.');
+      return;
+    }
+    setImporting(true);
+    setImportMsg(null);
+    try {
+      const result = await importUsersByRole(tab, selectedFile);
+      setImportMsg(`Import thành công: ${result.length} tài khoản.`);
+      setSelectedFile(null);
+      load();
+    } catch (e: unknown) {
+      setImportMsg((e as { message?: string })?.message ?? 'Import thất bại.');
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const blob = await exportUsersByRole(tab);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = tab === 'LECTURER' ? 'lecturers.xlsx' : 'students.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: unknown) {
+      setImportMsg((e as { message?: string })?.message ?? 'Xuất file thất bại.');
+    }
+  };
+
   return (
     <div>
       <PageTitle>Người dùng</PageTitle>
-      <div className="flex gap-2 mb-3">
+      <div className="flex flex-wrap gap-2 mb-3 items-center">
         {(['STUDENT', 'LECTURER'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-3 py-1.5 rounded text-sm ${tab === t ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'}`}>
+            className={`px-3 py-1.5 rounded text-sm ${tab === t ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
             {t === 'STUDENT' ? 'Sinh viên' : 'Giảng viên'}
           </button>
         ))}
         <input value={kw} onChange={(e) => setKw(e.target.value)} placeholder="Tìm theo tên/email…"
-          className="ml-auto px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-sm" />
+          className="ml-auto min-w-[220px] px-3 py-1.5 bg-white border border-slate-200 rounded text-sm text-slate-700" />
       </div>
+
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <label className="inline-flex items-center gap-2 rounded border border-dashed border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 cursor-pointer">
+          <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)} />
+          {selectedFile ? selectedFile.name : 'Chọn file Excel'}
+        </label>
+        <button onClick={handleImport} disabled={importing || !selectedFile}
+          className="px-3 py-2 rounded text-sm bg-emerald-600 text-white disabled:opacity-50 hover:bg-emerald-500">
+          {importing ? 'Đang import…' : 'Import file'}
+        </button>
+        <button onClick={handleExport}
+          className="px-3 py-2 rounded text-sm bg-slate-200 text-slate-700 hover:bg-slate-300">
+          Xuất Excel
+        </button>
+      </div>
+
+      {importMsg && <div className="mb-3 rounded border border-emerald-200 bg-emerald-50 text-emerald-700 px-3 py-2 text-sm">{importMsg}</div>}
+
       <Card>
         {loading ? <Spinner /> : users.length === 0 ? <Empty msg="Không có kết quả" /> : (
           <table className="w-full text-sm">
-            <thead className="text-xs text-slate-400 border-b border-slate-800">
+            <thead className="text-xs text-slate-500 border-b border-slate-200">
               <tr><th className="text-left py-2">#</th><th>Họ tên</th><th>Email</th><th>Trạng thái</th></tr>
             </thead>
             <tbody>
               {users.map((u, i) => (
-                <tr key={u.id} className="border-b border-slate-800/50">
+                <tr key={u.id} className="border-b border-slate-200/80">
                   <td className="py-2 text-slate-500">{i + 1}</td>
-                  <td>{u.fullName}</td>
-                  <td className="text-slate-400">{u.email}</td>
+                  <td className="text-slate-800">{u.fullName}</td>
+                  <td className="text-slate-500">{u.email}</td>
                   <td><Pill color={u.active !== false ? 'green' : 'red'}>{u.active !== false ? 'Active' : 'Inactive'}</Pill></td>
                 </tr>
               ))}
