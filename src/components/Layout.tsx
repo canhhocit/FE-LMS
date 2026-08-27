@@ -1,7 +1,7 @@
 // Layout chung: sidebar + topbar + content. Items lọc theo role.
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/useAuth';
 import type { Role } from '../types';
 
 interface NavItem { to: string; label: string; icon: string; }
@@ -12,6 +12,10 @@ const NAV: Record<Role, NavItem[]> = {
     { to: '/student/classes', label: 'Lớp học', icon: '📚' },
     { to: '/student/assignments', label: 'Bài tập', icon: '📝' },
     { to: '/student/grades', label: 'Điểm', icon: '📊' },
+    { to: '/student/attendance', label: 'Điểm danh', icon: '✅' },
+    { to: '/student/schedule', label: 'Thời khoá biểu', icon: '📅' },
+    { to: '/student/transcript', label: 'Bảng điểm', icon: '📜' },
+    { to: '/student/profile', label: 'Hồ sơ', icon: '👤' },
     { to: '/student/chat', label: 'Tin nhắn', icon: '💬' },
   ],
   LECTURER: [
@@ -19,12 +23,17 @@ const NAV: Record<Role, NavItem[]> = {
     { to: '/lecturer/classes', label: 'Lớp học', icon: '📚' },
     { to: '/lecturer/assignments', label: 'Bài tập', icon: '📝' },
     { to: '/lecturer/grading', label: 'Chấm điểm/Điểm danh', icon: '✅' },
+    { to: '/lecturer/schedule', label: 'Lịch dạy', icon: '📅' },
+    { to: '/lecturer/profile', label: 'Hồ sơ', icon: '👤' },
     { to: '/lecturer/chat', label: 'Tin nhắn', icon: '💬' },
   ],
   ADMIN: [
     { to: '/admin', label: 'Dashboard', icon: '🏠' },
     { to: '/admin/users', label: 'Người dùng', icon: '👥' },
     { to: '/admin/classes', label: 'Lớp học', icon: '📚' },
+    { to: '/admin/curricula', label: 'Chương trình ĐT', icon: '🎓' },
+    { to: '/admin/registration', label: 'Đợt đăng ký', icon: '📝' },
+    { to: '/admin/reports', label: 'Báo cáo', icon: '📈' },
   ],
 };
 
@@ -34,22 +43,23 @@ export default function Layout() {
   const { user, logout } = useAuth();
   const nav = useNavigate();
   if (!user) return null;
-  const items = NAV[user.role];
-  const role = user.role.toLowerCase();
+  const role = user.role;
+  const items: NavItem[] = NAV[role];
+  const roleLower = role.toLowerCase();
 
   return (
     <div className="min-h-screen flex bg-slate-950 text-slate-100">
       <aside className="w-64 shrink-0 border-r border-slate-800 bg-slate-900/60 p-4 flex flex-col">
-        <Link to={`/${role}`} className="flex items-center gap-2 px-2 py-3">
+        <Link to={`/${roleLower}`} className="flex items-center gap-2 px-2 py-3">
           <span className="text-2xl">🎓</span>
           <div>
             <div className="font-bold">LearningHub</div>
-            <div className="text-xs text-slate-400">{ROLE_LABEL[user.role]}</div>
+            <div className="text-xs text-slate-400">{ROLE_LABEL[role]}</div>
           </div>
         </Link>
         <nav className="mt-4 flex-1 space-y-1">
-          {items.map((it) => (
-            <NavLink key={it.to} to={it.to} end={it.to === `/${role}`}
+          {items.map((it: NavItem) => (
+            <NavLink key={it.to} to={it.to} end={it.to === `/${roleLower}`}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition ${
                   isActive ? 'bg-indigo-600/30 text-indigo-200 border border-indigo-500/40' : 'hover:bg-slate-800 text-slate-300'

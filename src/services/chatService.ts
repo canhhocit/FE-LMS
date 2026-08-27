@@ -1,7 +1,7 @@
 // Chat service — REST + WebSocket (STOMP)
 import { USE_MOCK, apiClient, unwrap } from './api/client';
-import { delay, mockMessages } from './mock';
-import type { Message } from '../types';
+import { delay, mockMessages, mockStats, mockUsers } from './mock';
+import type { Message, DashboardStats, User } from '../types';
 
 export const getMessages = async (withUserId: number, page = 0, size = 20): Promise<Message[]> => {
   if (USE_MOCK) {
@@ -43,9 +43,8 @@ export const getUnreadCount = async (): Promise<number> => {
 };
 
 // ===== Admin dashboard =====
-import type { DashboardStats, User } from '../types';
 export const getDashboardStats = async (): Promise<DashboardStats> => {
-  if (USE_MOCK) { await delay(); const { mockStats } = await import('./mock'); return mockStats; }
+  if (USE_MOCK) { await delay(); return mockStats; }
   return unwrap<DashboardStats>(apiClient.get('/admin/dashboard'));
 };
 
@@ -53,7 +52,6 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
 export const listStudents = async (keyword = '', page = 0, size = 20): Promise<User[]> => {
   if (USE_MOCK) {
     await delay();
-    const { mockUsers } = await import('./mock');
     const k = keyword.toLowerCase();
     return mockUsers.filter((u) => u.role === 'STUDENT' && (!k || u.fullName.toLowerCase().includes(k) || u.email.toLowerCase().includes(k))).slice(page * size, (page + 1) * size);
   }
@@ -62,7 +60,6 @@ export const listStudents = async (keyword = '', page = 0, size = 20): Promise<U
 export const listLecturers = async (keyword = '', page = 0, size = 20): Promise<User[]> => {
   if (USE_MOCK) {
     await delay();
-    const { mockUsers } = await import('./mock');
     const k = keyword.toLowerCase();
     return mockUsers.filter((u) => u.role === 'LECTURER' && (!k || u.fullName.toLowerCase().includes(k) || u.email.toLowerCase().includes(k))).slice(page * size, (page + 1) * size);
   }

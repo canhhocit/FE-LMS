@@ -1,53 +1,47 @@
-﻿// AuthContext - user + login/logout
-import { createContext, useState, useEffect, type ReactNode } from "react";
-import type { AuthUser, Role } from "../types";
-import * as authService from "../services/authService";
-
-interface AuthCtx {
-  user: AuthUser | null;
-  loading: boolean;
-  login: (identifier: string, password: string) => Promise<void>;
-  logout: () => void;
-  hasRole: (...r: Role[]) => boolean;
-}
-
-export const AuthCtx = createContext<AuthCtx | null>(null);
-export const STORAGE_KEY = "lms_auth";
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const readStoredUser = (): AuthUser | null => {
-  try {
-    const raw = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
-    return raw ? (JSON.parse(raw) as AuthUser) : null;
-  } catch {
-    return null;
-  }
-};
+﻿// AuthProvider component — exports ONLY a React component so Fast Refresh works.
+// The context object and the consumer hook live in their own files:
+//   ./authContext.ts  (context + value type)
+//   ./useAuth.ts      (consumer hook)
+//   ./authStorage.ts  (localStorage helpers)
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import type { AuthUser, Role } from '../types';
+import * as authService from '../services/authService';
+import { readStoredUser, writeStoredUser, clearStoredUser } from './authStorage';
+import { AuthCtx, type AuthCtxValue } from './authContextValue';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  // Lazy initialiser reads from localStorage synchronously once — no effect needed.
   const [user, setUser] = useState<AuthUser | null>(() => readStoredUser());
-  const [loading, setLoading] = useState(true);
+  // Loading stays false because we already hydrated above; reserved for future async profile fetch.
+  const [loading] = useState(false);
 
+  // Re-hydrate when storage changes in another tab.
   useEffect(() => {
-    const u = readStoredUser();
-    if (u) setUser(u);
-    setLoading(false);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key && e.key !== 'lms_auth') return;
+      setUser(readStoredUser());
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  const login = async (identifier: string, password: string) => {
+  const login = useCallback(async (identifier: string, password: string) => {
     const u = await authService.login({ identifier, password });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+    writeStoredUser(u);
     setUser(u);
-  };
-  const logout = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    setUser(null);
-  };
-  const hasRole = (...roles: Role[]) => !!user && roles.includes(user.role);
+  }, []);
 
-  return (
-    <AuthCtx.Provider value={{ user, loading, login, logout, hasRole }}>
-      {children}
-    </AuthCtx.Provider>
+  const logout = useCallback(() => {
+    clearStoredUser();
+    setUser(null);
+  }, []);
+
+  const hasRole = useCallback(
+    (...roles: Role[]) => !!user && roles.includes(user.role),
+    [user],
   );
+
+  const value: AuthCtxValue = { user, loading, login, logout, hasRole };
+
+  return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 };

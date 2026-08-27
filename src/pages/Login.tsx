@@ -1,7 +1,7 @@
 // Login — mock 3 role sẵn
 import { useState } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/useAuth';
 
 const DEMO: { label: string; identifier: string }[] = [
   { label: 'Sinh viên',  identifier: 'student@lms.vn' },

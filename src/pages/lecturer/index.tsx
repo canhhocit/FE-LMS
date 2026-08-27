@@ -1,11 +1,11 @@
 // Lecturer pages
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import * as clazzService from '../../services/clazzService';
 import * as assessmentService from '../../services/assessmentService';
 import * as gradingService from '../../services/gradingService';
 import * as chatService from '../../services/chatService';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/useAuth';
 import { PageTitle, Card, Spinner, Empty, Pill } from '../../components/Layout';
 import type { Clazz, Assignment, Submission, Attendance, AttendanceRecord } from '../../types';
 
@@ -88,15 +88,19 @@ export function LecturerClasses() {
 export function LecturerAssignments() {
   const [data, setData] = useState<{ clazz: Clazz; assigns: Assignment[] }[]>([]);
   const [loading, setLoading] = useState(true);
-  const load = () => {
-    setLoading(true);
+  const load = useCallback(() => {
+    let mounted = true;
     (async () => {
       const cs = await clazzService.getMyClasses();
       const rs = await Promise.all(cs.map(async (c) => ({ clazz: c, assigns: await assessmentService.getAssignments(c.id) })));
-      setData(rs);
-    })().finally(() => setLoading(false));
-  };
-  useEffect(load, []);
+      if (mounted) setData(rs);
+    })().finally(() => mounted && setLoading(false));
+    return () => { mounted = false; };
+  }, []);
+  useEffect(() => {
+    const cleanup = load();
+    return cleanup;
+  }, [load]);
   if (loading) return <Spinner />;
   return (
     <div>

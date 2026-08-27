@@ -6,7 +6,7 @@ import * as assessmentService from "../../services/assessmentService";
 import * as gradingService from "../../services/gradingService";
 import * as chatService from "../../services/chatService";
 import { PageTitle, Card, Spinner, Empty, Pill } from "../../components/Layout";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/useAuth";
 import type { Clazz, Assignment, Submission, Grade, Message } from "../../types";
 
 export function StudentDashboard() {

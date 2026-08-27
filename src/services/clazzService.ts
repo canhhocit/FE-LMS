@@ -1,6 +1,6 @@
 ﻿// Clazz service
 import { USE_MOCK, apiClient, unwrap } from "./api/client";
-import { delay, mockClasses } from "./mock";
+import { delay, mockClasses, mockUsers } from "./mock";
 import type { Clazz, User } from "../types";
 
 export const getMyClasses = async (): Promise<Clazz[]> => {
@@ -21,7 +21,6 @@ export const getClazzDetail = async (id: number): Promise<Clazz> => {
 export const getClassStudents = async (classId: number): Promise<User[]> => {
   if (USE_MOCK) {
     await delay();
-    const { mockUsers } = await import("./mock");
     const c = mockClasses.find((x) => x.id === classId);
     if (!c) return [];
     return mockUsers.filter((u) => u.role === "STUDENT" && c.studentIds?.includes(u.id));

@@ -1,5 +1,5 @@
 // Admin pages
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import * as clazzService from '../../services/clazzService';
 import * as chatService from '../../services/chatService';
@@ -43,12 +43,17 @@ export function AdminUsers() {
   const [kw, setKw] = useState('');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const load = () => {
-    setLoading(true);
+  const load = useCallback(() => {
+    let mounted = true;
     const p = tab === 'STUDENT' ? chatService.listStudents(kw) : chatService.listLecturers(kw);
-    p.then(setUsers).finally(() => setLoading(false));
-  };
-  useEffect(load, [tab, kw]);
+    p.then((data) => mounted && setUsers(data)).finally(() => mounted && setLoading(false));
+    return () => { mounted = false; };
+  }, [tab, kw]);
+
+  useEffect(() => {
+    const cleanup = load();
+    return cleanup;
+  }, [load]);
   return (
     <div>
       <PageTitle>Người dùng</PageTitle>
