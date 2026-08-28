@@ -8,14 +8,14 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import ClassDetail from './pages/shared/ClassDetail';
 import {
-  StudentDashboard, StudentClasses, StudentAssignments, StudentGrades, StudentChat,
+  StudentDashboard, StudentClasses, StudentAssignments, StudentGrades,
 } from './pages/student';
 import StudentAttendance from './pages/student/Attendance';
 import StudentSchedule from './pages/student/Schedule';
 import StudentProfile from './pages/student/Profile';
 import StudentTranscript from './pages/student/Transcript';
 import {
-  LecturerDashboard, LecturerClasses, LecturerAssignments, LecturerGrading, LecturerChat,
+  LecturerDashboard, LecturerClasses, LecturerAssignments, LecturerGrading,
 } from './pages/lecturer';
 import LecturerSchedule from './pages/lecturer/Schedule';
 import LecturerProfile from './pages/lecturer/Profile';
@@ -38,10 +38,10 @@ function RootRedirect() {
 // Trang 404 don gian
 function NotFoundPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-slate-100 p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-900 p-6">
       <div className="text-7xl mb-4">404</div>
       <h1 className="text-3xl font-bold mb-2">Khong tim thay trang</h1>
-      <p className="text-slate-400 mb-6">Duong dan ban truy cap khong ton tai</p>
+      <p className="text-slate-600 mb-6">Duong dan ban truy cap khong ton tai</p>
       <a href="/" className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white">
         Ve trang chu
    </a>
@@ -69,7 +69,6 @@ export default function App() {
             <Route path="/student/schedule" element={<StudentSchedule />} />
             <Route path="/student/profile" element={<StudentProfile />} />
             <Route path="/student/transcript" element={<StudentTranscript />} />
-            <Route path="/student/chat" element={<StudentChat />} />
        </Route>
           <Route element={<ProtectedRoute allow={['LECTURER']}><Layout></Layout></ProtectedRoute>}>
             <Route path="/lecturer" element={<LecturerDashboard />} />
@@ -81,7 +80,6 @@ export default function App() {
             <Route path="/lecturer/grading" element={<LecturerGrading />} />
             <Route path="/lecturer/schedule" element={<LecturerSchedule />} />
             <Route path="/lecturer/profile" element={<LecturerProfile />} />
-            <Route path="/lecturer/chat" element={<LecturerChat />} />
        </Route>
           <Route element={<ProtectedRoute allow={['ADMIN']}><Layout></Layout></ProtectedRoute>}>
             <Route path="/admin" element={<AdminDashboard />} />

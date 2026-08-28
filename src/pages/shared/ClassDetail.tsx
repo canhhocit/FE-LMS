@@ -42,14 +42,13 @@ export default function ClassDetail() {
   if (err) return <ErrorBox msg={err} />;
   if (!clazz) return <Empty msg="Khong tim thay lop" />;
 
-  const status = (clazz.status ?? "ACTIVE") as "ACTIVE" | "CLOSED" | "PENDING";
 
   return (
     <div>
-      <PageTitle>{clazz.code} - {clazz.name}</PageTitle>
+      <PageTitle>{clazz.classCode} - {clazz.className}</PageTitle>
       <div className="grid md:grid-cols-3 gap-4 mb-6">
         <Card><div className="text-xs text-slate-400">Giang vien</div><div className="font-medium">{clazz.lecturerName ?? "-"}</div></Card>
-        <Card><div className="text-xs text-slate-400">Si so</div><div className="font-medium">{clazz.studentCount ?? students.length} SV</div></Card>
+        <Card><div className="text-xs text-slate-400">Sĩ số tối đa</div><div className="font-medium">{clazz.maxStudents} SV</div></Card>
         <Card><div className="text-xs text-slate-400">Trang thai</div><div><Pill color={status === "ACTIVE" ? "green" : status === "CLOSED" ? "slate" : "amber"}>{status}</Pill></div></Card>
       </div>
       <div className="grid lg:grid-cols-3 gap-4">

@@ -51,7 +51,7 @@ export default function AdminReports() {
             {enrolls.map((e) => (
               <div key={e.month} className="flex items-center gap-2 text-sm">
                 <div className="w-24 text-slate-400">{e.month}</div>
-                <div className="flex-1 bg-slate-800 rounded h-6 overflow-hidden">
+                <div className="flex-1 bg-slate-100 rounded h-6 overflow-hidden">
                   <div className="bg-indigo-500 h-full" style={{ width: `${(e.count / maxEnroll) * 100}%` }} />
                 </div>
                 <div className="w-16 text-right font-mono">{e.count}</div>
@@ -70,7 +70,7 @@ export default function AdminReports() {
             {scores.map((s) => (
               <div key={s.classId} className="flex items-center gap-2 text-sm">
                 <div className="w-32 truncate text-slate-400">{s.classCode}</div>
-                <div className="flex-1 bg-slate-800 rounded h-6 overflow-hidden">
+                <div className="flex-1 bg-slate-100 rounded h-6 overflow-hidden">
                   <div className="bg-emerald-500 h-full" style={{ width: `${(s.averageScore / maxScore) * 100}%` }} />
                 </div>
                 <div className="w-16 text-right font-mono">{s.averageScore.toFixed(2)}</div>

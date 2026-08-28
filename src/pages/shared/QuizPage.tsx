@@ -10,6 +10,7 @@ export default function QuizPage() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null);
+  const [startedQuizId, setStartedQuizId] = useState<number | null>(null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -49,7 +50,7 @@ export default function QuizPage() {
   }, [selectedClass]);
 
   useEffect(() => {
-    if (selectedQuizId == null) {
+    if (selectedQuizId == null || startedQuizId !== selectedQuizId) {
       setQuestions([]);
       return;
     }
@@ -62,7 +63,7 @@ export default function QuizPage() {
         setErr((e as { message?: string })?.message ?? 'Không tải được câu hỏi');
       }
     })();
-  }, [selectedQuizId]);
+  }, [selectedQuizId, startedQuizId]);
 
   const activeQuiz = useMemo(() => quizzes.find((q) => q.id === selectedQuizId) ?? null, [quizzes, selectedQuizId]);
 
@@ -70,16 +71,28 @@ export default function QuizPage() {
     if (!selectedQuizId) return;
     setSubmitting(true);
     try {
-      await quizService.submitQuiz(selectedQuizId, answers);
+      await quizService.submitQuiz(selectedQuizId, Object.entries(answers).map(([questionId, selected]) => ({ questionId: Number(questionId), selectedAnswer: String.fromCharCode(65 + selected) as 'A' | 'B' | 'C' | 'D' })));
       setErr(null);
       setQuestions([]);
       setAnswers({});
+      setStartedQuizId(null);
       const list = await quizService.getQuizzesByClass(selectedClass!);
       setQuizzes(list);
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Nộp bài thất bại');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleStart = async () => {
+    if (selectedQuizId == null) return;
+    try {
+      await quizService.startQuiz(selectedQuizId);
+      setStartedQuizId(selectedQuizId);
+      setErr(null);
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Không thể bắt đầu quiz');
     }
   };
 
@@ -92,7 +105,7 @@ export default function QuizPage() {
       <div className="mb-4 flex gap-2 items-center">
         <label className="text-sm text-slate-500">Lớp:</label>
         <select value={selectedClass ?? ''} onChange={(e) => setSelectedClass(Number(e.target.value))} className="bg-white border border-slate-200 rounded px-3 py-2 text-sm text-slate-700">
-          {classes.map((c) => <option key={c.id} value={c.id}>{c.code} - {c.name}</option>)}
+          {classes.map((c) => <option key={c.id} value={c.id}>{c.classCode} - {c.className}</option>)}
         </select>
       </div>
 
@@ -102,10 +115,10 @@ export default function QuizPage() {
           {quizzes.length === 0 ? <Empty msg="Chưa có quiz" /> : (
             <div className="space-y-2">
               {quizzes.map((q) => (
-                <button key={q.id} onClick={() => setSelectedQuizId(q.id)} className={`w-full text-left rounded-lg border p-3 ${selectedQuizId === q.id ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white'}`}>
+                <button key={q.id} onClick={() => { setSelectedQuizId(q.id); setStartedQuizId(null); }} className={`w-full text-left rounded-lg border p-3 ${selectedQuizId === q.id ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white'}`}>
                   <div className="font-medium text-slate-800">{q.title}</div>
                   <div className="text-xs text-slate-500 mt-1">{q.durationMinutes ?? 30} phút</div>
-                  <div className="mt-2"><Pill color={q.status === 'PUBLISHED' ? 'green' : q.status === 'CLOSED' ? 'slate' : 'amber'}>{q.status}</Pill></div>
+                  <div className="mt-2"><Pill color="indigo">{q.totalScore} điểm</Pill></div>
                 </button>
               ))}
             </div>
@@ -118,18 +131,23 @@ export default function QuizPage() {
               <div className="mb-3 flex items-center justify-between gap-2">
                 <div>
                   <h3 className="font-semibold text-slate-800">{activeQuiz.title}</h3>
-                  <div className="text-sm text-slate-500">{activeQuiz.description ?? 'Bài kiểm tra trắc nghiệm'}</div>
+                  <div className="text-sm text-slate-500">Bài kiểm tra trắc nghiệm</div>
                 </div>
                 <Pill color="indigo">{activeQuiz.durationMinutes ?? 30} phút</Pill>
               </div>
 
-              {questions.length === 0 ? <Empty msg="Chưa có câu hỏi cho quiz này" /> : (
+              {startedQuizId !== selectedQuizId ? (
+                <div className="py-6 text-center">
+                  <p className="text-sm text-slate-600 mb-3">Bắt đầu quiz để tải câu hỏi.</p>
+                  <button onClick={() => void handleStart()} className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark">Bắt đầu quiz</button>
+                </div>
+              ) : questions.length === 0 ? <Empty msg="Chưa có câu hỏi cho quiz này" /> : (
                 <div className="space-y-4">
                   {questions.map((q, idx) => (
                     <div key={q.id} className="border border-slate-200 rounded-lg p-3">
                       <div className="font-medium mb-2">Câu {idx + 1}: {q.content}</div>
                       <div className="space-y-2">
-                        {q.options.map((opt, opIdx) => (
+                        {[q.optionA, q.optionB, q.optionC, q.optionD].map((opt, opIdx) => (
                           <label key={`${q.id}-${opIdx}`} className="flex items-center gap-2 text-sm text-slate-700">
                             <input
                               type="radio"
@@ -137,7 +155,7 @@ export default function QuizPage() {
                               checked={answers[q.id] === opIdx}
                               onChange={() => setAnswers((prev) => ({ ...prev, [q.id]: opIdx }))}
                             />
-                            <span>{opt}</span>
+                            <span>{String.fromCharCode(65 + opIdx)}. {opt}</span>
                           </label>
                         ))}
                       </div>

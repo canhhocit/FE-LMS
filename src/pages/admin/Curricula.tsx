@@ -1,7 +1,7 @@
 // Admin Curricula & Courses page
 import { useEffect, useState } from 'react';
 import * as curriculumService from '../../services/curriculumService';
-import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
+import { PageTitle, Card, Spinner, Empty, ErrorBox } from '../../components/Layout';
 import type { Curriculum, Course } from '../../types';
 
 export default function AdminCurricula() {
@@ -31,9 +31,9 @@ export default function AdminCurricula() {
               {curricula.map((c) => (
                 <li key={c.id}>
                   <button onClick={() => setSelected(c)}
-                    className={`w-full text-left p-2 rounded ${selected?.id === c.id ? 'bg-indigo-600/30 border border-indigo-500/40' : 'hover:bg-slate-800 border border-transparent'}`}>
+                    className={`w-full text-left p-2 rounded ${selected?.id === c.id ? 'bg-indigo-50 border border-indigo-200' : 'hover:bg-slate-50 border border-transparent'}`}>
                     <div className="font-medium">{c.name}</div>
-                    <div className="text-xs text-slate-400">{c.code} · {c.totalCredits} TC</div>
+                    <div className="text-xs text-slate-400">{c.faculty ?? '-'} · {c.academicYear ?? '-'}</div>
                   </button>
                 </li>
               ))}
@@ -51,14 +51,10 @@ export default function AdminCurricula() {
                 {courses.map((c) => (
                   <tr key={c.id} className="border-b border-slate-800/50">
                     <td className="py-2 font-mono text-indigo-300">{c.code}</td>
-                    <td>{c.name}</td>
-                    <td className="text-center">{c.credits}</td>
+                    <td>{c.title}</td>
+                    <td className="text-center">{c.credit}</td>
                     <td>
-                      {c.prerequisites && c.prerequisites.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {c.prerequisites.map((p) => <Pill key={p} color="amber">{p}</Pill>)}
-                        </div>
-                      ) : <span className="text-slate-500">-</span>}
+                      <span className="text-slate-500">-</span>
                     </td>
                   </tr>
                 ))}

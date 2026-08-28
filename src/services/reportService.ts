@@ -1,83 +1,9 @@
-// Report service (admin)
-import { USE_MOCK, apiClient, unwrap } from './api/client';
-import { delay } from './mock';
-import type { DashboardStats, EnrollmentReport, ScoreReport, AcademicStatus, TranscriptItem } from '../types';
-
-const normalizeAcademicStatus = (status: AcademicStatus): AcademicStatus => ({
-  ...status,
-  gpa: status.gpa ?? status.cumulativeGpa ?? 0,
-  cumulativeGpa: status.cumulativeGpa ?? status.gpa ?? 0,
-  earnedCredits: status.earnedCredits ?? status.passedCredits ?? status.totalCredits ?? 0,
-  passedCredits: status.passedCredits ?? status.earnedCredits ?? status.totalCredits ?? 0,
-  totalCredits: status.totalCredits ?? status.earnedCredits ?? 0,
-  warningLevel: typeof status.warningLevel === 'number' ? status.warningLevel : 0,
-});
-
-export const getDashboardStats = async (): Promise<DashboardStats> => {
-  if (USE_MOCK) {
-    await delay();
-    return { totalUsers: 1240, totalClasses: 38, totalEnrollments: 4200, totalAssignments: 152, totalSubmissions: 3800 };
-  }
-  return unwrap<DashboardStats>(apiClient.get('/admin/dashboard'));
-};
-
-export const getEnrollmentsByMonth = async (): Promise<EnrollmentReport[]> => {
-  if (USE_MOCK) {
-    await delay();
-    return [
-      { month: '2025-09', count: 1200 },
-      { month: '2025-10', count: 1450 },
-      { month: '2026-02', count: 1550 },
-    ];
-  }
-  return unwrap<EnrollmentReport[]>(apiClient.get('/admin/reports/enrollments-by-month'));
-};
-
-export const getAverageScoreByClazz = async (): Promise<ScoreReport[]> => {
-  if (USE_MOCK) {
-    await delay();
-    return [
-      { classId: 101, classCode: 'CS101', className: 'Nhap mon LT', averageScore: 7.8, studentCount: 45 },
-      { classId: 102, classCode: 'CS201', className: 'Cau truc du lieu', averageScore: 6.9, studentCount: 38 },
-    ];
-  }
-  return unwrap<ScoreReport[]>(apiClient.get('/admin/reports/average-score-by-clazz'));
-};
-
-export const exportEnrollmentsExcel = async (): Promise<Blob> => {
-  if (USE_MOCK) {
-    await delay();
-    return new Blob(['mock,data\n1,2'], { type: 'text/csv' });
-  }
-  const res = await apiClient.get('/admin/reports/enrollments/export', { responseType: 'blob' });
-  return res.data as Blob;
-};
-
-export const exportScorePdf = async (): Promise<Blob> => {
-  if (USE_MOCK) {
-    await delay();
-    return new Blob(['mock pdf'], { type: 'application/pdf' });
-  }
-  const res = await apiClient.get('/admin/reports/score/export', { responseType: 'blob' });
-  return res.data as Blob;
-};
-
-export const getAcademicStatus = async (): Promise<AcademicStatus> => {
-  if (USE_MOCK) {
-    await delay();
-    return normalizeAcademicStatus({ semester: 'HK2 2025-2026', gpa: 7.8, cumulativeGpa: 7.5, totalCredits: 18, earnedCredits: 18, warningLevel: 0 });
-  }
-  return unwrap<AcademicStatus>(apiClient.get('/me/academic-status')).then(normalizeAcademicStatus);
-};
-
-export const getTranscript = async (): Promise<TranscriptItem[]> => {
-  if (USE_MOCK) {
-    await delay();
-    return [
-      { semester: 'HK1 2025-2026', courseCode: 'CS101', courseName: 'Nhap mon LT', credits: 3, score: 8.0, letter: 'B+' },
-      { semester: 'HK1 2025-2026', courseCode: 'CS102', courseName: 'Toan roi rac', credits: 3, score: 7.5, letter: 'B' },
-      { semester: 'HK2 2025-2026', courseCode: 'CS201', courseName: 'Cau truc du lieu', credits: 3, score: 8.5, letter: 'A' },
-    ];
-  }
-  return unwrap<TranscriptItem[]>(apiClient.get('/me/transcript'));
-};
+import { apiClient, unwrap } from './api/client';
+import type { AcademicStatus, EnrollmentReport, ScoreReport, TranscriptItem, DashboardStats } from '../types';
+export const getDashboardStats = async (): Promise<DashboardStats> => unwrap(apiClient.get('/admin/dashboard'));
+export const getEnrollmentsByMonth = async (): Promise<EnrollmentReport[]> => { const data = await unwrap<Record<string, number>>(apiClient.get('/admin/reports/enrollments-by-month')); return Object.entries(data ?? {}).map(([month, count]) => ({ month, count })); };
+export const getAverageScoreByClazz = async (): Promise<ScoreReport[]> => { const data = await unwrap<Record<string, number>>(apiClient.get('/admin/reports/average-score-by-clazz')); return Object.entries(data ?? {}).map(([classId, averageScore]) => ({ classId: Number(classId), classCode: classId, className: classId, averageScore, studentCount: 0 })); };
+export const getAcademicStatus = async (): Promise<AcademicStatus> => unwrap(apiClient.get('/me/academic-status'));
+export const getTranscript = async (): Promise<TranscriptItem[]> => unwrap(apiClient.get('/me/transcript'));
+export const exportEnrollmentsExcel = async (): Promise<Blob> => { throw new Error('MISSING_BACKEND_API: enrollment report export'); };
+export const exportScorePdf = async (): Promise<Blob> => { throw new Error('MISSING_BACKEND_API: score report export'); };

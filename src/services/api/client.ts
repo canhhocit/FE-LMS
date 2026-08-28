@@ -1,7 +1,8 @@
-// Axios instance — sẵn sàng dùng khi switch VITE_USE_MOCK=false
 import axios from 'axios';
+import { readStoredUser, writeStoredUser, clearStoredUser } from '../../contexts/authStorage';
+import type { AuthUser } from '../../types';
 
-const baseURL = (import.meta.env.VITE_API_BASE_URL as string) || '/api';
+const baseURL = (import.meta.env.VITE_API_BASE_URL as string) || '/api/v1';
 
 export const apiClient = axios.create({
   baseURL,
@@ -9,25 +10,43 @@ export const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Gắn JWT nếu có (mock-mode cũng set để test)
 apiClient.interceptors.request.use((config) => {
-  const raw = localStorage.getItem('lms_auth');
-  if (raw) {
-    try {
-      const u = JSON.parse(raw);
-      if (u?.token) config.headers.Authorization = `${u.type ?? 'Bearer'} ${u.token}`;
-    } catch { /* ignore */ }
-  }
+  const user = readStoredUser();
+  if (user?.token) config.headers.Authorization = `${user.type || 'Bearer'} ${user.token}`;
   return config;
 });
+
+let refreshRequest: Promise<AuthUser> | null = null;
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const request = error.config;
+    const user = readStoredUser();
+    if (error.response?.status !== 401 || request?._retry || !user?.refreshToken || request?.url?.includes('/auth/')) {
+      return Promise.reject(error);
+    }
+
+    request._retry = true;
+    refreshRequest ??= axios.post<{ result: AuthUser }>(`${baseURL}/auth/refresh`, {
+      refreshToken: user.refreshToken,
+    }).then((response) => response.data.result).finally(() => { refreshRequest = null; });
+
+    try {
+      const refreshed = await refreshRequest;
+      writeStoredUser(refreshed);
+      request.headers.Authorization = `${refreshed.type || 'Bearer'} ${refreshed.token}`;
+      return apiClient(request);
+    } catch (refreshError) {
+      clearStoredUser();
+      return Promise.reject(refreshError);
+    }
+  },
+);
 
 // Chuẩn hoá response: BE trả {code,message,result} → trả về result
 export interface ApiEnvelope<T> { code: number; message: string; result: T; }
 export const unwrap = <T>(p: Promise<{ data: ApiEnvelope<T> }>) =>
   p.then((r) => r.data.result);
-
-// Flag toàn cục: bật/tắt mock không phụ thuộc env import-time
-export const USE_MOCK =
-  (import.meta.env.VITE_USE_MOCK as string | undefined)?.toLowerCase() !== 'false';
 
 export default apiClient;

@@ -2,12 +2,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import * as profileService from '../../services/profileService';
 import { PageTitle, Card, Spinner, ErrorBox, Pill } from '../../components/Layout';
-import type { UserProfile } from '../../types';
+import type { UpdateProfileRequest, UserProfile } from '../../types';
 
 export default function LecturerProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState<Partial<UserProfile>>({});
+  const [form, setForm] = useState<Partial<UpdateProfileRequest>>({});
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   // setState only fires inside async callbacks to avoid the "set-state-in-effect" lint.
@@ -32,7 +32,15 @@ export default function LecturerProfile() {
   if (err) return <ErrorBox msg={err} />;
   if (!profile) return null;
   const save = async () => {
-    try { await profileService.updateMyProfile(form); setEditing(false); load(); }
+    try {
+      await profileService.updateMyProfile({
+        fullName: form.fullName ?? profile.fullName,
+        dateOfBirth: form.dateOfBirth ?? null,
+        faculty: form.faculty ?? null,
+        major: form.major ?? null,
+      });
+      setEditing(false); load();
+    }
     catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
   };
   return (
@@ -48,17 +56,19 @@ export default function LecturerProfile() {
             <div className="text-sm text-slate-400">{profile.email}</div>
             <div className="text-xs mt-1"><Pill color="green">{profile.role}</Pill></div>
           </div>
-          <button onClick={() => setEditing(!editing)} className="ml-auto px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-sm">
+          <button onClick={() => setEditing(!editing)} className="ml-auto px-3 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-sm">
             {editing ? 'Hủy' : 'Chỉnh sửa'}
           </button>
         </div>
         <div className="grid md:grid-cols-2 gap-3 text-sm">
-          <div><div className="text-xs text-slate-400">Số điện thoại</div>
-            {editing ? <input value={form.phone ?? ''} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1 w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-sm" /> : <div className="mt-1">{profile.phone ?? '-'}</div>}
+          <div><div className="text-xs text-slate-400">Mã giảng viên</div>
+            <div className="mt-1">{profile.lecturerCode ?? '-'}</div>
           </div>
-          <div><div className="text-xs text-slate-400">Địa chỉ</div>
-            {editing ? <input value={form.address ?? ''} onChange={(e) => setForm({ ...form, address: e.target.value })} className="mt-1 w-full px-2 py-1.5 bg-slate-800 border border-slate-700 rounded text-sm" /> : <div className="mt-1">{profile.address ?? '-'}</div>}
+          <div><div className="text-xs text-slate-400">Khoa</div>
+            <div className="mt-1">{profile.faculty ?? '-'}</div>
           </div>
+          <div><div className="text-xs text-slate-400">Chuyên ngành</div><div className="mt-1">{profile.major ?? '-'}</div></div>
+          <div><div className="text-xs text-slate-400">Ngày sinh</div><div className="mt-1">{profile.dateOfBirth ?? '-'}</div></div>
         </div>
         {editing && <button onClick={save} className="mt-3 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500">Lưu</button>}
       </Card>

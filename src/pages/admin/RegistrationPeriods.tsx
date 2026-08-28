@@ -53,11 +53,11 @@ export default function RegistrationPeriods() {
         <Card className="mb-3">
           <div className="grid md:grid-cols-3 gap-3 text-sm">
             <input placeholder="Tên đợt" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg" />
+              className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
             <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-              className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg" />
+              className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
             <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-              className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg" />
+              className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
           </div>
           <button onClick={submit} className="mt-3 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-sm">Tạo</button>
         </Card>

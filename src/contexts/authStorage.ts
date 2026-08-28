@@ -28,3 +28,5 @@ export const clearStoredUser = (): void => {
     /* ignore */
   }
 };
+
+export const updateStoredUser = (user: AuthUser): void => writeStoredUser(user);

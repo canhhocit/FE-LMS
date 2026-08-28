@@ -80,8 +80,8 @@ export default function TuitionPage() {
             <div className="space-y-3">
               {rates.map((r) => (
                 <div key={r.id} className="border border-slate-200 rounded-lg p-3">
-                  <div className="font-medium">{r.name}</div>
-                  <div className="text-sm text-slate-600">{r.description ?? 'Mức học phí áp dụng hiện tại'}</div>
+                  <div className="font-medium">Năm học {r.academicYear}</div>
+                  <div className="text-sm text-slate-600">Mức học phí áp dụng hiện tại</div>
                   <div className="mt-2 font-bold text-indigo-700">{fmtMoney(r.pricePerCredit)} / tín chỉ</div>
                 </div>
               ))}

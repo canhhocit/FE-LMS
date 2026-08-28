@@ -1,8 +1,8 @@
 // Layout chung: sidebar + topbar + content. Items lọc theo role.
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import type { ReactNode } from 'react';
 import { useAuth } from '../contexts/useAuth';
 import type { Role } from '../types';
+import { Card as UiCard, ErrorState, EmptyState, LoadingState, PageHeader, StatusBadge } from './ui';
 
 interface NavItem { to: string; label: string; icon: string; }
 
@@ -19,7 +19,6 @@ const NAV: Record<Role, NavItem[]> = {
     { to: '/student/schedule', label: 'Thời khoá biểu', icon: '📅' },
     { to: '/student/transcript', label: 'Bảng điểm', icon: '📜' },
     { to: '/student/profile', label: 'Hồ sơ', icon: '👤' },
-    { to: '/student/chat', label: 'Tin nhắn', icon: '💬' },
   ],
   LECTURER: [
     { to: '/lecturer', label: 'Tổng quan', icon: '🏠' },
@@ -30,7 +29,6 @@ const NAV: Record<Role, NavItem[]> = {
     { to: '/lecturer/grading', label: 'Chấm điểm/Điểm danh', icon: '✅' },
     { to: '/lecturer/schedule', label: 'Lịch dạy', icon: '📅' },
     { to: '/lecturer/profile', label: 'Hồ sơ', icon: '👤' },
-    { to: '/lecturer/chat', label: 'Tin nhắn', icon: '💬' },
   ],
   ADMIN: [
     { to: '/admin', label: 'Dashboard', icon: '🏠' },
@@ -53,8 +51,8 @@ export default function Layout() {
   const roleLower = role.toLowerCase();
 
   return (
-    <div className="min-h-screen flex bg-slate-950 text-slate-100">
-      <aside className="w-64 shrink-0 border-r border-slate-800 bg-slate-900/60 p-4 flex flex-col">
+    <div className="min-h-screen flex bg-slate-50 text-slate-900">
+      <aside className="w-64 shrink-0 border-r border-slate-200 bg-white p-4 flex flex-col">
         <Link to={`/${roleLower}`} className="flex items-center gap-2 px-2 py-3">
           <span className="text-2xl">🎓</span>
           <div>
@@ -67,7 +65,7 @@ export default function Layout() {
             <NavLink key={it.to} to={it.to} end={it.to === `/${roleLower}`}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition ${
-                  isActive ? 'bg-indigo-600/30 text-indigo-200 border border-indigo-500/40' : 'hover:bg-slate-800 text-slate-300'
+                  isActive ? 'bg-blue-50 text-primary border border-blue-100' : 'hover:bg-slate-100 text-slate-600'
                 }`}>
               <span>{it.icon}</span><span>{it.label}</span>
             </NavLink>
@@ -79,8 +77,8 @@ export default function Layout() {
         </button>
       </aside>
       <main className="flex-1 overflow-auto">
-        <header className="border-b border-slate-800 bg-slate-900/40 px-6 py-3 flex items-center justify-between">
-          <div className="text-sm text-slate-400">Xin chào, <span className="text-slate-200 font-medium">{user.fullName}</span></div>
+        <header className="border-b border-slate-200 bg-white px-6 py-3 flex items-center justify-between">
+          <div className="text-sm text-slate-600">Xin chào, <span className="text-slate-900 font-medium">{user.fullName}</span></div>
           <div className="text-xs text-slate-500">v0.1 · backend</div>
         </header>
         <div className="p-6"><Outlet /></div>
@@ -89,29 +87,9 @@ export default function Layout() {
   );
 }
 
-export const PageTitle = ({ children }: { children: ReactNode }) =>
-  <h1 className="text-2xl font-bold mb-4">{children}</h1>;
-
-export const Card = ({ children, className = '' }: { children: ReactNode; className?: string }) =>
-  <div className={`rounded-xl border border-slate-800 bg-slate-900/60 p-4 ${className}`}>{children}</div>;
-
-export const Spinner = () =>
-  <div className="flex items-center justify-center p-8 text-slate-400">
-    <span className="animate-pulse">⏳ Đang tải…</span>
-  </div>;
-
-export const Empty = ({ msg = 'Chưa có dữ liệu' }: { msg?: string }) =>
-  <div className="text-center text-slate-500 py-8 italic">{msg}</div>;
-
-export const ErrorBox = ({ msg }: { msg: string }) =>
-  <div className="border border-rose-700/50 bg-rose-900/20 text-rose-200 rounded-lg p-3 text-sm">{msg}</div>;
-
-const PILL_C: Record<string, string> = {
-  slate: 'bg-slate-700/40 text-slate-200',
-  green: 'bg-emerald-700/40 text-emerald-200',
-  amber: 'bg-amber-700/40 text-amber-200',
-  red: 'bg-rose-700/40 text-rose-200',
-  indigo: 'bg-indigo-700/40 text-indigo-200',
-};
-export const Pill = ({ children, color = 'slate' }: { children: ReactNode; color?: 'slate' | 'green' | 'amber' | 'red' | 'indigo' }) =>
-  <span className={`px-2 py-0.5 rounded text-xs ${PILL_C[color]}`}>{children}</span>;
+export const PageTitle = PageHeader;
+export const Card = UiCard;
+export const Spinner = LoadingState;
+export const Empty = ({ msg }: { msg?: string }) => <EmptyState message={msg} />;
+export const ErrorBox = ({ msg }: { msg: string }) => <ErrorState message={msg} />;
+export const Pill = StatusBadge;

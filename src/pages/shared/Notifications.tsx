@@ -57,7 +57,7 @@ export default function NotificationsPage() {
                   <div className="mt-2 text-xs text-slate-500">{fmt(n.createdAt)}</div>
                 </div>
                 {!(n.read || n.isRead) && (
-                  <button onClick={() => void onMarkRead(n.id)} className="text-xs px-3 py-1.5 rounded bg-slate-800 text-white hover:bg-slate-700">Đánh dấu đọc</button>
+                  <button onClick={() => void onMarkRead(n.id)} className="text-xs px-3 py-1.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200">Đánh dấu đọc</button>
                 )}
               </div>
             </Card>

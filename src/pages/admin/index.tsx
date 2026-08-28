@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import * as clazzService from '../../services/clazzService';
-import * as chatService from '../../services/chatService';
+import * as adminService from '../../services/adminService';
 import { PageTitle, Card, Spinner, Empty, Pill } from '../../components/Layout';
 import { importUsersByRole, exportUsersByRole } from '../../services/userService';
 import type { Clazz, User, DashboardStats } from '../../types';
@@ -12,7 +12,7 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     let m = true;
-    chatService.getDashboardStats().then((s) => m && setStats(s)).finally(() => m && setLoading(false));
+    adminService.getDashboardStats().then((s) => m && setStats(s)).finally(() => m && setLoading(false));
     return () => { m = false; };
   }, []);
   if (loading) return <Spinner />;
@@ -50,7 +50,7 @@ export function AdminUsers() {
 
   const load = useCallback(() => {
     let mounted = true;
-    const p = tab === 'STUDENT' ? chatService.listStudents(kw) : chatService.listLecturers(kw);
+    const p = tab === 'STUDENT' ? adminService.listStudents(kw) : adminService.listLecturers(kw);
     p.then((data) => mounted && setUsers(data)).finally(() => mounted && setLoading(false));
     return () => { mounted = false; };
   }, [tab, kw]);
@@ -172,11 +172,11 @@ export function AdminClasses() {
             <tbody>
               {classes.map((c) => (
                 <tr key={c.id} className="border-b border-slate-800/50">
-                  <td className="py-2 font-mono text-indigo-300">{c.code}</td>
-                  <td><Link to={`/admin/classes/${c.id}`} className="hover:underline">{c.name}</Link></td>
+                  <td className="py-2 font-mono text-indigo-300">{c.classCode}</td>
+                  <td><Link to={`/admin/classes/${c.id}`} className="hover:underline">{c.className}</Link></td>
                   <td className="text-slate-400">{c.lecturerName}</td>
-                  <td className="text-center">{c.studentCount ?? 0}</td>
-                  <td><Pill color={c.status === 'ACTIVE' ? 'green' : c.status === 'CLOSED' ? 'slate' : 'amber'}>{c.status}</Pill></td>
+                  <td className="text-center">{c.maxStudents}</td>
+                  <td><Pill color="green">{c.semester}</Pill></td>
                 </tr>
               ))}
             </tbody>

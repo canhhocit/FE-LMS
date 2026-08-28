@@ -25,6 +25,7 @@ export interface AuthUser {
   fullName: string;
   role: Role;
   isFirstLogin: boolean;
+  refreshToken: string | null;
 }
 
 // ===== User (Admin) =====
@@ -51,24 +52,16 @@ export type PageResp<T> = SpringPage<T>;
 // ===== Clazz =====
 export interface Clazz {
   id: number;
-  classCode?: string;
-  className?: string;
-  semester?: string;
-  academicYear?: string;
-  courseId?: number;
-  courseTitle?: string;
-  lecturerId?: number;
-  lecturerName?: string;
-  maxStudents?: number;
-  createdAt?: string;
-  status?: 'ACTIVE' | 'CLOSED' | 'PENDING' | 'UPCOMING';
-  studentCount?: number;
-  description?: string;
-  startDate?: string;
-  endDate?: string;
-  studentIds?: number[];
-  code?: string;
-  name?: string;
+  classCode: string;
+  className: string;
+  semester: string;
+  academicYear: string;
+  courseId: number | null;
+  courseTitle: string | null;
+  lecturerId: number | null;
+  lecturerName: string | null;
+  maxStudents: number;
+  createdAt: string;
 }
 
 // ===== Content =====
@@ -111,12 +104,11 @@ export interface Submission {
   assignmentId: number;
   studentId: number;
   studentName?: string;
-  content: string;
-  fileUrl?: string;
+  fileUrl: string;
   submittedAt: string;
-  score?: number;
-  feedback?: string;
-  status: 'SUBMITTED' | 'GRADED' | 'LATE';
+  isLate: boolean;
+  score: number | null;
+  feedback: string | null;
 }
 
 // ===== Grading =====
@@ -124,33 +116,21 @@ export interface Grade {
   id: number;
   classId: number;
   studentId: number;
-  studentName?: string;
-  score: number;
-  gradeType: 'MIDTERM' | 'FINAL' | 'QUIZ' | 'ASSIGNMENT';
-  note?: string;
-  createdAt?: string;
+  studentName: string;
+  midtermScore: number | null;
+  finalScore: number | null;
+  totalScore: number | null;
 }
 export interface AttendanceRecord {
-  studentId: number;
-  studentName?: string;
-  status: 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
-}
-export interface Attendance {
-  classId: number;
-  date: string;
-  records: AttendanceRecord[];
-}
-
-// ===== Chat =====
-export interface Message {
   id: number;
-  senderId: number;
-  receiverId: number;
-  content: string;
-  sentAt: string;
-  read: boolean;
-  courseId?: number;
+  classId: number;
+  studentId: number;
+  studentName: string;
+  attendanceDate: string;
+  status: 'PRESENT' | 'ABSENT' | 'LATE';
 }
+export type Attendance = AttendanceRecord;
+
 export interface DashboardStats {
   totalUsers: number;
   totalClasses: number;
@@ -165,12 +145,19 @@ export interface UserProfile {
   email: string;
   fullName: string;
   role: Role;
-  studentCode?: string;
-  phone?: string;
-  address?: string;
-  avatarUrl?: string;
-  birthDate?: string;
-  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  studentCode: string | null;
+  lecturerCode: string | null;
+  faculty: string | null;
+  major: string | null;
+  dateOfBirth: string | null;
+  status: string;
+}
+
+export interface UpdateProfileRequest {
+  fullName: string;
+  dateOfBirth: string | null;
+  faculty: string | null;
+  major: string | null;
 }
 
 // ===== Notification =====
@@ -200,14 +187,11 @@ export interface TuitionInvoice {
 
 export interface TuitionRate {
   id: number;
-  name?: string;
-  academicYear?: string;
-  effectiveFrom?: string;
+  academicYear: string;
   pricePerCredit: number;
-  isActive?: boolean;
-  description?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ===== Schedule =====
@@ -231,38 +215,31 @@ export interface Schedule {
 // ===== Quiz =====
 export interface Quiz {
   id: number;
-  classId?: number;
+  classId: number;
   title: string;
-  description?: string;
-  startTime?: string;
-  endTime?: string;
-  durationMinutes?: number;
-  totalScore?: number;
-  maxAttempts?: number;
-  status?: 'DRAFT' | 'PUBLISHED' | 'CLOSED' | 'ACTIVE';
-  createdAt?: string;
+  durationMinutes: number;
+  totalScore: number;
+  createdAt: string;
 }
 export interface QuizQuestion {
   id: number;
   quizId: number;
   content: string;
-  questionText?: string;
-  options: string[];
-  optionA?: string;
-  optionB?: string;
-  optionC?: string;
-  optionD?: string;
-  correctAnswer?: number;
-  points?: number;
+  questionText: string;
+  optionA: string;
+  optionB: string;
+  optionC: string;
+  optionD: string;
 }
 export interface QuizAttempt {
-  id: number;
+  attemptId: number;
   quizId: number;
-  userId: number;
-  startedAt: string;
-  submittedAt?: string;
-  score?: number;
-  answers: Record<number, number | string>;
+  studentId: number;
+  totalQuestions: number;
+  correctAnswers: number;
+  score: number;
+  totalScore: number;
+  submittedAt: string;
 }
 
 // ===== Forum =====
@@ -292,20 +269,14 @@ export interface Curriculum {
   faculty?: string;
   academicYear?: string;
   isActive?: boolean;
-  code?: string;
-  description?: string;
-  totalCredits?: number;
 }
 export interface Course {
   id: number;
   code: string;
   title: string;
   description?: string;
-  credit?: number;
-  createdAt?: string;
-  name?: string;
-  credits?: number;
-  prerequisites?: string[];
+  credit: number;
+  createdAt: string;
 }
 export interface Prerequisite {
   id: number;
@@ -343,34 +314,28 @@ export interface ScoreReport {
 
 // ===== Academic Status =====
 export interface AcademicStatus {
-  semester?: string;
-  cumulativeGpa?: number;
-  totalCredits?: number;
-  passedCredits?: number;
-  academicWarning?: boolean;
-  warningLevel?: number | 'NONE';
-  totalCourses?: number;
-  passedCourses?: number;
-  failedCourses?: Array<{
+  cumulativeGpa: number | null;
+  totalCredits: number;
+  passedCredits: number;
+  academicWarning: boolean;
+  warningLevel: number;
+  totalCourses: number;
+  passedCourses: number;
+  failedCourses: Array<{
     courseCode: string;
     courseTitle: string;
     credit: number;
-    totalScore?: number;
+    totalScore: number | null;
   }>;
-  gpa?: number;
-  earnedCredits?: number;
-  message?: string;
 }
 
 // ===== Transcript (bảng điểm sinh viên) =====
 export interface TranscriptItem {
-  semester: string;
   courseCode: string;
-  courseName: string;
-  credits: number;
-  score: number;
-  letter?: string;
-  gpa?: number;
+  courseTitle: string;
+  credit: number;
+  totalScore: number | null;
+  gpa: number | null;
 }
 
 // ===== Enrollment (lớp đã đăng ký của sinh viên) =====
@@ -386,14 +351,15 @@ export interface Enrollment {
 // ===== Progress =====
 export interface LessonProgress {
   lessonId: number;
-  completed: boolean;
-  completedAt?: string;
+  lessonTitle: string;
+  isCompleted: boolean;
+  completedAt: string | null;
 }
 export interface EnrollmentProgress {
   enrollmentId: number;
-  classId: number;
-  totalLessons: number;
-  completedLessons: number;
-  percent: number;
+  clazzId: number;
+  completedCount: number;
+  totalCount: number;
+  percentage: number;
   lessons: LessonProgress[];
 }
