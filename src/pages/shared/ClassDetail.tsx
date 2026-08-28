@@ -49,7 +49,7 @@ export default function ClassDetail() {
       <div className="grid md:grid-cols-3 gap-4 mb-6">
         <Card><div className="text-xs text-slate-400">Giang vien</div><div className="font-medium">{clazz.lecturerName ?? "-"}</div></Card>
         <Card><div className="text-xs text-slate-400">Sĩ số tối đa</div><div className="font-medium">{clazz.maxStudents} SV</div></Card>
-        <Card><div className="text-xs text-slate-400">Trang thai</div><div><Pill color={status === "ACTIVE" ? "green" : status === "CLOSED" ? "slate" : "amber"}>{status}</Pill></div></Card>
+        <Card><div className="text-xs text-slate-500">Học kỳ</div><div><Pill color="indigo">{clazz.semester} · {clazz.academicYear}</Pill></div></Card>
       </div>
       <div className="grid lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
@@ -97,7 +97,7 @@ export default function ClassDetail() {
       <h3 className="font-semibold mt-6 mb-2">Sinh vien ({students.length})</h3>
       {students.length === 0 ? <Empty msg="Lop chua co sinh vien" /> : (
         <Card>
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[520px] text-sm">
             <thead className="text-xs text-slate-400 border-b border-slate-800">
               <tr><th className="text-left py-2">#</th><th className="text-left">Ho ten</th><th className="text-left">Email</th></tr>
             </thead>

@@ -24,7 +24,7 @@ export interface AuthUser {
   email: string;
   fullName: string;
   role: Role;
-  isFirstLogin: boolean;
+  firstLogin: boolean;
   refreshToken: string | null;
 }
 
@@ -288,15 +288,12 @@ export interface Prerequisite {
 export interface RegistrationPeriod {
   id: number;
   name: string;
-  semester?: string;
-  academicYear?: string;
-  openAt?: string;
-  closeAt?: string;
-  maxCredits?: number;
-  isActive?: boolean;
-  startDate?: string;
-  endDate?: string;
-  status?: 'ACTIVE' | 'CLOSED' | 'UPCOMING';
+  semester: string;
+  academicYear: string;
+  openAt: string;
+  closeAt: string;
+  maxCredits: number | null;
+  isActive: boolean;
 }
 
 // ===== Admin Reports =====
@@ -305,11 +302,10 @@ export interface EnrollmentReport {
   count: number;
 }
 export interface ScoreReport {
-  classId: number;
+  classId: string;
   classCode: string;
   className: string;
   averageScore: number;
-  studentCount: number;
 }
 
 // ===== Academic Status =====
@@ -362,4 +358,14 @@ export interface EnrollmentProgress {
   totalCount: number;
   percentage: number;
   lessons: LessonProgress[];
+}
+
+export interface Registration {
+  enrollmentId: number;
+  clazzId: number;
+  clazzCode: string | null;
+  courseCode: string | null;
+  courseTitle: string | null;
+  credits: number | null;
+  enrolledAt: string;
 }

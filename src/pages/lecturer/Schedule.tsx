@@ -30,11 +30,11 @@ export default function LecturerSchedule() {
             const dayIndex = Number(d);
             return (
               <Card key={d}>
-                <h3 className="font-semibold mb-3 text-indigo-300">{DAY_NAMES[dayIndex] ?? `Ngày ${dayIndex}`}</h3>
+                <h3 className="font-semibold mb-3 text-primary">{DAY_NAMES[dayIndex] ?? `Ngày ${dayIndex}`}</h3>
                 <ul className="space-y-2 text-sm">
                   {schedules.filter((s) => s.dayOfWeek === dayIndex).map((s) => (
                   <li key={s.id} className="border-l-2 border-indigo-500 pl-2">
-                    <div className="font-mono text-indigo-200">{s.startTime} - {s.endTime}</div>
+                    <div className="font-mono text-primary">{s.startTime} - {s.endTime}</div>
                     <div className="font-medium">{s.classCode} - {s.className}</div>
                     <div className="text-xs text-slate-400">Phòng: {s.room ?? '-'}</div>
                     </li>

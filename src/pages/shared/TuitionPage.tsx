@@ -15,13 +15,10 @@ export default function TuitionPage() {
     let mounted = true;
     (async () => {
       try {
-        const [list, rateList] = await Promise.all([
-          tuitionService.getMyTuition(),
-          tuitionService.getTuitionRates(),
-        ]);
+        const list = await tuitionService.getMyTuition();
         if (!mounted) return;
         setInvoices(list);
-        setRates(rateList);
+        setRates([]);
       } catch (e: unknown) {
         if (!mounted) return;
         setErr((e as { message?: string })?.message ?? 'Không tải được học phí');

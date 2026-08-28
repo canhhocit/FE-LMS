@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 
 export const PageHeader = ({ children }: { children: ReactNode }) =>
-  <h1 className="text-2xl font-bold mb-4 text-slate-900">{children}</h1>;
+  <div className="mb-5 flex items-center gap-3"><span className="h-7 w-1 rounded-full bg-[#f58220]" /><h1 className="text-2xl font-bold tracking-tight text-[#243b78]">{children}</h1></div>;
 
 export const Card = ({ children, className = '' }: { children: ReactNode; className?: string }) =>
-  <div className={`rounded-lg border border-slate-200 bg-white p-4 shadow-sm ${className}`}>{children}</div>;
+  <div className={`rounded-2xl border border-white/80 bg-white p-4 shadow-[0_8px_24px_rgba(36,59,120,0.08)] ${className}`}>{children}</div>;
 
 export const LoadingState = () =>
   <div className="flex items-center justify-center p-8 text-slate-500">Đang tải...</div>;

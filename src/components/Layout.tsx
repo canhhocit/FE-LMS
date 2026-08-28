@@ -1,5 +1,6 @@
 // Layout chung: sidebar + topbar + content. Items lọc theo role.
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '../contexts/useAuth';
 import type { Role } from '../types';
 import { Card as UiCard, ErrorState, EmptyState, LoadingState, PageHeader, StatusBadge } from './ui';
@@ -11,6 +12,7 @@ const NAV: Record<Role, NavItem[]> = {
     { to: '/student', label: 'Tổng quan', icon: '🏠' },
     { to: '/student/classes', label: 'Lớp học', icon: '📚' },
     { to: '/student/notifications', label: 'Thông báo', icon: '🔔' },
+    { to: '/student/registrations', label: 'Học phần đã đăng ký', icon: '📋' },
     { to: '/student/tuition', label: 'Học phí', icon: '💳' },
     { to: '/student/quizzes', label: 'Quiz', icon: '🧠' },
     { to: '/student/assignments', label: 'Bài tập', icon: '📝' },
@@ -45,43 +47,47 @@ const ROLE_LABEL: Record<Role, string> = { STUDENT: 'Sinh viên', LECTURER: 'Gi�
 export default function Layout() {
   const { user, logout } = useAuth();
   const nav = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   if (!user) return null;
   const role = user.role;
   const items: NavItem[] = NAV[role];
   const roleLower = role.toLowerCase();
 
   return (
-    <div className="min-h-screen flex bg-slate-50 text-slate-900">
-      <aside className="w-64 shrink-0 border-r border-slate-200 bg-white p-4 flex flex-col">
-        <Link to={`/${roleLower}`} className="flex items-center gap-2 px-2 py-3">
-          <span className="text-2xl">🎓</span>
+    <div className="min-h-screen flex bg-[#243b78] text-slate-900">
+      {sidebarOpen && <button aria-label="Đóng menu" onClick={() => setSidebarOpen(false)} className="fixed inset-0 z-30 bg-slate-950/25 lg:hidden" />}
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-r border-white/10 bg-[#243b78] p-4 text-white transition-transform lg:static lg:w-64 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <Link to={`/${roleLower}`} className="flex items-center gap-3 border-b border-white/10 px-2 pb-5 pt-2">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#f58220] text-xl">✦</span>
           <div>
-            <div className="font-bold">LearningHub</div>
-            <div className="text-xs text-slate-400">{ROLE_LABEL[role]}</div>
+            <div className="font-bold tracking-tight">LearningHub</div>
+            <div className="text-xs text-blue-100/70">{ROLE_LABEL[role]}</div>
           </div>
         </Link>
-        <nav className="mt-4 flex-1 space-y-1">
+        <nav className="mt-6 flex-1 space-y-1">
           {items.map((it: NavItem) => (
-            <NavLink key={it.to} to={it.to} end={it.to === `/${roleLower}`}
+            <NavLink key={it.to} to={it.to} end={it.to === `/${roleLower}`} onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition ${
-                  isActive ? 'bg-blue-50 text-primary border border-blue-100' : 'hover:bg-slate-100 text-slate-600'
+                  isActive ? 'bg-white/15 text-white border border-white/10 shadow-sm' : 'text-blue-100/80 hover:bg-white/10 hover:text-white'
                 }`}>
               <span>{it.icon}</span><span>{it.label}</span>
             </NavLink>
           ))}
         </nav>
         <button onClick={() => { logout(); nav('/login'); }}
-          className="mt-2 text-xs text-slate-400 hover:text-rose-300 px-3 py-2 text-left">
+          className="mt-2 rounded-lg px-3 py-2 text-left text-xs text-blue-100/70 hover:bg-white/10 hover:text-white">
           ⏻ Đăng xuất
         </button>
       </aside>
-      <main className="flex-1 overflow-auto">
-        <header className="border-b border-slate-200 bg-white px-6 py-3 flex items-center justify-between">
-          <div className="text-sm text-slate-600">Xin chào, <span className="text-slate-900 font-medium">{user.fullName}</span></div>
-          <div className="text-xs text-slate-500">v0.1 · backend</div>
+      <main className="min-w-0 flex-1 overflow-auto">
+        <header className="flex items-center justify-between gap-4 bg-[#243b78] px-4 py-3 text-white sm:px-6">
+          <div className="flex min-w-0 items-center gap-3 text-sm text-blue-100"><button type="button" aria-label="Mở menu" onClick={() => setSidebarOpen(true)} className="text-xl lg:hidden">☰</button><span className="hidden truncate sm:inline">Xin chào, <span className="font-semibold text-white">{user.fullName}</span></span></div>
+          <div className="hidden max-w-md flex-1 items-center rounded-full bg-white/15 px-4 py-2 text-sm text-blue-100/70 md:flex"><span className="mr-2">⌕</span><span>Tìm kiếm thông tin</span></div>
+          <div className="relative flex items-center gap-3"><button type="button" onClick={() => setProfileOpen((open) => !open)} className="flex items-center gap-2 text-sm"><span className="grid h-9 w-9 place-items-center rounded-full border-2 border-white/60 bg-white/80 text-sm font-bold text-[#243b78]">{user.fullName?.[0] ?? '?'}</span><span className="hidden max-w-32 truncate sm:inline">{user.fullName}</span><span className="text-blue-100">⌄</span></button>{profileOpen && <div className="absolute right-0 top-12 z-50 w-56 rounded-xl bg-white p-3 text-slate-800 shadow-xl"><div className="border-b border-slate-100 pb-3"><div className="font-semibold">{user.fullName}</div><div className="text-xs text-slate-500">{ROLE_LABEL[role]}</div></div><button onClick={() => { logout(); nav('/login'); }} className="mt-2 w-full rounded-lg px-2 py-2 text-left text-sm text-rose-700 hover:bg-rose-50">⏻ Đăng xuất</button></div>}</div>
         </header>
-        <div className="p-6"><Outlet /></div>
+        <div className="min-h-[calc(100vh-61px)] rounded-tl-[28px] bg-gradient-to-br from-[#eef3ff] via-[#f7f9ff] to-[#dfe8ff] p-4 sm:p-6"><Outlet /></div>
       </main>
     </div>
   );

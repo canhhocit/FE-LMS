@@ -26,6 +26,7 @@ import RegistrationPeriods from './pages/admin/RegistrationPeriods';
 import NotificationsPage from './pages/shared/Notifications';
 import TuitionPage from './pages/shared/TuitionPage';
 import QuizPage from './pages/shared/QuizPage';
+import StudentRegistrations from './pages/student/Registrations';
 
 // Component chuyen huong root theo trang thai dang nhap
 function RootRedirect() {
@@ -61,6 +62,7 @@ export default function App() {
             <Route path="/student/classes" element={<StudentClasses />} />
             <Route path="/student/classes/:id" element={<ClassDetail />} />
             <Route path="/student/notifications" element={<NotificationsPage />} />
+            <Route path="/student/registrations" element={<StudentRegistrations />} />
             <Route path="/student/tuition" element={<TuitionPage />} />
             <Route path="/student/quizzes" element={<QuizPage />} />
             <Route path="/student/assignments" element={<StudentAssignments />} />

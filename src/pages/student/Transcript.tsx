@@ -33,7 +33,7 @@ export default function StudentTranscript() {
       )}
       <Card>
         {rows.length === 0 ? <Empty msg="Chưa có dữ liệu" /> : (
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[560px] text-sm">
             <thead className="text-xs text-slate-400 border-b border-slate-800">
               <tr>
                 <th className="text-left py-2">Mã môn học</th><th className="text-left">Tên môn</th>
