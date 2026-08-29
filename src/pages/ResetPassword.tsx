@@ -59,7 +59,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#243b78] via-[#2d5aa0] to-[#1a2654] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#243b78] via-[#2d5aa0] to-[#1a2654] p-4">
       <div className="w-full max-w-md">
         <div className="rounded-lg bg-white shadow-lg p-8">
           <div className="flex justify-center mb-6">

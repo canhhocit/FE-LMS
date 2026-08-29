@@ -149,7 +149,7 @@ export function StudentDashboard() {
                 <div className="mt-1 text-xs text-slate-500">{c.courseTitle ?? 'Học phần'} · {c.lecturerName ?? 'Chưa phân công'}</div>
                 <div className="mt-3 flex items-center gap-2">
                   <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-indigo-500 to-blue-500" style={{ width: '0%' }}></div>
+                    <div className="h-full bg-linear-to-r from-indigo-500 to-blue-500" style={{ width: '0%' }}></div>
                   </div>
                   <span className="text-xs font-medium text-slate-600">0%</span>
                 </div>

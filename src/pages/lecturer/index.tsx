@@ -82,6 +82,12 @@ export function LecturerClasses() {
   );
 }
 // Lecturer quản lý assignments + chấm điểm
+const getDefaultDueDate = () => {
+  const now = new Date();
+  now.setDate(now.getDate() + 7);
+  return now.toISOString().slice(0, 16);
+};
+
 export function LecturerAssignments() {
   const [data, setData] = useState<{ clazz: Clazz; assigns: Assignment[] }[]>([]);
   const [drafts, setDrafts] = useState<Record<number, { title: string; description: string; dueDate: string; maxScore: number }>>({});
@@ -108,7 +114,7 @@ export function LecturerAssignments() {
       [classId]: {
         title: prev[classId]?.title ?? '',
         description: prev[classId]?.description ?? '',
-        dueDate: prev[classId]?.dueDate ?? new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16),
+        dueDate: prev[classId]?.dueDate ?? getDefaultDueDate(),
         maxScore: prev[classId]?.maxScore ?? 10,
         [field]: value,
       },
@@ -127,7 +133,7 @@ export function LecturerAssignments() {
     };
 
     await assessmentService.createAssignment(classId, payload);
-    setDrafts((prev) => ({ ...prev, [classId]: { title: '', description: '', dueDate: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16), maxScore: 10 } }));
+    setDrafts((prev) => ({ ...prev, [classId]: { title: '', description: '', dueDate: getDefaultDueDate(), maxScore: 10 } }));
     const refreshed = await Promise.all(data.map(async ({ clazz, assigns }) => ({ clazz, assigns: clazz.id === classId ? await assessmentService.getAssignments(clazz.id) : assigns })));
     setData(refreshed);
   };
@@ -149,7 +155,7 @@ export function LecturerAssignments() {
               />
               <input
                 type="datetime-local"
-                value={drafts[clazz.id]?.dueDate ?? new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16)}
+                value={drafts[clazz.id]?.dueDate ?? getDefaultDueDate()}
                 onChange={(e) => updateDraft(clazz.id, 'dueDate', e.target.value)}
                 className="px-2 py-1.5 rounded border border-slate-200 bg-white text-sm"
               />
