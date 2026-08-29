@@ -35,9 +35,9 @@ export default function LecturerProfile() {
     try {
       await profileService.updateMyProfile({
         fullName: form.fullName ?? profile.fullName,
-        dateOfBirth: form.dateOfBirth ?? null,
-        faculty: form.faculty ?? null,
-        major: form.major ?? null,
+        dateOfBirth: form.dateOfBirth ?? profile.dateOfBirth ?? null,
+        faculty: form.faculty ?? profile.faculty ?? null,
+        major: form.major ?? profile.major ?? null,
       });
       setEditing(false); load();
     }

@@ -24,7 +24,8 @@ export interface AuthUser {
   email: string;
   fullName: string;
   role: Role;
-  firstLogin: boolean;
+  isFirstLogin?: boolean;
+  firstLogin?: boolean;
   refreshToken: string | null;
 }
 
@@ -311,12 +312,12 @@ export interface ScoreReport {
 // ===== Academic Status =====
 export interface AcademicStatus {
   cumulativeGpa: number | null;
-  totalCredits: number;
-  passedCredits: number;
+  totalCredits: number | null;
+  passedCredits: number | null;
   academicWarning: boolean;
-  warningLevel: number;
-  totalCourses: number;
-  passedCourses: number;
+  warningLevel: number | null;
+  totalCourses: number | null;
+  passedCourses: number | null;
   failedCourses: Array<{
     courseCode: string;
     courseTitle: string;
