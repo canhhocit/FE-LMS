@@ -15,10 +15,13 @@ export default function TuitionPage() {
     let mounted = true;
     (async () => {
       try {
-        const list = await tuitionService.getMyTuition();
+        const [list, rateList] = await Promise.all([
+          tuitionService.getMyTuition(),
+          tuitionService.getTuitionRates(),
+        ]);
         if (!mounted) return;
         setInvoices(list);
-        setRates([]);
+        setRates(rateList);
       } catch (e: unknown) {
         if (!mounted) return;
         setErr((e as { message?: string })?.message ?? 'Không tải được học phí');
@@ -32,7 +35,9 @@ export default function TuitionPage() {
   if (loading) return <Spinner />;
   if (err) return <ErrorBox msg={err} />;
 
-  const total = invoices.reduce((sum, i) => sum + (i.status === 'PAID' ? i.amount : 0), 0);
+  const totalPaid = invoices.reduce((sum, i) => sum + (i.status === 'PAID' ? i.amount : 0), 0);
+  const totalPending = invoices.reduce((sum, i) => sum + (i.status === 'PENDING' ? i.amount : 0), 0);
+  const activeRate = rates.find((r) => r.isActive) ?? rates[0];
 
   return (
     <div>
@@ -40,15 +45,15 @@ export default function TuitionPage() {
       <div className="grid md:grid-cols-3 gap-4 mb-6">
         <Card>
           <div className="text-xs text-slate-500">Tổng đã đóng</div>
-          <div className="text-2xl font-bold text-emerald-600">{fmtMoney(total)}</div>
+          <div className="text-2xl font-bold text-emerald-600">{fmtMoney(totalPaid)}</div>
         </Card>
         <Card>
           <div className="text-xs text-slate-500">Đang chờ</div>
-          <div className="text-2xl font-bold text-amber-600">{fmtMoney(invoices.filter((i) => i.status === 'PENDING').reduce((sum, i) => sum + i.amount, 0))}</div>
+          <div className="text-2xl font-bold text-amber-600">{fmtMoney(totalPending)}</div>
         </Card>
         <Card>
           <div className="text-xs text-slate-500">Mức học phí</div>
-          <div className="text-2xl font-bold text-indigo-600">{rates[0] ? fmtMoney(rates[0].pricePerCredit) : '—'}</div>
+          <div className="text-2xl font-bold text-indigo-600">{activeRate ? fmtMoney(activeRate.pricePerCredit) : '—'}</div>
         </Card>
       </div>
 
@@ -63,7 +68,7 @@ export default function TuitionPage() {
                     <div className="font-medium">{i.semester} · {i.academicYear}</div>
                     <Pill color={i.status === 'PAID' ? 'green' : i.status === 'PENDING' ? 'amber' : 'slate'}>{i.status}</Pill>
                   </div>
-                  <div className="text-sm text-slate-600">Tín chỉ: {i.totalCredits} · Đơn giá: {fmtMoney(i.pricePerCredit)}</div>
+                  <div className="text-sm text-slate-600">Tín chỉ: {i.totalCredits ?? 0} · Đơn giá: {fmtMoney(i.pricePerCredit)}</div>
                   <div className="mt-2 text-lg font-bold text-slate-800">{fmtMoney(i.amount)}</div>
                 </div>
               ))}
@@ -76,9 +81,11 @@ export default function TuitionPage() {
           {rates.length === 0 ? <Empty msg="Chưa có mức học phí" /> : (
             <div className="space-y-3">
               {rates.map((r) => (
-                <div key={r.id} className="border border-slate-200 rounded-lg p-3">
-                  <div className="font-medium">Năm học {r.academicYear}</div>
-                  <div className="text-sm text-slate-600">Mức học phí áp dụng hiện tại</div>
+                <div key={r.id} className={`rounded-lg border p-3 ${r.isActive ? 'border-indigo-200 bg-indigo-50' : 'border-slate-200 bg-slate-50'}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="font-medium">Năm học {r.academicYear}</div>
+                    {r.isActive && <Pill color="indigo">Đang áp dụng</Pill>}
+                  </div>
                   <div className="mt-2 font-bold text-indigo-700">{fmtMoney(r.pricePerCredit)} / tín chỉ</div>
                 </div>
               ))}
