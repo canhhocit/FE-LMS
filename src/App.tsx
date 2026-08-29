@@ -6,7 +6,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { homeForRole } from './components/homeForRole';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import ClassDetail from './pages/shared/ClassDetail';
+import Forum from './pages/shared/Forum';
 import {
   StudentDashboard, StudentClasses, StudentAssignments, StudentGrades,
 } from './pages/student';
@@ -56,6 +59,8 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/" element={<RootRedirect />} />
           <Route element={<ProtectedRoute allow={['STUDENT']}><Layout></Layout></ProtectedRoute>}>
             <Route path="/student" element={<StudentDashboard />} />
@@ -65,6 +70,7 @@ export default function App() {
             <Route path="/student/registrations" element={<StudentRegistrations />} />
             <Route path="/student/tuition" element={<TuitionPage />} />
             <Route path="/student/quizzes" element={<QuizPage />} />
+            <Route path="/student/forum" element={<Forum />} />
             <Route path="/student/assignments" element={<StudentAssignments />} />
             <Route path="/student/grades" element={<StudentGrades />} />
             <Route path="/student/attendance" element={<StudentAttendance />} />
@@ -78,6 +84,7 @@ export default function App() {
             <Route path="/lecturer/classes/:id" element={<ClassDetail />} />
             <Route path="/lecturer/notifications" element={<NotificationsPage />} />
             <Route path="/lecturer/quizzes" element={<QuizPage />} />
+            <Route path="/lecturer/forum" element={<Forum />} />
             <Route path="/lecturer/assignments" element={<LecturerAssignments />} />
             <Route path="/lecturer/grading" element={<LecturerGrading />} />
             <Route path="/lecturer/schedule" element={<LecturerSchedule />} />

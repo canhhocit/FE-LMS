@@ -70,7 +70,7 @@ export interface Chapter {
   id: number;
   classId: number;
   title: string;
-  orderIndex: number;
+  sortOrder: number;
   lessons?: Lesson[];
 }
 export interface Lesson {
@@ -79,7 +79,7 @@ export interface Lesson {
   title: string;
   content?: string;
   videoUrl?: string;
-  orderIndex: number;
+  sortOrder?: number;
 }
 export interface Announcement {
   id: number;

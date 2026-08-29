@@ -1,7 +1,8 @@
 // Layout chung: sidebar + topbar + content. Items lọc theo role.
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/useAuth';
+import * as notificationService from '../services/notificationService';
 import type { Role } from '../types';
 import { Card as UiCard, ErrorState, EmptyState, LoadingState, PageHeader, StatusBadge } from './ui';
 
@@ -11,6 +12,7 @@ const NAV: Record<Role, NavItem[]> = {
   STUDENT: [
     { to: '/student', label: 'Tổng quan', icon: '🏠' },
     { to: '/student/classes', label: 'Lớp học', icon: '📚' },
+    { to: '/student/forum', label: 'Diễn đàn', icon: '💬' },
     { to: '/student/notifications', label: 'Thông báo', icon: '🔔' },
     { to: '/student/registrations', label: 'Học phần đã đăng ký', icon: '📋' },
     { to: '/student/tuition', label: 'Học phí', icon: '💳' },
@@ -25,6 +27,7 @@ const NAV: Record<Role, NavItem[]> = {
   LECTURER: [
     { to: '/lecturer', label: 'Tổng quan', icon: '🏠' },
     { to: '/lecturer/classes', label: 'Lớp học', icon: '📚' },
+    { to: '/lecturer/forum', label: 'Diễn đàn', icon: '💬' },
     { to: '/lecturer/notifications', label: 'Thông báo', icon: '🔔' },
     { to: '/lecturer/quizzes', label: 'Quiz', icon: '🧠' },
     { to: '/lecturer/assignments', label: 'Bài tập', icon: '📝' },
@@ -49,6 +52,23 @@ export default function Layout() {
   const nav = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    let mounted = true;
+    const loadUnreadCount = async () => {
+      try {
+        const count = await notificationService.getUnreadCount();
+        if (mounted) setUnreadCount(count);
+      } catch (e) {
+        // Silent fail
+      }
+    };
+    loadUnreadCount();
+    const interval = setInterval(loadUnreadCount, 30000); // Refresh every 30 seconds
+    return () => { mounted = false; clearInterval(interval); };
+  }, []);
+
   if (!user) return null;
   const role = user.role;
   const items: NavItem[] = NAV[role];
@@ -69,10 +89,14 @@ export default function Layout() {
           {items.map((it: NavItem) => (
             <NavLink key={it.to} to={it.to} end={it.to === `/${roleLower}`} onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition ${
+                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition relative ${
                   isActive ? 'bg-white/15 text-white border border-white/10 shadow-sm' : 'text-blue-100/80 hover:bg-white/10 hover:text-white'
                 }`}>
-              <span>{it.icon}</span><span>{it.label}</span>
+              <span>{it.icon}</span>
+              <span>{it.label}</span>
+              {it.to.includes('/notifications') && unreadCount > 0 && (
+                <span className="ml-auto inline-flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-bold">{unreadCount > 99 ? '99+' : unreadCount}</span>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -87,7 +111,7 @@ export default function Layout() {
           <div className="hidden max-w-md flex-1 items-center rounded-full bg-white/15 px-4 py-2 text-sm text-blue-100/70 md:flex"><span className="mr-2">⌕</span><span>Tìm kiếm thông tin</span></div>
           <div className="relative flex items-center gap-3"><button type="button" onClick={() => setProfileOpen((open) => !open)} className="flex items-center gap-2 text-sm"><span className="grid h-9 w-9 place-items-center rounded-full border-2 border-white/60 bg-white/80 text-sm font-bold text-[#243b78]">{user.fullName?.[0] ?? '?'}</span><span className="hidden max-w-32 truncate sm:inline">{user.fullName}</span><span className="text-blue-100">⌄</span></button>{profileOpen && <div className="absolute right-0 top-12 z-50 w-56 rounded-xl bg-white p-3 text-slate-800 shadow-xl"><div className="border-b border-slate-100 pb-3"><div className="font-semibold">{user.fullName}</div><div className="text-xs text-slate-500">{ROLE_LABEL[role]}</div></div><button onClick={() => { logout(); nav('/login'); }} className="mt-2 w-full rounded-lg px-2 py-2 text-left text-sm text-rose-700 hover:bg-rose-50">⏻ Đăng xuất</button></div>}</div>
         </header>
-        <div className="min-h-[calc(100vh-61px)] rounded-tl-[28px] bg-gradient-to-br from-[#eef3ff] via-[#f7f9ff] to-[#dfe8ff] p-4 sm:p-6"><Outlet /></div>
+        <div className="min-h-[calc(100vh-61px)] rounded-tl-[28px] bg-linear-to-br from-[#eef3ff] via-[#f7f9ff] to-[#dfe8ff] p-4 sm:p-6"><Outlet /></div>
       </main>
     </div>
   );

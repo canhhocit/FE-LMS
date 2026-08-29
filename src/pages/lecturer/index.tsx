@@ -203,7 +203,7 @@ export function LecturerGrading() {
         <Card>
           <h3 className="font-semibold mb-3">📝 Bài nộp cần chấm ({subs.filter(s => s.score == null).length})</h3>
           {subs.length === 0 ? <Empty msg="Chưa có bài nộp" /> : (
-            <div className="space-y-2 max-h-[500px] overflow-auto">
+            <div className="space-y-2 max-h-125 overflow-auto">
               {subs.map((s) => (
                 <div key={s.id} className="border border-slate-800 rounded p-3">
                   <div className="flex justify-between items-center">

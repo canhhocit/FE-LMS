@@ -2,12 +2,14 @@
 import { useEffect, useState } from 'react';
 import * as clazzService from '../../services/clazzService';
 import * as gradingService from '../../services/gradingService';
+import { useAuth } from '../../contexts/useAuth';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import type { Clazz, AttendanceRecord } from '../../types';
 
 const fmtDate = (s?: string) => s ? new Date(s).toLocaleDateString('vi-VN') : '—';
 
 export default function StudentAttendance() {
+  const { user } = useAuth();
   const [clazzes, setClazzes] = useState<Clazz[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
   const [att, setAtt] = useState<AttendanceRecord[]>([]);
@@ -36,8 +38,7 @@ export default function StudentAttendance() {
   }, [selected]);
   if (loading) return <Spinner />;
   if (err) return <ErrorBox msg={err} />;
-  const me = JSON.parse(localStorage.getItem('lms_auth') || '{}');
-  const myRec = att.find((r) => r.studentId === me.id);
+  const myRec = att.find((r) => r.studentId === user?.id);
   return (
     <div>
       <PageTitle>Điểm danh của tôi</PageTitle>

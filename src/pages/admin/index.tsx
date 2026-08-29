@@ -106,7 +106,7 @@ export function AdminUsers() {
           </button>
         ))}
         <input value={kw} onChange={(e) => setKw(e.target.value)} placeholder="Tìm theo tên/email…"
-          className="ml-auto min-w-[220px] px-3 py-1.5 bg-white border border-slate-200 rounded text-sm text-slate-700" />
+          className="ml-auto min-w-55 px-3 py-1.5 bg-white border border-slate-200 rounded text-sm text-slate-700" />
       </div>
 
       <div className="mb-3 flex flex-wrap items-center gap-2">

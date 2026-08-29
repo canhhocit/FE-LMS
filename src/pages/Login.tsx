@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useLocation, Navigate } from "react-router-dom";
+import { useNavigate, useLocation, Navigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/useAuth";
 
 const DEMO_ACCOUNTS = [
@@ -90,7 +90,7 @@ export default function Login() {
       </section>
 
       <main className="flex min-h-screen items-center justify-center bg-[#f7f9fc] px-5 py-10 sm:px-8">
-        <div className="w-full max-w-[500px]">
+        <div className="w-full max-w-125">
           <div className="mb-8 lg:hidden">
             <div className="mb-5 grid h-11 w-11 place-items-center rounded-xl bg-[#00376f] text-xl font-extrabold text-white">
               LH
@@ -129,9 +129,9 @@ export default function Login() {
                 <span className="text-sm font-semibold text-slate-700">
                   Mật khẩu
                 </span>
-                <span className="text-xs text-slate-400">
-                  Mật khẩu demo: password
-                </span>
+                <Link to="/forgot-password" className="text-xs text-[#00376f] hover:underline">
+                  Quên mật khẩu?
+                </Link>
               </div>
               <input
                 type="password"
