@@ -59,14 +59,24 @@ export default function Layout() {
     const loadUnreadCount = async () => {
       try {
         const count = await notificationService.getUnreadCount();
-        if (mounted) setUnreadCount(count);
-      } catch (e) {
+        if (mounted) setUnreadCount(Number(count ?? 0));
+      } catch {
         // Silent fail
       }
     };
-    loadUnreadCount();
+
+    const handleNotificationsUpdated = () => {
+      void loadUnreadCount();
+    };
+
+    void loadUnreadCount();
+    window.addEventListener('notifications:updated', handleNotificationsUpdated);
     const interval = setInterval(loadUnreadCount, 30000); // Refresh every 30 seconds
-    return () => { mounted = false; clearInterval(interval); };
+    return () => {
+      mounted = false;
+      window.removeEventListener('notifications:updated', handleNotificationsUpdated);
+      clearInterval(interval);
+    };
   }, []);
 
   if (!user) return null;
@@ -109,7 +119,7 @@ export default function Layout() {
         <header className="flex items-center justify-between gap-4 bg-[#243b78] px-4 py-3 text-white sm:px-6">
           <div className="flex min-w-0 items-center gap-3 text-sm text-blue-100"><button type="button" aria-label="Mở menu" onClick={() => setSidebarOpen(true)} className="text-xl lg:hidden">☰</button><span className="hidden truncate sm:inline">Xin chào, <span className="font-semibold text-white">{user.fullName}</span></span></div>
           <div className="hidden max-w-md flex-1 items-center rounded-full bg-white/15 px-4 py-2 text-sm text-blue-100/70 md:flex"><span className="mr-2">⌕</span><span>Tìm kiếm thông tin</span></div>
-          <div className="relative flex items-center gap-3"><button type="button" onClick={() => setProfileOpen((open) => !open)} className="flex items-center gap-2 text-sm"><span className="grid h-9 w-9 place-items-center rounded-full border-2 border-white/60 bg-white/80 text-sm font-bold text-[#243b78]">{user.fullName?.[0] ?? '?'}</span><span className="hidden max-w-32 truncate sm:inline">{user.fullName}</span><span className="text-blue-100">⌄</span></button>{profileOpen && <div className="absolute right-0 top-12 z-50 w-56 rounded-xl bg-white p-3 text-slate-800 shadow-xl"><div className="border-b border-slate-100 pb-3"><div className="font-semibold">{user.fullName}</div><div className="text-xs text-slate-500">{ROLE_LABEL[role]}</div></div><button onClick={() => { logout(); nav('/login'); }} className="mt-2 w-full rounded-lg px-2 py-2 text-left text-sm text-rose-700 hover:bg-rose-50">⏻ Đăng xuất</button></div>}</div>
+          <div className="relative flex items-center gap-3"><button type="button" onClick={() => setProfileOpen((open) => !open)} className="flex items-center gap-2 text-sm"><span className="grid h-9 w-9 place-items-center rounded-full border-2 border-white/60 bg-white/80 text-sm font-bold text-[#243b78]">{user.fullName?.[0] ?? '?'}</span><span className="hidden max-w-32 truncate sm:inline">{user.fullName}</span></button>{profileOpen && <div className="absolute right-0 top-12 z-50 w-56 rounded-xl bg-white p-3 text-slate-800 shadow-xl"><div className="border-b border-slate-100 pb-3"><div className="font-semibold">{user.fullName}</div><div className="text-xs text-slate-500">{ROLE_LABEL[role]}</div></div><button onClick={() => { logout(); nav('/login'); }} className="mt-2 w-full rounded-lg px-2 py-2 text-left text-sm text-rose-700 hover:bg-rose-50">⏻ Đăng xuất</button></div>}</div>
         </header>
         <div className="min-h-[calc(100vh-61px)] rounded-tl-[28px] bg-linear-to-br from-[#eef3ff] via-[#f7f9ff] to-[#dfe8ff] p-4 sm:p-6"><Outlet /></div>
       </main>
