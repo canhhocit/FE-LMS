@@ -84,7 +84,9 @@ export function LecturerClasses() {
 // Lecturer quản lý assignments + chấm điểm
 export function LecturerAssignments() {
   const [data, setData] = useState<{ clazz: Clazz; assigns: Assignment[] }[]>([]);
+  const [drafts, setDrafts] = useState<Record<number, { title: string; description: string; dueDate: string; maxScore: number }>>({});
   const [loading, setLoading] = useState(true);
+
   const load = useCallback(() => {
     let mounted = true;
     (async () => {
@@ -94,10 +96,42 @@ export function LecturerAssignments() {
     })().finally(() => mounted && setLoading(false));
     return () => { mounted = false; };
   }, []);
+
   useEffect(() => {
     const cleanup = load();
     return cleanup;
   }, [load]);
+
+  const updateDraft = (classId: number, field: keyof (typeof drafts)[number], value: string | number) => {
+    setDrafts((prev) => ({
+      ...prev,
+      [classId]: {
+        title: prev[classId]?.title ?? '',
+        description: prev[classId]?.description ?? '',
+        dueDate: prev[classId]?.dueDate ?? new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16),
+        maxScore: prev[classId]?.maxScore ?? 10,
+        [field]: value,
+      },
+    }));
+  };
+
+  const createAssignmentFor = async (classId: number) => {
+    const draft = drafts[classId];
+    if (!draft?.title.trim()) return;
+
+    const payload = {
+      title: draft.title.trim(),
+      description: draft.description.trim(),
+      dueDate: new Date(draft.dueDate).toISOString(),
+      maxScore: Number(draft.maxScore) || 10,
+    };
+
+    await assessmentService.createAssignment(classId, payload);
+    setDrafts((prev) => ({ ...prev, [classId]: { title: '', description: '', dueDate: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16), maxScore: 10 } }));
+    const refreshed = await Promise.all(data.map(async ({ clazz, assigns }) => ({ clazz, assigns: clazz.id === classId ? await assessmentService.getAssignments(clazz.id) : assigns })));
+    setData(refreshed);
+  };
+
   if (loading) return <Spinner />;
   return (
     <div>
@@ -106,6 +140,41 @@ export function LecturerAssignments() {
         <div key={clazz.id} className="mb-6">
           <h3 className="text-sm text-slate-400 mb-2">{clazz.classCode} — {clazz.className}</h3>
           <Card>
+            <div className="mb-4 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+              <input
+                value={drafts[clazz.id]?.title ?? ''}
+                onChange={(e) => updateDraft(clazz.id, 'title', e.target.value)}
+                placeholder="Tên bài tập"
+                className="px-2 py-1.5 rounded border border-slate-200 bg-white text-sm"
+              />
+              <input
+                type="datetime-local"
+                value={drafts[clazz.id]?.dueDate ?? new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16)}
+                onChange={(e) => updateDraft(clazz.id, 'dueDate', e.target.value)}
+                className="px-2 py-1.5 rounded border border-slate-200 bg-white text-sm"
+              />
+              <input
+                type="number"
+                min={1}
+                value={drafts[clazz.id]?.maxScore ?? 10}
+                onChange={(e) => updateDraft(clazz.id, 'maxScore', Number(e.target.value) || 10)}
+                className="px-2 py-1.5 rounded border border-slate-200 bg-white text-sm"
+              />
+              <button
+                onClick={() => void createAssignmentFor(clazz.id)}
+                className="px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-sm text-white"
+              >
+                + Tạo bài tập
+              </button>
+              <textarea
+                value={drafts[clazz.id]?.description ?? ''}
+                onChange={(e) => updateDraft(clazz.id, 'description', e.target.value)}
+                placeholder="Mô tả bài tập"
+                rows={2}
+                className="md:col-span-2 xl:col-span-4 px-2 py-1.5 rounded border border-slate-200 bg-white text-sm"
+              />
+            </div>
+
             {assigns.length === 0 ? <Empty msg="Chưa có bài tập" /> : (
               <table className="w-full text-sm">
                 <thead className="text-xs text-slate-400 border-b border-slate-800">
@@ -170,8 +239,8 @@ export function LecturerGrading() {
     });
   }, [selectedClass, date]);
 
-  const gradeRow = async (id: number, score: number) => {
-    await assessmentService.gradeSubmission(id, { score });
+  const gradeRow = async (id: number, score: number, feedback?: string) => {
+    await assessmentService.gradeSubmission(id, { score, feedback: feedback?.trim() || undefined });
     const as = await assessmentService.getAssignments(selectedClass!);
     const ss = (await Promise.all(as.map((a) => assessmentService.getSubmissions(a.id)))).flat();
     setSubs(ss);
@@ -215,13 +284,21 @@ export function LecturerGrading() {
                   </div>
                   <a href={s.fileUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-700 underline">Mở file bài nộp</a>
                   {s.score == null ? (
-                    <div className="flex gap-2">
-                      <input id={`score-${s.id}`} type="number" defaultValue={8} className="w-20 px-2 py-1 bg-white border border-slate-200 rounded text-sm" />
-                      <button onClick={() => gradeRow(s.id, Number((document.getElementById(`score-${s.id}`) as HTMLInputElement).value))}
-                        className="text-xs px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500">Chấm</button>
+                    <div className="mt-2 space-y-2">
+                      <div className="flex gap-2">
+                        <input id={`score-${s.id}`} type="number" defaultValue={8} className="w-20 px-2 py-1 bg-white border border-slate-200 rounded text-sm" />
+                        <button onClick={() => gradeRow(s.id, Number((document.getElementById(`score-${s.id}`) as HTMLInputElement).value), (document.getElementById(`feedback-${s.id}`) as HTMLTextAreaElement | null)?.value)}
+                          className="text-xs px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500">Chấm</button>
+                      </div>
+                      <textarea id={`feedback-${s.id}`} rows={2} placeholder="Nhận xét" className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-sm" />
                     </div>
                   ) : (
-                    <div className="text-sm">Điểm: <span className="text-emerald-300 font-semibold">{s.score}</span></div>
+                    <div className="mt-2 space-y-2">
+                      <div className="text-sm">Điểm: <span className="text-emerald-300 font-semibold">{s.score}</span></div>
+                      <textarea id={`feedback-${s.id}`} defaultValue={s.feedback ?? ''} rows={2} placeholder="Nhận xét" className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-sm" />
+                      <button onClick={() => gradeRow(s.id, Number((document.getElementById(`score-${s.id}`) as HTMLInputElement | null)?.value ?? s.score ?? 0), (document.getElementById(`feedback-${s.id}`) as HTMLTextAreaElement | null)?.value)}
+                        className="text-xs px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500">Cập nhật</button>
+                    </div>
                   )}
                 </div>
               ))}
