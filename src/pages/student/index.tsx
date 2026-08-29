@@ -17,50 +17,181 @@ export function StudentDashboard() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [scheduleCount, setScheduleCount] = useState(0);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    let m = true;
+    let mounted = true;
+
     Promise.allSettled([
       clazzService.getMyClasses(),
       assessmentService.getMySubmissions(),
-        <PageTitle>Trang chủ</PageTitle>
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-2"><div><p className="text-sm text-slate-500">Chào mừng trở lại,</p><h2 className="text-xl font-bold text-[#243b78]">{user?.fullName}</h2></div><span className="text-xs text-slate-400">Hôm nay · {new Date().toLocaleDateString('vi-VN')}</span></div>
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {[['📚', 'HỌC TẬP', 'Đăng ký học', '/student/registrations', 'bg-blue-600'], ['▣', 'LỊCH', 'Thời khóa biểu', '/student/schedule', 'bg-amber-500'], ['▤', 'TÀI CHÍNH', 'Học phí', '/student/tuition', 'bg-emerald-600'], ['▦', 'THÔNG TIN', 'Tin tức & thông báo', '/student/notifications', 'bg-rose-500']].map(([icon, label, title, to, color]) => <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl border border-white bg-white p-4 shadow-[0_8px_20px_rgba(36,59,120,0.08)] transition hover:-translate-y-0.5"><span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl text-xl text-white ${color}`}>{icon}</span><span><span className="block text-[11px] font-medium text-slate-400">{label}</span><span className="block font-semibold text-[#243b78]">{title}</span></span></Link>)}
+      notificationService.getNotifications(),
+      scheduleService.getMySchedule(),
+    ])
+      .then(([classesResult, subsResult, notificationResult, scheduleResult]) => {
+        if (!mounted) return;
+
+        if (classesResult.status === 'fulfilled') setClasses(classesResult.value);
+        if (subsResult.status === 'fulfilled') setSubs(subsResult.value);
+        if (notificationResult.status === 'fulfilled') setNotifications(notificationResult.value);
+        if (scheduleResult.status === 'fulfilled') setScheduleCount(scheduleResult.value.length);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (loading) return <Spinner />;
+
+  return (
+    <div className="space-y-5">
+      <PageTitle>Trang chủ</PageTitle>
+
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <p className="text-sm text-slate-500">Chào mừng trở lại,</p>
+          <h2 className="text-xl font-bold text-[#243b78]">{user?.fullName}</h2>
         </div>
-        <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-          <Card className="overflow-hidden p-0"><div className="flex items-center justify-between border-b border-blue-100 bg-blue-50 px-4 py-3"><h3 className="font-semibold text-[#243b78]">Tin đào tạo</h3><Link to="/student/notifications" className="rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-semibold text-blue-700">Xem tất cả</Link></div><div className="px-4">{notifications.length === 0 ? <Empty msg="Chưa có thông báo mới" /> : notifications.map((notification) => <Link to="/student/notifications" key={notification.id} className="block border-b border-dashed border-slate-200 py-3 last:border-0"><div className="flex gap-3"><span className="text-blue-600">⚑</span><div className="min-w-0"><div className="truncate text-sm font-semibold text-slate-800">{notification.title}</div><div className="mt-1 text-xs text-slate-400">{new Date(notification.createdAt).toLocaleDateString('vi-VN')}</div></div></div></Link>)}</div></Card>
-          <Card className="overflow-hidden p-0"><div className="border-b border-rose-100 bg-rose-50 px-4 py-3"><h3 className="font-semibold text-[#243b78]">Tổng quan học tập</h3></div><div className="grid grid-cols-2 gap-px bg-slate-100"><div className="bg-white p-4"><div className="text-xs text-slate-500">Lớp đang học</div><div className="mt-1 text-2xl font-bold text-[#243b78]">{classes.length}</div></div><div className="bg-white p-4"><div className="text-xs text-slate-500">Buổi học</div><div className="mt-1 text-2xl font-bold text-amber-600">{scheduleCount}</div></div><div className="bg-white p-4"><div className="text-xs text-slate-500">Bài đã nộp</div><div className="mt-1 text-2xl font-bold text-emerald-600">{subs.length}</div></div><div className="bg-white p-4"><div className="text-xs text-slate-500">Chờ chấm</div><div className="mt-1 text-2xl font-bold text-rose-600">{subs.filter((submission) => submission.score == null).length}</div></div></div></Card>
-        </div>
-        <div className="mt-5"><div className="mb-3 flex items-center justify-between"><h3 className="font-semibold text-[#243b78]">Lớp học của tôi</h3><Link to="/student/classes" className="text-xs font-semibold text-blue-700">Xem tất cả</Link></div><div className="grid gap-3 md:grid-cols-2">{classes.slice(0, 4).map((c: Clazz) => <Link key={c.id} to={`/student/classes/${c.id}`} className="block rounded-2xl border border-white bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div className="mb-2 flex items-start justify-between gap-2"><span className="font-mono text-xs font-semibold text-blue-700">{c.classCode}</span><Pill color="indigo">{c.semester}</Pill></div><div className="font-semibold text-slate-800">{c.className}</div><div className="mt-1 text-xs text-slate-500">{c.courseTitle ?? 'Học phần'} · {c.lecturerName ?? 'Chưa phân công'}</div></Link>)}</div>{classes.length === 0 && <Card><Empty msg="Bạn chưa có lớp học nào" /></Card>}</div>
-            className="block rounded-lg border border-slate-200 bg-white p-4 hover:border-primary transition">
-            <div className="text-xs text-indigo-300 font-mono">{c.classCode}</div>
-            <div className="font-semibold">{c.className}</div>
-            <div className="text-xs text-slate-400 mt-1">{c.lecturerName ?? 'Chưa phân công'} - {c.semester}</div>
+        <span className="text-xs text-slate-400">Hôm nay · {new Date().toLocaleDateString('vi-VN')}</span>
+      </div>
+
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          ['📚', 'HỌC TẬP', 'Đăng ký học', '/student/registrations', 'bg-blue-600'],
+          ['▣', 'LỊCH', 'Thời khóa biểu', '/student/schedule', 'bg-amber-500'],
+          ['▤', 'TÀI CHÍNH', 'Học phí', '/student/tuition', 'bg-emerald-600'],
+          ['▦', 'THÔNG TIN', 'Tin tức & thông báo', '/student/notifications', 'bg-rose-500'],
+        ].map(([icon, label, title, to, color]) => (
+          <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl border border-white bg-white p-4 shadow-[0_8px_20px_rgba(36,59,120,0.08)] transition hover:-translate-y-0.5">
+            <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl text-xl text-white ${color}`}>{icon}</span>
+            <span>
+              <span className="block text-[11px] font-medium text-slate-400">{label}</span>
+              <span className="block font-semibold text-[#243b78]">{title}</span>
+            </span>
           </Link>
         ))}
-              <PageTitle>Trang chủ</PageTitle>
-              <div className="mb-5 flex flex-wrap items-end justify-between gap-2"><div><p className="text-sm text-slate-500">Chào mừng trở lại,</p><h2 className="text-xl font-bold text-[#243b78]">{user?.fullName}</h2></div><span className="text-xs text-slate-400">Hôm nay · {new Date().toLocaleDateString('vi-VN')}</span></div>
-              <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                {[['📚', 'HỌC TẬP', 'Đăng ký học', '/student/registrations', 'bg-blue-600'], ['▣', 'LỊCH', 'Thời khóa biểu', '/student/schedule', 'bg-amber-500'], ['▤', 'TÀI CHÍNH', 'Học phí', '/student/tuition', 'bg-emerald-600'], ['▦', 'THÔNG TIN', 'Tin tức & thông báo', '/student/notifications', 'bg-rose-500']].map(([icon, label, title, to, color]) => <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl border border-white bg-white p-4 shadow-[0_8px_20px_rgba(36,59,120,0.08)] transition hover:-translate-y-0.5"><span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl text-xl text-white ${color}`}>{icon}</span><span><span className="block text-[11px] font-medium text-slate-400">{label}</span><span className="block font-semibold text-[#243b78]">{title}</span></span></Link>)}
-  const [classes, setClasses] = useState<Clazz[]>([]);
-              <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-                <Card className="overflow-hidden p-0"><div className="flex items-center justify-between border-b border-blue-100 bg-blue-50 px-4 py-3"><h3 className="font-semibold text-[#243b78]">Tin đào tạo</h3><Link to="/student/notifications" className="rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-semibold text-blue-700">Xem tất cả</Link></div><div className="px-4">{notifications.length === 0 ? <Empty msg="Chưa có thông báo mới" /> : notifications.map((notification) => <Link to="/student/notifications" key={notification.id} className="block border-b border-dashed border-slate-200 py-3 last:border-0"><div className="flex gap-3"><span className="text-blue-600">⚑</span><div className="min-w-0"><div className="truncate text-sm font-semibold text-slate-800">{notification.title}</div><div className="mt-1 text-xs text-slate-400">{new Date(notification.createdAt).toLocaleDateString('vi-VN')}</div></div></div></Link>)}</div></Card>
-                <Card className="overflow-hidden p-0"><div className="border-b border-rose-100 bg-rose-50 px-4 py-3"><h3 className="font-semibold text-[#243b78]">Tổng quan học tập</h3></div><div className="grid grid-cols-2 gap-px bg-slate-100"><div className="bg-white p-4"><div className="text-xs text-slate-500">Lớp đang học</div><div className="mt-1 text-2xl font-bold text-[#243b78]">{classes.length}</div></div><div className="bg-white p-4"><div className="text-xs text-slate-500">Buổi học</div><div className="mt-1 text-2xl font-bold text-amber-600">{scheduleCount}</div></div><div className="bg-white p-4"><div className="text-xs text-slate-500">Bài đã nộp</div><div className="mt-1 text-2xl font-bold text-emerald-600">{subs.length}</div></div><div className="bg-white p-4"><div className="text-xs text-slate-500">Chờ chấm</div><div className="mt-1 text-2xl font-bold text-rose-600">{subs.filter((submission) => submission.score == null).length}</div></div></div></Card>
-              </div>
-              <div className="mt-5"><div className="mb-3 flex items-center justify-between"><h3 className="font-semibold text-[#243b78]">Lớp học của tôi</h3><Link to="/student/classes" className="text-xs font-semibold text-blue-700">Xem tất cả</Link></div><div className="grid gap-3 md:grid-cols-2">{classes.slice(0, 4).map((c: Clazz) => <Link key={c.id} to={`/student/classes/${c.id}`} className="block rounded-2xl border border-white bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div className="mb-2 flex items-start justify-between gap-2"><span className="font-mono text-xs font-semibold text-blue-700">{c.classCode}</span><Pill color="indigo">{c.semester}</Pill></div><div className="font-semibold text-slate-800">{c.className}</div><div className="mt-1 text-xs text-slate-500">{c.courseTitle ?? 'Học phần'} · {c.lecturerName ?? 'Chưa phân công'}</div></Link>)}</div>{classes.length === 0 && <Card><Empty msg="Bạn chưa có lớp học nào" /></Card>}</div>
-      {classes.length === 0 ? <Empty msg="Ban chua co lop nao" /> : (
-        <div className="grid md:grid-cols-2 gap-3">
-          {classes.map((c: Clazz) => (
-            <Link key={c.id} to={`/student/classes/${c.id}`}
-              className="block rounded-lg border border-slate-200 bg-white p-4 hover:border-primary transition">
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="text-xs text-indigo-300 font-mono">{c.classCode}</div>
-                  <div className="font-semibold">{c.className}</div>
-                  <div className="text-xs text-slate-400 mt-1">{c.lecturerName}</div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+        <Card className="overflow-hidden p-0">
+          <div className="flex items-center justify-between border-b border-blue-100 bg-blue-50 px-4 py-3">
+            <h3 className="font-semibold text-[#243b78]">Tin đào tạo</h3>
+            <Link to="/student/notifications" className="rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-semibold text-blue-700">
+              Xem tất cả
+            </Link>
+          </div>
+          <div className="px-4">
+            {notifications.length === 0 ? (
+              <Empty msg="Chưa có thông báo mới" />
+            ) : (
+              notifications.map((notification) => (
+                <Link to="/student/notifications" key={notification.id} className="block border-b border-dashed border-slate-200 py-3 last:border-0">
+                  <div className="flex gap-3">
+                    <span className="text-blue-600">⚑</span>
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-semibold text-slate-800">{notification.title}</div>
+                      <div className="mt-1 text-xs text-slate-400">{new Date(notification.createdAt).toLocaleDateString('vi-VN')}</div>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+        </Card>
+
+        <Card className="overflow-hidden p-0">
+          <div className="border-b border-rose-100 bg-rose-50 px-4 py-3">
+            <h3 className="font-semibold text-[#243b78]">Tổng quan học tập</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-px bg-slate-100">
+            <div className="bg-white p-4">
+              <div className="text-xs text-slate-500">Lớp đang học</div>
+              <div className="mt-1 text-2xl font-bold text-[#243b78]">{classes.length}</div>
+            </div>
+            <div className="bg-white p-4">
+              <div className="text-xs text-slate-500">Buổi học</div>
+              <div className="mt-1 text-2xl font-bold text-amber-600">{scheduleCount}</div>
+            </div>
+            <div className="bg-white p-4">
+              <div className="text-xs text-slate-500">Bài đã nộp</div>
+              <div className="mt-1 text-2xl font-bold text-emerald-600">{subs.length}</div>
+            </div>
+            <div className="bg-white p-4">
+              <div className="text-xs text-slate-500">Chờ chấm</div>
+              <div className="mt-1 text-2xl font-bold text-rose-600">{subs.filter((submission) => submission.score == null).length}</div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <div className="mt-5">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="font-semibold text-[#243b78]">Lớp học của tôi</h3>
+          <Link to="/student/classes" className="text-xs font-semibold text-blue-700">Xem tất cả</Link>
+        </div>
+
+        {classes.length === 0 ? (
+          <Card>
+            <Empty msg="Bạn chưa có lớp học nào" />
+          </Card>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {classes.slice(0, 4).map((c: Clazz) => (
+              <Link key={c.id} to={`/student/classes/${c.id}`} className="block rounded-2xl border border-white bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                <div className="mb-2 flex items-start justify-between gap-2">
+                  <span className="font-mono text-xs font-semibold text-blue-700">{c.classCode}</span>
+                  <Pill color="indigo">{c.semester}</Pill>
                 </div>
-                <Pill color="green">{c.semester}</Pill>
+                <div className="font-semibold text-slate-800">{c.className}</div>
+                <div className="mt-1 text-xs text-slate-500">{c.courseTitle ?? 'Học phần'} · {c.lecturerName ?? 'Chưa phân công'}</div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function StudentClasses() {
+  const [classes, setClasses] = useState<Clazz[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    clazzService.getMyClasses()
+      .then((data) => {
+        if (mounted) setClasses(data);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (loading) return <Spinner />;
+
+  return (
+    <div>
+      <PageTitle>Lớp học của tôi</PageTitle>
+      {classes.length === 0 ? (
+        <Empty msg="Bạn chưa có lớp học nào" />
+      ) : (
+        <div className="grid gap-3 md:grid-cols-2">
+          {classes.map((c) => (
+            <Link key={c.id} to={`/student/classes/${c.id}`} className="block rounded-2xl border border-white bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <span className="font-mono text-xs font-semibold text-blue-700">{c.classCode}</span>
+                <Pill color="indigo">{c.semester}</Pill>
               </div>
+              <div className="font-semibold text-slate-800">{c.className}</div>
+              <div className="mt-1 text-xs text-slate-500">{c.courseTitle ?? 'Học phần'} · {c.lecturerName ?? 'Chưa phân công'}</div>
             </Link>
           ))}
         </div>
@@ -68,6 +199,7 @@ export function StudentDashboard() {
     </div>
   );
 }
+
 export function StudentAssignments() {
   const [items, setItems] = useState<{ a: Assignment; sub?: Submission }[]>([]);
   const [loading, setLoading] = useState(true);
