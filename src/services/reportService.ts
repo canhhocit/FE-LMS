@@ -10,6 +10,14 @@ const toNumber = (value: unknown): number | null => {
 export const getDashboardStats = async (): Promise<DashboardStats> => unwrap(apiClient.get('/admin/dashboard'));
 export const getEnrollmentsByMonth = async (): Promise<EnrollmentReport[]> => { const data = await unwrap<{ series?: Record<string, number> }>(apiClient.get('/admin/reports/enrollments-by-month')); return Object.entries(data?.series ?? {}).map(([month, count]) => ({ month, count })); };
 export const getAverageScoreByClazz = async (): Promise<ScoreReport[]> => { const data = await unwrap<Record<string, number>>(apiClient.get('/admin/reports/average-score-by-clazz')); return Object.entries(data ?? {}).map(([className, averageScore]) => ({ classId: className, classCode: className, className, averageScore })); };
+export const exportEnrollmentsExcel = async (): Promise<Blob> => {
+  const response = await apiClient.get('/admin/reports/enrollments-by-month/export', { responseType: 'blob' });
+  return response.data as Blob;
+};
+export const exportScorePdf = async (): Promise<Blob> => {
+  const response = await apiClient.get('/admin/reports/average-score-by-clazz/export', { responseType: 'blob' });
+  return response.data as Blob;
+};
 export const getAcademicStatus = async (): Promise<AcademicStatus> => {
   const data = await unwrap<AcademicStatus>(apiClient.get('/me/academic-status'));
   return {
@@ -36,5 +44,3 @@ export const getTranscript = async (): Promise<TranscriptItem[]> => {
     gpa: toNumber(row.gpa),
   }));
 };
-export const exportEnrollmentsExcel = async (): Promise<Blob> => { throw new Error('MISSING_BACKEND_API: enrollment report export'); };
-export const exportScorePdf = async (): Promise<Blob> => { throw new Error('MISSING_BACKEND_API: score report export'); };
