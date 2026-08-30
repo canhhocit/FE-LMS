@@ -28,6 +28,7 @@ import { AdminDashboard, AdminUsers, AdminClasses } from './pages/admin';
 import AdminReports from './pages/admin/Reports';
 import AdminCurricula from './pages/admin/Curricula';
 import RegistrationPeriods from './pages/admin/RegistrationPeriods';
+import AdminPermissions from './pages/admin/Permissions';
 import NotificationsPage from './pages/shared/Notifications';
 import TuitionPage from './pages/shared/TuitionPage';
 import QuizPage from './pages/shared/QuizPage';
@@ -102,6 +103,7 @@ export default function App() {
             <Route path="/admin/curricula" element={<AdminCurricula />} />
             <Route path="/admin/registration" element={<RegistrationPeriods />} />
             <Route path="/admin/reports" element={<AdminReports />} />
+            <Route path="/admin/permissions" element={<AdminPermissions />} />
        </Route>
           <Route path="*" element={<NotFoundPage />} />
      </Routes>

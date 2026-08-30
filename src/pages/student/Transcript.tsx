@@ -2,17 +2,35 @@
 import { useEffect, useState } from 'react';
 import * as reportService from '../../services/reportService';
 import { PageTitle, Card, Spinner, Empty, Pill } from '../../components/Layout';
-import type { AcademicStatus, TranscriptItem } from '../../types';
+import type { AcademicStatus, TranscriptItem, GradingPolicy } from '../../types';
+import * as profileService from '../../services/profileService';
+import * as curriculumService from '../../services/curriculumService';
 
 export default function StudentTranscript() {
   const [rows, setRows] = useState<TranscriptItem[]>([]);
   const [status, setStatus] = useState<AcademicStatus | null>(null);
+  const [policy, setPolicy] = useState<GradingPolicy | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let m = true;
-    Promise.all([reportService.getTranscript(), reportService.getAcademicStatus()])
-      .then(([t, s]) => m && (setRows(t), setStatus(s)))
+    Promise.all([
+      reportService.getTranscript(),
+      reportService.getAcademicStatus(),
+      profileService.getMyProfile().then((prof) => {
+        if (prof?.curriculumId) {
+          return curriculumService.getGradingPolicyPublic(prof.curriculumId).catch(() => null);
+        }
+        return null;
+      }).catch(() => null)
+    ])
+      .then(([t, s, p]) => {
+        if (m) {
+          setRows(t);
+          setStatus(s);
+          setPolicy(p);
+        }
+      })
       .finally(() => m && setLoading(false));
     return () => { m = false; };
   }, []);
@@ -26,6 +44,16 @@ export default function StudentTranscript() {
   return (
     <div>
       <PageTitle>Bảng điểm (Transcript)</PageTitle>
+      {policy !== undefined && (
+        <div className="mb-4 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-800 flex justify-between items-center shadow-sm">
+          <span className="font-semibold text-blue-900">Trọng số tính điểm áp dụng:</span>
+          <span className="font-medium">
+            {policy
+              ? `${Math.round(policy.attendanceWeight * 100)}% Chuyên cần + ${Math.round(policy.midtermWeight * 100)}% Giữa kỳ + ${Math.round(policy.finalWeight * 100)}% Cuối kỳ`
+              : '40% Giữa kỳ + 60% Cuối kỳ'}
+          </span>
+        </div>
+      )}
       {status && (
         <>
           <div className="grid md:grid-cols-4 gap-3 mb-4">

@@ -41,7 +41,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     [user],
   );
 
-  const value: AuthCtxValue = { user, loading, login, logout, hasRole };
+  const hasPermission = useCallback(
+    (permission: string) => !!user && (user.permissions ?? []).includes(permission),
+    [user],
+  );
+
+  const value: AuthCtxValue = { user, loading, login, logout, hasRole, hasPermission };
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 };

@@ -10,7 +10,9 @@ import * as registrationService from "../../services/registrationService";
 import * as scheduleService from "../../services/scheduleService";
 import { PageTitle, Card, Spinner, Empty, Pill } from "../../components/Layout";
 import { useAuth } from "../../contexts/useAuth";
-import type { Clazz, Assignment, Submission, Grade, Notification } from "../../types";
+import type { Clazz, Assignment, Submission, Grade, Notification, GradingPolicy } from "../../types";
+import * as profileService from "../../services/profileService";
+import * as curriculumService from "../../services/curriculumService";
 
 type ClassProgressState = {
   percentage: number;
@@ -521,11 +523,27 @@ export function StudentGrades() {
   const { user } = useAuth();
   const [grades, setGrades] = useState<Grade[]>([]);
   const [classes, setClasses] = useState<Clazz[]>([]);
+  const [policy, setPolicy] = useState<GradingPolicy | null>(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     let m = true;
-    Promise.all([gradingService.getMyGrades(), clazzService.getMyClasses()])
-      .then(([g, c]) => { if (m) { setGrades(g); setClasses(c); } })
+    Promise.all([
+      gradingService.getMyGrades(),
+      clazzService.getMyClasses(),
+      profileService.getMyProfile().then((prof) => {
+        if (prof?.curriculumId) {
+          return curriculumService.getGradingPolicyPublic(prof.curriculumId).catch(() => null);
+        }
+        return null;
+      }).catch(() => null)
+    ])
+      .then(([g, c, p]) => {
+        if (m) {
+          setGrades(g);
+          setClasses(c);
+          setPolicy(p);
+        }
+      })
       .finally(() => m && setLoading(false));
     return () => { m = false; };
   }, []);
@@ -542,6 +560,16 @@ export function StudentGrades() {
   return (
     <div>
       <PageTitle>Bảng điểm</PageTitle>
+      {policy !== undefined && (
+        <div className="mb-4 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-800 flex justify-between items-center shadow-sm">
+          <span className="font-semibold text-blue-900">Trọng số tính điểm áp dụng:</span>
+          <span className="font-medium">
+            {policy
+              ? `${Math.round(policy.attendanceWeight * 100)}% Chuyên cần + ${Math.round(policy.midtermWeight * 100)}% Giữa kỳ + ${Math.round(policy.finalWeight * 100)}% Cuối kỳ`
+              : '40% Giữa kỳ + 60% Cuối kỳ'}
+          </span>
+        </div>
+      )}
       <div className="mb-5 grid gap-4 lg:grid-cols-[minmax(220px,0.75fr)_2fr]">
         <Card className="bg-linear-to-br from-[#00376f] to-[#0b5ca8] text-white">
           <div className="mb-5 flex items-center gap-3">

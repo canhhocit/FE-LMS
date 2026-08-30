@@ -27,6 +27,7 @@ export interface AuthUser {
   isFirstLogin?: boolean;
   firstLogin?: boolean;
   refreshToken: string | null;
+  permissions?: string[];
 }
 
 // ===== User (Admin) =====
@@ -152,6 +153,7 @@ export interface UserProfile {
   major: string | null;
   dateOfBirth: string | null;
   status: string;
+  curriculumId?: number | null;
 }
 
 export interface UpdateProfileRequest {
@@ -368,4 +370,19 @@ export interface Registration {
   courseTitle: string | null;
   credits: number | null;
   enrolledAt: string;
+}
+export interface GradingPolicy {
+  id?: number;
+  curriculumId: number;
+  attendanceWeight: number;
+  midtermWeight: number;
+  finalWeight: number;
+}
+
+export interface GpaScaleRule {
+  id?: number;
+  curriculumId: number;
+  minScore10: number;
+  gpa4: number;
+  sortOrder: number;
 }

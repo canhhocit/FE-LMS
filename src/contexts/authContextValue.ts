@@ -10,6 +10,7 @@ export interface AuthCtxValue {
   login: (identifier: string, password: string) => Promise<void>;
   logout: () => void;
   hasRole: (...roles: Role[]) => boolean;
+  hasPermission: (permission: string) => boolean;
 }
 
 export const AuthCtx = createContext<AuthCtxValue | null>(null);
