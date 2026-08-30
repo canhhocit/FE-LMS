@@ -195,7 +195,7 @@ export default function ClassDetail() {
         <Card><div className="text-xs text-slate-500">Học kỳ</div><div><Pill color="indigo">{clazz.semester} · {clazz.academicYear}</Pill></div></Card>
       </div>
       {isStudent && studentSummary && (
-        <Card className="mb-4 border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-blue-50">
+        <Card className="mb-4 border border-indigo-100 bg-linear-to-r from-indigo-50 via-white to-blue-50">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-indigo-500">Tiến độ học tập</div>
@@ -206,7 +206,7 @@ export default function ClassDetail() {
             </div>
           </div>
           <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-slate-200">
-            <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-blue-500" style={{ width: `${Math.min(100, studentProgress?.percentage ?? 0)}%` }} />
+            <div className="h-full rounded-full bg-linear-to-r from-indigo-500 to-blue-500" style={{ width: `${Math.min(100, studentProgress?.percentage ?? 0)}%` }} />
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             {[
@@ -215,7 +215,7 @@ export default function ClassDetail() {
               { label: 'Chưa học', value: studentSummary.notStarted, tone: 'bg-slate-100 text-slate-600' },
             ].map((item) => (
               <div key={item.label} className={`rounded-xl border border-white p-3 ${item.tone}`}>
-                <div className="text-[11px] font-medium uppercase tracking-[0.1em] opacity-80">{item.label}</div>
+                <div className="text-[11px] font-medium uppercase tracking-widest opacity-80">{item.label}</div>
                 <div className="mt-1 text-xl font-bold">{item.value}</div>
               </div>
             ))}

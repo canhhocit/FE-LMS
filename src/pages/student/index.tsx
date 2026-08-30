@@ -154,7 +154,7 @@ export function StudentDashboard() {
         ))}
       </div>
 
-      <Card className="overflow-hidden border border-indigo-100 bg-gradient-to-r from-indigo-600 via-blue-600 to-sky-500 text-white shadow-[0_16px_30px_rgba(59,130,246,0.2)]">
+      <Card className="overflow-hidden border border-indigo-100 bg-linear-to-r from-indigo-600 via-blue-600 to-sky-500 text-white shadow-[0_16px_30px_rgba(59,130,246,0.2)]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div className="mb-2 inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-indigo-50">
@@ -168,7 +168,7 @@ export function StudentDashboard() {
             </p>
           </div>
 
-          <div className="min-w-[220px] lg:max-w-[280px]">
+          <div className="min-w-55 lg:max-w-70">
             <div className="mb-2 flex items-center justify-between text-sm text-indigo-50">
               <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${continueLearningMeta.badgeClass}`}>
                 {continueLearningMeta.label}
@@ -177,7 +177,7 @@ export function StudentDashboard() {
             </div>
             <div className="h-2.5 overflow-hidden rounded-full bg-white/20">
               <div
-                className={`h-full rounded-full bg-gradient-to-r ${continueLearningMeta.barClass} transition-all duration-300`}
+                className={`h-full rounded-full bg-linear-to-r ${continueLearningMeta.barClass} transition-all duration-300`}
                 style={{ width: `${Math.min(100, continueLearningPercentage)}%` }}
               />
             </div>
@@ -191,22 +191,21 @@ export function StudentDashboard() {
             </div>
           </div>
         </div>
-        </Card>
+      </Card>
 
-        <Card className="p-4">
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <h3 className="font-semibold text-[#243b78]">Learning streak</h3>
-            <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-700">{learningStreak} ngày</span>
+      <Card className="p-4">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 className="font-semibold text-[#243b78]">Learning streak</h3>
+          <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-700">{learningStreak} ngày</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-linear-to-br from-amber-400 to-orange-500 text-xl font-bold text-white">🔥</div>
+          <div>
+            <div className="text-2xl font-bold text-slate-800">{learningStreak} ngày</div>
+            <div className="text-sm text-slate-500">Bạn đang duy trì nhịp học đều đặn.</div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-xl font-bold text-white">🔥</div>
-            <div>
-              <div className="text-2xl font-bold text-slate-800">{learningStreak} ngày</div>
-              <div className="text-sm text-slate-500">Bạn đang duy trì nhịp học đều đặn.</div>
-            </div>
-          </div>
-        </Card>
-      </div>
+        </div>
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
         <Card className="overflow-hidden p-0">
@@ -296,7 +295,7 @@ export function StudentDashboard() {
                   <div className="mt-2 flex items-center gap-2">
                     <div className="flex-1 h-2.5 bg-slate-200 rounded-full overflow-hidden">
                       <div
-                        className={`h-full rounded-full bg-gradient-to-r ${statusMeta.barClass} transition-all duration-300`}
+                        className={`h-full rounded-full bg-linear-to-r ${statusMeta.barClass} transition-all duration-300`}
                         style={{ width: `${Math.min(100, percentage)}%` }}
                       />
                     </div>
@@ -416,7 +415,7 @@ export function StudentClasses() {
                 <div className="mt-2 flex items-center gap-2">
                   <div className="flex-1 h-2.5 bg-slate-200 rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full bg-gradient-to-r ${statusMeta.barClass} transition-all duration-300`}
+                      className={`h-full rounded-full bg-linear-to-r ${statusMeta.barClass} transition-all duration-300`}
                       style={{ width: `${Math.min(100, percentage)}%` }}
                     />
                   </div>

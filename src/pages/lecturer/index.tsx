@@ -42,19 +42,19 @@ export function LecturerDashboard() {
       <PageTitle>Xin chào, {user?.fullName} 👨‍🏫</PageTitle>
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <Card className="bg-gradient-to-br from-indigo-600 to-blue-500 text-white">
+        <Card className="bg-linear-to-br from-indigo-600 to-blue-500 text-white">
           <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-indigo-100">Lớp phụ trách</div>
           <div className="mt-2 text-3xl font-bold">{classes.length}</div>
         </Card>
-        <Card className="bg-gradient-to-br from-amber-50 to-orange-50">
+        <Card className="bg-linear-to-br from-amber-50 to-orange-50">
           <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-amber-700">Tổng bài nộp</div>
           <div className="mt-2 text-3xl font-bold text-amber-700">{subs.length}</div>
         </Card>
-        <Card className="bg-gradient-to-br from-emerald-50 to-green-50">
+        <Card className="bg-linear-to-br from-emerald-50 to-green-50">
           <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-emerald-700">Đã chấm</div>
           <div className="mt-2 text-3xl font-bold text-emerald-700">{gradedCount}</div>
         </Card>
-        <Card className="bg-gradient-to-br from-rose-50 to-pink-50">
+        <Card className="bg-linear-to-br from-rose-50 to-pink-50">
           <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-rose-700">Chờ chấm</div>
           <div className="mt-2 text-3xl font-bold text-rose-700">{pendingCount}</div>
         </Card>
@@ -86,7 +86,7 @@ export function LecturerDashboard() {
             <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-700">{teachingStreak} ngày</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-xl font-bold text-white">🔥</div>
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-linear-to-br from-amber-400 to-orange-500 text-xl font-bold text-white">🔥</div>
             <div>
               <div className="text-2xl font-bold text-slate-800">{teachingStreak} ngày</div>
               <div className="text-sm text-slate-500">Bạn vẫn giữ nhịp phản hồi và giảng dạy đều đặn.</div>

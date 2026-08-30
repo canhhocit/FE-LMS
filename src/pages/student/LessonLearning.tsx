@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import * as clazzService from '../../services/clazzService';
@@ -36,6 +36,12 @@ export default function StudentLessonLearning() {
     [classNum, lessonNum]
   );
 
+  const getStoredResumeSeconds = useCallback(() => {
+    const saved = Number(localStorage.getItem(resumeKey) ?? '0');
+    if (!Number.isFinite(saved) || saved < 0) return 0;
+    return Math.max(0, Math.floor(saved));
+  }, [resumeKey]);
+
   const isLessonCompleted = selectedLesson
     ? progress?.lessons.some((item) => item.lessonId === selectedLesson.id && item.isCompleted)
     : false;
@@ -53,6 +59,12 @@ export default function StudentLessonLearning() {
     setResumeSeconds(safeSeconds);
   };
 
+  const clearResumePosition = () => {
+    lastSavedResumeRef.current = 0;
+    localStorage.removeItem(resumeKey);
+    setResumeSeconds(0);
+  };
+
   const seekVideo = (deltaSeconds: number) => {
     const video = videoRef.current;
     if (!video) return;
@@ -63,8 +75,6 @@ export default function StudentLessonLearning() {
 
   useEffect(() => {
     if (!classNum || !lessonNum) {
-      setError('Thiếu thông tin lớp học hoặc bài học.');
-      setLoading(false);
       return;
     }
 
@@ -101,8 +111,8 @@ export default function StudentLessonLearning() {
         }
         setSelectedLesson(lesson);
 
-        const savedResume = Number(localStorage.getItem(resumeKey) ?? '0');
-        setResumeSeconds(Number.isFinite(savedResume) && savedResume > 0 ? savedResume : 0);
+        const savedResume = getStoredResumeSeconds();
+        setResumeSeconds(savedResume);
 
         const registrations: Registration[] = await registrationService.getMyRegistrations();
         const matchedRegistration = registrations.find((item) => item.clazzId === classNum);
@@ -124,19 +134,7 @@ export default function StudentLessonLearning() {
     return () => {
       mounted = false;
     };
-  }, [classNum, lessonNum, resumeKey]);
-
-  useEffect(() => {
-    if (!selectedLesson || !videoRef.current) return;
-
-    const video = videoRef.current;
-    const savedResume = Number(localStorage.getItem(resumeKey) ?? '0');
-    const resumeAt = Number.isFinite(savedResume) && savedResume > 0 ? savedResume : 0;
-    if (resumeAt > 0) {
-      video.currentTime = Math.min(resumeAt, video.duration || resumeAt);
-      setResumeSeconds(resumeAt);
-    }
-  }, [selectedLesson, resumeKey]);
+  }, [classNum, lessonNum, getStoredResumeSeconds]);
 
   const orderedLessons = useMemo(
     () => Object.values(chapterLessons).flat().sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
@@ -153,6 +151,7 @@ export default function StudentLessonLearning() {
       await progressService.markLessonComplete(selectedLesson.id, progress.enrollmentId);
       const updated = await progressService.getEnrollmentProgress(progress.enrollmentId);
       setProgress(updated);
+      clearResumePosition();
     } catch (e: unknown) {
       setError((e as { message?: string })?.message ?? 'Không thể cập nhật tiến độ.');
     }
@@ -163,6 +162,7 @@ export default function StudentLessonLearning() {
     await onMarkCompleted();
   };
 
+  if (!classNum || !lessonNum) return <ErrorBox msg="Thiếu thông tin lớp học hoặc bài học." />;
   if (loading) return <Spinner />;
   if (error) return <ErrorBox msg={error} />;
   if (!clazz || !selectedLesson) return <Empty msg="Không có dữ liệu bài học" />;
@@ -178,7 +178,7 @@ export default function StudentLessonLearning() {
         <Link to={`/student/classes/${classNum}`} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">← Quay lại lớp học</Link>
       </div>
 
-      <Card className="border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-blue-50">
+      <Card className="border border-indigo-100 bg-linear-to-r from-indigo-50 via-white to-blue-50">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-indigo-500">Lớp học</div>
@@ -246,7 +246,7 @@ export default function StudentLessonLearning() {
             {selectedLesson.videoUrl ? (
               <video
                 ref={videoRef}
-                className="w-full max-h-[480px] bg-black"
+                className="w-full max-h-120 bg-black"
                 controls
                 preload="metadata"
                 src={selectedLesson.videoUrl}
@@ -254,8 +254,7 @@ export default function StudentLessonLearning() {
                 onLoadedMetadata={() => {
                   const video = videoRef.current;
                   if (!video) return;
-                  const savedResume = Number(localStorage.getItem(resumeKey) ?? '0');
-                  const resumeAt = Number.isFinite(savedResume) && savedResume > 0 ? savedResume : 0;
+                  const resumeAt = getStoredResumeSeconds();
                   if (resumeAt > 0) {
                     video.currentTime = Math.min(resumeAt, video.duration || resumeAt);
                     setResumeSeconds(resumeAt);
@@ -286,7 +285,7 @@ export default function StudentLessonLearning() {
                 }}
               />
             ) : (
-              <div className="flex min-h-[240px] items-center justify-center bg-slate-900 text-sm text-slate-300">Bài học này chưa có video</div>
+              <div className="flex min-h-60 items-center justify-center bg-slate-900 text-sm text-slate-300">Bài học này chưa có video</div>
             )}
           </div>
 

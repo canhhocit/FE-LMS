@@ -105,15 +105,34 @@ export default function LecturerSchedule() {
 
       <Card className="mb-4">
         <div className="grid gap-3 md:grid-cols-5">
-          <select value={selectedClassId ?? ''} onChange={(e) => setSelectedClassId(Number(e.target.value))} className="rounded border border-slate-200 bg-white px-2 py-2 text-sm">
-            {classes.map((c) => <option key={c.id} value={c.id}>{c.classCode} - {c.className}</option>)}
-          </select>
-          <select value={dayOfWeek} onChange={(e) => setDayOfWeek(Number(e.target.value))} className="rounded border border-slate-200 bg-white px-2 py-2 text-sm">
-            {DAY_NAMES.filter(Boolean).map((label, idx) => <option key={idx + 1} value={idx + 1}>{label}</option>)}
-          </select>
-          <input type="number" min={1} max={12} value={startPeriod} onChange={(e) => setStartPeriod(Number(e.target.value))} className="rounded border border-slate-200 bg-white px-2 py-2 text-sm" />
-          <input type="number" min={1} max={12} value={endPeriod} onChange={(e) => setEndPeriod(Number(e.target.value))} className="rounded border border-slate-200 bg-white px-2 py-2 text-sm" />
-          <input value={room} onChange={(e) => setRoom(e.target.value)} placeholder="Phòng học" className="rounded border border-slate-200 bg-white px-2 py-2 text-sm" />
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">Lớp học</label>
+            <select value={selectedClassId ?? ''} onChange={(e) => setSelectedClassId(Number(e.target.value))} className="w-full rounded border border-slate-200 bg-white px-2 py-2 text-sm">
+              {classes.map((c) => <option key={c.id} value={c.id}>{c.classCode} - {c.className}</option>)}
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">Thứ</label>
+            <select value={dayOfWeek} onChange={(e) => setDayOfWeek(Number(e.target.value))} className="w-full rounded border border-slate-200 bg-white px-2 py-2 text-sm">
+              {DAY_NAMES.filter(Boolean).map((label, idx) => <option key={idx + 1} value={idx + 1}>{label}</option>)}
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">Tiết bắt đầu</label>
+            <input type="number" min={1} max={12} value={startPeriod} onChange={(e) => setStartPeriod(Number(e.target.value))} className="w-full rounded border border-slate-200 bg-white px-2 py-2 text-sm" />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">Tiết kết thúc</label>
+            <input type="number" min={1} max={12} value={endPeriod} onChange={(e) => setEndPeriod(Number(e.target.value))} className="w-full rounded border border-slate-200 bg-white px-2 py-2 text-sm" />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">Phòng học</label>
+            <input value={room} onChange={(e) => setRoom(e.target.value)} placeholder="A301" className="w-full rounded border border-slate-200 bg-white px-2 py-2 text-sm" />
+          </div>
         </div>
         <div className="mt-3 flex gap-2">
           <button onClick={() => void submitSchedule()} className="rounded bg-indigo-600 px-3 py-2 text-sm text-white hover:bg-indigo-500">
