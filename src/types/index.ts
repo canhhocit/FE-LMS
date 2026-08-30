@@ -170,7 +170,7 @@ export interface Notification {
   content: string;
   isRead: boolean;
   createdAt: string;
-  type: 'ASSIGNMENT' | 'GRADE' | 'ANNOUNCEMENT' | 'SYSTEM';
+  type: 'NEW_ASSIGNMENT' | 'NEW_GRADE' | 'NEW_ANNOUNCEMENT' | 'ACADEMIC_WARNING';
   referenceId?: number;
 }
 

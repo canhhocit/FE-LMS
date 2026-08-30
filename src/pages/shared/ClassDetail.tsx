@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import * as clazzService from "../../services/clazzService";
 import * as contentService from "../../services/contentService";
@@ -32,6 +32,9 @@ export default function ClassDetail() {
   const [studentProgress, setStudentProgress] = useState<EnrollmentProgress | null>(null);
   const [saving, setSaving] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
+  const [uploadingLessonId, setUploadingLessonId] = useState<number | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<Record<number, { type: 'success' | 'error'; message: string }>>({});
+  const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const isLecturer = user?.role === 'LECTURER';
   const isStudent = user?.role === 'STUDENT';
 
@@ -117,6 +120,64 @@ export default function ClassDetail() {
     } finally { setSaving(false); }
   };
 
+  const validateLessonVideoFile = (file: File) => {
+    const allowedExt = ['mp4', 'webm', 'mov', 'mkv', 'avi'];
+    const allowedMime = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-matroska', 'video/x-msvideo', 'video/avi'];
+    const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const mimeType = file.type.toLowerCase();
+
+    if (!allowedExt.includes(extension) && !allowedMime.includes(mimeType)) {
+      return {
+        valid: false,
+        message: 'Định dạng video không hợp lệ. Chỉ hỗ trợ MP4, WebM, MOV, MKV, AVI.',
+      };
+    }
+
+    if (file.size > 200 * 1024 * 1024) {
+      return {
+        valid: false,
+        message: 'Video vượt quá dung lượng tối đa 200MB.',
+      };
+    }
+
+    return { valid: true, message: '' };
+  };
+
+  const handleLessonVideoUpload = async (lessonId: number, file: File) => {
+    const validation = validateLessonVideoFile(file);
+    if (!validation.valid) {
+      setUploadStatus((prev) => ({
+        ...prev,
+        [lessonId]: { type: 'error', message: validation.message },
+      }));
+      return;
+    }
+
+    setUploadingLessonId(lessonId);
+    setUploadStatus((prev) => ({
+      ...prev,
+      [lessonId]: { type: 'success', message: 'Đang tải lên...' },
+    }));
+
+    try {
+      await contentService.uploadLessonVideo(lessonId, file);
+      const fresh = await contentService.getChapters(cid);
+      setChapters(fresh);
+      setUploadStatus((prev) => ({
+        ...prev,
+        [lessonId]: { type: 'success', message: 'Video đã được cập nhật thành công.' },
+      }));
+    } catch (e) {
+      const message = (e as { message?: string })?.message ?? 'Upload video thất bại';
+      setUploadStatus((prev) => ({
+        ...prev,
+        [lessonId]: { type: 'error', message: `Upload video thất bại: ${message}` },
+      }));
+    } finally {
+      setUploadingLessonId((current) => (current === lessonId ? null : current));
+    }
+  };
+
   const handleCreateLesson = async () => {
     if (!isLecturer || !selectedChapterId || !lessonTitle.trim()) return;
     setSaving(true);
@@ -126,16 +187,25 @@ export default function ClassDetail() {
         title: lessonTitle.trim(),
         content: lessonContent.trim(),
       });
+
       if (lessonVideo && lesson.id) {
-        await contentService.uploadLessonVideo(lesson.id, lessonVideo);
+        try {
+          await contentService.uploadLessonVideo(lesson.id, lessonVideo);
+        } catch (e) {
+          const message = (e as { message?: string })?.message ?? 'Upload video thất bại';
+          setFlash(`Đã tạo bài học nhưng upload video thất bại: ${message}`);
+        }
       }
+
       setLessonTitle('');
       setLessonContent('');
       setLessonVideo(null);
       setSelectedChapterId(selectedChapterId);
       const fresh = await contentService.getChapters(cid);
       setChapters(fresh);
-      setFlash('Đã tạo bài học mới');
+      if (!lessonVideo || !lesson.id) {
+        setFlash('Đã tạo bài học mới');
+      }
     } catch (e) {
       setFlash((e as { message?: string })?.message ?? 'Tạo bài học thất bại');
     } finally { setSaving(false); }
@@ -259,6 +329,41 @@ export default function ClassDetail() {
                               )}
 
                               {lesson.videoUrl && <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="ml-2 text-indigo-600 underline">Video</a>}
+
+                              {isLecturer && (
+                                <div className="mt-2 flex flex-wrap items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => fileInputRefs.current[lesson.id]?.click()}
+                                    disabled={saving || uploadingLessonId === lesson.id}
+                                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-indigo-300 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+                                  >
+                                    {uploadingLessonId === lesson.id ? (
+                                      <span className="inline-flex items-center gap-1.5">
+                                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-600" />
+                                        Đang tải lên...
+                                      </span>
+                                    ) : lesson.videoUrl ? 'Thay video' : 'Tải video'}
+                                  </button>
+                                  <input
+                                    ref={(el) => { fileInputRefs.current[lesson.id] = el; }}
+                                    type="file"
+                                    accept=".mp4,.webm,.mov,.mkv,.avi,video/mp4,video/webm,video/quicktime,video/x-matroska,video/x-msvideo,video/avi"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (!file) return;
+                                      void handleLessonVideoUpload(lesson.id, file);
+                                      e.target.value = '';
+                                    }}
+                                  />
+                                  {uploadStatus[lesson.id] && (
+                                    <span className={`text-[11px] ${uploadStatus[lesson.id].type === 'error' ? 'text-red-600' : 'text-emerald-600'}`}>
+                                      {uploadStatus[lesson.id].message}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
 
                               {isStudent && (
                                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
