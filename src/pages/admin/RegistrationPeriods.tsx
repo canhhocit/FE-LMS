@@ -11,7 +11,7 @@ export default function RegistrationPeriods() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', semester: 'HK1', academicYear: '2026-2027', openAt: '', closeAt: '', maxCredits: '24' });
+  const [form, setForm] = useState({ name: '', semester: 'HK1', academicYear: '2026-2027', openAt: '', closeAt: '', maxCredits: '24', isActive: true });
   // Wrapping the loader in useCallback keeps the reference stable across renders
   // and lets the effect depend on it explicitly. setState is only called from
   // async callbacks to avoid the "set-state-in-effect" lint warning.
@@ -32,9 +32,13 @@ export default function RegistrationPeriods() {
   if (err) return <ErrorBox msg={err} />;
   const submit = async () => {
     try {
-      await registrationService.createRegistrationPeriod({ ...form, maxCredits: Number(form.maxCredits), isActive: false });
+      await registrationService.createRegistrationPeriod({
+        ...form,
+        maxCredits: Number(form.maxCredits),
+        isActive: true,
+      });
       setShowForm(false);
-      setForm({ name: '', semester: 'HK1', academicYear: '2026-2027', openAt: '', closeAt: '', maxCredits: '24' });
+      setForm({ name: '', semester: 'HK1', academicYear: '2026-2027', openAt: '', closeAt: '', maxCredits: '24', isActive: true });
       load();
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Lỗi');
@@ -64,6 +68,15 @@ export default function RegistrationPeriods() {
               className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
             <input type="number" min="0" placeholder="Tín chỉ tối đa" value={form.maxCredits} onChange={(e) => setForm({ ...form, maxCredits: e.target.value })}
               className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
+            <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={form.isActive}
+                onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+              />
+              Mở ngay cho sinh viên đăng ký
+            </label>
           </div>
           <button onClick={submit} className="mt-3 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-sm">Tạo</button>
         </Card>

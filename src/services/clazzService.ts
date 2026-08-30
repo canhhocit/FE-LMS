@@ -1,8 +1,8 @@
 import { apiClient, unwrap } from './api/client';
 import type { Clazz, User } from '../types';
 export const getMyClasses = async (): Promise<Clazz[]> => unwrap<Clazz[]>(apiClient.get('/me/classes'));
-export const getClazzDetail = async (id: number): Promise<Clazz> => unwrap<Clazz>(apiClient.get(`/admin/classes/${id}`));
-export const getClassStudents = async (classId: number): Promise<User[]> => unwrap(apiClient.get(`/admin/classes/${classId}/students`));
+export const getClazzDetail = async (id: number): Promise<Clazz> => unwrap<Clazz>(apiClient.get(`/me/classes/${id}`));
+export const getClassStudents = async (classId: number): Promise<User[]> => unwrap<User[]>(apiClient.get(`/me/classes/${classId}/students`));
 export const createClazz = async (data: Omit<Clazz, 'id'>): Promise<Clazz> => unwrap(apiClient.post('/admin/classes', data));
 export const updateClazz = async (id: number, data: Partial<Clazz>): Promise<Clazz> => unwrap(apiClient.put(`/admin/classes/${id}`, data));
 export const deleteClazz = async (id: number): Promise<void> => { await apiClient.delete(`/admin/classes/${id}`); };

@@ -201,17 +201,17 @@ export interface Schedule {
   id: number;
   clazzId: number;
   clazzCode?: string;
+  classCode?: string;
+  className?: string;
   courseCode?: string;
   courseTitle?: string;
+  lecturerName?: string;
   dayOfWeek?: number;
   startPeriod?: number;
   endPeriod?: number;
   room?: string;
-  classCode?: string;
-  className?: string;
   startTime?: string;
   endTime?: string;
-  lecturerName?: string;
 }
 
 // ===== Quiz =====

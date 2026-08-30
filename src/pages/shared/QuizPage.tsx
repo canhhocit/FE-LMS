@@ -164,7 +164,7 @@ export default function QuizPage() {
                 <div className="space-y-4">
                   {questions.map((q, idx) => (
                     <div key={q.id} className="border border-slate-200 rounded-lg p-3">
-                      <div className="font-medium mb-2">Câu {idx + 1}: {q.content}</div>
+                      <div className="font-medium mb-2">Câu {idx + 1}: {q.questionText ?? q.content}</div>
                       <div className="space-y-2">
                         {[q.optionA, q.optionB, q.optionC, q.optionD].map((opt, opIdx) => (
                           <label key={`${q.id}-${opIdx}`} className="flex items-center gap-2 text-sm text-slate-700">
