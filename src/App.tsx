@@ -5,6 +5,7 @@ import { useAuth } from './contexts/useAuth';
 import ProtectedRoute from './components/ProtectedRoute';
 import { homeForRole } from './components/homeForRole';
 import Layout from './components/Layout';
+import ForbiddenPage from './pages/Forbidden';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -17,6 +18,7 @@ import StudentAttendance from './pages/student/Attendance';
 import StudentSchedule from './pages/student/Schedule';
 import StudentProfile from './pages/student/Profile';
 import StudentTranscript from './pages/student/Transcript';
+import StudentLessonLearning from './pages/student/LessonLearning';
 import {
   LecturerDashboard, LecturerClasses, LecturerAssignments, LecturerGrading,
 } from './pages/lecturer';
@@ -61,6 +63,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/403" element={<ForbiddenPage />} />
           <Route path="/" element={<RootRedirect />} />
           <Route element={<ProtectedRoute allow={['STUDENT']}><Layout></Layout></ProtectedRoute>}>
             <Route path="/student" element={<StudentDashboard />} />
@@ -77,6 +80,7 @@ export default function App() {
             <Route path="/student/schedule" element={<StudentSchedule />} />
             <Route path="/student/profile" element={<StudentProfile />} />
             <Route path="/student/transcript" element={<StudentTranscript />} />
+            <Route path="/student/classes/:classId/lessons/:lessonId" element={<StudentLessonLearning />} />
        </Route>
           <Route element={<ProtectedRoute allow={['LECTURER']}><Layout></Layout></ProtectedRoute>}>
             <Route path="/lecturer" element={<LecturerDashboard />} />

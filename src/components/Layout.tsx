@@ -7,41 +7,73 @@ import type { Role } from '../types';
 import { Card as UiCard, ErrorState, EmptyState, LoadingState, PageHeader, StatusBadge } from './ui';
 
 interface NavItem { to: string; label: string; icon: string; }
+interface NavSection { title: string; items: NavItem[] }
 
-const NAV: Record<Role, NavItem[]> = {
+const NAV: Record<Role, NavSection[]> = {
   STUDENT: [
-    { to: '/student', label: 'Tổng quan', icon: '🏠' },
-    { to: '/student/classes', label: 'Lớp học', icon: '📚' },
-    { to: '/student/forum', label: 'Diễn đàn', icon: '💬' },
-    { to: '/student/notifications', label: 'Thông báo', icon: '🔔' },
-    { to: '/student/registrations', label: 'Học phần đã đăng ký', icon: '📋' },
-    { to: '/student/tuition', label: 'Học phí', icon: '💳' },
-    { to: '/student/quizzes', label: 'Quiz', icon: '🧠' },
-    { to: '/student/assignments', label: 'Bài tập', icon: '📝' },
-    { to: '/student/grades', label: 'Điểm', icon: '📊' },
-    { to: '/student/attendance', label: 'Điểm danh', icon: '✅' },
-    { to: '/student/schedule', label: 'Thời khoá biểu', icon: '📅' },
-    { to: '/student/transcript', label: 'Bảng điểm', icon: '📜' },
-    { to: '/student/profile', label: 'Hồ sơ', icon: '👤' },
+    {
+      title: 'Tổng quan',
+      items: [
+        { to: '/student', label: 'Trang chủ', icon: '🏠' },
+        { to: '/student/classes', label: 'Lớp học', icon: '📚' },
+        { to: '/student/notifications', label: 'Thông báo', icon: '🔔' },
+        { to: '/student/registrations', label: 'Đăng ký', icon: '📋' },
+      ],
+    },
+    {
+      title: 'Học tập',
+      items: [
+        { to: '/student/tuition', label: 'Học phí', icon: '💳' },
+        { to: '/student/quizzes', label: 'Quiz', icon: '🧠' },
+        { to: '/student/assignments', label: 'Bài tập', icon: '📝' },
+        { to: '/student/grades', label: 'Điểm', icon: '📊' },
+        { to: '/student/attendance', label: 'Điểm danh', icon: '✅' },
+        { to: '/student/schedule', label: 'Thời khóa biểu', icon: '📅' },
+        { to: '/student/transcript', label: 'Bảng điểm', icon: '📜' },
+        { to: '/student/forum', label: 'Diễn đàn', icon: '💬' },
+      ],
+    },
+    {
+      title: 'Cá nhân',
+      items: [{ to: '/student/profile', label: 'Hồ sơ', icon: '👤' }],
+    },
   ],
   LECTURER: [
-    { to: '/lecturer', label: 'Tổng quan', icon: '🏠' },
-    { to: '/lecturer/classes', label: 'Lớp học', icon: '📚' },
-    { to: '/lecturer/forum', label: 'Diễn đàn', icon: '💬' },
-    { to: '/lecturer/notifications', label: 'Thông báo', icon: '🔔' },
-    { to: '/lecturer/quizzes', label: 'Quiz', icon: '🧠' },
-    { to: '/lecturer/assignments', label: 'Bài tập', icon: '📝' },
-    { to: '/lecturer/grading', label: 'Chấm điểm/Điểm danh', icon: '✅' },
-    { to: '/lecturer/schedule', label: 'Lịch dạy', icon: '📅' },
-    { to: '/lecturer/profile', label: 'Hồ sơ', icon: '👤' },
+    {
+      title: 'Tổng quan',
+      items: [
+        { to: '/lecturer', label: 'Trang chủ', icon: '🏠' },
+        { to: '/lecturer/classes', label: 'Lớp học', icon: '📚' },
+        { to: '/lecturer/notifications', label: 'Thông báo', icon: '🔔' },
+      ],
+    },
+    {
+      title: 'Quản lý',
+      items: [
+        { to: '/lecturer/forum', label: 'Diễn đàn', icon: '💬' },
+        { to: '/lecturer/quizzes', label: 'Quiz', icon: '🧠' },
+        { to: '/lecturer/assignments', label: 'Bài tập', icon: '📝' },
+        { to: '/lecturer/grading', label: 'Chấm điểm / Điểm danh', icon: '✅' },
+        { to: '/lecturer/schedule', label: 'Lịch dạy', icon: '📅' },
+      ],
+    },
+    {
+      title: 'Cá nhân',
+      items: [{ to: '/lecturer/profile', label: 'Hồ sơ', icon: '👤' }],
+    },
   ],
   ADMIN: [
-    { to: '/admin', label: 'Dashboard', icon: '🏠' },
-    { to: '/admin/users', label: 'Người dùng', icon: '👥' },
-    { to: '/admin/classes', label: 'Lớp học', icon: '📚' },
-    { to: '/admin/curricula', label: 'Chương trình ĐT', icon: '🎓' },
-    { to: '/admin/registration', label: 'Đợt đăng ký', icon: '📝' },
-    { to: '/admin/reports', label: 'Báo cáo', icon: '📈' },
+    {
+      title: 'Quản trị',
+      items: [
+        { to: '/admin', label: 'Dashboard', icon: '🏠' },
+        { to: '/admin/users', label: 'Người dùng', icon: '👥' },
+        { to: '/admin/classes', label: 'Lớp học', icon: '📚' },
+        { to: '/admin/curricula', label: 'Chương trình ĐT', icon: '🎓' },
+        { to: '/admin/registration', label: 'Đợt đăng ký', icon: '📝' },
+        { to: '/admin/reports', label: 'Báo cáo', icon: '📈' },
+      ],
+    },
   ],
 };
 
@@ -81,7 +113,7 @@ export default function Layout() {
 
   if (!user) return null;
   const role = user.role;
-  const items: NavItem[] = NAV[role];
+  const sections = NAV[role];
   const roleLower = role.toLowerCase();
 
   return (
@@ -95,19 +127,24 @@ export default function Layout() {
             <div className="text-xs text-blue-100/70">{ROLE_LABEL[role]}</div>
           </div>
         </Link>
-        <nav className="mt-6 flex-1 space-y-1">
-          {items.map((it: NavItem) => (
-            <NavLink key={it.to} to={it.to} end={it.to === `/${roleLower}`} onClick={() => setSidebarOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition relative ${
-                  isActive ? 'bg-white/15 text-white border border-white/10 shadow-sm' : 'text-blue-100/80 hover:bg-white/10 hover:text-white'
-                }`}>
-              <span>{it.icon}</span>
-              <span>{it.label}</span>
-              {it.to.includes('/notifications') && unreadCount > 0 && (
-                <span className="ml-auto inline-flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-bold">{unreadCount > 99 ? '99+' : unreadCount}</span>
-              )}
-            </NavLink>
+        <nav className="mt-6 flex-1 space-y-4 overflow-y-auto pr-1">
+          {sections.map((section) => (
+            <div key={section.title} className="space-y-1">
+              <div className="px-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-100/60">{section.title}</div>
+              {section.items.map((it: NavItem) => (
+                <NavLink key={it.to} to={it.to} end={it.to === `/${roleLower}`} onClick={() => setSidebarOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition relative ${
+                      isActive ? 'bg-white/15 text-white border border-white/10 shadow-sm' : 'text-blue-100/80 hover:bg-white/10 hover:text-white'
+                    }`}>
+                  <span>{it.icon}</span>
+                  <span>{it.label}</span>
+                  {it.to.includes('/notifications') && unreadCount > 0 && (
+                    <span className="ml-auto inline-flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-bold">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                  )}
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
         <button onClick={() => { logout(); nav('/login'); }}

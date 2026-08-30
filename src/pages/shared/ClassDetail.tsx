@@ -3,9 +3,11 @@ import { useParams, Link } from "react-router-dom";
 import * as clazzService from "../../services/clazzService";
 import * as contentService from "../../services/contentService";
 import * as assessmentService from "../../services/assessmentService";
+import * as registrationService from "../../services/registrationService";
+import * as progressService from "../../services/progressService";
 import { useAuth } from "../../contexts/useAuth";
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from "../../components/Layout";
-import type { Clazz, User, Chapter, Announcement, Assignment, Lesson } from "../../types";
+import type { Clazz, User, Chapter, Announcement, Assignment, Lesson, EnrollmentProgress } from "../../types";
 
 export default function ClassDetail() {
   const { user } = useAuth();
@@ -27,9 +29,11 @@ export default function ClassDetail() {
   const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementContent, setAnnouncementContent] = useState('');
+  const [studentProgress, setStudentProgress] = useState<EnrollmentProgress | null>(null);
   const [saving, setSaving] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const isLecturer = user?.role === 'LECTURER';
+  const isStudent = user?.role === 'STUDENT';
 
   useEffect(() => {
     let mounted = true;
@@ -73,6 +77,29 @@ export default function ClassDetail() {
     });
     return () => { mounted = false; };
   }, [chapters]);
+
+  useEffect(() => {
+    if (!isStudent || !cid) return;
+
+    let mounted = true;
+    (async () => {
+      try {
+        const registrations = await registrationService.getMyRegistrations();
+        const match = registrations.find((item) => item.clazzId === cid);
+        if (!match) {
+          if (mounted) setStudentProgress(null);
+          return;
+        }
+
+        const progress = await progressService.getEnrollmentProgress(match.enrollmentId);
+        if (mounted) setStudentProgress(progress);
+      } catch {
+        if (mounted) setStudentProgress(null);
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, [cid, isStudent]);
 
   const handleCreateChapter = async () => {
     if (!isLecturer || !cid || !chapterTitle.trim()) return;
@@ -133,6 +160,15 @@ export default function ClassDetail() {
     } finally { setSaving(false); }
   };
 
+  const getLessonStatus = (lessonId: number) => {
+    if (!studentProgress) return { label: 'Chưa học', className: 'bg-slate-100 text-slate-600' };
+
+    const match = studentProgress.lessons.find((item) => item.lessonId === lessonId);
+    if (match?.isCompleted) return { label: 'Đã học', className: 'bg-emerald-100 text-emerald-700' };
+    if (match) return { label: 'Đang học', className: 'bg-amber-100 text-amber-700' };
+    return { label: 'Chưa học', className: 'bg-slate-100 text-slate-600' };
+  };
+
   if (loading) return <Spinner />;
   if (err) return <ErrorBox msg={err} />;
   if (!clazz) return <Empty msg="Khong tim thay lop" />;
@@ -165,12 +201,26 @@ export default function ClassDetail() {
                   <div className="text-xs text-slate-500">Chuong #{c.sortOrder ?? 1}</div>
                   {(chapterLessons[c.id]?.length ?? 0) > 0 && (
                     <ul className="mt-2 space-y-1 pl-4 list-disc text-sm text-slate-600">
-                      {chapterLessons[c.id]?.map((lesson: Lesson) => (
-                        <li key={lesson.id}>
-                          <span className="font-medium text-slate-700">{lesson.title}</span>
-                          {lesson.videoUrl && <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="ml-2 text-indigo-600 underline">Video</a>}
-                        </li>
-                      ))}
+                      {chapterLessons[c.id]?.map((lesson: Lesson) => {
+                        const status = isStudent ? getLessonStatus(lesson.id) : null;
+                        return (
+                          <li key={lesson.id} className="flex items-center justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              {user?.role === 'STUDENT' ? (
+                                <Link to={`/student/classes/${cid}/lessons/${lesson.id}`} className="font-medium text-slate-700 hover:text-indigo-600 hover:underline">{lesson.title}</Link>
+                              ) : (
+                                <span className="font-medium text-slate-700">{lesson.title}</span>
+                              )}
+                              {lesson.videoUrl && <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="ml-2 text-indigo-600 underline">Video</a>}
+                            </div>
+                            {status && (
+                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${status.className}`}>
+                                {status.label}
+                              </span>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
                   {isLecturer && (

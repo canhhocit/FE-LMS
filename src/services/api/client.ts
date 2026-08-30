@@ -16,6 +16,20 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+const extractErrorMessage = (error: unknown) => {
+  const status = (error as { response?: { status?: number } })?.response?.status ?? 500;
+  const payload = (error as { response?: { data?: { message?: string; error?: string } } })?.response?.data;
+  const raw = payload?.message ?? payload?.error ?? 'Yêu cầu không thành công';
+
+  if (status === 400) return raw || 'Dữ liệu không hợp lệ';
+  if (status === 401) return 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
+  if (status === 403) return 'Bạn không có quyền thực hiện thao tác này.';
+  if (status === 404) return 'Không tìm thấy dữ liệu yêu cầu.';
+  if (status === 409) return raw || 'Dữ liệu bị trùng hoặc xung đột nghiệp vụ.';
+  if (status >= 500) return 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.';
+  return raw || 'Yêu cầu không thành công';
+};
+
 let refreshRequest: Promise<AuthUser> | null = null;
 
 apiClient.interceptors.response.use(
@@ -23,8 +37,9 @@ apiClient.interceptors.response.use(
   async (error) => {
     const request = error.config;
     const user = readStoredUser();
-    if (error.response?.status !== 401 || request?._retry || !user?.refreshToken || request?.url?.includes('/auth/')) {
-      return Promise.reject(error);
+    const isUnauthorized = error.response?.status === 401;
+    if (!isUnauthorized || request?._retry || !user?.refreshToken || request?.url?.includes('/auth/')) {
+      return Promise.reject(new Error(extractErrorMessage(error)));
     }
 
     request._retry = true;
@@ -39,7 +54,7 @@ apiClient.interceptors.response.use(
       return apiClient(request);
     } catch (refreshError) {
       clearStoredUser();
-      return Promise.reject(refreshError);
+      return Promise.reject(new Error(extractErrorMessage(refreshError)));
     }
   },
 );

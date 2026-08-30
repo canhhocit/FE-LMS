@@ -166,10 +166,9 @@ export interface Notification {
   id: number;
   title: string;
   content: string;
-  read: boolean;
+  isRead: boolean;
   createdAt: string;
   type: 'ASSIGNMENT' | 'GRADE' | 'ANNOUNCEMENT' | 'SYSTEM';
-  isRead?: boolean;
   referenceId?: number;
 }
 

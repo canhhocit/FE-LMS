@@ -30,7 +30,7 @@ export default function NotificationsPage() {
   const onMarkRead = async (id: number) => {
     try {
       await notificationService.markAsRead(id);
-      setItems((prev) => prev.map((n) => n.id === id ? { ...n, read: true, isRead: true } : n));
+      setItems((prev) => prev.map((n) => n.id === id ? { ...n, isRead: true } : n));
     } catch {
       // no-op for UI; backend will reject only on server-side failure
     }
@@ -46,17 +46,17 @@ export default function NotificationsPage() {
       {items.length === 0 ? <Empty msg="Chưa có thông báo nào" /> : (
         <div className="space-y-3">
           {items.map((n) => (
-            <Card key={n.id} className={n.read || n.isRead ? 'border-slate-200' : 'border-indigo-200 bg-indigo-50/40'}>
+            <Card key={n.id} className={n.isRead ? 'border-slate-200' : 'border-indigo-200 bg-indigo-50/40'}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-semibold text-slate-800">{n.title}</span>
-                    {!(n.read || n.isRead) && <Pill color="indigo">Mới</Pill>}
+                    {!n.isRead && <Pill color="indigo">Mới</Pill>}
                   </div>
                   <div className="text-sm text-slate-600">{n.content}</div>
                   <div className="mt-2 text-xs text-slate-500">{fmt(n.createdAt)}</div>
                 </div>
-                {!(n.read || n.isRead) && (
+                {!n.isRead && (
                   <button onClick={() => void onMarkRead(n.id)} className="text-xs px-3 py-1.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200">Đánh dấu đọc</button>
                 )}
               </div>

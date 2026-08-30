@@ -11,8 +11,7 @@ export const getNotifications = async (): Promise<Notification[]> => {
   const page = await unwrap<{ content?: Notification[] }>(apiClient.get('/me/notifications'));
   return (page?.content ?? []).map((item) => ({
     ...item,
-    read: item.read ?? item.isRead ?? false,
-    isRead: item.isRead ?? item.read ?? false,
+    isRead: item.isRead ?? false,
   }));
 };
 export const getUnreadCount = async (): Promise<number> => unwrap<number>(apiClient.get('/me/notifications/unread-count'));
