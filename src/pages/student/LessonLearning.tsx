@@ -169,6 +169,7 @@ export default function StudentLessonLearning() {
 
   const percent = progress?.percentage ?? 0;
   const hasResume = resumeSeconds > 10;
+  const currentChapter = chapters.find((chapter) => (chapterLessons[chapter.id] ?? []).some((lesson) => lesson.id === selectedLesson.id));
 
   return (
     <div className="space-y-5">
@@ -176,6 +177,21 @@ export default function StudentLessonLearning() {
         <PageTitle>{selectedLesson.title}</PageTitle>
         <Link to={`/student/classes/${classNum}`} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">← Quay lại lớp học</Link>
       </div>
+
+      <Card className="border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-blue-50">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-indigo-500">Lớp học</div>
+            <div className="mt-1 text-xl font-bold text-slate-800">{clazz.className}</div>
+            <div className="mt-1 text-sm text-slate-500">{clazz.classCode} · {currentChapter?.title ?? 'Chương học'} · {selectedLesson.title}</div>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+            <span className="rounded-full bg-white px-2.5 py-1 shadow-sm ring-1 ring-slate-200">Hoàn thành {percent}%</span>
+            <span className="rounded-full bg-white px-2.5 py-1 shadow-sm ring-1 ring-slate-200">{progress?.completedCount ?? 0}/{progress?.totalCount ?? 0} bài</span>
+            {hasResume && <span className="rounded-full bg-blue-100 px-2.5 py-1 text-blue-700">Tiếp tục từ {formatTime(resumeSeconds)}</span>}
+          </div>
+        </div>
+      </Card>
 
       <div className="grid gap-5 xl:grid-cols-[1.7fr_0.9fr]">
         <Card>

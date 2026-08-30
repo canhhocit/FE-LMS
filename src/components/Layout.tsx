@@ -17,25 +17,24 @@ const NAV: Record<Role, NavSection[]> = {
         { to: '/student', label: 'Trang chủ', icon: '🏠' },
         { to: '/student/classes', label: 'Lớp học', icon: '📚' },
         { to: '/student/notifications', label: 'Thông báo', icon: '🔔' },
-        { to: '/student/registrations', label: 'Đăng ký', icon: '📋' },
       ],
     },
     {
       title: 'Học tập',
       items: [
-        { to: '/student/tuition', label: 'Học phí', icon: '💳' },
-        { to: '/student/quizzes', label: 'Quiz', icon: '🧠' },
         { to: '/student/assignments', label: 'Bài tập', icon: '📝' },
+        { to: '/student/quizzes', label: 'Quiz', icon: '🧠' },
         { to: '/student/grades', label: 'Điểm', icon: '📊' },
-        { to: '/student/attendance', label: 'Điểm danh', icon: '✅' },
-        { to: '/student/schedule', label: 'Thời khóa biểu', icon: '📅' },
-        { to: '/student/transcript', label: 'Bảng điểm', icon: '📜' },
-        { to: '/student/forum', label: 'Diễn đàn', icon: '💬' },
+        { to: '/student/schedule', label: 'Lịch học', icon: '📅' },
       ],
     },
     {
       title: 'Cá nhân',
-      items: [{ to: '/student/profile', label: 'Hồ sơ', icon: '👤' }],
+      items: [
+        { to: '/student/profile', label: 'Hồ sơ', icon: '👤' },
+        { to: '/student/registrations', label: 'Đăng ký', icon: '📋' },
+        { to: '/student/tuition', label: 'Học phí', icon: '💳' },
+      ],
     },
   ],
   LECTURER: [
@@ -50,10 +49,9 @@ const NAV: Record<Role, NavSection[]> = {
     {
       title: 'Quản lý',
       items: [
-        { to: '/lecturer/forum', label: 'Diễn đàn', icon: '💬' },
-        { to: '/lecturer/quizzes', label: 'Quiz', icon: '🧠' },
         { to: '/lecturer/assignments', label: 'Bài tập', icon: '📝' },
-        { to: '/lecturer/grading', label: 'Chấm điểm / Điểm danh', icon: '✅' },
+        { to: '/lecturer/quizzes', label: 'Quiz', icon: '🧠' },
+        { to: '/lecturer/grading', label: 'Chấm điểm', icon: '✅' },
         { to: '/lecturer/schedule', label: 'Lịch dạy', icon: '📅' },
       ],
     },

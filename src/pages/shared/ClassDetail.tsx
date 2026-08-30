@@ -169,6 +169,19 @@ export default function ClassDetail() {
     return { label: 'Chưa học', className: 'bg-slate-100 text-slate-600' };
   };
 
+  const studentSummary = isStudent && studentProgress ? {
+    completed: studentProgress.completedCount,
+    total: studentProgress.totalCount,
+    inProgress: Math.max(studentProgress.lessons.filter((item) => !item.isCompleted).length, 0),
+    notStarted: Math.max(studentProgress.totalCount - studentProgress.lessons.filter((item) => item.isCompleted).length - studentProgress.lessons.filter((item) => !item.isCompleted).length, 0),
+  } : null;
+
+  const getResumeSeconds = (lessonId: number) => {
+    if (!isStudent) return 0;
+    const value = Number(localStorage.getItem(`learninghub:resume:${cid}:${lessonId}`) ?? '0');
+    return Number.isFinite(value) ? value : 0;
+  };
+
   if (loading) return <Spinner />;
   if (err) return <ErrorBox msg={err} />;
   if (!clazz) return <Empty msg="Khong tim thay lop" />;
@@ -181,6 +194,35 @@ export default function ClassDetail() {
         <Card><div className="text-xs text-slate-400">Sĩ số tối đa</div><div className="font-medium">{clazz.maxStudents} SV</div></Card>
         <Card><div className="text-xs text-slate-500">Học kỳ</div><div><Pill color="indigo">{clazz.semester} · {clazz.academicYear}</Pill></div></Card>
       </div>
+      {isStudent && studentSummary && (
+        <Card className="mb-4 border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-blue-50">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-indigo-500">Tiến độ học tập</div>
+              <div className="mt-1 text-2xl font-bold text-slate-800">{studentProgress?.percentage ?? 0}%</div>
+            </div>
+            <div className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+              {studentSummary.completed}/{studentSummary.total} bài đã hoàn thành
+            </div>
+          </div>
+          <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-slate-200">
+            <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-blue-500" style={{ width: `${Math.min(100, studentProgress?.percentage ?? 0)}%` }} />
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            {[
+              { label: 'Đã học', value: studentSummary.completed, tone: 'bg-emerald-50 text-emerald-700' },
+              { label: 'Đang học', value: studentSummary.inProgress, tone: 'bg-amber-50 text-amber-700' },
+              { label: 'Chưa học', value: studentSummary.notStarted, tone: 'bg-slate-100 text-slate-600' },
+            ].map((item) => (
+              <div key={item.label} className={`rounded-xl border border-white p-3 ${item.tone}`}>
+                <div className="text-[11px] font-medium uppercase tracking-[0.1em] opacity-80">{item.label}</div>
+                <div className="mt-1 text-xl font-bold">{item.value}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
       <div className="grid lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
           <div className="flex items-center justify-between gap-2 mb-3">
@@ -203,21 +245,50 @@ export default function ClassDetail() {
                     <ul className="mt-2 space-y-1 pl-4 list-disc text-sm text-slate-600">
                       {chapterLessons[c.id]?.map((lesson: Lesson) => {
                         const status = isStudent ? getLessonStatus(lesson.id) : null;
+                        const lessonProgress = studentProgress?.lessons.find((item) => item.lessonId === lesson.id);
+                        const resumeSeconds = getResumeSeconds(lesson.id);
+                        const isResumeActive = isStudent && !!lessonProgress && !lessonProgress.isCompleted && resumeSeconds > 10;
+
                         return (
-                          <li key={lesson.id} className="flex items-center justify-between gap-2">
+                          <li key={lesson.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-2.5">
                             <div className="min-w-0 flex-1">
                               {user?.role === 'STUDENT' ? (
                                 <Link to={`/student/classes/${cid}/lessons/${lesson.id}`} className="font-medium text-slate-700 hover:text-indigo-600 hover:underline">{lesson.title}</Link>
                               ) : (
                                 <span className="font-medium text-slate-700">{lesson.title}</span>
                               )}
+
                               {lesson.videoUrl && <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="ml-2 text-indigo-600 underline">Video</a>}
+
+                              {isStudent && (
+                                <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                                  {status && (
+                                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${status.className}`}>
+                                      {status.label}
+                                    </span>
+                                  )}
+                                  {isResumeActive && (
+                                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                                      Học tiếp · {Math.floor(resumeSeconds / 60)}:{String(Math.floor(resumeSeconds % 60)).padStart(2, '0')}
+                                    </span>
+                                  )}
+                                  {!status || status.label === 'Chưa học' ? (
+                                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                                      Chưa bắt đầu
+                                    </span>
+                                  ) : null}
+                                </div>
+                              )}
                             </div>
-                            {status && (
-                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${status.className}`}>
-                                {status.label}
-                              </span>
-                            )}
+
+                            {isStudent ? (
+                              <Link
+                                to={`/student/classes/${cid}/lessons/${lesson.id}`}
+                                className={`rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition ${lessonProgress?.isCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'}`}
+                              >
+                                {lessonProgress?.isCompleted ? 'Ôn tập' : 'Học tiếp'}
+                              </Link>
+                            ) : null}
                           </li>
                         );
                       })}

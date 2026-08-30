@@ -96,12 +96,31 @@ export default function QuizPage() {
     }
   };
 
+  const stats = {
+    total: quizzes.length,
+    started: startedQuizId != null ? 1 : 0,
+    available: quizzes.filter((q) => !q.title.toLowerCase().includes('đã đóng')).length,
+  };
+
   if (loading) return <Spinner />;
   if (err) return <ErrorBox msg={err} />;
 
   return (
     <div>
       <PageTitle>Quiz & Bài kiểm tra</PageTitle>
+      <div className="mb-4 grid gap-3 md:grid-cols-3">
+        {[
+          { label: 'Tổng quiz', value: stats.total, tone: 'bg-indigo-50 text-indigo-700' },
+          { label: 'Đang làm', value: stats.started, tone: 'bg-amber-50 text-amber-700' },
+          { label: 'Sẵn sàng', value: stats.available, tone: 'bg-emerald-50 text-emerald-700' },
+        ].map((item) => (
+          <div key={item.label} className={`rounded-2xl border border-white p-4 shadow-sm ${item.tone}`}>
+            <div className="text-[11px] font-medium uppercase tracking-[0.12em] opacity-80">{item.label}</div>
+            <div className="mt-2 text-2xl font-bold">{item.value}</div>
+          </div>
+        ))}
+      </div>
+
       <div className="mb-4 flex gap-2 items-center">
         <label className="text-sm text-slate-500">Lớp:</label>
         <select value={selectedClass ?? ''} onChange={(e) => setSelectedClass(Number(e.target.value))} className="bg-white border border-slate-200 rounded px-3 py-2 text-sm text-slate-700">

@@ -25,27 +25,99 @@ export function LecturerDashboard() {
     })().finally(() => m && setLoading(false));
     return () => { m = false; };
   }, []);
+  const gradedCount = subs.filter((s) => s.score != null).length;
+  const pendingCount = subs.filter((s) => s.score == null).length;
+  const activityDates = subs.map((item) => new Date(item.submittedAt)).filter((date) => !Number.isNaN(date.getTime()));
+  const uniqueDates = new Set(activityDates.map((date) => date.toISOString().slice(0, 10)));
+  const teachingStreak = Math.min(7, Math.max(1, uniqueDates.size || 1));
+  const recentActivity = subs.slice(0, 4).map((item) => ({
+    title: `Bài nộp mới · ${item.studentId}`,
+    detail: item.score == null ? 'Chờ chấm điểm' : 'Đã chấm điểm',
+    time: new Date(item.submittedAt).toLocaleDateString('vi-VN'),
+  }));
+
   if (loading) return <Spinner />;
   return (
-    <div>
+    <div className="space-y-5">
       <PageTitle>Xin chào, {user?.fullName} 👨‍🏫</PageTitle>
-      <div className="grid md:grid-cols-4 gap-4 mb-6">
-        <Card><div className="text-xs text-slate-400">Lớp phụ trách</div><div className="text-2xl font-bold">{classes.length}</div></Card>
-        <Card><div className="text-xs text-slate-400">Bài tập</div><div className="text-2xl font-bold">{subs.length}</div></Card>
-        <Card><div className="text-xs text-slate-400">Đã chấm</div><div className="text-2xl font-bold text-emerald-300">{subs.filter(s => s.score != null).length}</div></Card>
-        <Card><div className="text-xs text-slate-400">Chờ chấm</div><div className="text-2xl font-bold text-amber-300">{subs.filter(s => s.score == null).length}</div></Card>
+
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <Card className="bg-gradient-to-br from-indigo-600 to-blue-500 text-white">
+          <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-indigo-100">Lớp phụ trách</div>
+          <div className="mt-2 text-3xl font-bold">{classes.length}</div>
+        </Card>
+        <Card className="bg-gradient-to-br from-amber-50 to-orange-50">
+          <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-amber-700">Tổng bài nộp</div>
+          <div className="mt-2 text-3xl font-bold text-amber-700">{subs.length}</div>
+        </Card>
+        <Card className="bg-gradient-to-br from-emerald-50 to-green-50">
+          <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-emerald-700">Đã chấm</div>
+          <div className="mt-2 text-3xl font-bold text-emerald-700">{gradedCount}</div>
+        </Card>
+        <Card className="bg-gradient-to-br from-rose-50 to-pink-50">
+          <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-rose-700">Chờ chấm</div>
+          <div className="mt-2 text-3xl font-bold text-rose-700">{pendingCount}</div>
+        </Card>
       </div>
-      <h3 className="font-semibold mb-2">Lớp của tôi</h3>
-      <div className="grid md:grid-cols-2 gap-3">
-        {classes.map((c) => (
-          <Link key={c.id} to={`/lecturer/classes/${c.id}`}
-            className="block rounded-lg border border-slate-200 bg-white p-4 hover:border-primary transition">
-            <div className="text-xs text-indigo-300 font-mono">{c.classCode}</div>
-            <div className="font-semibold">{c.className}</div>
-            <div className="text-xs text-slate-400 mt-1">Học kỳ {c.semester} · tối đa {c.maxStudents} SV</div>
-          </Link>
-        ))}
+
+      <div className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
+        <Card>
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h3 className="font-semibold text-slate-800">Recent activity</h3>
+            <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-indigo-700">Live</span>
+          </div>
+          <div className="space-y-3">
+            {recentActivity.length === 0 ? <Empty msg="Chưa có hoạt động gần đây" /> : recentActivity.map((item) => (
+              <div key={`${item.title}-${item.time}`} className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <span className="mt-0.5 grid h-7 w-7 place-items-center rounded-full bg-indigo-100 text-xs text-indigo-700">•</span>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-semibold text-slate-800">{item.title}</div>
+                  <div className="mt-1 text-xs text-slate-500">{item.detail}</div>
+                </div>
+                <div className="text-[11px] text-slate-400">{item.time}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h3 className="font-semibold text-slate-800">Teaching streak</h3>
+            <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-700">{teachingStreak} ngày</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-xl font-bold text-white">🔥</div>
+            <div>
+              <div className="text-2xl font-bold text-slate-800">{teachingStreak} ngày</div>
+              <div className="text-sm text-slate-500">Bạn vẫn giữ nhịp phản hồi và giảng dạy đều đặn.</div>
+            </div>
+          </div>
+        </Card>
       </div>
+
+      <Card>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 className="font-semibold text-slate-800">Lớp của tôi</h3>
+          <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-indigo-700">Active</span>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          {classes.map((c) => (
+            <Link key={c.id} to={`/lecturer/classes/${c.id}`}
+              className="block rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md">
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <span className="font-mono text-xs font-semibold text-indigo-700">{c.classCode}</span>
+                <Pill color="indigo">{c.semester}</Pill>
+              </div>
+              <div className="font-semibold text-slate-800">{c.className}</div>
+              <div className="mt-1 text-xs text-slate-500">{c.courseTitle ?? 'Học phần'} · Tối đa {c.maxStudents} sinh viên</div>
+              <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500">
+                <span>{c.academicYear}</span>
+                <span className="font-medium text-indigo-700">Xem chi tiết →</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </Card>
     </div>
   );
 }
