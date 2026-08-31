@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import * as authService from '../services/authService';
+import { LHLogoIcon } from '../components/icons';
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -41,7 +42,9 @@ export default function ForgotPassword() {
       <div className="w-full max-w-md">
         <div className="rounded-lg bg-white shadow-lg p-8">
           <div className="flex justify-center mb-6">
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-[#f58220] text-2xl">✦</div>
+            <div className="grid h-12 w-12 place-items-center rounded-xl bg-[#f58220]">
+              <LHLogoIcon className="w-6 h-6 text-white" />
+            </div>
           </div>
           <h1 className="text-2xl font-bold text-center text-slate-900 mb-2">Quên mật khẩu</h1>
           <p className="text-sm text-center text-slate-600 mb-6">
