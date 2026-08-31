@@ -10,7 +10,7 @@ import * as registrationService from "../../services/registrationService";
 import * as scheduleService from "../../services/scheduleService";
 import { PageTitle, Card, Spinner, Empty, Pill } from "../../components/Layout";
 import { useAuth } from "../../contexts/useAuth";
-import type { Clazz, Assignment, Submission, Grade, Notification, GradingPolicy } from "../../types";
+import type { Clazz, Assignment, Submission, Grade, Notification, GradingPolicy, SubmissionType } from "../../types";
 import * as profileService from "../../services/profileService";
 import * as curriculumService from "../../services/curriculumService";
 
@@ -503,19 +503,286 @@ export function StudentAssignments() {
 
 function SubmitBtn({ assignmentId, disabled }: { assignmentId: number; disabled?: boolean }) {
   const [busy, setBusy] = useState(false);
-  if (disabled) return <span className="text-xs text-slate-500">Da nop</span>;
+  const [open, setOpen] = useState(false);
+  const [submissionType, setSubmissionType] = useState<SubmissionType>('FILE');
+  const [fileUrl, setFileUrl] = useState('');
+  const [fileUrls, setFileUrls] = useState<string[]>([]);
+  const [externalLink, setExternalLink] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isDragActive, setIsDragActive] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  const resetFileSelection = () => {
+    setSelectedFiles([]);
+    setFileUrl('');
+    setFileUrls([]);
+  };
+
+  const addFilesToSelection = (incomingFiles: File[]) => {
+    if (incomingFiles.length === 0) return;
+
+    setSelectedFiles((prev) => {
+      const seen = new Set(prev.map((file) => `${file.name}-${file.size}-${file.lastModified}`));
+      const merged = [...prev];
+      incomingFiles.forEach((file) => {
+        const key = `${file.name}-${file.size}-${file.lastModified}`;
+        if (!seen.has(key)) {
+          merged.push(file);
+          seen.add(key);
+        }
+      });
+      return merged;
+    });
+  };
+
+  const removeSelectedFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
+  };
+
+  const moveSelectedFile = (from: number, to: number) => {
+    if (from === to || from < 0 || to < 0) return;
+    setSelectedFiles((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  };
+
+  const openPreview = (file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const closePreview = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+  };
+
+  const validate = (value: string) => {
+    if (!value.trim()) return 'Vui lòng nhập dữ liệu';
+    if (submissionType === 'GOOGLE_DRIVE_LINK' && !/^https?:\/\/.*drive\.google\.com\//i.test(value)) return 'Link Google Drive không hợp lệ';
+    if (submissionType === 'GITHUB_LINK' && !/^https?:\/\/github\.com\//i.test(value)) return 'Link GitHub không hợp lệ';
+    return '';
+  };
+
+  const submit = async () => {
+    try {
+      let payloadFileUrl = fileUrl;
+      let payloadFileUrls = fileUrls;
+      if (submissionType === 'FILE' || submissionType === 'IMAGE') {
+        if (selectedFiles.length === 0 && !fileUrl && payloadFileUrls.length === 0) {
+          window.alert('Vui lòng chọn file hoặc upload trước khi nộp');
+          return;
+        }
+        if (selectedFiles.length > 0) {
+          const uploaded = await assessmentService.uploadSubmissionFiles(assignmentId, selectedFiles);
+          payloadFileUrl = uploaded[0] ?? '';
+          payloadFileUrls = uploaded;
+          setFileUrl(payloadFileUrl);
+          setFileUrls(payloadFileUrls);
+        }
+      }
+
+      const payloadValue = submissionType === 'FILE' || submissionType === 'IMAGE' ? payloadFileUrl : externalLink;
+      const error = validate(payloadValue);
+      if (error) {
+        window.alert(error);
+        return;
+      }
+
+      setBusy(true);
+      await assessmentService.submitAssignment(assignmentId, {
+        submissionType,
+        fileUrl: submissionType === 'FILE' || submissionType === 'IMAGE' ? payloadFileUrl : '',
+        fileUrls: submissionType === 'FILE' || submissionType === 'IMAGE' ? payloadFileUrls : [],
+        externalLink: submissionType === 'FILE' || submissionType === 'IMAGE' ? '' : payloadValue,
+      });
+      setOpen(false);
+      window.location.reload();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (disabled) return <span className="text-xs text-slate-500">Đã nộp</span>;
   return (
-    <button disabled={busy}
-      onClick={async () => {
-        const c = window.prompt("Nhap noi dung bai lam:");
-        if (!c) return;
-        setBusy(true);
-        try { await assessmentService.submitAssignment(assignmentId, { fileUrl: c }); window.location.reload(); }
-        finally { setBusy(false); }
-      }}
-      className="text-xs px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50">
-      {busy ? "..." : "Nop"}
-    </button>
+    <>
+      <button
+        disabled={busy}
+        onClick={() => setOpen(true)}
+        className="rounded-lg bg-[#243b78] px-3 py-1.5 text-xs font-medium text-white transition hover:bg-[#1e3267] disabled:opacity-50"
+      >
+        {busy ? '...' : 'Nộp'}
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-xl max-h-[86vh] overflow-hidden">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-slate-800">Nộp bài tập</h3>
+              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-700">✕</button>
+            </div>
+
+            <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-4">
+              {[
+                { label: 'Tải file', value: 'FILE' },
+                { label: 'Ảnh', value: 'IMAGE' },
+                { label: 'Google Drive', value: 'GOOGLE_DRIVE_LINK' },
+                { label: 'GitHub', value: 'GITHUB_LINK' },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setSubmissionType(option.value as SubmissionType)}
+                  className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${submissionType === option.value ? 'border-[#243b78] bg-[#243b78] text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+
+            {submissionType === 'FILE' || submissionType === 'IMAGE' ? (
+              <div className="mb-4 space-y-3">
+                <div
+                  className={`rounded-2xl border-2 border-dashed p-3 transition ${isDragActive ? 'border-[#243b78] bg-blue-50' : 'border-slate-300 bg-slate-50'}`}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    setIsDragActive(true);
+                  }}
+                  onDragLeave={() => setIsDragActive(false)}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    setIsDragActive(false);
+                    addFilesToSelection(Array.from(event.dataTransfer.files ?? []));
+                  }}
+                >
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    {submissionType === 'FILE' ? 'Chọn nhiều file hoặc kéo thả vào đây' : 'Chọn ảnh bài làm hoặc kéo thả ảnh vào đây'}
+                  </label>
+
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <input
+                      type="file"
+                      multiple
+                      accept={submissionType === 'IMAGE' ? 'image/*' : '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.png,.jpg,.jpeg'}
+                      onChange={(event) => {
+                        const files = Array.from(event.target.files ?? []);
+                        if (files.length > 0) {
+                          addFilesToSelection(files);
+                        }
+                        event.target.value = '';
+                      }}
+                      className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-[#243b78] file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
+                    />
+
+                    {selectedFiles.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={resetFileSelection}
+                        className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-xs font-medium text-red-600 transition hover:bg-red-100"
+                      >
+                        Xóa tất cả
+                      </button>
+                    )}
+                  </div>
+
+                  <p className="mt-2 text-[11px] text-slate-500">
+                    {submissionType === 'FILE'
+                      ? 'Có thể chọn nhiều file từ máy hoặc kéo thả trực tiếp. Mỗi file sẽ được hiển thị rõ ràng trước khi nộp.'
+                      : 'Bạn có thể chọn 1 hoặc nhiều ảnh chụp bài làm.'}
+                  </p>
+                </div>
+
+                {selectedFiles.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      <span>Tổng cộng</span>
+                      <span>{selectedFiles.length} file</span>
+                    </div>
+
+                    <div className="grid max-h-48 gap-2 overflow-auto rounded-xl border border-slate-200 bg-white p-2">
+                      {selectedFiles.map((file, index) => {
+                        const isImage = file.type.startsWith('image/');
+                        return (
+                          <div
+                            key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
+                            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/40"
+                            draggable
+                            onDragStart={() => setDraggedIndex(index)}
+                            onDragOver={(event) => event.preventDefault()}
+                            onDrop={(event) => {
+                              event.preventDefault();
+                              if (draggedIndex !== null) {
+                                moveSelectedFile(draggedIndex, index);
+                                setDraggedIndex(null);
+                              }
+                            }}
+                          >
+                            <button type="button" onClick={() => isImage && openPreview(file)} className="shrink-0">
+                              {isImage ? (
+                                <img src={URL.createObjectURL(file)} alt={file.name} className="h-11 w-11 rounded-lg object-cover ring-1 ring-slate-200" />
+                              ) : (
+                                <div className="grid h-11 w-11 place-items-center rounded-lg bg-slate-200 text-[9px] font-bold text-slate-600">
+                                  {file.name.split('.').pop()?.toUpperCase() || 'FILE'}
+                                </div>
+                              )}
+                            </button>
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate text-sm font-medium text-slate-700">{file.name}</div>
+                              <div className="mt-0.5 text-[11px] text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeSelectedFile(index)}
+                              className="rounded-md border border-red-200 bg-white px-2 py-1 text-[10px] font-semibold text-red-600 transition hover:bg-red-50"
+                            >
+                              Xóa
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="text-xs text-slate-500">
+                  {selectedFiles.length > 0 ? `${selectedFiles.length} file đã chọn` : 'Chưa có file nào được chọn'}
+                </div>
+              </div>
+            ) : (
+              <>
+                <label className="mb-2 block text-sm font-medium text-slate-700">Link nộp</label>
+                <input
+                  value={externalLink}
+                  onChange={(event) => setExternalLink(event.target.value)}
+                  className="mb-4 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 outline-none ring-0 transition focus:border-[#243b78]"
+                  placeholder={submissionType === 'GOOGLE_DRIVE_LINK' ? 'https://drive.google.com/...' : 'https://github.com/username/repo'}
+                />
+              </>
+            )}
+
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => { resetFileSelection(); setOpen(false); }} className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100">Huỷ</button>
+              <button type="button" onClick={() => void submit()} className="rounded-lg bg-[#243b78] px-3 py-2 text-sm font-medium text-white hover:bg-[#1e3267]">Nộp bài</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {previewUrl && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 p-4" onClick={closePreview}>
+          <div className="max-h-[92vh] max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-white p-2 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="mb-2 flex items-center justify-between gap-3 px-2 pt-1">
+              <span className="text-sm font-medium text-slate-700">Xem trước ảnh</span>
+              <button type="button" onClick={closePreview} className="rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-600 hover:bg-slate-100">Đóng</button>
+            </div>
+            <img src={previewUrl} alt="Preview" className="max-h-[78vh] max-w-full rounded-xl object-contain" />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

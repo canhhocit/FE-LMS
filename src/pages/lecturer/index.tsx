@@ -360,7 +360,17 @@ export function LecturerGrading() {
                     </div>
                     <Pill color={s.score != null ? 'green' : s.isLate ? 'red' : 'amber'}>{s.score != null ? 'DA CHAM' : s.isLate ? 'NOP TRE' : 'CHO CHAM'}</Pill>
                   </div>
-                  <a href={s.fileUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-700 underline">Mở file bài nộp</a>
+                  {((s.fileUrls && s.fileUrls.length > 0) || s.fileUrl) ? (
+                    <div className="mt-2 space-y-1">
+                      {((s.fileUrls && s.fileUrls.length > 0) ? s.fileUrls : [s.fileUrl]).filter(Boolean).map((url, index) => (
+                        <a key={`${url}-${index}`} href={url} target="_blank" rel="noreferrer" className="block text-sm text-blue-700 underline break-all">
+                          Mở file bài nộp {index + 1}
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-2 text-sm text-slate-500">Không có file đính kèm</div>
+                  )}
                   {s.score == null ? (
                     <div className="mt-2 space-y-2">
                       <div className="flex gap-2">

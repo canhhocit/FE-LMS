@@ -225,7 +225,13 @@ export default function Layout() {
       }
     };
 
-    const handleNotificationsUpdated = () => {
+    const handleNotificationsUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<{ count?: number }>;
+      const nextCount = customEvent.detail?.count;
+      if (typeof nextCount === 'number') {
+        if (mounted) setUnreadCount(nextCount);
+        return;
+      }
       void loadUnreadCount();
     };
 

@@ -1,9 +1,11 @@
 import { apiClient, unwrap } from './api/client';
 import type { Notification } from '../types';
 
-export const notifyNotificationsUpdated = () => {
+export const notifyNotificationsUpdated = (count?: number) => {
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('notifications:updated'));
+    window.dispatchEvent(new CustomEvent('notifications:updated', {
+      detail: { count },
+    }));
   }
 };
 
@@ -14,8 +16,20 @@ export const getNotifications = async (): Promise<Notification[]> => {
     isRead: item.isRead ?? false,
   }));
 };
-export const getUnreadCount = async (): Promise<number> => unwrap<number>(apiClient.get('/me/notifications/unread-count'));
+export const getUnreadCount = async (): Promise<number> => {
+  try {
+    return await unwrap<number>(apiClient.get('/me/notifications/unread-count'));
+  } catch {
+    return 0;
+  }
+};
+
 export const markAsRead = async (id: number): Promise<void> => {
-  await apiClient.patch(`/notifications/${id}/read`);
-  notifyNotificationsUpdated();
+  try {
+    await apiClient.patch(`/notifications/${id}/read`);
+    const nextCount = Math.max((await getUnreadCount()) - 1, 0);
+    notifyNotificationsUpdated(nextCount);
+  } catch (error) {
+    throw error;
+  }
 };

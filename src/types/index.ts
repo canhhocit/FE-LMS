@@ -101,12 +101,17 @@ export interface Assignment {
   maxScore: number;
   createdAt?: string;
 }
+export type SubmissionType = 'FILE' | 'IMAGE' | 'GOOGLE_DRIVE_LINK' | 'GITHUB_LINK';
+
 export interface Submission {
   id: number;
   assignmentId: number;
   studentId: number;
   studentName?: string;
-  fileUrl: string;
+  submissionType?: SubmissionType;
+  fileUrl?: string;
+  fileUrls?: string[];
+  externalLink?: string;
   submittedAt: string;
   isLate: boolean;
   score: number | null;

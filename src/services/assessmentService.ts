@@ -19,7 +19,26 @@ export const gradeSubmission = async (submissionId: number, payload: { score: nu
 };
 
 // ===== Submissions (Student view) =====
-export const submitAssignment = async (assignmentId: number, payload: { fileUrl: string }): Promise<Submission> => {
+export const uploadSubmissionFile = async (assignmentId: number, file: File): Promise<string> => {
+  const form = new FormData();
+  form.append('file', file);
+  return unwrap<string>(apiClient.post(`/assignments/${assignmentId}/submit-file`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }));
+};
+export const uploadSubmissionFiles = async (assignmentId: number, files: File[]): Promise<string[]> => {
+  const form = new FormData();
+  files.forEach((file) => form.append('files', file));
+  return unwrap<string[]>(apiClient.post(`/assignments/${assignmentId}/submit-files`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }));
+};
+export const submitAssignment = async (assignmentId: number, payload: {
+  submissionType?: 'FILE' | 'IMAGE' | 'GOOGLE_DRIVE_LINK' | 'GITHUB_LINK';
+  fileUrl?: string;
+  fileUrls?: string[];
+  externalLink?: string;
+}): Promise<Submission> => {
   return unwrap<Submission>(apiClient.post(`/assignments/${assignmentId}/submit`, payload));
 };
 export const getMySubmissions = async (): Promise<Submission[]> => {

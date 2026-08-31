@@ -31,8 +31,8 @@ export default function NotificationsPage() {
     try {
       await notificationService.markAsRead(id);
       setItems((prev) => prev.map((n) => n.id === id ? { ...n, isRead: true } : n));
-    } catch {
-      // no-op for UI; backend will reject only on server-side failure
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Không thể đánh dấu thông báo đã đọc');
     }
   };
 
@@ -46,10 +46,10 @@ export default function NotificationsPage() {
       {items.length === 0 ? <Empty msg="Chưa có thông báo nào" /> : (
         <div className="space-y-3">
           {items.map((n) => (
-            <Card key={n.id} className={n.isRead ? 'border-slate-200' : 'border-indigo-200 bg-indigo-50/40'}>
+            <Card key={n.id} className={n.isRead ? 'border-slate-200 bg-white' : 'border-indigo-200 bg-indigo-50/50'}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="mb-1 flex items-center gap-2">
                     <span className="font-semibold text-slate-800">{n.title}</span>
                     {!n.isRead && <Pill color="indigo">Mới</Pill>}
                   </div>
@@ -57,7 +57,7 @@ export default function NotificationsPage() {
                   <div className="mt-2 text-xs text-slate-500">{fmt(n.createdAt)}</div>
                 </div>
                 {!n.isRead && (
-                  <button onClick={() => void onMarkRead(n.id)} className="text-xs px-3 py-1.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200">Đánh dấu đọc</button>
+                  <button onClick={() => void onMarkRead(n.id)} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100">Đánh dấu đọc</button>
                 )}
               </div>
             </Card>
