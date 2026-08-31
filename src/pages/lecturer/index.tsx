@@ -6,6 +6,7 @@ import * as assessmentService from '../../services/assessmentService';
 import * as gradingService from '../../services/gradingService';
 import { useAuth } from '../../contexts/useAuth';
 import { PageTitle, Card, Spinner, Empty, Pill } from '../../components/Layout';
+import { TeacherIcon, FlameIcon, DotIcon } from '../../components/icons';
 import type { Clazz, Assignment, Submission, AttendanceRecord } from '../../types';
 
 export function LecturerDashboard() {
@@ -39,7 +40,9 @@ export function LecturerDashboard() {
   if (loading) return <Spinner />;
   return (
     <div className="space-y-5">
-      <PageTitle>Xin chào, {user?.fullName} 👨‍🏫</PageTitle>
+      <PageTitle>
+        Xin chào, {user?.fullName} <TeacherIcon className="inline w-5 h-5 ml-1 text-indigo-600" />
+      </PageTitle>
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Card className="bg-linear-to-br from-indigo-600 to-blue-500 text-white">
@@ -69,7 +72,9 @@ export function LecturerDashboard() {
           <div className="space-y-3">
             {recentActivity.length === 0 ? <Empty msg="Chưa có hoạt động gần đây" /> : recentActivity.map((item) => (
               <div key={`${item.title}-${item.time}`} className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-                <span className="mt-0.5 grid h-7 w-7 place-items-center rounded-full bg-indigo-100 text-xs text-indigo-700">•</span>
+                <span className="mt-1.5 grid h-5 w-5 place-items-center rounded-full bg-indigo-100 flex-shrink-0">
+                  <DotIcon className="w-1.5 h-1.5 text-indigo-700" />
+                </span>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-semibold text-slate-800">{item.title}</div>
                   <div className="mt-1 text-xs text-slate-500">{item.detail}</div>
@@ -86,7 +91,9 @@ export function LecturerDashboard() {
             <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-700">{teachingStreak} ngày</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-linear-to-br from-amber-400 to-orange-500 text-xl font-bold text-white">🔥</div>
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-linear-to-br from-amber-400 to-orange-500 text-white flex-shrink-0">
+              <FlameIcon className="w-7 h-7" />
+            </div>
             <div>
               <div className="text-2xl font-bold text-slate-800">{teachingStreak} ngày</div>
               <div className="text-sm text-slate-500">Bạn vẫn giữ nhịp phản hồi và giảng dạy đều đặn.</div>
