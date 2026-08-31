@@ -27,7 +27,7 @@ export const getUnreadCount = async (): Promise<number> => {
 export const markAsRead = async (id: number): Promise<void> => {
   try {
     await apiClient.patch(`/notifications/${id}/read`);
-    const nextCount = Math.max((await getUnreadCount()) - 1, 0);
+    const nextCount = await getUnreadCount();
     notifyNotificationsUpdated(nextCount);
   } catch (error) {
     throw error;

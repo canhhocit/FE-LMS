@@ -111,15 +111,20 @@ export default function Login() {
             </p>
           </div>
 
-          <form onSubmit={submit} className="space-y-5">
+          <form onSubmit={submit} className="space-y-5" noValidate>
             <label className="block">
               <span className="text-sm font-semibold text-slate-700">
                 Tài khoản
               </span>
               <input
+                id="identifier"
+                name="identifier"
+                autoComplete="username"
                 value={id}
                 onChange={(e) => setId(e.target.value)}
                 required
+                aria-invalid={Boolean(err)}
+                aria-describedby={err ? 'login-error' : undefined}
                 placeholder="Nhập email tài khoản"
                 className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#00376f] focus:ring-4 focus:ring-blue-900/10"
               />
@@ -134,17 +139,24 @@ export default function Login() {
                 </Link>
               </div>
               <input
+                id="password"
+                name="password"
                 type="password"
+                autoComplete="current-password"
                 value={pw}
                 onChange={(e) => setPw(e.target.value)}
                 required
+                aria-invalid={Boolean(err)}
+                aria-describedby={err ? 'login-error' : undefined}
                 placeholder="Nhập mật khẩu"
                 className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#00376f] focus:ring-4 focus:ring-blue-900/10"
               />
             </label>
             {err && (
               <div
+                id="login-error"
                 role="alert"
+                aria-live="assertive"
                 className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
               >
                 {err}

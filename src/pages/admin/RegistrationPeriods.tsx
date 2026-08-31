@@ -9,12 +9,20 @@ const fmt = (s?: string) => s ? new Date(s).toLocaleString('vi-VN') : '—';
 export default function RegistrationPeriods() {
   const [periods, setPeriods] = useState<RegistrationPeriod[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', semester: 'HK1', academicYear: '2026-2027', openAt: '', closeAt: '', maxCredits: '24', isActive: true });
-  // Wrapping the loader in useCallback keeps the reference stable across renders
-  // and lets the effect depend on it explicitly. setState is only called from
-  // async callbacks to avoid the "set-state-in-effect" lint warning.
+  const [form, setForm] = useState({
+    name: '',
+    semester: 'HK1',
+    academicYear: '2026-2027',
+    openAt: '',
+    closeAt: '',
+    maxCredits: '24',
+    isActive: true,
+  });
+
   const load = useCallback(() => {
     let mounted = true;
     registrationService.getRegistrationPeriods()
@@ -28,9 +36,33 @@ export default function RegistrationPeriods() {
     const cleanup = load();
     return cleanup;
   }, [load]);
+
   if (loading) return <Spinner />;
   if (err) return <ErrorBox msg={err} />;
+
+  const validateForm = () => {
+    if (!form.name.trim()) return 'Vui lòng nhập tên đợt đăng ký';
+    if (!form.openAt) return 'Vui lòng chọn thời gian bắt đầu';
+    if (!form.closeAt) return 'Vui lòng chọn thời gian kết thúc';
+    if (new Date(form.closeAt).getTime() <= new Date(form.openAt).getTime()) {
+      return 'Thời gian kết thúc phải sau thời gian bắt đầu';
+    }
+    const maxCredits = Number(form.maxCredits);
+    if (!Number.isFinite(maxCredits) || maxCredits <= 0) {
+      return 'Số tín chỉ tối đa phải lớn hơn 0';
+    }
+    return null;
+  };
+
   const submit = async () => {
+    const validationError = validateForm();
+    if (validationError) {
+      setFormError(validationError);
+      return;
+    }
+
+    setFormError(null);
+    setSubmitting(true);
     try {
       await registrationService.createRegistrationPeriod({
         ...form,
@@ -38,12 +70,23 @@ export default function RegistrationPeriods() {
         isActive: true,
       });
       setShowForm(false);
-      setForm({ name: '', semester: 'HK1', academicYear: '2026-2027', openAt: '', closeAt: '', maxCredits: '24', isActive: true });
+      setForm({
+        name: '',
+        semester: 'HK1',
+        academicYear: '2026-2027',
+        openAt: '',
+        closeAt: '',
+        maxCredits: '24',
+        isActive: true,
+      });
       load();
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Lỗi');
+    } finally {
+      setSubmitting(false);
     }
   };
+
   return (
     <div>
       <PageTitle>Đợt đăng ký học phần</PageTitle>
@@ -55,21 +98,27 @@ export default function RegistrationPeriods() {
       </div>
       {showForm && (
         <Card className="mb-3">
+          {formError && (
+            <div role="alert" aria-live="assertive" className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+              {formError}
+            </div>
+          )}
           <div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
-            <input required placeholder="Tên đợt" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
+            <input aria-label="Tên đợt đăng ký" required placeholder="Tên đợt" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
-            <input placeholder="Học kỳ (VD: HK1)" value={form.semester} onChange={(e) => setForm({ ...form, semester: e.target.value })}
+            <input aria-label="Học kỳ" placeholder="Học kỳ (VD: HK1)" value={form.semester} onChange={(e) => setForm({ ...form, semester: e.target.value })}
               className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
-            <input placeholder="Năm học (VD: 2026-2027)" value={form.academicYear} onChange={(e) => setForm({ ...form, academicYear: e.target.value })}
+            <input aria-label="Năm học" placeholder="Năm học (VD: 2026-2027)" value={form.academicYear} onChange={(e) => setForm({ ...form, academicYear: e.target.value })}
               className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
-            <input required type="datetime-local" value={form.openAt} onChange={(e) => setForm({ ...form, openAt: e.target.value })}
+            <input aria-label="Thời gian bắt đầu" required type="datetime-local" value={form.openAt} onChange={(e) => setForm({ ...form, openAt: e.target.value })}
               className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
-            <input required type="datetime-local" value={form.closeAt} onChange={(e) => setForm({ ...form, closeAt: e.target.value })}
+            <input aria-label="Thời gian kết thúc" required type="datetime-local" value={form.closeAt} onChange={(e) => setForm({ ...form, closeAt: e.target.value })}
               className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
-            <input type="number" min="0" placeholder="Tín chỉ tối đa" value={form.maxCredits} onChange={(e) => setForm({ ...form, maxCredits: e.target.value })}
+            <input aria-label="Tín chỉ tối đa" type="number" min="0" placeholder="Tín chỉ tối đa" value={form.maxCredits} onChange={(e) => setForm({ ...form, maxCredits: e.target.value })}
               className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
             <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
               <input
+                aria-label="Mở ngay cho sinh viên đăng ký"
                 type="checkbox"
                 checked={form.isActive}
                 onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
@@ -78,7 +127,9 @@ export default function RegistrationPeriods() {
               Mở ngay cho sinh viên đăng ký
             </label>
           </div>
-          <button onClick={submit} className="mt-3 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-sm">Tạo</button>
+          <button onClick={submit} disabled={submitting} className="mt-3 rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60">
+            {submitting ? 'Đang tạo...' : 'Tạo'}
+          </button>
         </Card>
       )}
       <Card>
