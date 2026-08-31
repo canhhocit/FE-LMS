@@ -827,7 +827,7 @@ function SubmitBtn({ assignmentId, disabled }: { assignmentId: number; disabled?
       )}
 
       {previewUrl && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 p-4" onClick={closePreview}>
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-950/80 p-4" onClick={closePreview}>
           <div className="max-h-[92vh] max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-white p-2 shadow-2xl" onClick={(event) => event.stopPropagation()}>
             <div className="mb-2 flex items-center justify-between gap-3 px-2 pt-1">
               <span className="text-sm font-medium text-slate-700">Xem trước ảnh</span>
