@@ -1,6 +1,7 @@
 // Student Profile page
 import { useEffect, useState, useCallback } from 'react';
 import * as profileService from '../../services/profileService';
+import { AvatarUploader } from '../../components/AvatarUploader';
 import { PageTitle, Card, Spinner, ErrorBox, Pill } from '../../components/Layout';
 import type { UpdateProfileRequest, UserProfile } from '../../types';
 
@@ -52,15 +53,38 @@ export default function StudentProfile() {
   if (loading) return <Spinner />;
   if (err) return <ErrorBox msg={err} />;
   if (!profile) return null;
+  const handleAvatarUpload = async (file: File) => {
+    setErr(null);
+    try {
+      const updated = await profileService.uploadAvatar(file);
+      setProfile(updated);
+      setForm(updated);
+      const stored = JSON.parse(localStorage.getItem('lms_auth') ?? 'null');
+      if (stored) {
+        localStorage.setItem('lms_auth', JSON.stringify({ ...stored, avatarUrl: updated.avatarUrl ?? null }));
+      }
+      window.dispatchEvent(new StorageEvent('storage', { key: 'lms_auth', newValue: localStorage.getItem('lms_auth') }));
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Không thể upload avatar');
+    }
+  };
+
   const save = async () => {
     try {
-      await profileService.updateMyProfile({
+      const updated = await profileService.updateMyProfile({
         fullName: form.fullName ?? profile.fullName,
         dateOfBirth: form.dateOfBirth ?? profile.dateOfBirth ?? null,
         faculty: form.faculty ?? profile.faculty ?? null,
         major: form.major ?? profile.major ?? null,
+        avatarUrl: form.avatarUrl ?? profile.avatarUrl ?? null,
       });
-      setEditing(false); load();
+      setProfile(updated);
+      setForm(updated);
+      const stored = JSON.parse(localStorage.getItem('lms_auth') ?? 'null');
+      if (stored) {
+        localStorage.setItem('lms_auth', JSON.stringify({ ...stored, avatarUrl: updated.avatarUrl ?? null, fullName: updated.fullName }));
+      }
+      setEditing(false);
     }
     catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
   };
@@ -68,9 +92,23 @@ export default function StudentProfile() {
     <div>
       <PageTitle>Hồ sơ cá nhân</PageTitle>
       <Card className="mb-4">
+        {editing ? (
+          <div className="mb-6">
+            <h3 className="font-semibold mb-3">Đổi ảnh đại diện</h3>
+            <AvatarUploader
+              currentAvatar={profile.avatarUrl ?? undefined}
+              onUpload={handleAvatarUpload}
+              label="Lưu ảnh"
+            />
+          </div>
+        ) : null}
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-20 h-20 rounded-full bg-indigo-600 flex items-center justify-center text-3xl">
-            {profile.fullName?.[0]?.toUpperCase() ?? '?'}
+          <div className="relative h-20 w-20 overflow-hidden rounded-full border border-slate-200 bg-indigo-600 text-3xl text-white shadow-sm">
+            {profile.avatarUrl ? (
+              <img src={profile.avatarUrl} alt={profile.fullName} className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center">{profile.fullName?.[0]?.toUpperCase() ?? '?'}</div>
+            )}
           </div>
           <div>
             <div className="text-xl font-semibold">{profile.fullName}</div>
