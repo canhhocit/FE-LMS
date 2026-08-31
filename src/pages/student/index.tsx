@@ -26,10 +26,58 @@ const getStatusMeta = (percentage: number) => {
     return { label: 'Đã học', badgeClass: 'bg-emerald-100 text-emerald-700', barClass: 'from-emerald-500 to-emerald-400', glowClass: 'shadow-[0_0_0_1px_rgba(16,185,129,0.15)] ring-1 ring-emerald-200' };
   }
   if (percentage > 0) {
-    return { label: 'Đang học', badgeClass: 'bg-amber-100 text-amber-700', barClass: 'from-amber-500 to-orange-400', glowClass: 'shadow-[0_0_0_1px_rgba(245,158,11,0.18)] ring-1 ring-amber-200 animate-pulse' };
+    return { label: 'Đang học', badgeClass: 'bg-amber-100 text-amber-700', barClass: 'from-amber-500 to-orange-400', glowClass: 'shadow-[0_0_0_1px_rgba(245,158,11,0.18)] ring-1 ring-amber-200' };
   }
   return { label: 'Chưa học', badgeClass: 'bg-slate-100 text-slate-600', barClass: 'from-slate-300 to-slate-200', glowClass: 'ring-1 ring-slate-200' };
 };
+
+function BookIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
+      <path d="M5 6.5A2.5 2.5 0 0 1 7.5 4H19v14.5H7.5A2.5 2.5 0 0 0 5 21V6.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M5 6.5A2.5 2.5 0 0 1 7.5 4H19v14.5H7.5A2.5 2.5 0 0 0 5 21" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M8.5 8h7M8.5 11.5h7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
+      <rect x="3.5" y="5.5" width="17" height="15" rx="2.3" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M8 3.8v3M16 3.8v3M3.5 9.5h17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M8.5 13h2.5v2.5H8.5z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function WalletIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
+      <path d="M4 8.6A2.6 2.6 0 0 1 6.6 6h10.8A2.6 2.6 0 0 1 20 8.6v7.8A2.6 2.6 0 0 1 17.4 19H6.6A2.6 2.6 0 0 1 4 16.4V8.6Z" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M15 12h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M4 10.5h12.5A2.5 2.5 0 0 1 19 13v1.5A2.5 2.5 0 0 1 16.5 17H4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function BellIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
+      <path d="M7 17.5h10l-1.1-1.5V10a4.9 4.9 0 1 0-9.8 0v6l-1.1 1.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function FlameIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7" aria-hidden="true">
+      <path d="M12 2.6c2.1 2.6 3.4 4.2 3.4 6.7 0 2.6-1.6 4.2-3.4 5.4-1.8-1.2-3.4-2.8-3.4-5.4 0-2.5 1.3-4.1 3.4-6.7Z" fill="currentColor" opacity="0.96" />
+      <path d="M12 8.7c2.3 1.6 4.1 3.4 4.1 6 0 3-2.4 5.3-4.1 5.3-1.7 0-4.1-2.3-4.1-5.3 0-2.6 1.8-4.4 4.1-6Z" fill="currentColor" opacity="0.78" />
+    </svg>
+  );
+}
 
 export function StudentDashboard() {
   const { user } = useAuth();
@@ -141,13 +189,15 @@ export function StudentDashboard() {
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          ['📚', 'HỌC TẬP', 'Đăng ký học', '/student/registrations', 'bg-blue-600'],
-          ['▣', 'LỊCH', 'Thời khóa biểu', '/student/schedule', 'bg-amber-500'],
-          ['▤', 'TÀI CHÍNH', 'Học phí', '/student/tuition', 'bg-emerald-600'],
-          ['▦', 'THÔNG TIN', 'Tin tức & thông báo', '/student/notifications', 'bg-rose-500'],
-        ].map(([icon, label, title, to, color]) => (
+          { icon: BookIcon, label: 'HỌC TẬP', title: 'Đăng ký học', to: '/student/registrations', color: 'bg-blue-600' },
+          { icon: CalendarIcon, label: 'LỊCH', title: 'Thời khóa biểu', to: '/student/schedule', color: 'bg-amber-500' },
+          { icon: WalletIcon, label: 'TÀI CHÍNH', title: 'Học phí', to: '/student/tuition', color: 'bg-emerald-600' },
+          { icon: BellIcon, label: 'THÔNG TIN', title: 'Tin tức & thông báo', to: '/student/notifications', color: 'bg-rose-500' },
+        ].map(({ icon: Icon, label, title, to, color }) => (
           <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl border border-white bg-white p-4 shadow-[0_8px_20px_rgba(36,59,120,0.08)] transition hover:-translate-y-0.5">
-            <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl text-xl text-white ${color}`}>{icon}</span>
+            <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl text-white ${color}`}>
+              <Icon />
+            </span>
             <span>
               <span className="block text-[11px] font-medium text-slate-400">{label}</span>
               <span className="block font-semibold text-[#243b78]">{title}</span>
@@ -201,7 +251,9 @@ export function StudentDashboard() {
           <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-700">{learningStreak} ngày</span>
         </div>
         <div className="flex items-center gap-3">
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-linear-to-br from-amber-400 to-orange-500 text-xl font-bold text-white">🔥</div>
+          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-linear-to-br from-amber-400 to-orange-500 text-white shadow-[0_10px_20px_rgba(251,146,60,0.28)]">
+            <FlameIcon />
+          </div>
           <div>
             <div className="text-2xl font-bold text-slate-800">{learningStreak} ngày</div>
             <div className="text-sm text-slate-500">Bạn đang duy trì nhịp học đều đặn.</div>
@@ -601,6 +653,9 @@ function SubmitBtn({ assignmentId, disabled }: { assignmentId: number; disabled?
       });
       setOpen(false);
       window.location.reload();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Nộp bài thất bại. Vui lòng thử lại.';
+      window.alert(message);
     } finally {
       setBusy(false);
     }
