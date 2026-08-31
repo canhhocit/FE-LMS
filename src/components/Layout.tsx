@@ -347,8 +347,12 @@ export default function Layout() {
           </div>
           <div className="relative flex items-center gap-3">
             <button type="button" onClick={() => setProfileOpen((open) => !open)} className="flex items-center gap-2 text-sm">
-              <span className="grid h-9 w-9 place-items-center rounded-full border-2 border-white/60 bg-white/80 text-sm font-bold text-[#243b78]">
-                {user.fullName?.[0] ?? '?'}
+              <span className="grid h-9 w-9 overflow-hidden rounded-full border-2 border-white/60 bg-white/80 text-sm font-bold text-[#243b78]">
+                {user.avatarUrl ? (
+                  <img src={user.avatarUrl} alt={user.fullName} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center">{user.fullName?.[0] ?? '?'}</span>
+                )}
               </span>
               <span className="hidden max-w-32 truncate sm:inline">{user.fullName}</span>
             </button>

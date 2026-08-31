@@ -24,6 +24,7 @@ export interface AuthUser {
   email: string;
   fullName: string;
   role: Role;
+  avatarUrl?: string | null;
   isFirstLogin?: boolean;
   firstLogin?: boolean;
   refreshToken: string | null;
@@ -158,6 +159,7 @@ export interface UserProfile {
   major: string | null;
   dateOfBirth: string | null;
   status: string;
+  avatarUrl?: string | null;
   curriculumId?: number | null;
 }
 
@@ -166,6 +168,7 @@ export interface UpdateProfileRequest {
   dateOfBirth: string | null;
   faculty: string | null;
   major: string | null;
+  avatarUrl?: string | null;
 }
 
 // ===== Notification =====
