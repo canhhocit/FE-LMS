@@ -252,8 +252,8 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex bg-[#243b78] text-slate-900">
-      {sidebarOpen && <button aria-label="Đóng menu" onClick={() => setSidebarOpen(false)} className="fixed inset-0 z-30 bg-slate-950/25 lg:hidden" />}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-r border-white/10 bg-[#243b78] p-4 text-white transition-transform lg:static lg:w-64 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      {sidebarOpen && <button aria-label="Đóng menu" onClick={() => setSidebarOpen(false)} className="fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-[2px] lg:hidden" />}
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-r border-white/10 bg-[#243b78] p-4 text-white shadow-2xl transition-transform lg:static lg:w-64 lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Link to={`/${roleLower}`} className="flex items-center gap-3 border-b border-white/10 px-2 pb-5 pt-2">
           <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#f58220] text-xl font-bold">✦</span>
           <div>
@@ -332,7 +332,7 @@ export default function Layout() {
         </button>
       </aside>
       <main className="min-w-0 flex-1 overflow-auto">
-        <header className="flex items-center justify-between gap-4 bg-[#243b78] px-4 py-3 text-white sm:px-6">
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-white/10 bg-[#243b78]/95 px-4 py-3 text-white shadow-sm backdrop-blur sm:px-6">
           <div className="flex min-w-0 items-center gap-3 text-sm text-blue-100">
             <button type="button" aria-label="Mở menu" onClick={() => setSidebarOpen(true)} className="text-xl lg:hidden">
               ☰
@@ -376,7 +376,7 @@ export default function Layout() {
             )}
           </div>
         </header>
-        <div className="min-h-[calc(100vh-61px)] rounded-tl-[28px] bg-linear-to-br from-[#eef3ff] via-[#f7f9ff] to-[#dfe8ff] p-4 sm:p-6">
+        <div className="min-h-[calc(100vh-61px)] bg-[#f5f7fb] p-4 sm:p-6 lg:p-8">
           <Outlet />
         </div>
       </main>

@@ -19,7 +19,10 @@ apiClient.interceptors.request.use((config) => {
 const extractErrorMessage = (error: unknown) => {
   const status = (error as { response?: { status?: number } })?.response?.status ?? 500;
   const payload = (error as { response?: { data?: { message?: string; error?: string } } })?.response?.data;
-  const raw = payload?.message ?? payload?.error ?? 'Yêu cầu không thành công';
+  const raw = payload?.message ?? payload?.error;
+  if (!error || !(error as { response?: unknown }).response) {
+    return 'Không thể kết nối máy chủ. Kiểm tra mạng và thử lại.';
+  }
 
   if (status === 400) return raw || 'Dữ liệu không hợp lệ';
   if (status === 401) return 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
