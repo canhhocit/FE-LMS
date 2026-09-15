@@ -27,6 +27,8 @@ import LecturerProfile from './pages/lecturer/Profile';
 import { AdminDashboard, AdminUsers, AdminClasses } from './pages/admin';
 import AdminReports from './pages/admin/Reports';
 import AdminCurricula from './pages/admin/Curricula';
+import AdminDepartments from './pages/admin/Departments';
+import AdminAdministrativeClasses from './pages/admin/AdministrativeClasses';
 import RegistrationPeriods from './pages/admin/RegistrationPeriods';
 import AdminPermissions from './pages/admin/Permissions';
 import NotificationsPage from './pages/shared/Notifications';
@@ -104,6 +106,8 @@ export default function App() {
             <Route path="/admin/registration" element={<RegistrationPeriods />} />
             <Route path="/admin/reports" element={<AdminReports />} />
             <Route path="/admin/permissions" element={<AdminPermissions />} />
+            <Route path="/admin/departments" element={<AdminDepartments />} />
+            <Route path="/admin/administrative-classes" element={<AdminAdministrativeClasses />} />
        </Route>
           <Route path="*" element={<NotFoundPage />} />
      </Routes>
