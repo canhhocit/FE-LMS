@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import * as registrationService from '../../services/registrationService';
-import type { Clazz, Registration } from '../../types';
+import type { Clazz, Registration, RegistrationPeriod } from '../../types';
 
 export default function StudentRegistrations() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [availableClasses, setAvailableClasses] = useState<Clazz[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [activePeriod, setActivePeriod] = useState<RegistrationPeriod | null>(null);
 
   const load = async () => {
     try {
