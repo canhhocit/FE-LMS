@@ -31,6 +31,8 @@ import AdminDepartments from './pages/admin/Departments';
 import AdminAdministrativeClasses from './pages/admin/AdministrativeClasses';
 import RegistrationPeriods from './pages/admin/RegistrationPeriods';
 import AdminPermissions from './pages/admin/Permissions';
+import AdminAuditLogs from './pages/admin/AuditLogs';
+import ClazzPermissions from './pages/admin/ClazzPermissions';
 import NotificationsPage from './pages/shared/Notifications';
 import TuitionPage from './pages/shared/TuitionPage';
 import QuizPage from './pages/shared/QuizPage';
@@ -106,6 +108,8 @@ export default function App() {
             <Route path="/admin/registration" element={<RegistrationPeriods />} />
             <Route path="/admin/reports" element={<AdminReports />} />
             <Route path="/admin/permissions" element={<AdminPermissions />} />
+            <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+            <Route path="/admin/clazz-permissions" element={<ClazzPermissions />} />
             <Route path="/admin/departments" element={<AdminDepartments />} />
             <Route path="/admin/administrative-classes" element={<AdminAdministrativeClasses />} />
        </Route>
