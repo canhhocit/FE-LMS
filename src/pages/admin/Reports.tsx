@@ -1,4 +1,4 @@
-// Admin Reports page - charts + export
+﻿// Admin Reports page - charts + export
 import { useEffect, useState } from 'react';
 import * as reportService from '../../services/reportService';
 import { exportClazzScoresExcel, exportStudentTranscriptPdf, scanAcademicProbation } from '../../services/reportService';
@@ -46,7 +46,7 @@ export default function AdminReports() {
       const rates = await tuitionService.getTuitionRates();
       setTuitionRates(rates);
     } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'Không tải được mức học phí');
+      setErr((e as { message?: string })?.message ?? 'KhĂ´ng táº£i Ä‘Æ°á»£c má»©c há»c phĂ­');
     } finally {
       setLoadingTuition(false);
     }
@@ -78,19 +78,19 @@ export default function AdminReports() {
       cancelEditRate();
       loadTuitionRates();
     } catch (e: unknown) {
-      alert((e as { message?: string })?.message ?? 'Cập nhật thất bại');
+      alert((e as { message?: string })?.message ?? 'Cáº­p nháº­t tháº¥t báº¡i');
     } finally {
       setSavingRate(false);
     }
   };
 
   const handleDeleteRate = async (id: number) => {
-    if (!confirm('Xoá mức học phí này?')) return;
+    if (!confirm('XoĂ¡ má»©c há»c phĂ­ nĂ y?')) return;
     try {
       await tuitionService.deleteTuitionRate(id);
       loadTuitionRates();
     } catch (e: unknown) {
-      alert((e as { message?: string })?.message ?? 'Xoá thất bại');
+      alert((e as { message?: string })?.message ?? 'XoĂ¡ tháº¥t báº¡i');
     }
   };
 
@@ -108,7 +108,7 @@ export default function AdminReports() {
       setNewRatePrice(0);
       loadTuitionRates();
     } catch (e: unknown) {
-      alert((e as { message?: string })?.message ?? 'Tạo thất bại');
+      alert((e as { message?: string })?.message ?? 'Táº¡o tháº¥t báº¡i');
     } finally {
       setCreatingRate(false);
     }
@@ -123,7 +123,7 @@ export default function AdminReports() {
     let m = true;
     Promise.all([reportService.getEnrollmentsByMonth(), reportService.getAverageScoreByClazz()])
       .then(([e, s]) => m && (setEnrolls(e), setScores(s)))
-      .catch((e2) => m && setErr((e2 as { message?: string })?.message ?? 'Lỗi'))
+      .catch((e2) => m && setErr((e2 as { message?: string })?.message ?? 'Lá»—i'))
       .finally(() => m && setLoading(false));
   
   const handleExportClazzScores = async () => {
@@ -134,7 +134,7 @@ export default function AdminReports() {
       const blob = await exportClazzScoresExcel(cid);
       downloadBlob(blob, `scores-clazz-${cid}.xlsx`);
     } catch (error: unknown) {
-      setErr((error as { message?: string })?.message ?? 'Không thể xuất điểm lớp.');
+      setErr((error as { message?: string })?.message ?? 'KhĂ´ng thá»ƒ xuáº¥t Ä‘iá»ƒm lá»›p.');
     } finally {
       setExporting(null);
     }
@@ -148,7 +148,7 @@ export default function AdminReports() {
       const blob = await exportStudentTranscriptPdf(sid);
       downloadBlob(blob, `transcript-student-${sid}.pdf`);
     } catch (error: unknown) {
-      setErr((error as { message?: string })?.message ?? 'Không thể xuất bảng điểm.');
+      setErr((error as { message?: string })?.message ?? 'KhĂ´ng thá»ƒ xuáº¥t báº£ng Ä‘iá»ƒm.');
     } finally {
       setExporting(null);
     }
@@ -159,9 +159,9 @@ export default function AdminReports() {
     setScanResult(null);
     try {
       const result = await scanAcademicProbation();
-      setScanResult(`Quét xong: ${result.scanned} sinh viên, ${result.warnings} cảnh báo.`);
+      setScanResult(`QuĂ©t xong: ${result.scanned} sinh viĂªn, ${result.warnings} cáº£nh bĂ¡o.`);
     } catch (error: unknown) {
-      setScanResult((error as { message?: string })?.message ?? 'Quét thất bại.');
+      setScanResult((error as { message?: string })?.message ?? 'QuĂ©t tháº¥t báº¡i.');
     } finally {
       setScanning(false);
     }
@@ -180,7 +180,7 @@ export default function AdminReports() {
       const blob = await reportService.exportEnrollmentsExcel();
       downloadBlob(blob, 'enrollments-by-month.xlsx');
     } catch (error: unknown) {
-      setErr((error as { message?: string })?.message ?? 'Không thể xuất báo cáo đăng ký.');
+      setErr((error as { message?: string })?.message ?? 'KhĂ´ng thá»ƒ xuáº¥t bĂ¡o cĂ¡o Ä‘Äƒng kĂ½.');
     } finally {
       setExporting(null);
     }
@@ -192,7 +192,7 @@ export default function AdminReports() {
       const blob = await reportService.exportScorePdf();
       downloadBlob(blob, 'average-score-by-class.pdf');
     } catch (error: unknown) {
-      setErr((error as { message?: string })?.message ?? 'Không thể xuất báo cáo điểm trung bình.');
+      setErr((error as { message?: string })?.message ?? 'KhĂ´ng thá»ƒ xuáº¥t bĂ¡o cĂ¡o Ä‘iá»ƒm trung bĂ¬nh.');
     } finally {
       setExporting(null);
     }
@@ -200,27 +200,27 @@ export default function AdminReports() {
 
   return (
     <div>
-      <PageTitle>Báo cáo & Thống kê</PageTitle>
+      <PageTitle>BĂ¡o cĂ¡o & Thá»‘ng kĂª</PageTitle>
       <div className="mb-4 flex flex-wrap gap-2">
-        <button
+        <button aria-label="button"
           onClick={handleExportEnrollments}
           disabled={exporting !== null}
           className="px-3 py-2 rounded text-sm bg-indigo-600 text-white disabled:opacity-50 hover:bg-indigo-500"
         >
-          {exporting === 'enroll' ? 'Đang xuất…' : 'Xuất Excel theo tháng'}
+          {exporting === 'enroll' ? 'Äang xuáº¥tâ€¦' : 'Xuáº¥t Excel theo thĂ¡ng'}
         </button>
-        <button
+        <button aria-label="button"
           onClick={handleExportScores}
           disabled={exporting !== null}
           className="px-3 py-2 rounded text-sm bg-emerald-600 text-white disabled:opacity-50 hover:bg-emerald-500"
         >
-          {exporting === 'score' ? 'Đang xuất…' : 'Xuất PDF điểm TB'}
+          {exporting === 'score' ? 'Äang xuáº¥tâ€¦' : 'Xuáº¥t PDF Ä‘iá»ƒm TB'}
         </button>
       </div>
       <div className="grid md:grid-cols-2 gap-4 mb-4">
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold">Đăng ký học theo tháng</h3>
+            <h3 className="font-semibold">ÄÄƒng kĂ½ há»c theo thĂ¡ng</h3>
           </div>
           <div className="space-y-2">
             {enrolls.map((e) => (
@@ -236,7 +236,7 @@ export default function AdminReports() {
         </Card>
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold">Điểm TB theo lớp</h3>
+            <h3 className="font-semibold">Äiá»ƒm TB theo lá»›p</h3>
           </div>
           <div className="space-y-2">
             {scores.map((s) => (
@@ -254,3 +254,4 @@ export default function AdminReports() {
     </div>
   );
 }
+

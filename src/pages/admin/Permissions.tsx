@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import * as permissionService from '../../services/permissionService';
 import { PageTitle, Card, Spinner, Pill } from '../../components/Layout';
 import type { User } from '../../types';
@@ -29,7 +29,7 @@ export default function Permissions() {
         }
       })
       .catch((e: unknown) => {
-        if (m) setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'Không thể tải dữ liệu phân quyền' });
+        if (m) setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'KhĂ´ng thá»ƒ táº£i dá»¯ liá»‡u phĂ¢n quyá»n' });
       })
       .finally(() => {
         if (m) setLoading(false);
@@ -46,7 +46,7 @@ export default function Permissions() {
         if (m) setUserPermissions(perms);
       })
       .catch((e: unknown) => {
-        if (m) setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'Không thể tải quyền của admin được chọn' });
+        if (m) setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'KhĂ´ng thá»ƒ táº£i quyá»n cá»§a admin Ä‘Æ°á»£c chá»n' });
       });
 
     return () => { m = false; };
@@ -64,9 +64,9 @@ export default function Permissions() {
     setMsg(null);
     try {
       await permissionService.updateUserPermissions(selectedAdmin.id, userPermissions);
-      setMsg({ type: 'success', text: 'Cập nhật phân quyền thành công!' });
+      setMsg({ type: 'success', text: 'Cáº­p nháº­t phĂ¢n quyá»n thĂ nh cĂ´ng!' });
     } catch (e: unknown) {
-      setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'Cập nhật phân quyền thất bại' });
+      setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'Cáº­p nháº­t phĂ¢n quyá»n tháº¥t báº¡i' });
     } finally {
       setSaving(false);
     }
@@ -76,7 +76,7 @@ export default function Permissions() {
 
   return (
     <div className="space-y-6">
-      <PageTitle>Phân quyền quản trị viên (RBAC)</PageTitle>
+      <PageTitle>PhĂ¢n quyá»n quáº£n trá»‹ viĂªn (RBAC)</PageTitle>
 
       {msg && (
         <div className={`p-4 rounded-xl text-sm border ${
@@ -87,16 +87,16 @@ export default function Permissions() {
       )}
 
       <div className="grid md:grid-cols-3 gap-6">
-        {/* Danh sách Admin */}
+        {/* Danh sĂ¡ch Admin */}
         <div className="md:col-span-1 space-y-4">
           <Card>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-3">Danh sách Admin</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-3">Danh sĂ¡ch Admin</h3>
             <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto pr-2">
               {admins.length === 0 ? (
-                <div className="p-4 text-center text-xs text-slate-400">Không có admin nào</div>
+                <div className="p-4 text-center text-xs text-slate-400">KhĂ´ng cĂ³ admin nĂ o</div>
               ) : (
                 admins.map((adm) => (
-                  <button key={adm.id} onClick={() => { setSelectedAdmin(adm); setMsg(null); }}
+                  <button aria-label="button" key={adm.id} onClick={() => { setSelectedAdmin(adm); setMsg(null); }}
                     className={`w-full text-left p-3 rounded-lg text-sm transition ${
                       selectedAdmin?.id === adm.id
                         ? 'bg-blue-50 text-blue-900 border border-blue-100 font-medium'
@@ -111,13 +111,13 @@ export default function Permissions() {
           </Card>
         </div>
 
-        {/* Thiết lập quyền chi tiết */}
+        {/* Thiáº¿t láº­p quyá»n chi tiáº¿t */}
         <div className="md:col-span-2 space-y-4">
           {selectedAdmin ? (
             <Card>
               <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
                 <div>
-                  <h3 className="text-base font-bold text-slate-800">Quyền của: {selectedAdmin.fullName}</h3>
+                  <h3 className="text-base font-bold text-slate-800">Quyá»n cá»§a: {selectedAdmin.fullName}</h3>
                   <p className="text-xs text-slate-400">{selectedAdmin.email}</p>
                 </div>
                 <Pill color="indigo">ADMIN</Pill>
@@ -143,15 +143,15 @@ export default function Permissions() {
               </div>
 
               <div className="flex justify-end gap-3">
-                <button onClick={handleSave} disabled={saving}
+                <button aria-label="button" onClick={handleSave} disabled={saving}
                   className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50 transition shadow-sm">
-                  {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                  {saving ? 'Äang lÆ°u...' : 'LÆ°u thay Ä‘á»•i'}
                 </button>
               </div>
             </Card>
           ) : (
             <div className="flex items-center justify-center p-8 rounded-xl bg-slate-50 border border-dashed border-slate-200 text-slate-400">
-              Vui lòng chọn một quản trị viên để phân quyền
+              Vui lĂ²ng chá»n má»™t quáº£n trá»‹ viĂªn Ä‘á»ƒ phĂ¢n quyá»n
             </div>
           )}
         </div>
@@ -159,3 +159,4 @@ export default function Permissions() {
     </div>
   );
 }
+

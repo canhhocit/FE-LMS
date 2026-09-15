@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import * as curriculumService from '../../services/curriculumService';
 import { removeCourseFromCurriculum, addCourseToCurriculum } from '../../services/curriculumService';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
@@ -50,7 +50,7 @@ export default function AdminCurricula() {
           }
         }
       })
-      .catch((e) => m && setErr((e as { message?: string })?.message ?? 'Lỗi tải dữ liệu'))
+      .catch((e) => m && setErr((e as { message?: string })?.message ?? 'Lá»—i táº£i dá»¯ liá»‡u'))
       .finally(() => m && setLoading(false));
     return () => { m = false; };
   }, []);
@@ -62,20 +62,20 @@ export default function AdminCurricula() {
       const cs = await curriculumService.getCoursesByCurriculum(selected.id);
       setCurriculumCourses(cs);
     } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'Không tải được môn học của CTĐT');
+      setErr((e as { message?: string })?.message ?? 'KhĂ´ng táº£i Ä‘Æ°á»£c mĂ´n há»c cá»§a CTÄT');
     } finally {
       setLoadingCourses(false);
     }
   };
 
   const handleRemoveFromCurriculum = async (courseId: number) => {
-    if (!selected || !confirm('Bạn có chắc muốn xoá môn học này khỏi CTĐT?')) return;
+    if (!selected || !confirm('Báº¡n cĂ³ cháº¯c muá»‘n xoĂ¡ mĂ´n há»c nĂ y khá»i CTÄT?')) return;
     try {
       await removeCourseFromCurriculum(selected.id, courseId);
-      setMsg({ type: 'success', text: 'Đã xoá môn khỏi CTĐT' });
+      setMsg({ type: 'success', text: 'ÄĂ£ xoĂ¡ mĂ´n khá»i CTÄT' });
       loadCurriculumCourses();
     } catch (e: unknown) {
-      setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'Xoá khỏi CTĐT thất bại' });
+      setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'XoĂ¡ khá»i CTÄT tháº¥t báº¡i' });
     }
   };
 
@@ -83,7 +83,7 @@ export default function AdminCurricula() {
     // Get courses not in this curriculum
     const available = courses.filter(c => !curriculumCourses.some(cc => cc.id === c.id));
     if (available.length === 0) {
-      setMsg({ type: 'error', text: 'Không còn môn học nào để thêm' });
+      setMsg({ type: 'error', text: 'KhĂ´ng cĂ²n mĂ´n há»c nĂ o Ä‘á»ƒ thĂªm' });
       return;
     }
     setShowAddCourseModal(true);
@@ -94,12 +94,12 @@ export default function AdminCurricula() {
     setAddingCourse(true);
     try {
       await addCourseToCurriculum(selected.id, selectedCourseToAdd);
-      setMsg({ type: 'success', text: 'Đã thêm môn vào CTĐT' });
+      setMsg({ type: 'success', text: 'ÄĂ£ thĂªm mĂ´n vĂ o CTÄT' });
       setShowAddCourseModal(false);
       setSelectedCourseToAdd(null);
       loadCurriculumCourses();
     } catch (e: unknown) {
-      setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'Thêm vào CTĐT thất bại' });
+      setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'ThĂªm vĂ o CTÄT tháº¥t báº¡i' });
     } finally {
       setAddingCourse(false);
     }
@@ -139,7 +139,7 @@ export default function AdminCurricula() {
     if (!selected) return;
     const total = attendancePercent + midtermPercent + finalPercent;
     if (total !== 100) {
-      setMsg({ type: 'error', text: `Tổng trọng số phải bằng 100% (Hiện tại là: ${total}%)` });
+      setMsg({ type: 'error', text: `Tá»•ng trá»ng sá»‘ pháº£i báº±ng 100% (Hiá»‡n táº¡i lĂ : ${total}%)` });
       return;
     }
     setPolicySaving(true);
@@ -151,9 +151,9 @@ export default function AdminCurricula() {
         finalWeight: finalPercent / 100,
       });
       setPolicy(saved);
-      setMsg({ type: 'success', text: 'Lưu công thức tính điểm thành công!' });
+      setMsg({ type: 'success', text: 'LÆ°u cĂ´ng thá»©c tĂ­nh Ä‘iá»ƒm thĂ nh cĂ´ng!' });
     } catch (e: unknown) {
-      setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'Không thể lưu công thức tính điểm' });
+      setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'KhĂ´ng thá»ƒ lÆ°u cĂ´ng thá»©c tĂ­nh Ä‘iá»ƒm' });
     } finally {
       setPolicySaving(false);
     }
@@ -189,11 +189,11 @@ export default function AdminCurricula() {
     for (let i = 0; i < gpaRules.length; i++) {
       const r = gpaRules[i];
       if (r.minScore10 < 0 || r.minScore10 > 10) {
-        setMsg({ type: 'error', text: `Dòng ${i + 1}: Ngưỡng điểm hệ 10 phải từ 0 đến 10` });
+        setMsg({ type: 'error', text: `DĂ²ng ${i + 1}: NgÆ°á»¡ng Ä‘iá»ƒm há»‡ 10 pháº£i tá»« 0 Ä‘áº¿n 10` });
         return;
       }
       if (r.gpa4 < 0 || r.gpa4 > 4) {
-        setMsg({ type: 'error', text: `Dòng ${i + 1}: Điểm GPA hệ 4 phải từ 0 đến 4` });
+        setMsg({ type: 'error', text: `DĂ²ng ${i + 1}: Äiá»ƒm GPA há»‡ 4 pháº£i tá»« 0 Ä‘áº¿n 4` });
         return;
       }
     }
@@ -210,9 +210,9 @@ export default function AdminCurricula() {
         })),
       );
       setGpaRules(saved.sort((a, b) => a.sortOrder - b.sortOrder));
-      setMsg({ type: 'success', text: 'Lưu thang quy đổi GPA thành công!' });
+      setMsg({ type: 'success', text: 'LÆ°u thang quy Ä‘á»•i GPA thĂ nh cĂ´ng!' });
     } catch (e: unknown) {
-      setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'Không thể lưu thang quy đổi GPA' });
+      setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'KhĂ´ng thá»ƒ lÆ°u thang quy Ä‘á»•i GPA' });
     } finally {
       setGpaSaving(false);
     }
@@ -243,19 +243,19 @@ export default function AdminCurricula() {
       cancelEditCourse();
       if (selectedCurriculumId) loadCourses(selectedCurriculumId);
     } catch (e: unknown) {
-      alert((e as { message?: string })?.message ?? 'Cập nhật môn học thất bại.');
+      alert((e as { message?: string })?.message ?? 'Cáº­p nháº­t mĂ´n há»c tháº¥t báº¡i.');
     } finally {
       setCourseSaving(false);
     }
   };
 
   const handleDeleteCourse = async (courseId: number) => {
-    if (!confirm('Bạn có chắc muốn xoá môn học này?')) return;
+    if (!confirm('Báº¡n cĂ³ cháº¯c muá»‘n xoĂ¡ mĂ´n há»c nĂ y?')) return;
     try {
       await deleteCourse(courseId);
       if (selectedCurriculumId) loadCourses(selectedCurriculumId);
     } catch (e: unknown) {
-      alert((e as { message?: string })?.message ?? 'Xoá môn học thất bại.');
+      alert((e as { message?: string })?.message ?? 'XoĂ¡ mĂ´n há»c tháº¥t báº¡i.');
     }
   };
 
@@ -266,22 +266,22 @@ export default function AdminCurricula() {
       {showAddCourseModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowAddCourseModal(false)}>
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-semibold text-slate-800 mb-4">Thêm môn học vào CTĐT</h2>
+            <h2 className="text-lg font-semibold text-slate-800 mb-4">ThĂªm mĂ´n há»c vĂ o CTÄT</h2>
             <div className="mb-4">
-              <label className="block text-xs font-medium text-slate-500 mb-1">Chọn môn học</label>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Chá»n mĂ´n há»c</label>
               <select value={selectedCourseToAdd ?? ''} onChange={(e) => setSelectedCourseToAdd(Number(e.target.value))}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-400 outline-none">
-                <option value="">-- Chọn môn học --</option>
+                <option value="">-- Chá»n mĂ´n há»c --</option>
                 {courses.filter(c => !curriculumCourses.some(cc => cc.id === c.id)).map((c) => (
                   <option key={c.id} value={c.id}>{c.code} - {c.title} ({c.credit} TC)</option>
                 ))}
               </select>
             </div>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setShowAddCourseModal(false)} className="px-4 py-2 text-sm rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Huỷ</button>
-              <button onClick={handleAddToCurriculum} disabled={addingCourse || !selectedCourseToAdd}
+              <button aria-label="button" onClick={() => setShowAddCourseModal(false)} className="px-4 py-2 text-sm rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Huá»·</button>
+              <button aria-label="button" onClick={handleAddToCurriculum} disabled={addingCourse || !selectedCourseToAdd}
                 className="px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 transition">
-                {addingCourse ? 'Đang thêm...' : 'Thêm vào CTĐT'}
+                {addingCourse ? 'Äang thĂªm...' : 'ThĂªm vĂ o CTÄT'}
               </button>
             </div>
           </div>
@@ -291,28 +291,28 @@ export default function AdminCurricula() {
       {showAddCourseModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowAddCourseModal(false)}>
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-semibold text-slate-800 mb-4">Thêm môn học vào CTĐT</h2>
+            <h2 className="text-lg font-semibold text-slate-800 mb-4">ThĂªm mĂ´n há»c vĂ o CTÄT</h2>
             <div className="mb-4">
-              <label className="block text-xs font-medium text-slate-500 mb-1">Chọn môn học</label>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Chá»n mĂ´n há»c</label>
               <select value={selectedCourseToAdd ?? ''} onChange={(e) => setSelectedCourseToAdd(Number(e.target.value))}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-400 outline-none">
-                <option value="">-- Chọn môn học --</option>
+                <option value="">-- Chá»n mĂ´n há»c --</option>
                 {courses.filter(c => !curriculumCourses.some(cc => cc.id === c.id)).map((c) => (
                   <option key={c.id} value={c.id}>{c.code} - {c.title} ({c.credit} TC)</option>
                 ))}
               </select>
             </div>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setShowAddCourseModal(false)} className="px-4 py-2 text-sm rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Huỷ</button>
-              <button onClick={handleAddToCurriculum} disabled={addingCourse || !selectedCourseToAdd}
+              <button aria-label="button" onClick={() => setShowAddCourseModal(false)} className="px-4 py-2 text-sm rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Huá»·</button>
+              <button aria-label="button" onClick={handleAddToCurriculum} disabled={addingCourse || !selectedCourseToAdd}
                 className="px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 transition">
-                {addingCourse ? 'Đang thêm...' : 'Thêm vào CTĐT'}
+                {addingCourse ? 'Äang thĂªm...' : 'ThĂªm vĂ o CTÄT'}
               </button>
             </div>
           </div>
         </div>
       )}
-      <PageTitle>Chương trình đào tạo & Môn học</PageTitle>
+      <PageTitle>ChÆ°Æ¡ng trĂ¬nh Ä‘Ă o táº¡o & MĂ´n há»c</PageTitle>
 
       {msg && (
         <div className={`p-4 rounded-xl text-sm border ${
@@ -323,22 +323,22 @@ export default function AdminCurricula() {
       )}
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Cột trái: Chọn chương trình đào tạo */}
+        {/* Cá»™t trĂ¡i: Chá»n chÆ°Æ¡ng trĂ¬nh Ä‘Ă o táº¡o */}
         <div className="lg:col-span-1 space-y-4">
           <Card>
-            <h3 className="font-semibold text-slate-800 mb-3">Chương trình đào tạo</h3>
-            {curricula.length === 0 ? <Empty msg="Chưa có CTĐT" /> : (
+            <h3 className="font-semibold text-slate-800 mb-3">ChÆ°Æ¡ng trĂ¬nh Ä‘Ă o táº¡o</h3>
+            {curricula.length === 0 ? <Empty msg="ChÆ°a cĂ³ CTÄT" /> : (
               <ul className="space-y-2 text-sm">
                 {curricula.map((c) => (
                   <li key={c.id}>
-                    <button onClick={() => { setSelected(c); setMsg(null); }}
+                    <button aria-label="button" onClick={() => { setSelected(c); setMsg(null); }}
                       className={`w-full text-left p-3 rounded-lg border transition ${
                         selected?.id === c.id
                           ? 'bg-blue-50 border-blue-200 text-blue-900 font-medium'
                           : 'bg-white border-slate-100 hover:bg-slate-50 text-slate-700'
                       }`}>
                       <div className="font-semibold">{c.name}</div>
-                      <div className="text-xs text-slate-400 mt-1">{c.faculty ?? '-'} · Khóa {c.academicYear ?? '-'}</div>
+                      <div className="text-xs text-slate-400 mt-1">{c.faculty ?? '-'} Â· KhĂ³a {c.academicYear ?? '-'}</div>
                     </button>
                   </li>
                 ))}
@@ -347,23 +347,23 @@ export default function AdminCurricula() {
           </Card>
         </div>
 
-        {/* Cột phải: Chi tiết CTĐT & Cấu hình */}
+        {/* Cá»™t pháº£i: Chi tiáº¿t CTÄT & Cáº¥u hĂ¬nh */}
         <div className="lg:col-span-2 space-y-4">
           {selected ? (
             <>
               {/* Tab Selector */}
               <div className="flex border-b border-slate-200 gap-4 mb-2">
-                <button onClick={() => setActiveTab('courses')}
+                <button aria-label="button" onClick={() => setActiveTab('courses')}
                   className={`pb-3 text-sm font-semibold relative ${
                     activeTab === 'courses' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-700'
                   }`}>
-                  Môn học của CTĐT
+                  MĂ´n há»c cá»§a CTÄT
                 </button>
-                <button onClick={() => setActiveTab('grading')}
+                <button aria-label="button" onClick={() => setActiveTab('grading')}
                   className={`pb-3 text-sm font-semibold relative ${
                     activeTab === 'grading' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-700'
                   }`}>
-                  Cấu hình điểm & GPA
+                  Cáº¥u hĂ¬nh Ä‘iá»ƒm & GPA
                 </button>
               </div>
 
@@ -371,32 +371,32 @@ export default function AdminCurricula() {
               {activeTab === 'courses' && (
                 <Card>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-slate-800">Danh sách môn học ({curriculumCourses.length})</h3>
+                    <h3 className="font-bold text-slate-800">Danh sĂ¡ch mĂ´n há»c ({curriculumCourses.length})</h3>
                     <div className="flex items-center gap-2">
-                      <Pill color="indigo">Khóa {selected.academicYear}</Pill>
-                      <button onClick={openAddCourseModal} disabled={loadingCourses}
+                      <Pill color="indigo">KhĂ³a {selected.academicYear}</Pill>
+                      <button aria-label="button" onClick={openAddCourseModal} disabled={loadingCourses}
                         className="px-3 py-1.5 rounded text-sm bg-emerald-600 text-white hover:bg-emerald-500 transition disabled:opacity-50">
-                        + Thêm môn
+                        + ThĂªm mĂ´n
                       </button>
                     </div>
                   </div>
-                  {courses.length === 0 ? <Empty msg="Chưa có môn học" /> : (
+                  {courses.length === 0 ? <Empty msg="ChÆ°a cĂ³ mĂ´n há»c" /> : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead className="text-xs text-slate-500 border-b border-slate-200 bg-slate-50">
                           <tr>
-                            <th className="text-left p-3">Mã môn</th>
-                            <th className="text-left p-3">Tên môn</th>
-                            <th className="text-center p-3">Tín chỉ</th>
-                            <th className="text-left p-3">Môn tiên quyết</th>
-                            <th className="text-center p-3">Thao tác</th>
+                            <th className="text-left p-3">MĂ£ mĂ´n</th>
+                            <th className="text-left p-3">TĂªn mĂ´n</th>
+                            <th className="text-center p-3">TĂ­n chá»‰</th>
+                            <th className="text-left p-3">MĂ´n tiĂªn quyáº¿t</th>
+                            <th className="text-center p-3">Thao tĂ¡c</th>
                           </tr>
                         </thead>
                         <tbody>
                           {loadingCourses ? (
-                            <tr><td colSpan={5} className="text-center p-6 text-slate-400">Đang tải...</td></tr>
+                            <tr><td colSpan={5} className="text-center p-6 text-slate-400">Äang táº£i...</td></tr>
                           ) : curriculumCourses.length === 0 ? (
-                            <tr><td colSpan={5} className="text-center p-6 text-slate-400">Chưa có môn học trong CTĐT này</td></tr>
+                            <tr><td colSpan={5} className="text-center p-6 text-slate-400">ChÆ°a cĂ³ mĂ´n há»c trong CTÄT nĂ y</td></tr>
                           ) : (
                             curriculumCourses.map((c) => (
                               <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50/50">
@@ -407,13 +407,13 @@ export default function AdminCurricula() {
                                 <td className="p-3 text-center space-x-1">
                                   {editCourseId === c.id ? (
                                     <>
-                                      <button onClick={handleSaveEditCourse} disabled={courseSaving} className="px-2 py-1 rounded text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition disabled:opacity-50">Lưu</button>
-                                      <button onClick={cancelEditCourse} className="px-2 py-1 rounded text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition">Huỷ</button>
+                                      <button aria-label="button" onClick={handleSaveEditCourse} disabled={courseSaving} className="px-2 py-1 rounded text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition disabled:opacity-50">LÆ°u</button>
+                                      <button aria-label="button" onClick={cancelEditCourse} className="px-2 py-1 rounded text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition">Huá»·</button>
                                     </>
                                   ) : (
                                     <>
-                                      <button onClick={()=>startEditCourse(c)} className="px-2 py-1 rounded text-xs bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition">Sửa</button>
-                                      <button onClick={()=>handleRemoveFromCurriculum(c.id)} className="px-2 py-1 rounded text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition" title="Xoá khỏi CTĐT">Xoá khỏi CTĐT</button>
+                                      <button aria-label="button" onClick={()=>startEditCourse(c)} className="px-2 py-1 rounded text-xs bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition">Sá»­a</button>
+                                      <button aria-label="button" onClick={()=>handleRemoveFromCurriculum(c.id)} className="px-2 py-1 rounded text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition" title="XoĂ¡ khá»i CTÄT">XoĂ¡ khá»i CTÄT</button>
                                     </>
                                   )}
                                 </td>
@@ -430,56 +430,56 @@ export default function AdminCurricula() {
               {/* Tab content: Grading & GPA */}
               {activeTab === 'grading' && (
                 <div className="space-y-6">
-                  {/* Trọng số điểm */}
+                  {/* Trá»ng sá»‘ Ä‘iá»ƒm */}
                   <Card>
-                    <h3 className="font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">Cấu hình trọng số điểm {policy ? "(Đã thiết lập)" : "(Mặc định)"}</h3>
+                    <h3 className="font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">Cáº¥u hĂ¬nh trá»ng sá»‘ Ä‘iá»ƒm {policy ? "(ÄĂ£ thiáº¿t láº­p)" : "(Máº·c Ä‘á»‹nh)"}</h3>
                     <div className="grid grid-cols-3 gap-4 mb-6">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-2">Chuyên cần (%)</label>
+                        <label className="block text-xs font-semibold text-slate-500 mb-2">ChuyĂªn cáº§n (%)</label>
                         <input type="number" min="0" max="100" value={attendancePercent} onChange={(e) => setAttendancePercent(Number(e.target.value))}
                           className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500" />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-2">Giữa kỳ (%)</label>
+                        <label className="block text-xs font-semibold text-slate-500 mb-2">Giá»¯a ká»³ (%)</label>
                         <input type="number" min="0" max="100" value={midtermPercent} onChange={(e) => setMidtermPercent(Number(e.target.value))}
                           className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500" />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-2">Cuối kỳ (%)</label>
+                        <label className="block text-xs font-semibold text-slate-500 mb-2">Cuá»‘i ká»³ (%)</label>
                         <input type="number" min="0" max="100" value={finalPercent} onChange={(e) => setFinalPercent(Number(e.target.value))}
                           className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500" />
                       </div>
                     </div>
                     <div className="flex justify-between items-center bg-slate-50 p-3 rounded-lg mb-4">
-                      <span className="text-xs text-slate-500">Tổng trọng số: <span className={`font-bold ${attendancePercent + midtermPercent + finalPercent === 100 ? 'text-emerald-600' : 'text-rose-600'}`}>{attendancePercent + midtermPercent + finalPercent}%</span></span>
-                      <span className="text-xs text-slate-400">Yêu cầu: 100%</span>
+                      <span className="text-xs text-slate-500">Tá»•ng trá»ng sá»‘: <span className={`font-bold ${attendancePercent + midtermPercent + finalPercent === 100 ? 'text-emerald-600' : 'text-rose-600'}`}>{attendancePercent + midtermPercent + finalPercent}%</span></span>
+                      <span className="text-xs text-slate-400">YĂªu cáº§u: 100%</span>
                     </div>
                     <div className="flex justify-end">
-                      <button onClick={handleSavePolicy} disabled={policySaving}
+                      <button aria-label="button" onClick={handleSavePolicy} disabled={policySaving}
                         className="px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50 transition shadow-sm">
-                        {policySaving ? 'Đang lưu...' : 'Lưu trọng số'}
+                        {policySaving ? 'Äang lÆ°u...' : 'LÆ°u trá»ng sá»‘'}
                       </button>
                     </div>
                   </Card>
 
-                  {/* Thang quy đổi GPA */}
+                  {/* Thang quy Ä‘á»•i GPA */}
                   <Card>
                     <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-                      <h3 className="font-bold text-slate-800">Thang quy đổi GPA hệ 4</h3>
-                      <button onClick={handleAddGpaRule}
+                      <h3 className="font-bold text-slate-800">Thang quy Ä‘á»•i GPA há»‡ 4</h3>
+                      <button aria-label="button" onClick={handleAddGpaRule}
                         className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-blue-200 text-blue-600 bg-blue-50/50 hover:bg-blue-50 transition">
-                        + Thêm dòng
+                        + ThĂªm dĂ²ng
                       </button>
                     </div>
                     
                     {gpaRules.length === 0 ? (
-                      <div className="text-center p-6 text-slate-400 text-xs">Chưa cấu hình thang quy đổi nào</div>
+                      <div className="text-center p-6 text-slate-400 text-xs">ChÆ°a cáº¥u hĂ¬nh thang quy Ä‘á»•i nĂ o</div>
                     ) : (
                       <div className="space-y-3 mb-6">
                         <div className="grid grid-cols-12 gap-3 text-xs font-semibold text-slate-500 px-3">
-                          <div className="col-span-2">Thứ tự</div>
-                          <div className="col-span-5">Ngưỡng điểm hệ 10 (đóng)</div>
-                          <div className="col-span-4">GPA hệ 4</div>
+                          <div className="col-span-2">Thá»© tá»±</div>
+                          <div className="col-span-5">NgÆ°á»¡ng Ä‘iá»ƒm há»‡ 10 (Ä‘Ă³ng)</div>
+                          <div className="col-span-4">GPA há»‡ 4</div>
                           <div className="col-span-1"></div>
                         </div>
                         {gpaRules.map((rule, idx) => (
@@ -494,8 +494,8 @@ export default function AdminCurricula() {
                                 className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm focus:ring-blue-500 focus:border-blue-500" />
                             </div>
                             <div className="col-span-1 text-right">
-                              <button onClick={() => handleRemoveGpaRule(idx)} className="text-rose-600 hover:text-rose-500 text-sm font-semibold p-1">
-                                ✕
+                              <button aria-label="button" onClick={() => handleRemoveGpaRule(idx)} className="text-rose-600 hover:text-rose-500 text-sm font-semibold p-1">
+                                âœ•
                               </button>
                             </div>
                           </div>
@@ -504,9 +504,9 @@ export default function AdminCurricula() {
                     )}
                     
                     <div className="flex justify-end">
-                      <button onClick={handleSaveGpaRules} disabled={gpaSaving}
+                      <button aria-label="button" onClick={handleSaveGpaRules} disabled={gpaSaving}
                         className="px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50 transition shadow-sm">
-                        {gpaSaving ? 'Đang lưu...' : 'Lưu thang quy đổi'}
+                        {gpaSaving ? 'Äang lÆ°u...' : 'LÆ°u thang quy Ä‘á»•i'}
                       </button>
                     </div>
                   </Card>
@@ -515,7 +515,7 @@ export default function AdminCurricula() {
             </>
           ) : (
             <div className="flex items-center justify-center p-8 rounded-xl bg-slate-50 border border-dashed border-slate-200 text-slate-400">
-              Vui lòng chọn một chương trình đào tạo để thiết lập
+              Vui lĂ²ng chá»n má»™t chÆ°Æ¡ng trĂ¬nh Ä‘Ă o táº¡o Ä‘á»ƒ thiáº¿t láº­p
             </div>
           )}
         </div>
@@ -523,3 +523,4 @@ export default function AdminCurricula() {
     </div>
   );
 }
+

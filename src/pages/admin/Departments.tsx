@@ -67,7 +67,7 @@ export default function AdminDepartments() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <PageTitle>Quáº£n lĂ½ Khoa / Bá»™ mĂ´n</PageTitle>
-        <button onClick={openCreate} className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition shadow-sm">+ ThĂªm khoa</button>
+        <button aria-label="button" onClick={openCreate} className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition shadow-sm">+ ThĂªm khoa</button>
       </div>
 
       {err && <div className="p-3 rounded-lg text-sm bg-rose-50 border border-rose-200 text-rose-700">{err}</div>}
@@ -90,8 +90,8 @@ export default function AdminDepartments() {
             <textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500" />
           </div>
           <div className="flex gap-2 justify-end">
-            <button onClick={cancel} className="px-4 py-2 rounded-lg text-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Huá»·</button>
-            <button onClick={handleSave} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 transition">{saving ? 'Äang lÆ°u...' : 'LÆ°u'}</button>
+            <button aria-label="button" onClick={cancel} className="px-4 py-2 rounded-lg text-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Huá»·</button>
+            <button aria-label="button" onClick={handleSave} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 transition">{saving ? 'Äang lÆ°u...' : 'LÆ°u'}</button>
           </div>
         </Card>
       )}
@@ -117,8 +117,8 @@ export default function AdminDepartments() {
                     <td className="p-3 text-slate-500 max-w-xs truncate">{d.description || '-'}</td>
                     <td className="p-3 text-slate-500">{d.headUserName || '-'}</td>
                     <td className="p-3 text-center space-x-1">
-                      <button onClick={() => openEdit(d)} className="px-2 py-1 rounded text-xs bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition">Sá»­a</button>
-                      <button onClick={() => handleDelete(d.id)} className="px-2 py-1 rounded text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition">XoĂ¡</button>
+                      <button aria-label="button" onClick={() => openEdit(d)} className="px-2 py-1 rounded text-xs bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition">Sá»­a</button>
+                      <button aria-label="button" onClick={() => handleDelete(d.id)} className="px-2 py-1 rounded text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition">XoĂ¡</button>
                     </td>
                   </tr>
                 ))}
@@ -130,4 +130,5 @@ export default function AdminDepartments() {
     </div>
   );
 }
+
 
