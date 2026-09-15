@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import * as clazzService from '../../services/clazzService';
 import * as quizService from '../../services/quizService';
+import type { QuestionRequest } from '../../services/quizService';
 import type { Clazz, Quiz, QuizQuestion } from '../../types';
 
 export default function QuizPage() {
@@ -15,6 +16,16 @@ export default function QuizPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  // Sprint 1: question management for lecturers
+  const [showQuestionForm, setShowQuestionForm] = useState(false);
+  const [editQuestionId, setEditQuestionId] = useState<number | null>(null);
+  const [qText, setQText] = useState('');
+  const [qA, setQA] = useState('');
+  const [qB, setQB] = useState('');
+  const [qC, setQC] = useState('');
+  const [qD, setQD] = useState('');
+  const [savingQ, setSavingQ] = useState(false);
+  const isLecturer = user?.role === 'LECTURER' || user?.role === 'ADMIN';
 
   useEffect(() => {
     let mounted = true;
@@ -66,6 +77,53 @@ export default function QuizPage() {
   }, [selectedQuizId, startedQuizId]);
 
   const activeQuiz = useMemo(() => quizzes.find((q) => q.id === selectedQuizId) ?? null, [quizzes, selectedQuizId]);
+
+  const resetQuestionForm = () => {
+    setEditQuestionId(null);
+    setQText(''); setQA(''); setQB(''); setQC(''); setQD('');
+    setShowQuestionForm(false);
+  };
+
+  const startEditQuestion = (q: any) => {
+    setEditQuestionId(q.id);
+    setQText(q.questionText ?? q.content ?? '');
+    setQA(q.optionA ?? ''); setQB(q.optionB ?? '');
+    setQC(q.optionC ?? ''); setQD(q.optionD ?? '');
+    setShowQuestionForm(true);
+  };
+
+  const handleSaveQuestion = async () => {
+    if (!selectedQuizId || !qText.trim() || !qA.trim() || !qB.trim() || !qC.trim() || !qD.trim()) return;
+    setSavingQ(true);
+    try {
+      const data: QuestionRequest = { questionText: qText, optionA: qA, optionB: qB, optionC: qC, optionD: qD };
+      if (editQuestionId) {
+        await quizService.updateQuestion(editQuestionId, data);
+      } else {
+        await quizService.createQuestion(selectedQuizId, data);
+      }
+      resetQuestionForm();
+      const list = await quizService.getQuizQuestions(selectedQuizId);
+      setQuestions(list);
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Lưu câu hỏi thất bại');
+    } finally {
+      setSavingQ(false);
+    }
+  };
+
+  const handleDeleteQuestion = async (questionId: number) => {
+    if (!confirm('Xoá câu hỏi này?')) return;
+    try {
+      await quizService.deleteQuestion(questionId);
+      if (selectedQuizId) {
+        const list = await quizService.getQuizQuestions(selectedQuizId);
+        setQuestions(list);
+      }
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Xoá câu hỏi thất bại');
+    }
+  };
 
   const handleSubmit = async () => {
     if (!selectedQuizId) return;
