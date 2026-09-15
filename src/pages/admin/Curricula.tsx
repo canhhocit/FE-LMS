@@ -8,6 +8,12 @@ export default function AdminCurricula() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [selected, setSelected] = useState<Curriculum | null>(null);
   const [activeTab, setActiveTab] = useState<'courses' | 'grading'>('courses');
+  const [editCourseId, setEditCourseId] = useState<number | null>(null);
+  const [editCourseCode, setEditCourseCode] = useState('');
+  const [editCourseTitle, setEditCourseTitle] = useState('');
+  const [editCourseCredit, setEditCourseCredit] = useState(3);
+  const [courseSaving, setCourseSaving] = useState(false);
+
   
   // Grading Policy state
   const [policy, setPolicy] = useState<GradingPolicy | null>(null);
@@ -156,6 +162,45 @@ export default function AdminCurricula() {
   if (loading) return <Spinner />;
   if (err) return <ErrorBox msg={err} />;
 
+  const startEditCourse = (course: Course) => {
+    setEditCourseId(course.id);
+    setEditCourseCode(course.code);
+    setEditCourseTitle(course.title);
+    setEditCourseCredit(course.credit);
+  };
+
+  const cancelEditCourse = () => {
+    setEditCourseId(null);
+    setEditCourseCode('');
+    setEditCourseTitle('');
+    setEditCourseCredit(3);
+  };
+
+  const handleSaveEditCourse = async () => {
+    if (!editCourseId || !editCourseCode.trim() || !editCourseTitle.trim()) return;
+    setCourseSaving(true);
+    try {
+      await updateCourse(editCourseId, { code: editCourseCode.trim(), title: editCourseTitle.trim(), credit: editCourseCredit });
+      cancelEditCourse();
+      if (selectedCurriculumId) loadCourses(selectedCurriculumId);
+    } catch (e: unknown) {
+      alert((e as { message?: string })?.message ?? 'Cập nhật môn học thất bại.');
+    } finally {
+      setCourseSaving(false);
+    }
+  };
+
+  const handleDeleteCourse = async (courseId: number) => {
+    if (!confirm('Bạn có chắc muốn xoá môn học này?')) return;
+    try {
+      await deleteCourse(courseId);
+      if (selectedCurriculumId) loadCourses(selectedCurriculumId);
+    } catch (e: unknown) {
+      alert((e as { message?: string })?.message ?? 'Xoá môn học thất bại.');
+    }
+  };
+
+
   return (
     <div className="space-y-6">
       <PageTitle>Chương trình đào tạo & Môn học</PageTitle>
@@ -229,16 +274,28 @@ export default function AdminCurricula() {
                             <th className="text-left p-3">Tên môn</th>
                             <th className="text-center p-3">Tín chỉ</th>
                             <th className="text-left p-3">Môn tiên quyết</th>
+                            <th className="text-center p-3">Thao tác</th>
                           </tr>
                         </thead>
                         <tbody>
                           {courses.map((c) => (
                             <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50/50">
-                              <td className="p-3 font-mono text-blue-600">{c.code}</td>
-                              <td className="p-3 text-slate-800">{c.title}</td>
-                              <td className="p-3 text-center text-slate-600">{c.credit}</td>
-                              <td className="p-3 text-slate-400">
-                                <span>-</span>
+                              <td className="p-3">{editCourseId === c.id ? <input value={editCourseCode} onChange={e=>setEditCourseCode(e.target.value)} className="w-24 px-2 py-1 border border-amber-300 rounded text-xs font-mono focus:ring-amber-400 focus:border-amber-400" /> : <span className="font-mono text-blue-600">{c.code}</span>}</td>
+                              <td className="p-3">{editCourseId === c.id ? <input value={editCourseTitle} onChange={e=>setEditCourseTitle(e.target.value)} className="w-48 px-2 py-1 border border-amber-300 rounded text-xs focus:ring-amber-400 focus:border-amber-400" /> : <span className="text-slate-800">{c.title}</span>}</td>
+                              <td className="p-3 text-center">{editCourseId === c.id ? <input type="number" min="1" max="10" value={editCourseCredit} onChange={e=>setEditCourseCredit(Number(e.target.value))} className="w-16 px-2 py-1 border border-amber-300 rounded text-xs text-center focus:ring-amber-400 focus:border-amber-400" /> : <span className="text-slate-600">{c.credit}</span>}</td>
+                              <td className="p-3 text-slate-400"><span>-</span></td>
+                              <td className="p-3 text-center space-x-1">
+                                {editCourseId === c.id ? (
+                                  <>
+                                    <button onClick={handleSaveEditCourse} disabled={courseSaving} className="px-2 py-1 rounded text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition disabled:opacity-50">Lưu</button>
+                                    <button onClick={cancelEditCourse} className="px-2 py-1 rounded text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition">Huỷ</button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button onClick={()=>startEditCourse(c)} className="px-2 py-1 rounded text-xs bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition">Sửa</button>
+                                    <button onClick={()=>handleDeleteCourse(c.id)} className="px-2 py-1 rounded text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition">Xoá</button>
+                                  </>
+                                )}
                               </td>
                             </tr>
                           ))}
