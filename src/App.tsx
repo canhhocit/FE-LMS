@@ -32,7 +32,7 @@ import AdminAdministrativeClasses from './pages/admin/AdministrativeClasses';
 import RegistrationPeriods from './pages/admin/RegistrationPeriods';
 import AdminPermissions from './pages/admin/Permissions';
 import AdminAuditLogs from './pages/admin/AuditLogs';
-import ClazzPermissions from './pages/admin/ClazzPermissions';
+const ClazzPermissions = React.lazy(() => import('./pages/admin/ClazzPermissions'))
 import NotificationsPage from './pages/shared/Notifications';
 import TuitionPage from './pages/shared/TuitionPage';
 import QuizPage from './pages/shared/QuizPage';
@@ -119,3 +119,4 @@ export default function App() {
  </AuthProvider>
   );
 }
+
