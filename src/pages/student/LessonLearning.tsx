@@ -5,7 +5,9 @@ import * as clazzService from '../../services/clazzService';
 import * as contentService from '../../services/contentService';
 import * as progressService from '../../services/progressService';
 import * as registrationService from '../../services/registrationService';
+import * as videoLearningService from '../../services/videoLearningService';
 import type { Chapter, Clazz, Lesson, EnrollmentProgress, Registration } from '../../types';
+import type { InVideoQuiz, StudentVideoNote } from '../../services/videoLearningService';
 
 const formatTime = (seconds: number) => {
   if (!Number.isFinite(seconds) || seconds <= 0) return '00:00';
@@ -30,6 +32,16 @@ export default function StudentLessonLearning() {
   const [resumeSeconds, setResumeSeconds] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const lastSyncedRef = useRef<number>(0);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const enrollmentIdRef = useRef<number | null>(null);
+
+  const [quizzes, setQuizzes] = useState<InVideoQuiz[]>([]);
+  const [notes, setNotes] = useState<StudentVideoNote[]>([]);
+  const [activeQuiz, setActiveQuiz] = useState<InVideoQuiz | null>(null);
+  const [quizAnswered, setQuizAnswered] = useState<Record<number, string>>({});
+  const [noteText, setNoteText] = useState('');
+  const [showNotes, setShowNotes] = useState(false);
 
   const resumeKey = useMemo(
     () => `learninghub:resume:${classNum}:${lessonNum}`,
@@ -119,6 +131,28 @@ export default function StudentLessonLearning() {
         if (!matchedRegistration) {
           setError('Bạn chưa tham gia lớp học này.');
           return;
+        }
+
+        enrollmentIdRef.current = matchedRegistration.enrollmentId;
+
+        // Load server-side progress
+        const serverProgress = await videoLearningService.getProgress(lessonNum, matchedRegistration.enrollmentId);
+        if (serverProgress && serverProgress.lastWatchedSeconds > 0) {
+          const serverSeconds = Number(serverProgress.lastWatchedSeconds);
+          if (serverSeconds > getStoredResumeSeconds()) {
+            localStorage.setItem(resumeKey, String(Math.floor(serverSeconds)));
+            setResumeSeconds(Math.floor(serverSeconds));
+          }
+        }
+
+        // Load quizzes and notes for this lesson
+        const [quizData, noteData] = await Promise.all([
+          videoLearningService.getQuizzesForLesson(lessonNum),
+          videoLearningService.getNotes(lessonNum),
+        ]);
+        if (mounted) {
+          setQuizzes(quizData ?? []);
+          setNotes(noteData ?? []);
         }
 
         const progressData = await progressService.getEnrollmentProgress(matchedRegistration.enrollmentId);
@@ -301,6 +335,77 @@ export default function StudentLessonLearning() {
               </button>
             </div>
             <div className="text-sm text-slate-600">{selectedLesson.content || 'Chưa có mô tả cho bài học này.'}</div>
+            {/* Video Notes Section */}
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowNotes(!showNotes)}
+                className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                  Ghi chú bài học ({notes.length})
+                </span>
+                <span className="text-slate-400">{showNotes ? '▲' : '▼'}</span>
+              </button>
+              {showNotes && (
+                <div className="px-4 pb-4 space-y-3 border-t border-slate-100 pt-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={noteText}
+                      onChange={(e) => setNoteText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && noteText.trim()) {
+                          const v = videoRef.current;
+                          const ts = v ? Math.floor(v.currentTime) : 0;
+                          videoLearningService.addNote({ lessonId: lessonNum, noteText: noteText.trim(), timestampSeconds: ts }).then((n) => {
+                            setNotes((prev) => [...prev, n]);
+                            setNoteText('');
+                          });
+                        }
+                      }}
+                      placeholder="Thêm ghi chú tại thời điểm hiện tại..."
+                      className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-violet-400 focus:ring-1 focus:ring-violet-400 outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!noteText.trim()) return;
+                        const v = videoRef.current;
+                        const ts = v ? Math.floor(v.currentTime) : 0;
+                        videoLearningService.addNote({ lessonId: lessonNum, noteText: noteText.trim(), timestampSeconds: ts }).then((n) => {
+                          setNotes((prev) => [...prev, n]);
+                          setNoteText('');
+                        });
+                      }}
+                      className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 transition-colors"
+                    >
+                      Thêm
+                    </button>
+                  </div>
+                  {notes.length > 0 && (
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {notes.map((n, i) => (
+                        <div key={n.id ?? i} className="flex items-start gap-2 rounded-lg bg-slate-50 p-2.5 text-sm group hover:bg-violet-50 transition-colors">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const v = videoRef.current;
+                              if (v) { v.currentTime = Number(n.timestampSeconds || 0); v.play(); }
+                            }}
+                            className="shrink-0 rounded-md bg-violet-100 px-2 py-0.5 text-xs font-mono font-semibold text-violet-700 hover:bg-violet-200 transition-colors"
+                          >
+                            {formatTime(Number(n.timestampSeconds || 0))}
+                          </button>
+                          <span className="text-slate-700 flex-1">{n.noteText}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-3">
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200">
                 <div className="h-full rounded-full bg-indigo-600" style={{ width: `${percent}%` }} />
