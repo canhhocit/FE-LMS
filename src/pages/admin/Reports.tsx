@@ -1,8 +1,9 @@
 // Admin Reports page - charts + export
 import { useEffect, useState } from 'react';
 import * as reportService from '../../services/reportService';
+import * as tuitionService from '../../services/tuitionService';
 import { PageTitle, Card, Spinner, ErrorBox } from '../../components/Layout';
-import type { EnrollmentReport, ScoreReport } from '../../types';
+import type { EnrollmentReport, ScoreReport, TuitionRate } from '../../types';
 
 const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
@@ -21,6 +22,97 @@ export default function AdminReports() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [exporting, setExporting] = useState<'enroll' | 'score' | null>(null);
+  const [activeTab, setActiveTab] = useState<'reports' | 'tuition'>('reports');
+  const [tuitionRates, setTuitionRates] = useState<TuitionRate[]>([]);
+  const [loadingTuition, setLoadingTuition] = useState(false);
+  const [editRateId, setEditRateId] = useState<number | null>(null);
+  const [editRateYear, setEditRateYear] = useState('');
+  const [editRatePrice, setEditRatePrice] = useState(0);
+  const [editRateActive, setEditRateActive] = useState(true);
+  const [savingRate, setSavingRate] = useState(false);
+  const [showCreateRate, setShowCreateRate] = useState(false);
+  const [newRateYear, setNewRateYear] = useState('');
+  const [newRatePrice, setNewRatePrice] = useState(0);
+  const [creatingRate, setCreatingRate] = useState(false);
+
+  const loadTuitionRates = async () => {
+    setLoadingTuition(true);
+    try {
+      const rates = await tuitionService.getTuitionRates();
+      setTuitionRates(rates);
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Không tải được mức học phí');
+    } finally {
+      setLoadingTuition(false);
+    }
+  };
+
+  const startEditRate = (rate: TuitionRate) => {
+    setEditRateId(rate.id);
+    setEditRateYear(rate.academicYear);
+    setEditRatePrice(rate.pricePerCredit);
+    setEditRateActive(rate.isActive);
+  };
+
+  const cancelEditRate = () => {
+    setEditRateId(null);
+    setEditRateYear('');
+    setEditRatePrice(0);
+    setEditRateActive(true);
+  };
+
+  const handleSaveEditRate = async () => {
+    if (!editRateId || !editRateYear.trim() || editRatePrice <= 0) return;
+    setSavingRate(true);
+    try {
+      await tuitionService.updateTuitionRate(editRateId, {
+        academicYear: editRateYear,
+        pricePerCredit: editRatePrice,
+        isActive: editRateActive,
+      });
+      cancelEditRate();
+      loadTuitionRates();
+    } catch (e: unknown) {
+      alert((e as { message?: string })?.message ?? 'Cập nhật thất bại');
+    } finally {
+      setSavingRate(false);
+    }
+  };
+
+  const handleDeleteRate = async (id: number) => {
+    if (!confirm('Xoá mức học phí này?')) return;
+    try {
+      await tuitionService.deleteTuitionRate(id);
+      loadTuitionRates();
+    } catch (e: unknown) {
+      alert((e as { message?: string })?.message ?? 'Xoá thất bại');
+    }
+  };
+
+  const handleCreateRate = async () => {
+    if (!newRateYear.trim() || newRatePrice <= 0) return;
+    setCreatingRate(true);
+    try {
+      await tuitionService.createTuitionRate({
+        academicYear: newRateYear,
+        pricePerCredit: newRatePrice,
+        isActive: true,
+      });
+      setShowCreateRate(false);
+      setNewRateYear('');
+      setNewRatePrice(0);
+      loadTuitionRates();
+    } catch (e: unknown) {
+      alert((e as { message?: string })?.message ?? 'Tạo thất bại');
+    } finally {
+      setCreatingRate(false);
+    }
+  };
+
+  // Load tuition rates on mount
+  useEffect(() => {
+    loadTuitionRates();
+  }, []);
 
   useEffect(() => {
     let m = true;
