@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import * as curriculumService from '../../services/curriculumService';
+import { removeCourseFromCurriculum, addCourseToCurriculum } from '../../services/curriculumService';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import type { Curriculum, Course, GradingPolicy, GpaScaleRule } from '../../types';
 
@@ -30,6 +31,13 @@ export default function AdminCurricula() {
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // Sprint 2: Add/remove course from curriculum
+  const [showAddCourseModal, setShowAddCourseModal] = useState(false);
+  const [selectedCourseToAdd, setSelectedCourseToAdd] = useState<number | null>(null);
+  const [addingCourse, setAddingCourse] = useState(false);
+  const [curriculumCourses, setCurriculumCourses] = useState<Course[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(false);
+
   useEffect(() => {
     let m = true;
     Promise.all([curriculumService.getCurricula(), curriculumService.getAllCourses()])
@@ -47,7 +55,58 @@ export default function AdminCurricula() {
     return () => { m = false; };
   }, []);
 
-  // Fetch policy and GPA rules when selected curriculum changes
+    const loadCurriculumCourses = async () => {
+    if (!selected) return;
+    setLoadingCourses(true);
+    try {
+      const cs = await curriculumService.getCoursesByCurriculum(selected.id);
+      setCurriculumCourses(cs);
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Không tải được môn học của CTĐT');
+    } finally {
+      setLoadingCourses(false);
+    }
+  };
+
+  const handleRemoveFromCurriculum = async (courseId: number) => {
+    if (!selected || !confirm('Bạn có chắc muốn xoá môn học này khỏi CTĐT?')) return;
+    try {
+      await removeCourseFromCurriculum(selected.id, courseId);
+      setMsg({ type: 'success', text: 'Đã xoá môn khỏi CTĐT' });
+      loadCurriculumCourses();
+    } catch (e: unknown) {
+      setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'Xoá khỏi CTĐT thất bại' });
+    }
+  };
+
+  const openAddCourseModal = () => {
+    // Get courses not in this curriculum
+    const available = courses.filter(c => !curriculumCourses.some(cc => cc.id === c.id));
+    if (available.length === 0) {
+      setMsg({ type: 'error', text: 'Không còn môn học nào để thêm' });
+      return;
+    }
+    setShowAddCourseModal(true);
+  };
+
+  const handleAddToCurriculum = async () => {
+    if (!selected || !selectedCourseToAdd) return;
+    setAddingCourse(true);
+    try {
+      await addCourseToCurriculum(selected.id, selectedCourseToAdd);
+      setMsg({ type: 'success', text: 'Đã thêm môn vào CTĐT' });
+      setShowAddCourseModal(false);
+      setSelectedCourseToAdd(null);
+      loadCurriculumCourses();
+    } catch (e: unknown) {
+      setMsg({ type: 'error', text: (e as { message?: string })?.message ?? 'Thêm vào CTĐT thất bại' });
+    } finally {
+      setAddingCourse(false);
+    }
+  };
+
+  // Override selected curriculum effect to load curriculum-specific courses
+// Fetch policy and GPA rules when selected curriculum changes
   useEffect(() => {
     if (!selected) return;
     let m = true;
@@ -203,6 +262,56 @@ export default function AdminCurricula() {
 
   return (
     <div className="space-y-6">
+      {/* Sprint 2: Add Course to Curriculum Modal */}
+      {showAddCourseModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowAddCourseModal(false)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold text-slate-800 mb-4">Thêm môn học vào CTĐT</h2>
+            <div className="mb-4">
+              <label className="block text-xs font-medium text-slate-500 mb-1">Chọn môn học</label>
+              <select value={selectedCourseToAdd ?? ''} onChange={(e) => setSelectedCourseToAdd(Number(e.target.value))}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-400 outline-none">
+                <option value="">-- Chọn môn học --</option>
+                {courses.filter(c => !curriculumCourses.some(cc => cc.id === c.id)).map((c) => (
+                  <option key={c.id} value={c.id}>{c.code} - {c.title} ({c.credit} TC)</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setShowAddCourseModal(false)} className="px-4 py-2 text-sm rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Huỷ</button>
+              <button onClick={handleAddToCurriculum} disabled={addingCourse || !selectedCourseToAdd}
+                className="px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 transition">
+                {addingCourse ? 'Đang thêm...' : 'Thêm vào CTĐT'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Sprint 2: Add Course to Curriculum Modal */}
+      {showAddCourseModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowAddCourseModal(false)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold text-slate-800 mb-4">Thêm môn học vào CTĐT</h2>
+            <div className="mb-4">
+              <label className="block text-xs font-medium text-slate-500 mb-1">Chọn môn học</label>
+              <select value={selectedCourseToAdd ?? ''} onChange={(e) => setSelectedCourseToAdd(Number(e.target.value))}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-400 outline-none">
+                <option value="">-- Chọn môn học --</option>
+                {courses.filter(c => !curriculumCourses.some(cc => cc.id === c.id)).map((c) => (
+                  <option key={c.id} value={c.id}>{c.code} - {c.title} ({c.credit} TC)</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setShowAddCourseModal(false)} className="px-4 py-2 text-sm rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Huỷ</button>
+              <button onClick={handleAddToCurriculum} disabled={addingCourse || !selectedCourseToAdd}
+                className="px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 transition">
+                {addingCourse ? 'Đang thêm...' : 'Thêm vào CTĐT'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <PageTitle>Chương trình đào tạo & Môn học</PageTitle>
 
       {msg && (
@@ -262,8 +371,14 @@ export default function AdminCurricula() {
               {activeTab === 'courses' && (
                 <Card>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-slate-800">Danh sách môn học ({courses.length})</h3>
-                    <Pill color="indigo">Khóa {selected.academicYear}</Pill>
+                    <h3 className="font-bold text-slate-800">Danh sách môn học ({curriculumCourses.length})</h3>
+                    <div className="flex items-center gap-2">
+                      <Pill color="indigo">Khóa {selected.academicYear}</Pill>
+                      <button onClick={openAddCourseModal} disabled={loadingCourses}
+                        className="px-3 py-1.5 rounded text-sm bg-emerald-600 text-white hover:bg-emerald-500 transition disabled:opacity-50">
+                        + Thêm môn
+                      </button>
+                    </div>
                   </div>
                   {courses.length === 0 ? <Empty msg="Chưa có môn học" /> : (
                     <div className="overflow-x-auto">
@@ -278,27 +393,33 @@ export default function AdminCurricula() {
                           </tr>
                         </thead>
                         <tbody>
-                          {courses.map((c) => (
-                            <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50/50">
-                              <td className="p-3">{editCourseId === c.id ? <input value={editCourseCode} onChange={e=>setEditCourseCode(e.target.value)} className="w-24 px-2 py-1 border border-amber-300 rounded text-xs font-mono focus:ring-amber-400 focus:border-amber-400" /> : <span className="font-mono text-blue-600">{c.code}</span>}</td>
-                              <td className="p-3">{editCourseId === c.id ? <input value={editCourseTitle} onChange={e=>setEditCourseTitle(e.target.value)} className="w-48 px-2 py-1 border border-amber-300 rounded text-xs focus:ring-amber-400 focus:border-amber-400" /> : <span className="text-slate-800">{c.title}</span>}</td>
-                              <td className="p-3 text-center">{editCourseId === c.id ? <input type="number" min="1" max="10" value={editCourseCredit} onChange={e=>setEditCourseCredit(Number(e.target.value))} className="w-16 px-2 py-1 border border-amber-300 rounded text-xs text-center focus:ring-amber-400 focus:border-amber-400" /> : <span className="text-slate-600">{c.credit}</span>}</td>
-                              <td className="p-3 text-slate-400"><span>-</span></td>
-                              <td className="p-3 text-center space-x-1">
-                                {editCourseId === c.id ? (
-                                  <>
-                                    <button onClick={handleSaveEditCourse} disabled={courseSaving} className="px-2 py-1 rounded text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition disabled:opacity-50">Lưu</button>
-                                    <button onClick={cancelEditCourse} className="px-2 py-1 rounded text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition">Huỷ</button>
-                                  </>
-                                ) : (
-                                  <>
-                                    <button onClick={()=>startEditCourse(c)} className="px-2 py-1 rounded text-xs bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition">Sửa</button>
-                                    <button onClick={()=>handleDeleteCourse(c.id)} className="px-2 py-1 rounded text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition">Xoá</button>
-                                  </>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
+                          {loadingCourses ? (
+                            <tr><td colSpan={5} className="text-center p-6 text-slate-400">Đang tải...</td></tr>
+                          ) : curriculumCourses.length === 0 ? (
+                            <tr><td colSpan={5} className="text-center p-6 text-slate-400">Chưa có môn học trong CTĐT này</td></tr>
+                          ) : (
+                            curriculumCourses.map((c) => (
+                              <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50/50">
+                                <td className="p-3">{editCourseId === c.id ? <input value={editCourseCode} onChange={e=>setEditCourseCode(e.target.value)} className="w-24 px-2 py-1 border border-amber-300 rounded text-xs font-mono focus:ring-amber-400 focus:border-amber-400" /> : <span className="font-mono text-blue-600">{c.code}</span>}</td>
+                                <td className="p-3">{editCourseId === c.id ? <input value={editCourseTitle} onChange={e=>setEditCourseTitle(e.target.value)} className="w-48 px-2 py-1 border border-amber-300 rounded text-xs focus:ring-amber-400 focus:border-amber-400" /> : <span className="text-slate-800">{c.title}</span>}</td>
+                                <td className="p-3 text-center">{editCourseId === c.id ? <input type="number" min="1" max="10" value={editCourseCredit} onChange={e=>setEditCourseCredit(Number(e.target.value))} className="w-16 px-2 py-1 border border-amber-300 rounded text-xs text-center focus:ring-amber-400 focus:border-amber-400" /> : <span className="text-slate-600">{c.credit}</span>}</td>
+                                <td className="p-3 text-slate-400"><span>-</span></td>
+                                <td className="p-3 text-center space-x-1">
+                                  {editCourseId === c.id ? (
+                                    <>
+                                      <button onClick={handleSaveEditCourse} disabled={courseSaving} className="px-2 py-1 rounded text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition disabled:opacity-50">Lưu</button>
+                                      <button onClick={cancelEditCourse} className="px-2 py-1 rounded text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition">Huỷ</button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <button onClick={()=>startEditCourse(c)} className="px-2 py-1 rounded text-xs bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition">Sửa</button>
+                                      <button onClick={()=>handleRemoveFromCurriculum(c.id)} className="px-2 py-1 rounded text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition" title="Xoá khỏi CTĐT">Xoá khỏi CTĐT</button>
+                                    </>
+                                  )}
+                                </td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>

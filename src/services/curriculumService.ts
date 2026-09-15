@@ -9,6 +9,14 @@ export const getCoursesByCurriculum = async (id: number): Promise<Course[]> => u
 export const getAllCourses = async (): Promise<Course[]> => unwrap(apiClient.get('/admin/courses'));
 export const createCourse = async (data: Omit<Course, 'id' | 'createdAt'>): Promise<Course> => unwrap(apiClient.post('/admin/courses', data));
 export const deleteCourse = async (id: number): Promise<void> => { await apiClient.delete(`/admin/courses/${id}`); };
+export const removeCourseFromCurriculum = async (curriculumId: number, courseId: number): Promise<void> => {
+  await apiClient.delete(`/admin/curricula/${curriculumId}/courses/${courseId}`);
+};
+
+export const addCourseToCurriculum = async (curriculumId: number, courseId: number): Promise<void> => {
+  await apiClient.post(`/admin/curricula/${curriculumId}/courses`, { courseId });
+};
+
 export const getPrerequisites = async (id: number): Promise<Prerequisite[]> => unwrap(apiClient.get(`/courses/${id}/prerequisites`));
 export const addPrerequisite = async (id: number, prerequisiteCourseId: number): Promise<void> => { await apiClient.post(`/admin/courses/${id}/prerequisites`, { prerequisiteCourseId }); };
 export const removePrerequisite = async (id: number, prerequisiteId: number): Promise<void> => { await apiClient.delete(`/admin/courses/${id}/prerequisites/${prerequisiteId}`); };
