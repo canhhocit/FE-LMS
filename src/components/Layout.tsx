@@ -1,5 +1,12 @@
 // Layout chung: sidebar + topbar + content. Items lọc theo role.
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+
+// Dark mode state
+const [darkMode, setDarkMode] = useState(false);
+useEffect(() => {
+  const saved = localStorage.getItem('darkMode');
+  if (saved === 'true') setDarkMode(true);
+}, []);
+useEffect(() => { document.documentElement.classList.toggle('dark', darkMode); localStorage.setItem('darkMode', darkMode); }, [darkMode]);import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/useAuth';
 import * as notificationService from '../services/notificationService';
@@ -400,7 +407,8 @@ export default function Layout() {
               </div>
             )}
           </div>
-        </header>
+        
+<button onClick={() => setDarkMode(!darkMode)} className="ml-4 p-2 rounded bg-slate-200 dark:bg-slate-700">{darkMode ? '☀️' : '🌙'}</button></header>
         <div className="min-h-[calc(100vh-61px)] bg-[#f5f7fb] p-4 sm:p-6 lg:p-8">
           <Outlet />
         </div>
