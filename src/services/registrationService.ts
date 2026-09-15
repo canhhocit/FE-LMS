@@ -8,3 +8,10 @@ export const registerClass = async (clazzId: number): Promise<void> => { await a
 export const unregisterClass = async (clazzId: number): Promise<void> => { await apiClient.delete(`/registration/${clazzId}`); };
 export const getMyRegistrations = async (): Promise<Registration[]> => unwrap(apiClient.get('/me/registrations'));
 export const getAvailableClassesToRegister = async (): Promise<Clazz[]> => unwrap(apiClient.get('/me/classes/available'));
+export const getActiveRegistrationPeriod = async (): Promise<RegistrationPeriod | null> => {
+  try {
+    return await unwrap(apiClient.get('/registration-periods/active'));
+  } catch {
+    return null;
+  }
+};
