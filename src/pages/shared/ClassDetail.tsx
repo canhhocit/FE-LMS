@@ -2,6 +2,7 @@
 import { useParams, Link } from "react-router-dom";
 import * as clazzService from "../../services/clazzService";
 import * as contentService from "../../services/contentService";
+// Sprint 1: edit/delete helpers already in contentService
 import * as assessmentService from "../../services/assessmentService";
 import * as registrationService from "../../services/registrationService";
 import * as progressService from "../../services/progressService";
@@ -29,6 +30,15 @@ export default function ClassDetail() {
   const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementContent, setAnnouncementContent] = useState('');
+  // Sprint 1: edit/delete states
+  const [editChapterId, setEditChapterId] = useState<number | null>(null);
+  const [editChapterTitle, setEditChapterTitle] = useState('');
+  const [editLessonId, setEditLessonId] = useState<number | null>(null);
+  const [editLessonTitle, setEditLessonTitle] = useState('');
+  const [editLessonContent, setEditLessonContent] = useState('');
+  const [editAnnId, setEditAnnId] = useState<number | null>(null);
+  const [editAnnTitle, setEditAnnTitle] = useState('');
+  const [editAnnContent, setEditAnnContent] = useState('');
   const [studentProgress, setStudentProgress] = useState<EnrollmentProgress | null>(null);
   const [saving, setSaving] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
@@ -255,6 +265,63 @@ export default function ClassDetail() {
   if (loading) return <Spinner />;
   if (err) return <ErrorBox msg={err} />;
   if (!clazz) return <Empty msg="Khong tim thay lop" />;
+
+
+  // Sprint 1: handlers for edit/delete chapter, lesson, announcement
+  const handleDeleteChapter = async (chId: number) => {
+    if (!confirm('Xoá chương này? Các bài học trong chương cũng sẽ bị xoá.')) return;
+    try {
+      await contentService.deleteChapter(chId);
+      setFlash('Đã xoá chương.');
+      loadChapters();
+    } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
+  };
+  const startEditChapter = (ch: Chapter) => { setEditChapterId(ch.id); setEditChapterTitle(ch.title); };
+  const saveEditChapter = async () => {
+    if (!editChapterId || !editChapterTitle.trim()) return;
+    try {
+      await contentService.updateChapter(editChapterId, { title: editChapterTitle });
+      setEditChapterId(null);
+      setFlash('Đã cập nhật chương.');
+      loadChapters();
+    } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
+  };
+  const handleDeleteLesson = async (lessonId: number) => {
+    if (!confirm('Xoá bài học này?')) return;
+    try {
+      await contentService.deleteLesson(lessonId);
+      setFlash('Đã xoá bài học.');
+      loadChapters();
+    } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
+  };
+  const startEditLesson = (l: Lesson) => { setEditLessonId(l.id); setEditLessonTitle(l.title); setEditLessonContent(l.content ?? ''); };
+  const saveEditLesson = async () => {
+    if (!editLessonId || !editLessonTitle.trim()) return;
+    try {
+      await contentService.updateLesson(editLessonId, { title: editLessonTitle, content: editLessonContent });
+      setEditLessonId(null);
+      setFlash('Đã cập nhật bài học.');
+      loadChapters();
+    } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
+  };
+  const handleDeleteAnnouncement = async (annId: number) => {
+    if (!confirm('Xoá thông báo này?')) return;
+    try {
+      await contentService.deleteAnnouncement(annId);
+      setFlash('Đã xoá thông báo.');
+      loadAnns();
+    } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
+  };
+  const startEditAnn = (a: Announcement) => { setEditAnnId(a.id); setEditAnnTitle(a.title); setEditAnnContent(a.content); };
+  const saveEditAnn = async () => {
+    if (!editAnnId || !editAnnTitle.trim() || !editAnnContent.trim()) return;
+    try {
+      await contentService.updateAnnouncement(editAnnId, { title: editAnnTitle, content: editAnnContent });
+      setEditAnnId(null);
+      setFlash('Đã cập nhật thông báo.');
+      loadAnns();
+    } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
+  };
 
   return (
     <div>
