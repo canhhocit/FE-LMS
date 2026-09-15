@@ -28,3 +28,4 @@ export const getGpaScaleRules = async (curriculumId: number): Promise<GpaScaleRu
 
 export const updateGpaScaleRules = async (curriculumId: number, data: Omit<GpaScaleRule, 'id' | 'curriculumId'>[]): Promise<GpaScaleRule[]> =>
   unwrap(apiClient.put(`/admin/curricula/${curriculumId}/gpa-scale`, data));
+

@@ -27,3 +27,23 @@ export const updateQuiz = async (quizId: number, data: Partial<Omit<Quiz, 'id' |
 
 export const deleteQuiz = async (quizId: number): Promise<void> =>
   unwrap<void>(apiClient.delete(`/quizzes/${quizId}`));
+
+// Question CRUD
+export interface QuestionRequest {
+  content?: string;
+  questionText: string;
+  optionA: string;
+  optionB: string;
+  optionC: string;
+  optionD: string;
+}
+
+export const createQuestion = async (quizId: number, data: QuestionRequest): Promise<QuizQuestion> =>
+  unwrap<QuizQuestion>(apiClient.post(`/quizzes/${quizId}/questions`, data));
+
+export const updateQuestion = async (questionId: number, data: QuestionRequest): Promise<QuizQuestion> =>
+  unwrap<QuizQuestion>(apiClient.put(`/quizzes/questions/${questionId}`, data));
+
+export const deleteQuestion = async (questionId: number): Promise<void> => {
+  await apiClient.delete(`/quizzes/questions/${questionId}`);
+};
