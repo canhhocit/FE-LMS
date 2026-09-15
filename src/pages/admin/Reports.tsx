@@ -1,6 +1,7 @@
 // Admin Reports page - charts + export
 import { useEffect, useState } from 'react';
 import * as reportService from '../../services/reportService';
+import { exportClazzScoresExcel, exportStudentTranscriptPdf, scanAcademicProbation } from '../../services/reportService';
 import * as tuitionService from '../../services/tuitionService';
 import { PageTitle, Card, Spinner, ErrorBox } from '../../components/Layout';
 import type { EnrollmentReport, ScoreReport, TuitionRate } from '../../types';
@@ -22,6 +23,10 @@ export default function AdminReports() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [exporting, setExporting] = useState<'enroll' | 'score' | null>(null);
+  const [clazzIdInput, setClazzIdInput] = useState('');
+  const [studentIdInput, setStudentIdInput] = useState('');
+  const [scanning, setScanning] = useState(false);
+  const [scanResult, setScanResult] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'reports' | 'tuition'>('reports');
   const [tuitionRates, setTuitionRates] = useState<TuitionRate[]>([]);
   const [loadingTuition, setLoadingTuition] = useState(false);
@@ -120,7 +125,49 @@ export default function AdminReports() {
       .then(([e, s]) => m && (setEnrolls(e), setScores(s)))
       .catch((e2) => m && setErr((e2 as { message?: string })?.message ?? 'Lỗi'))
       .finally(() => m && setLoading(false));
-    return () => { m = false; };
+  
+  const handleExportClazzScores = async () => {
+    const cid = Number(clazzIdInput);
+    if (!cid) return;
+    try {
+      setExporting('score');
+      const blob = await exportClazzScoresExcel(cid);
+      downloadBlob(blob, `scores-clazz-${cid}.xlsx`);
+    } catch (error: unknown) {
+      setErr((error as { message?: string })?.message ?? 'Không thể xuất điểm lớp.');
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const handleExportTranscript = async () => {
+    const sid = Number(studentIdInput);
+    if (!sid) return;
+    try {
+      setExporting('enroll');
+      const blob = await exportStudentTranscriptPdf(sid);
+      downloadBlob(blob, `transcript-student-${sid}.pdf`);
+    } catch (error: unknown) {
+      setErr((error as { message?: string })?.message ?? 'Không thể xuất bảng điểm.');
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const handleScanProbation = async () => {
+    setScanning(true);
+    setScanResult(null);
+    try {
+      const result = await scanAcademicProbation();
+      setScanResult(`Quét xong: ${result.scanned} sinh viên, ${result.warnings} cảnh báo.`);
+    } catch (error: unknown) {
+      setScanResult((error as { message?: string })?.message ?? 'Quét thất bại.');
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  return () => { m = false; };
   }, []);
   if (loading) return <Spinner />;
   if (err) return <ErrorBox msg={err} />;

@@ -44,3 +44,17 @@ export const getTranscript = async (): Promise<TranscriptItem[]> => {
     gpa: toNumber(row.gpa),
   }));
 };
+
+export const exportClazzScoresExcel = async (clazzId: number): Promise<Blob> => {
+  const response = await apiClient.get(`/admin/reports/clazz/${clazzId}/export`, { responseType: 'blob' });
+  return response.data as Blob;
+};
+
+export const exportStudentTranscriptPdf = async (studentId: number): Promise<Blob> => {
+  const response = await apiClient.get(`/admin/reports/transcript/${studentId}/export`, { responseType: 'blob' });
+  return response.data as Blob;
+};
+
+export const scanAcademicProbation = async (): Promise<{ scanned: number; warnings: number }> => {
+  return unwrap(apiClient.post('/admin/academic-probation/scan'));
+};
