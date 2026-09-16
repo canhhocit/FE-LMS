@@ -39,6 +39,8 @@ export default function StudentLessonLearning() {
   const [notes, setNotes] = useState<StudentVideoNote[]>([]);
   const [noteText, setNoteText] = useState('');
   const [showNotes, setShowNotes] = useState(false);
+  const [videoDuration, setVideoDuration] = useState<number>(0);
+  const [maxWatchedSec, setMaxWatchedSec] = useState<number>(0);
 
   const resumeKey = useMemo(
     () => `learninghub:resume:${classNum}:${lessonNum}`,
@@ -57,6 +59,14 @@ export default function StudentLessonLearning() {
   const isLessonInProgress = selectedLesson
     ? !isLessonCompleted && Boolean(resumeSeconds > 5)
     : false;
+
+  const canMarkComplete = useMemo(() => {
+    if (isLessonCompleted) return true;
+    if (!selectedLesson?.videoUrl) return true;
+    if (videoDuration <= 0) return false;
+    const targetTime = videoDuration <= 10 ? videoDuration * 0.9 : videoDuration - 10;
+    return maxWatchedSec >= targetTime;
+  }, [isLessonCompleted, selectedLesson?.videoUrl, videoDuration, maxWatchedSec]);
 
   const saveResumePosition = (seconds: number) => {
     if (!Number.isFinite(seconds) || seconds < 0) return;
@@ -128,6 +138,7 @@ export default function StudentLessonLearning() {
         const savedResume = getStoredResumeSeconds();
         setResumeSeconds(savedResume);
         maxWatchedTimeRef.current = savedResume;
+        setMaxWatchedSec(savedResume);
 
         const registrations: Registration[] = await registrationService.getMyRegistrations();
         const matchedRegistration = registrations.find((item) => item.clazzId === classNum);
@@ -150,6 +161,7 @@ export default function StudentLessonLearning() {
           }
           maxWatchedTimeRef.current = Math.max(maxWatchedTimeRef.current, highestServer);
         }
+        setMaxWatchedSec(maxWatchedTimeRef.current);
 
         // Load quizzes and notes
         const [quizData, noteData] = await Promise.all([
@@ -300,11 +312,18 @@ export default function StudentLessonLearning() {
                 onLoadedMetadata={() => {
                   const video = videoRef.current;
                   if (!video) return;
+                  if (video.duration) setVideoDuration(video.duration);
                   const resumeAt = getStoredResumeSeconds();
                   if (resumeAt > 0) {
                     video.currentTime = Math.min(resumeAt, video.duration || resumeAt);
                     setResumeSeconds(resumeAt);
                     maxWatchedTimeRef.current = Math.max(maxWatchedTimeRef.current, resumeAt);
+                    setMaxWatchedSec(maxWatchedTimeRef.current);
+                  }
+                }}
+                onDurationChange={() => {
+                  if (videoRef.current?.duration) {
+                    setVideoDuration(videoRef.current.duration);
                   }
                 }}
                 onPlay={() => {
@@ -357,6 +376,7 @@ export default function StudentLessonLearning() {
                     }
                     if (current > maxWatchedTimeRef.current) {
                       maxWatchedTimeRef.current = current;
+                      setMaxWatchedSec(current);
                     }
                   }
 
@@ -365,6 +385,10 @@ export default function StudentLessonLearning() {
                   }
                 }}
                 onEnded={() => {
+                  if (videoRef.current?.duration) {
+                    maxWatchedTimeRef.current = videoRef.current.duration;
+                    setMaxWatchedSec(videoRef.current.duration);
+                  }
                   if (enrollmentIdRef.current) {
                     void videoLearningService.upsertProgress({
                       enrollmentId: enrollmentIdRef.current,
@@ -384,13 +408,27 @@ export default function StudentLessonLearning() {
           <div className="mt-4 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-xl font-bold text-slate-800">{selectedLesson.title}</h2>
-              <button
-                type="button"
-                onClick={() => void onMarkCompleted()}
-                className={`rounded-lg px-3 py-2 text-sm font-semibold text-white ${isLessonCompleted ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-indigo-600 hover:bg-indigo-500'}`}
-              >
-                {isLessonCompleted ? 'Đã hoàn thành' : 'Đánh dấu hoàn thành'}
-              </button>
+              <div className="flex flex-col items-end gap-1">
+                <button
+                  type="button"
+                  disabled={!canMarkComplete}
+                  onClick={() => void onMarkCompleted()}
+                  className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-all ${
+                    isLessonCompleted
+                      ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+                      : canMarkComplete
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-md shadow-indigo-200 cursor-pointer'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 opacity-80'
+                  }`}
+                >
+                  {isLessonCompleted ? '✓ Đã hoàn thành' : canMarkComplete ? 'Đánh dấu hoàn thành' : '🔒 Đánh dấu hoàn thành'}
+                </button>
+                {!isLessonCompleted && selectedLesson.videoUrl && !canMarkComplete && (
+                  <span className="text-[11px] font-medium text-amber-600">
+                    Cần xem gần hết video (còn dưới 10s) mới được đánh dấu
+                  </span>
+                )}
+              </div>
             </div>
             <div className="text-sm text-slate-600">{selectedLesson.content || 'Chưa có mô tả cho bài học này.'}</div>
             
