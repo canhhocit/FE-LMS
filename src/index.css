@@ -2,54 +2,18 @@
 @import 'tailwindcss';
 
 :root {
-  /* Brand colors */
-  --color-primary-brand: #00376f;
-  --color-primary-light: #63a1ff;
-  --color-sidebar-from: #002046;
-  --color-sidebar-to: #00376f;
-
-  /* Semantic */
-  --background: 210 40% 98%;
-  --foreground: 222 47% 11%;
-  --card: 0 0% 100%;
-  --border: 214 32% 90%;
-  --input: 214 32% 95%;
-  --ring: 213 97% 40%;
-
-  --primary: 213 97% 22%;
-  --primary-foreground: 0 0% 100%;
-
-  --muted: 210 40% 98%;
-  --muted-foreground: 215 16% 47%;
-
-  --accent: 210 40% 96%;
-  --accent-foreground: 222 47% 11%;
-
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
-
   --radius: 0.75rem;
 }
 
-* {
-  border-color: hsl(var(--border));
-}
-
 body {
-  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-  color: hsl(var(--foreground));
-  font-family: 'Be Vietnam Pro', sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: 'Be Vietnam Pro', sans-serif;
-  font-weight: 600;
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 @media (max-width: 640px) {
@@ -60,27 +24,16 @@ h6 {
     white-space: nowrap;
   }
 }
-/* Dark Mode System Overrides */
+
+/* System Dark Mode Overrides */
 .dark {
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
-  --card: 222 47% 15%;
-  --border: 217 33% 22%;
-  --input: 217 33% 20%;
   color-scheme: dark;
 }
 
-.dark body {
-  background: #0f172a !important;
-  color: #f8fafc !important;
-}
-
+.dark body,
 .dark main {
   background-color: #0f172a !important;
-}
-
-.dark .bg-\[\#f5f7fb\] {
-  background-color: #0f172a !important;
+  color: #f8fafc !important;
 }
 
 .dark .bg-white {
@@ -111,7 +64,9 @@ h6 {
   border-color: #334155 !important;
 }
 
-.dark input, .dark select, .dark textarea {
+.dark input,
+.dark select,
+.dark textarea {
   background-color: #1e293b !important;
   color: #f8fafc !important;
   border-color: #475569 !important;

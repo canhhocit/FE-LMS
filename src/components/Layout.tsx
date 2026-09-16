@@ -25,7 +25,7 @@ const PageHeader = ({ children }: { children: ReactNode }) => (
 );
 
 const UiCard = ({ children, className = '' }: { children: ReactNode; className?: string }) => (
-  <div className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 ${className}`}>
+  <div className={`rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs transition dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 ${className}`}>
     {children}
   </div>
 );
@@ -51,12 +51,12 @@ const ErrorState = ({ message }: { message: string }) => (
 const StatusBadge = (props: { children: ReactNode; intent?: 'success' | 'warn' | 'error' | 'neutral'; color?: string }) => {
   const { children, intent = 'neutral' } = props;
   const styles = {
-    success: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
-    warn: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
-    error: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300',
-    neutral: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300',
+    success: 'bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60',
+    warn: 'bg-amber-50 text-amber-700 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60',
+    error: 'bg-rose-50 text-rose-700 border border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60',
+    neutral: 'bg-slate-100 text-slate-700 border border-slate-200/80 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700/60',
   }[intent];
-  return <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles}`}>{children}</span>;
+  return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles}`}>{children}</span>;
 };
 
 const HomeIcon = ({ className }: { className?: string }) => (
@@ -374,18 +374,18 @@ export default function Layout() {
         </button>
       </aside>
       <main className="min-w-0 flex-1 overflow-auto">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-white/10 bg-[#243b78]/95 px-4 py-3 text-white shadow-sm backdrop-blur sm:px-6">
-          <div className="flex min-w-0 items-center gap-3 text-sm text-blue-100">
-            <button type="button" aria-label="Mở menu" onClick={() => setSidebarOpen(true)} className="text-xl lg:hidden">
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-slate-200/80 bg-white/90 px-4 py-3 text-slate-800 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 sm:px-6">
+          <div className="flex min-w-0 items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
+            <button type="button" aria-label="Mở menu" onClick={() => setSidebarOpen(true)} className="text-xl lg:hidden text-slate-700 dark:text-slate-200">
               ☰
             </button>
             <span className="hidden truncate sm:inline">
-              Xin chào, <span className="font-semibold text-white">{user.fullName}</span>
+              Xin chào, <span className="font-semibold text-slate-900 dark:text-white">{user.fullName}</span>
             </span>
           </div>
-          <div className="hidden max-w-md flex-1 items-center rounded-full bg-white/15 px-4 py-2 text-sm text-blue-100/70 md:flex">
-            <span className="mr-2">⌕</span>
-            <span>Tìm kiếm thông tin</span>
+          <div className="hidden max-w-md flex-1 items-center rounded-full bg-slate-100 px-4 py-1.5 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400 md:flex">
+            <span className="mr-2 opacity-60">⌕</span>
+            <span>Tìm kiếm thông tin...</span>
           </div>
 
           <div className="relative flex items-center gap-3">
@@ -394,9 +394,9 @@ export default function Layout() {
               type="button"
               onClick={() => setDarkMode(!darkMode)}
               title={darkMode ? "Chuyển sang Chế độ Sáng" : "Chuyển sang Chế độ Tối"}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white shadow-sm backdrop-blur transition hover:bg-white/20 active:scale-95"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-700 shadow-xs transition hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 active:scale-95"
             >
-              {darkMode ? <SunIcon className="h-4.5 w-4.5 text-amber-300" /> : <MoonIcon className="h-4.5 w-4.5 text-blue-100" />}
+              {darkMode ? <SunIcon className="h-4.5 w-4.5 text-amber-400" /> : <MoonIcon className="h-4.5 w-4.5 text-slate-700" />}
             </button>
 
             {/* Profile Dropdown Header */}
@@ -404,16 +404,16 @@ export default function Layout() {
               <button
                 type="button"
                 onClick={() => setProfileOpen((open) => !open)}
-                className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
+                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
               >
-                <UserIcon className="h-4 w-4 text-blue-100" />
+                <UserIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                 <span className="hidden max-w-32 truncate sm:inline">{user.fullName}</span>
-                <ChevronDownIcon className="h-3.5 w-3.5 opacity-75" />
+                <ChevronDownIcon className="h-3.5 w-3.5 opacity-60" />
               </button>
               {profileOpen && (
-                <div className="absolute right-0 top-12 z-50 w-56 rounded-xl bg-white p-3 text-slate-800 shadow-xl dark:bg-slate-900 dark:text-slate-100 dark:border dark:border-slate-800">
+                <div className="absolute right-0 top-12 z-50 w-56 rounded-2xl border border-slate-200/80 bg-white p-3 text-slate-800 shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
                   <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-                    <div className="font-semibold">{user.fullName}</div>
+                    <div className="font-semibold text-slate-900 dark:text-white">{user.fullName}</div>
                     <div className="text-xs text-slate-500 dark:text-slate-400">{ROLE_LABEL[role]}</div>
                   </div>
                   <button
@@ -421,7 +421,7 @@ export default function Layout() {
                       logout();
                       nav('/login');
                     }}
-                    className="mt-2 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                    className="mt-2 flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left text-sm font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40 transition"
                   >
                     <LogOutIcon className="h-4 w-4" />
                     <span>Đăng xuất</span>
@@ -431,7 +431,7 @@ export default function Layout() {
             </div>
           </div>
         </header>
-        <div className="min-h-[calc(100vh-61px)] bg-[#f5f7fb] p-4 sm:p-6 lg:p-8">
+        <div className="min-h-[calc(100vh-61px)] bg-slate-50/80 dark:bg-slate-950 p-4 sm:p-6 lg:p-8">
           <Outlet />
         </div>
       </main>

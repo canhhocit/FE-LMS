@@ -134,21 +134,30 @@ export default function RegistrationPeriods() {
       )}
       <Card>
         {periods.length === 0 ? <Empty msg="Chưa có đợt đăng ký" /> : (
-          <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-sm">
-            <thead className="text-xs text-slate-400 border-b border-slate-800">
-              <tr><th className="text-left py-2">Tên đợt</th><th>Bắt đầu</th><th>Kết thúc</th><th>Trạng thái</th></tr>
-            </thead>
-            <tbody>
-              {periods.map((p) => (
-                <tr key={p.id} className="border-b border-slate-800/50">
-                  <td className="py-2 font-medium">{p.name}</td>
-                  <td>{fmt(p.openAt)}</td>
-                  <td>{fmt(p.closeAt)}</td>
-                  <td><Pill color={p.isActive ? 'green' : 'slate'}>{p.isActive ? 'Đang mở' : 'Đã đóng'}</Pill></td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left border-collapse">
+              <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-600 border-b border-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">Tên đợt</th>
+                  <th className="py-3 px-4">Bắt đầu</th>
+                  <th className="py-3 px-4">Kết thúc</th>
+                  <th className="py-3 px-4 text-center">Trạng thái</th>
                 </tr>
-              ))}
-            </tbody>
-          </table></div>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+                {periods.map((p) => (
+                  <tr key={p.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-100">{p.name}</td>
+                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">{fmt(p.openAt)}</td>
+                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">{fmt(p.closeAt)}</td>
+                    <td className="py-3.5 px-4 text-center">
+                      <Pill intent={p.isActive ? 'success' : 'neutral'}>{p.isActive ? 'Đang mở' : 'Đã đóng'}</Pill>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
     </div>

@@ -163,24 +163,32 @@ export function AdminClasses() {
       <PageTitle>Tất cả lớp học</PageTitle>
       <Card>
         {classes.length === 0 ? <Empty msg="Chưa có lớp nào" /> : (
-          <table className="w-full text-sm">
-            <thead className="text-xs text-slate-400 border-b border-slate-800">
-              <tr>
-                <th className="text-left py-2">Mã</th><th className="text-left">Tên lớp</th><th>Giảng viên</th><th>SV</th><th>Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody>
-              {classes.map((c) => (
-                <tr key={c.id} className="border-b border-slate-800/50">
-                  <td className="py-2 font-mono text-indigo-300">{c.classCode}</td>
-                  <td><Link to={`/admin/classes/${c.id}`} className="hover:underline">{c.className}</Link></td>
-                  <td className="text-slate-400">{c.lecturerName}</td>
-                  <td className="text-center">{c.maxStudents}</td>
-                  <td><Pill color="green">{c.semester}</Pill></td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left border-collapse">
+              <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-600 border-b border-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">Mã lớp</th>
+                  <th className="py-3 px-4">Tên lớp</th>
+                  <th className="py-3 px-4">Giảng viên</th>
+                  <th className="py-3 px-4 text-center">SV tối đa</th>
+                  <th className="py-3 px-4 text-center">Học kỳ</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+                {classes.map((c) => (
+                  <tr key={c.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3.5 px-4 font-mono font-semibold text-indigo-600 dark:text-indigo-400">{c.classCode}</td>
+                    <td className="py-3.5 px-4 font-medium text-slate-800 dark:text-slate-100">
+                      <Link to={`/admin/classes/${c.id}`} className="hover:underline text-indigo-600 dark:text-indigo-400">{c.className}</Link>
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">{c.lecturerName || '-'}</td>
+                    <td className="py-3.5 px-4 text-center font-medium text-slate-700 dark:text-slate-300">{c.maxStudents}</td>
+                    <td className="py-3.5 px-4 text-center"><Pill intent="success">{c.semester}</Pill></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
     </div>
