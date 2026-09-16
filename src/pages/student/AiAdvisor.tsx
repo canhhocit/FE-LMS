@@ -149,7 +149,7 @@ export default function StudentAiAdvisor() {
           {/* Step-by-Step Study Plan Timeline */}
           <Card>
             <h3 className="font-bold text-slate-800 text-lg mb-6 flex items-center gap-2">
-              <span>📅 Lộ trình Cải thiện Điểm số Cá nhân hóa</span>
+              <span> Lộ trình Cải thiện Điểm số Cá nhân hóa</span>
             </h3>
 
             <div className="space-y-6 relative before:absolute before:inset-0 before:left-4 before:w-0.5 before:bg-indigo-100">

@@ -144,7 +144,7 @@ export default function LecturerSchedule() {
 
       <TimetableGrid
         schedules={schedules}
-        title="📅 Lịch giảng dạy cá nhân"
+        title="Lịch giảng dạy cá nhân"
         onSelectSchedule={(s) => fillForm(s)}
         onDeleteSchedule={(id) => void removeSchedule(id)}
         isEditable={true}
