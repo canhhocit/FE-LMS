@@ -226,8 +226,7 @@ const ROLE_LABEL: Record<Role, string> = { STUDENT: 'Sinh viÃªn', LECTURER: 'Giá
 
 export default function Layout() {
   const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode');
-    return saved === 'true';
+    return localStorage.getItem('darkMode') === 'true';
   });
 
   useEffect(() => {
