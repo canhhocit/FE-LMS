@@ -225,9 +225,17 @@ const NAV: Record<Role, NavSection[]> = {
 const ROLE_LABEL: Record<Role, string> = { STUDENT: 'Sinh viên', LECTURER: 'Giảng viên', ADMIN: 'Quản trị' };
 
 export default function Layout() {
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved === 'true';
+  });
+
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', darkMode);
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     localStorage.setItem('darkMode', String(darkMode));
   }, [darkMode]);
   const { user, logout, hasPermission } = useAuth();
@@ -288,7 +296,7 @@ export default function Layout() {
   const roleLower = role.toLowerCase();
 
   return (
-    <div className="min-h-screen flex bg-[#243b78] text-slate-900">
+    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       {sidebarOpen && (
         <button
           type="button"
@@ -297,12 +305,12 @@ export default function Layout() {
           className="fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-[2px] lg:hidden"
         />
       )}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-r border-white/10 bg-[#243b78] p-4 text-white shadow-2xl transition-transform lg:static lg:w-64 lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Link to={`/${roleLower}`} className="flex items-center gap-3 border-b border-white/10 px-2 pb-5 pt-2">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#f58220] text-xl font-bold">✦</span>
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-r border-slate-200/80 bg-white p-4 text-slate-800 shadow-xl transition-transform dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 lg:static lg:w-64 lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <Link to={`/${roleLower}`} className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 px-2 pb-5 pt-2">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-600 text-white text-xl font-bold shadow-xs">✦</span>
           <div>
-            <div className="font-bold tracking-tight">LearningHub</div>
-            <div className="text-xs text-blue-100/70">{ROLE_LABEL[role]}</div>
+            <div className="font-bold tracking-tight text-slate-900 dark:text-white">LearningHub</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">{ROLE_LABEL[role]}</div>
           </div>
         </Link>
         <nav className="mt-6 flex-1 space-y-4 overflow-y-auto pr-1">
@@ -318,13 +326,13 @@ export default function Layout() {
                 <button
                   type="button"
                   onClick={() => toggleSection(section.title)}
-                  className="flex w-full items-center justify-between px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-100/60 hover:text-white transition group"
+                  className="flex w-full items-center justify-between px-2 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition group"
                 >
                   <span>{section.title}</span>
                   <ChevronDownIcon
                     className={`h-3 w-3 transform transition-transform duration-200 ${
                       isSectionOpen ? '' : '-rotate-90'
-                    } text-blue-100/40 group-hover:text-white`}
+                    } text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300`}
                   />
                 </button>
 
@@ -339,17 +347,17 @@ export default function Layout() {
                           end={it.to === `/${roleLower}`}
                           onClick={() => setSidebarOpen(false)}
                           className={({ isActive }) =>
-                            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition relative ${
+                            `flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition relative ${
                               isActive
-                                ? 'bg-white/15 text-white border border-white/10 shadow-sm'
-                                : 'text-blue-100/80 hover:bg-white/10 hover:text-white'
+                                ? 'bg-indigo-600 text-white shadow-xs font-semibold'
+                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white'
                             }`
                           }
                         >
                           <IconComponent className="h-4.5 w-4.5 shrink-0 opacity-80" />
                           <span>{it.label}</span>
                           {it.to.includes('/notifications') && unreadCount > 0 && (
-                            <span className="ml-auto inline-flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-bold">
+                            <span className="ml-auto inline-flex items-center justify-center h-5 w-5 rounded-full bg-rose-500 text-white text-xs font-bold shadow-xs">
                               {unreadCount > 99 ? '99+' : unreadCount}
                             </span>
                           )}
@@ -367,7 +375,7 @@ export default function Layout() {
             logout();
             nav('/login');
           }}
-          className="mt-2 flex items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-blue-100/70 hover:bg-white/10 hover:text-white w-full"
+          className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition w-full"
         >
           <LogOutIcon className="h-4 w-4 opacity-75" />
           <span>Đăng xuất</span>
