@@ -42,3 +42,16 @@ export const validateQrCodeToken = async (classId: number, otpToken: string): Pr
 export const getAcademicRiskWarning = async (studentId: number): Promise<AcademicRiskResponse> => {
   return unwrap<AcademicRiskResponse>(apiClient.get("/grading/academic-risk/" + studentId));
 };
+
+export interface PlagiarismReport {
+  submissionId1: number;
+  submissionId2: number;
+  student1Name: string;
+  student2Name: string;
+  similarityPercentage: number;
+  riskLevel: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+}
+
+export const checkAssignmentPlagiarism = async (assignmentId: number): Promise<PlagiarismReport> => {
+  return unwrap<PlagiarismReport>(apiClient.post("/grading/assignments/" + assignmentId + "/check-plagiarism"));
+};
