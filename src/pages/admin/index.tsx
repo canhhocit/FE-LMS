@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import * as clazzService from '../../services/clazzService';
 import * as adminService from '../../services/adminService';
 import { PageTitle, Card, Spinner, Empty, Pill } from '../../components/Layout';
-import { importUsersByRole, exportUsersByRole } from '../../services/userService';
+import { importUsersByRole, exportUsersByRole, resetPassword } from '../../services/userService';
 import * as adminClassService from '../../services/adminClassService';
 import type { AdminClassResponse } from '../../services/adminClassService';
 import type { Clazz, User, DashboardStats } from '../../types';
@@ -51,6 +51,7 @@ export function AdminUsers() {
   const [importing, setImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [importMsg, setImportMsg] = useState<string | null>(null);
+  const [resettingId, setResettingId] = useState<number | null>(null);
 
   useEffect(() => {
     adminClassService.getAllAdminClasses().then((list) => setAdminClasses(list)).catch(() => setAdminClasses([]));
@@ -100,6 +101,23 @@ export function AdminUsers() {
       URL.revokeObjectURL(url);
     } catch (e: unknown) {
       setImportMsg((e as { message?: string })?.message ?? 'Xuất file thất bại.');
+    }
+  };
+
+  const handleResetPassword = async (userItem: User) => {
+    const confirmed = window.confirm(
+      `Bạn có chắc chắn muốn reset mật khẩu cho tài khoản "${userItem.fullName}" (${userItem.email})?\n\nMật khẩu sẽ được đặt lại về "123456" và người dùng sẽ phải đổi mật khẩu ở lần đăng nhập tới.`
+    );
+    if (!confirmed) return;
+
+    setResettingId(userItem.id);
+    try {
+      await resetPassword(userItem.id);
+      setImportMsg(`Reset mật khẩu thành công cho ${userItem.fullName}. Mật khẩu mặc định là 123456 (Bắt buộc đổi khi đăng nhập lại).`);
+    } catch (e: unknown) {
+      setImportMsg((e as { message?: string })?.message ?? 'Reset mật khẩu thất bại.');
+    } finally {
+      setResettingId(null);
     }
   };
 
@@ -171,6 +189,7 @@ export function AdminUsers() {
                   <th className="text-left p-3">Email</th>
                   <th className="text-left p-3">{tab === 'STUDENT' ? 'Lớp hành chính' : 'Khoa / Bộ môn'}</th>
                   <th className="text-center p-3">Trạng thái</th>
+                  <th className="text-center p-3">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -188,6 +207,16 @@ export function AdminUsers() {
                       )}
                     </td>
                     <td className="p-3 text-center"><Pill color={u.active !== false ? 'green' : 'red'}>{u.active !== false ? 'Active' : 'Inactive'}</Pill></td>
+                    <td className="p-3 text-center">
+                      <button
+                        type="button"
+                        onClick={() => void handleResetPassword(u)}
+                        disabled={resettingId === u.id}
+                        className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300 disabled:opacity-50 transition"
+                      >
+                        {resettingId === u.id ? 'Đang reset...' : '🔑 Reset MK'}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
