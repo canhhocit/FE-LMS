@@ -19,3 +19,25 @@ export const forgotPassword = async (email: string): Promise<void> => {
 export const resetPassword = async (token: string, newPassword: string): Promise<void> => {
   await unwrap<void>(apiClient.post('/auth/reset-password', { token, newPassword }));
 };
+
+
+export interface TotpSetupResponse {
+  secretKey: string;
+  qrCodeUrl: string;
+}
+
+export const logout = async (): Promise<void> => {
+  try {
+    await apiClient.post('/auth/logout');
+  } catch {
+    // Ignore if token already invalid
+  }
+};
+
+export const setup2FA = async (): Promise<TotpSetupResponse> => {
+  return unwrap<TotpSetupResponse>(apiClient.post('/auth/2fa/setup'));
+};
+
+export const verify2FA = async (code: string): Promise<boolean> => {
+  return unwrap<boolean>(apiClient.post('/auth/2fa/verify', { code }));
+};

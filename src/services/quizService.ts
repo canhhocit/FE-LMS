@@ -47,3 +47,14 @@ export const updateQuestion = async (questionId: number, data: QuestionRequest):
 export const deleteQuestion = async (questionId: number): Promise<void> => {
   await apiClient.delete(`/quizzes/questions/${questionId}`);
 };
+
+
+export interface AiGenerateRequest {
+  topic: string;
+  numQuestions?: number;
+  difficulty?: 'EASY' | 'MEDIUM' | 'HARD';
+}
+
+export const generateAiQuestions = async (data: AiGenerateRequest): Promise<QuizQuestion[]> => {
+  return unwrap<QuizQuestion[]>(apiClient.post('/quizzes/generate-ai', data));
+};
