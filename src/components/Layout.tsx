@@ -308,8 +308,8 @@ export default function Layout() {
           className="fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-[2px] lg:hidden"
         />
       )}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-r border-sky-200/70 bg-sky-50/80 p-4 text-slate-800 shadow-xl transition-transform dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 lg:static lg:w-64 lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Link to={`/${roleLower}`} className="flex items-center gap-3 border-b border-sky-200/50 dark:border-slate-800 px-2 pb-5 pt-2">
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-r border-sky-200 bg-sky-100 p-4 text-slate-800 shadow-xl transition-transform dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 lg:static lg:w-64 lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <Link to={`/${roleLower}`} className="flex items-center gap-3 border-b border-sky-200/80 dark:border-slate-800 px-2 pb-5 pt-2">
           <span className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-600 text-white text-xl font-bold shadow-xs">✦</span>
           <div>
             <div className="font-bold tracking-tight text-slate-900 dark:text-white">LearningHub</div>
@@ -329,13 +329,13 @@ export default function Layout() {
                 <button
                   type="button"
                   onClick={() => toggleSection(section.title)}
-                  className="flex w-full items-center justify-between px-2 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition group"
+                  className="flex w-full items-center justify-between px-2 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 transition group"
                 >
                   <span>{section.title}</span>
                   <ChevronDownIcon
                     className={`h-3 w-3 transform transition-transform duration-200 ${
                       isSectionOpen ? '' : '-rotate-90'
-                    } text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300`}
+                    } text-slate-500 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-slate-300`}
                   />
                 </button>
 
@@ -353,7 +353,7 @@ export default function Layout() {
                             `flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition relative ${
                               isActive
                                 ? 'bg-indigo-600 text-white shadow-xs font-semibold'
-                                : 'text-slate-600 hover:bg-sky-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white'
+                                : 'text-slate-700 hover:bg-sky-200/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white'
                             }`
                           }
                         >
@@ -378,14 +378,14 @@ export default function Layout() {
             logout();
             nav('/login');
           }}
-          className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-slate-500 hover:bg-sky-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition w-full"
+          className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-slate-600 hover:bg-sky-200/70 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition w-full"
         >
           <LogOutIcon className="h-4 w-4 opacity-75" />
           <span>Đăng xuất</span>
         </button>
       </aside>
       <main className="min-w-0 flex-1 overflow-auto">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-sky-200/70 bg-sky-50/90 px-4 py-3 text-slate-800 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 sm:px-6">
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-sky-200 bg-sky-100 px-4 py-3 text-slate-800 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 sm:px-6">
           <div className="flex min-w-0 items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
             <button type="button" aria-label="Mở menu" onClick={() => setSidebarOpen(true)} className="text-xl lg:hidden text-slate-700 dark:text-slate-200">
               ☰
@@ -394,7 +394,7 @@ export default function Layout() {
               Xin chào, <span className="font-semibold text-slate-900 dark:text-white">{user.fullName}</span>
             </span>
           </div>
-          <div className="hidden max-w-md flex-1 items-center rounded-full bg-sky-100/70 px-4 py-1.5 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400 md:flex">
+          <div className="hidden max-w-md flex-1 items-center rounded-full bg-white/80 border border-sky-200/60 px-4 py-1.5 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400 md:flex">
             <span className="mr-2 opacity-60">⌕</span>
             <span>Tìm kiếm thông tin...</span>
           </div>
@@ -405,7 +405,7 @@ export default function Layout() {
               type="button"
               onClick={() => setDarkMode(!darkMode)}
               title={darkMode ? "Chuyển sang Chế độ Sáng" : "Chuyển sang Chế độ Tối"}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-700 shadow-xs transition hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 active:scale-95"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-sky-200 bg-white/80 text-slate-700 shadow-xs transition hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 active:scale-95"
             >
               {darkMode ? <SunIcon className="h-4.5 w-4.5 text-amber-400" /> : <MoonIcon className="h-4.5 w-4.5 text-slate-700" />}
             </button>
@@ -415,7 +415,7 @@ export default function Layout() {
               <button
                 type="button"
                 onClick={() => setProfileOpen((open) => !open)}
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                className="flex items-center gap-2 rounded-xl border border-sky-200 bg-white/80 px-3 py-1.5 text-sm font-semibold text-slate-800 transition hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
               >
                 <UserIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                 <span className="hidden max-w-32 truncate sm:inline">{user.fullName}</span>
