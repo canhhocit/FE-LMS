@@ -63,7 +63,15 @@ export default function NotificationsPage() {
           {items.map((n) => {
             const target = getNotificationTarget(n.type);
             return (
-              <Card key={n.id} className={n.isRead ? 'border-slate-200 bg-white' : 'border-indigo-200 bg-indigo-50/50'}>
+              <Card
+                key={n.id}
+                className={`transition cursor-pointer ${
+                  n.isRead ? 'border-slate-200 bg-white' : 'border-indigo-200 bg-indigo-50/60 hover:bg-indigo-50'
+                }`}
+                onClick={() => {
+                  if (!n.isRead) void onMarkRead(n.id);
+                }}
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="mb-1 flex items-center gap-2">
@@ -74,9 +82,25 @@ export default function NotificationsPage() {
                     <div className="mt-2 text-xs text-slate-500">{fmt(n.createdAt)}</div>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-2">
-                    <Link to={target} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-500">Xem</Link>
+                    <Link
+                      to={target}
+                      onClick={() => {
+                        if (!n.isRead) void onMarkRead(n.id);
+                      }}
+                      className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-500"
+                    >
+                      Xem
+                    </Link>
                     {!n.isRead && (
-                      <button onClick={() => void onMarkRead(n.id)} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100">Đánh dấu đọc</button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void onMarkRead(n.id);
+                        }}
+                        className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                      >
+                        Đánh dấu đọc
+                      </button>
                     )}
                   </div>
                 </div>
