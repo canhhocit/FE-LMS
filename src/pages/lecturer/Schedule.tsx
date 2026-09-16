@@ -32,9 +32,7 @@ export default function LecturerSchedule() {
         if (!mounted) return;
         setClasses(myClasses);
         if (myClasses.length > 0) {
-          const firstId = myClasses[0].id;
-          setSelectedClassId(firstId);
-          await loadSchedules(firstId);
+          setSelectedClassId(myClasses[0].id);
         }
       } catch (e) {
         if (mounted) setErr((e as { message?: string })?.message ?? 'Lỗi tải lịch giảng dạy');
@@ -47,7 +45,18 @@ export default function LecturerSchedule() {
 
   useEffect(() => {
     if (selectedClassId == null) return;
-    void loadSchedules(selectedClassId).catch((e) => setErr((e as { message?: string })?.message ?? 'Lỗi tải lịch'));
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await scheduleService.getClazzSchedule(selectedClassId);
+        if (mounted) {
+          setSchedules(data);
+        }
+      } catch (e) {
+        if (mounted) setErr((e as { message?: string })?.message ?? 'Lỗi tải lịch');
+      }
+    })();
+    return () => { mounted = false; };
   }, [selectedClassId]);
 
   const resetForm = () => {
