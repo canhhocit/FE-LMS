@@ -23,6 +23,7 @@ export default function StudentLessonLearning() {
   const lessonNum = Number(lessonId);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const lastSavedResumeRef = useRef<number>(0);
+  const maxWatchedTimeRef = useRef<number>(0);
 
   const [clazz, setClazz] = useState<Clazz | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -32,14 +33,10 @@ export default function StudentLessonLearning() {
   const [resumeSeconds, setResumeSeconds] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const lastSyncedRef = useRef<number>(0);
-  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const enrollmentIdRef = useRef<number | null>(null);
 
   const [quizzes, setQuizzes] = useState<InVideoQuiz[]>([]);
   const [notes, setNotes] = useState<StudentVideoNote[]>([]);
-  const [activeQuiz, setActiveQuiz] = useState<InVideoQuiz | null>(null);
-  const [quizAnswered, setQuizAnswered] = useState<Record<number, string>>({});
   const [noteText, setNoteText] = useState('');
   const [showNotes, setShowNotes] = useState(false);
 
@@ -80,15 +77,20 @@ export default function StudentLessonLearning() {
   const seekVideo = (deltaSeconds: number) => {
     const video = videoRef.current;
     if (!video) return;
-    const nextTime = Math.max(0, Math.min(video.duration || 0, video.currentTime + deltaSeconds));
+    let nextTime = video.currentTime + deltaSeconds;
+    // Chống tua tiến vượt quá phần đã học khi chưa hoàn thành bài
+    if (!isLessonCompleted && deltaSeconds > 0) {
+      if (nextTime > maxWatchedTimeRef.current) {
+        nextTime = maxWatchedTimeRef.current;
+      }
+    }
+    nextTime = Math.max(0, Math.min(video.duration || 0, nextTime));
     video.currentTime = nextTime;
     saveResumePosition(nextTime);
   };
 
   useEffect(() => {
-    if (!classNum || !lessonNum) {
-      return;
-    }
+    if (!classNum || !lessonNum) return;
 
     let mounted = true;
     const load = async () => {
@@ -125,6 +127,7 @@ export default function StudentLessonLearning() {
 
         const savedResume = getStoredResumeSeconds();
         setResumeSeconds(savedResume);
+        maxWatchedTimeRef.current = savedResume;
 
         const registrations: Registration[] = await registrationService.getMyRegistrations();
         const matchedRegistration = registrations.find((item) => item.clazzId === classNum);
@@ -142,10 +145,11 @@ export default function StudentLessonLearning() {
           if (serverSeconds > getStoredResumeSeconds()) {
             localStorage.setItem(resumeKey, String(Math.floor(serverSeconds)));
             setResumeSeconds(Math.floor(serverSeconds));
+            maxWatchedTimeRef.current = Math.max(maxWatchedTimeRef.current, serverSeconds);
           }
         }
 
-        // Load quizzes and notes for this lesson
+        // Load quizzes and notes
         const [quizData, noteData] = await Promise.all([
           videoLearningService.getQuizzesForLesson(lessonNum),
           videoLearningService.getNotes(lessonNum),
@@ -168,7 +172,7 @@ export default function StudentLessonLearning() {
     return () => {
       mounted = false;
     };
-  }, [classNum, lessonNum, getStoredResumeSeconds]);
+  }, [classNum, lessonNum, getStoredResumeSeconds, resumeKey]);
 
   const orderedLessons = useMemo(
     () => Object.values(chapterLessons).flat().sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
@@ -243,6 +247,11 @@ export default function StudentLessonLearning() {
                 Chưa học
               </span>
             )}
+            {!isLessonCompleted && (
+              <span className="rounded-full bg-rose-50 border border-rose-200 px-2.5 py-1 text-xs font-medium text-rose-600">
+                🔒 Chống tua tiến
+              </span>
+            )}
             {hasResume && (
               <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700">
                 Tiếp tục từ {formatTime(resumeSeconds)}
@@ -258,7 +267,8 @@ export default function StudentLessonLearning() {
             <button
               type="button"
               onClick={() => seekVideo(10)}
-              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+              disabled={!isLessonCompleted && (videoRef.current?.currentTime ?? 0) + 10 > maxWatchedTimeRef.current}
+              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               +10s
             </button>
@@ -292,6 +302,7 @@ export default function StudentLessonLearning() {
                   if (resumeAt > 0) {
                     video.currentTime = Math.min(resumeAt, video.duration || resumeAt);
                     setResumeSeconds(resumeAt);
+                    maxWatchedTimeRef.current = Math.max(maxWatchedTimeRef.current, resumeAt);
                   }
                 }}
                 onPlay={() => {
@@ -306,12 +317,33 @@ export default function StudentLessonLearning() {
                     saveResumePosition(video.currentTime || 0);
                   }
                 }}
+                onSeeking={() => {
+                  if (isLessonCompleted) return;
+                  const video = videoRef.current;
+                  if (!video) return;
+                  // Nếu sinh viên kéo tua vượt quá thời lượng đã xem (+1.5s sai số) -> Kéo ngược lại maxWatchedTime
+                  if (video.currentTime > maxWatchedTimeRef.current + 1.5) {
+                    video.currentTime = maxWatchedTimeRef.current;
+                  }
+                }}
                 onTimeUpdate={() => {
                   const video = videoRef.current;
                   if (!video) return;
-                  const nextTime = Number(video.currentTime || 0);
-                  if (nextTime > 0) {
-                    saveResumePosition(nextTime);
+                  const current = Number(video.currentTime || 0);
+
+                  // Kiểm tra và ghi nhận thời lượng xem lớn nhất
+                  if (!isLessonCompleted) {
+                    if (current > maxWatchedTimeRef.current + 1.5) {
+                      video.currentTime = maxWatchedTimeRef.current;
+                      return;
+                    }
+                    if (current > maxWatchedTimeRef.current) {
+                      maxWatchedTimeRef.current = current;
+                    }
+                  }
+
+                  if (current > 0) {
+                    saveResumePosition(current);
                   }
                 }}
                 onEnded={() => {
@@ -335,6 +367,7 @@ export default function StudentLessonLearning() {
               </button>
             </div>
             <div className="text-sm text-slate-600">{selectedLesson.content || 'Chưa có mô tả cho bài học này.'}</div>
+            
             {/* Video Notes Section */}
             <div className="mt-4 rounded-xl border border-slate-200 bg-white overflow-hidden">
               <button
@@ -406,6 +439,7 @@ export default function StudentLessonLearning() {
                 </div>
               )}
             </div>
+
             <div className="flex items-center gap-3">
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200">
                 <div className="h-full rounded-full bg-indigo-600" style={{ width: `${percent}%` }} />
