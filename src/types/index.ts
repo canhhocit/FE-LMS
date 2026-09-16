@@ -40,8 +40,11 @@ export interface User {
   active?: boolean;
   createdAt?: string;
   studentCode?: string;
+  lecturerCode?: string;
   phone?: string;
   adminClassId?: number;
+  adminClassName?: string;
+  faculty?: string;
 }
 export interface SpringPage<T> {
   content: T[];

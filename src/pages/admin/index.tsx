@@ -5,6 +5,8 @@ import * as clazzService from '../../services/clazzService';
 import * as adminService from '../../services/adminService';
 import { PageTitle, Card, Spinner, Empty, Pill } from '../../components/Layout';
 import { importUsersByRole, exportUsersByRole } from '../../services/userService';
+import * as adminClassService from '../../services/adminClassService';
+import type { AdminClassResponse } from '../../services/adminClassService';
 import type { Clazz, User, DashboardStats } from '../../types';
 
 export function AdminDashboard() {
@@ -43,10 +45,16 @@ export function AdminUsers() {
   const [tab, setTab] = useState<'STUDENT' | 'LECTURER'>('STUDENT');
   const [kw, setKw] = useState('');
   const [users, setUsers] = useState<User[]>([]);
+  const [adminClasses, setAdminClasses] = useState<AdminClassResponse[]>([]);
+  const [selectedClass, setSelectedClass] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [importMsg, setImportMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    adminClassService.getAllAdminClasses().then((list) => setAdminClasses(list)).catch(() => setAdminClasses([]));
+  }, []);
 
   const load = useCallback(() => {
     let mounted = true;
@@ -95,16 +103,37 @@ export function AdminUsers() {
     }
   };
 
+  const filteredUsers = users.filter((u) => {
+    if (!selectedClass) return true;
+    return u.adminClassName === selectedClass || String(u.adminClassId) === selectedClass;
+  });
+
   return (
     <div>
       <PageTitle>Người dùng</PageTitle>
       <div className="flex flex-wrap gap-2 mb-3 items-center">
         {(['STUDENT', 'LECTURER'] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)}
+          <button key={t} onClick={() => { setTab(t); setSelectedClass(''); }}
             className={`px-3 py-1.5 rounded text-sm ${tab === t ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
             {t === 'STUDENT' ? 'Sinh viên' : 'Giảng viên'}
           </button>
         ))}
+
+        {tab === 'STUDENT' && adminClasses.length > 0 && (
+          <select
+            value={selectedClass}
+            onChange={(e) => setSelectedClass(e.target.value)}
+            className="px-3 py-1.5 bg-white border border-slate-200 rounded text-sm text-slate-700 focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            <option value="">-- Tất cả lớp hành chính --</option>
+            {adminClasses.map((ac) => (
+              <option key={ac.id} value={ac.className}>
+                {ac.className}
+              </option>
+            ))}
+          </select>
+        )}
+
         <input value={kw} onChange={(e) => setKw(e.target.value)} placeholder="Tìm theo tên/email…"
           className="ml-auto min-w-55 px-3 py-1.5 bg-white border border-slate-200 rounded text-sm text-slate-700" />
       </div>
@@ -131,22 +160,39 @@ export function AdminUsers() {
       )}
 
       <Card>
-        {loading ? <Spinner /> : users.length === 0 ? <Empty msg="Không có kết quả" /> : (
-          <table className="w-full text-sm">
-            <thead className="text-xs text-slate-500 border-b border-slate-200">
-              <tr><th className="text-left py-2">#</th><th>Họ tên</th><th>Email</th><th>Trạng thái</th></tr>
-            </thead>
-            <tbody>
-              {users.map((u, i) => (
-                <tr key={u.id} className="border-b border-slate-200/80">
-                  <td className="py-2 text-slate-500">{i + 1}</td>
-                  <td className="text-slate-800">{u.fullName}</td>
-                  <td className="text-slate-500">{u.email}</td>
-                  <td><Pill color={u.active !== false ? 'green' : 'red'}>{u.active !== false ? 'Active' : 'Inactive'}</Pill></td>
+        {loading ? <Spinner /> : filteredUsers.length === 0 ? <Empty msg="Không có kết quả" /> : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-xs text-slate-500 border-b border-slate-200 bg-slate-50">
+                <tr>
+                  <th className="text-left p-3">#</th>
+                  <th className="text-left p-3">{tab === 'STUDENT' ? 'Mã SV' : 'Mã GV'}</th>
+                  <th className="text-left p-3">Họ tên</th>
+                  <th className="text-left p-3">Email</th>
+                  <th className="text-left p-3">{tab === 'STUDENT' ? 'Lớp hành chính' : 'Khoa / Bộ môn'}</th>
+                  <th className="text-center p-3">Trạng thái</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredUsers.map((u, i) => (
+                  <tr key={u.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition">
+                    <td className="p-3 text-slate-500">{i + 1}</td>
+                    <td className="p-3 font-mono text-xs text-indigo-600 font-semibold">{u.studentCode || u.lecturerCode || '-'}</td>
+                    <td className="p-3 font-medium text-slate-800">{u.fullName}</td>
+                    <td className="p-3 text-slate-500">{u.email}</td>
+                    <td className="p-3 text-slate-600 font-medium">
+                      {tab === 'STUDENT' ? (
+                        u.adminClassName ? <Pill color="indigo">{u.adminClassName}</Pill> : '-'
+                      ) : (
+                        u.faculty || '-'
+                      )}
+                    </td>
+                    <td className="p-3 text-center"><Pill color={u.active !== false ? 'green' : 'red'}>{u.active !== false ? 'Active' : 'Inactive'}</Pill></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
     </div>
