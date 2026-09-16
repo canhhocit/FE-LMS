@@ -26,8 +26,8 @@ const PageHeader = ({ children }: { children: ReactNode }) => (
   <h1 className="text-xl font-bold text-slate-900 dark:text-[#63a1ff] mb-4">{children}</h1>
 );
 
-const UiCard = ({ children, className = '' }: { children: ReactNode; className?: string }) => (
-  <div className={`rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs transition dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 ${className}`}>
+const UiCard = ({ children, className = '', onClick }: { children: ReactNode; className?: string; onClick?: () => void }) => (
+  <div onClick={onClick} className={`rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs transition dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 ${className}`}>
     {children}
   </div>
 );

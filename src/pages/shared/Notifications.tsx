@@ -27,19 +27,21 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
-  const load = async () => {
-    try {
-      const data = await notificationService.getNotifications();
-      setItems(data);
-    } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'Không tải được thông báo');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    void load();
+    let mounted = true;
+    notificationService.getNotifications()
+      .then((data) => {
+        if (mounted) setItems(data);
+      })
+      .catch((e: unknown) => {
+        if (mounted) setErr((e as { message?: string })?.message ?? 'Không tải được thông báo');
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const onMarkRead = async (id: number) => {
