@@ -5,7 +5,6 @@ import * as contentService from "../../services/contentService";
 // Sprint 1: edit/delete helpers already in contentService
 import * as assessmentService from "../../services/assessmentService";
 import * as registrationService from "../../services/registrationService";
-import * as gradingService from "../../services/gradingService";
 import * as progressService from "../../services/progressService";
 import { useAuth } from "../../contexts/useAuth";
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from "../../components/Layout";
@@ -43,7 +42,10 @@ export default function ClassDetail() {
   const [flash, setFlash] = useState<string | null>(null);
 
   const loadChapters = async () => {
-    try { const list = await contentService.getChapters(cid); setChapters(list); } catch {}
+    try { const list = await contentService.getChapters(cid); setChapters(list); } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi tải chương'); }
+  };
+  const loadAnns = async () => {
+    try { const list = await contentService.getAnnouncements(cid); setAnns(list); } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi tải thông báo'); }
   };
   const [studentProgress, setStudentProgress] = useState<EnrollmentProgress | null>(null);
   const [saving, setSaving] = useState(false);
@@ -781,8 +783,52 @@ export default function ClassDetail() {
               <ul className="space-y-2 text-sm">
                 {anns.map((a: Announcement) => (
                   <li key={a.id} className="border-l-2 border-indigo-500 pl-2">
-                    <div className="font-medium">{a.title}</div>
-                    <div className="text-xs text-slate-400 line-clamp-2">{a.content}</div>
+                    {editAnnId === a.id ? (
+                      <div className="space-y-1.5 my-1">
+                        <input
+                          value={editAnnTitle}
+                          onChange={(e) => setEditAnnTitle(e.target.value)}
+                          placeholder="Tiêu đề thông báo"
+                          className="w-full px-2 py-1 text-xs border rounded border-slate-300"
+                        />
+                        <textarea
+                          value={editAnnContent}
+                          onChange={(e) => setEditAnnContent(e.target.value)}
+                          placeholder="Nội dung thông báo"
+                          rows={2}
+                          className="w-full px-2 py-1 text-xs border rounded border-slate-300"
+                        />
+                        <div className="flex gap-1.5">
+                          <button onClick={saveEditAnn} className="px-2 py-0.5 text-xs rounded bg-indigo-600 text-white">Lưu</button>
+                          <button onClick={() => setEditAnnId(null)} className="px-2 py-0.5 text-xs rounded bg-slate-200 text-slate-700">Hủy</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="flex items-center justify-between gap-1">
+                          <div className="font-medium text-slate-800">{a.title}</div>
+                          {isLecturer && (
+                            <div className="inline-flex items-center gap-1 shrink-0">
+                              <button
+                                onClick={() => startEditAnn(a)}
+                                className="text-slate-400 hover:text-indigo-600 p-0.5 rounded transition"
+                                title="Sửa thông báo"
+                              >
+                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteAnnouncement(a.id)}
+                                className="text-slate-400 hover:text-rose-600 p-0.5 rounded transition"
+                                title="Xóa thông báo"
+                              >
+                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-xs text-slate-400 line-clamp-2">{a.content}</div>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
