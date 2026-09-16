@@ -140,13 +140,15 @@ export default function StudentLessonLearning() {
 
         // Load server-side progress
         const serverProgress = await videoLearningService.getProgress(lessonNum, matchedRegistration.enrollmentId);
-        if (serverProgress && serverProgress.lastWatchedSeconds > 0) {
-          const serverSeconds = Number(serverProgress.lastWatchedSeconds);
-          if (serverSeconds > getStoredResumeSeconds()) {
-            localStorage.setItem(resumeKey, String(Math.floor(serverSeconds)));
-            setResumeSeconds(Math.floor(serverSeconds));
-            maxWatchedTimeRef.current = Math.max(maxWatchedTimeRef.current, serverSeconds);
+        if (serverProgress) {
+          const serverLast = Number(serverProgress.lastWatchedSeconds || 0);
+          const serverMax = Number(serverProgress.maxWatchedSeconds || 0);
+          const highestServer = Math.max(serverLast, serverMax);
+          if (highestServer > getStoredResumeSeconds()) {
+            localStorage.setItem(resumeKey, String(Math.floor(highestServer)));
+            setResumeSeconds(Math.floor(highestServer));
           }
+          maxWatchedTimeRef.current = Math.max(maxWatchedTimeRef.current, highestServer);
         }
 
         // Load quizzes and notes
@@ -314,14 +316,30 @@ export default function StudentLessonLearning() {
                 onPause={() => {
                   const video = videoRef.current;
                   if (video) {
-                    saveResumePosition(video.currentTime || 0);
+                    const cur = video.currentTime || 0;
+                    saveResumePosition(cur);
+                    if (enrollmentIdRef.current) {
+                      void videoLearningService.upsertProgress({
+                        enrollmentId: enrollmentIdRef.current,
+                        lessonId: lessonNum,
+                        lastWatchedSeconds: Math.floor(cur),
+                        maxWatchedSeconds: Math.floor(maxWatchedTimeRef.current),
+                      });
+                    }
                   }
                 }}
                 onSeeking={() => {
                   if (isLessonCompleted) return;
                   const video = videoRef.current;
                   if (!video) return;
-                  // Nếu sinh viên kéo tua vượt quá thời lượng đã xem (+1.5s sai số) -> Kéo ngược lại maxWatchedTime
+                  if (video.currentTime > maxWatchedTimeRef.current + 1.5) {
+                    video.currentTime = maxWatchedTimeRef.current;
+                  }
+                }}
+                onSeeked={() => {
+                  if (isLessonCompleted) return;
+                  const video = videoRef.current;
+                  if (!video) return;
                   if (video.currentTime > maxWatchedTimeRef.current + 1.5) {
                     video.currentTime = maxWatchedTimeRef.current;
                   }
@@ -347,6 +365,14 @@ export default function StudentLessonLearning() {
                   }
                 }}
                 onEnded={() => {
+                  if (enrollmentIdRef.current) {
+                    void videoLearningService.upsertProgress({
+                      enrollmentId: enrollmentIdRef.current,
+                      lessonId: lessonNum,
+                      lastWatchedSeconds: Math.floor(videoRef.current?.duration || maxWatchedTimeRef.current),
+                      maxWatchedSeconds: Math.floor(videoRef.current?.duration || maxWatchedTimeRef.current),
+                    });
+                  }
                   void handleVideoEnded();
                 }}
               />
