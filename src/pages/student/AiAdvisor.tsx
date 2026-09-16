@@ -62,9 +62,8 @@ export default function StudentAiAdvisor() {
             />
             <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-slate-900 rounded-full animate-pulse"></span>
           </div>
-          <div>
             <div className="flex items-center gap-2">
-              <PageTitle className="!text-white !mb-0 text-xl font-extrabold tracking-wide">Trợ lý & Cố vấn Học tập AI Hikari</PageTitle>
+              <h1 className="text-xl font-extrabold tracking-wide text-white mb-0">Trợ lý & Cố vấn Học tập AI Hikari</h1>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-linear-to-r from-pink-500 to-purple-500 text-white uppercase tracking-wider shadow-xs">
                 ✨ Anime AI Companion
               </span>
