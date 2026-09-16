@@ -418,17 +418,19 @@ export default function ClassDetail() {
                           <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => startEditChapter(c)}
-                              className="px-2 py-1 text-xs rounded border border-slate-200 text-slate-600 hover:bg-slate-50"
+                              className="px-2 py-1 text-xs rounded border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center gap-1"
                               title="Sửa tên chương"
                             >
-                              ✏️ Sửa
+                              <svg className="h-3.5 w-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                              <span>Sửa</span>
                             </button>
                             <button
                               onClick={() => handleDeleteChapter(c.id)}
-                              className="px-2 py-1 text-xs rounded border border-rose-200 text-rose-600 hover:bg-rose-50"
+                              className="px-2 py-1 text-xs rounded border border-rose-200 text-rose-600 hover:bg-rose-50 flex items-center gap-1"
                               title="Xóa chương"
                             >
-                              🗑️ Xóa
+                              <svg className="h-3.5 w-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                              <span>Xóa</span>
                             </button>
                           </div>
                         )}
@@ -478,17 +480,17 @@ export default function ClassDetail() {
                                       <div className="inline-flex items-center gap-1">
                                         <button
                                           onClick={() => startEditLesson(lesson)}
-                                          className="text-[11px] text-slate-500 hover:text-indigo-600 px-1"
+                                          className="text-slate-400 hover:text-indigo-600 p-1 rounded transition"
                                           title="Sửa bài học"
                                         >
-                                          ✏️
+                                          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                         </button>
                                         <button
                                           onClick={() => handleDeleteLesson(lesson.id)}
-                                          className="text-[11px] text-slate-500 hover:text-rose-600 px-1"
+                                          className="text-slate-400 hover:text-rose-600 p-1 rounded transition"
                                           title="Xóa bài học"
                                         >
-                                          🗑️
+                                          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                         </button>
                                       </div>
                                     )}
@@ -497,12 +499,14 @@ export default function ClassDetail() {
                                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
                                     {lesson.videoUrl && (
                                       <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-indigo-600 font-medium hover:underline">
-                                        🎥 Video
+                                        <svg className="h-3.5 w-3.5 shrink-0 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                        <span>Video</span>
                                       </a>
                                     )}
                                     {lesson.attachmentUrl && (
                                       <a href={lesson.attachmentUrl} target="_blank" rel="noreferrer" download className="inline-flex items-center gap-1 text-emerald-600 font-medium hover:underline">
-                                        📎 {lesson.attachmentName || 'Tài liệu'}
+                                        <svg className="h-3.5 w-3.5 shrink-0 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+                                        <span>{lesson.attachmentName || 'Tài liệu'}</span>
                                       </a>
                                     )}
                                   </div>
@@ -513,9 +517,10 @@ export default function ClassDetail() {
                                         type="button"
                                         onClick={() => fileInputRefs.current[lesson.id]?.click()}
                                         disabled={saving || uploadingLessonId === lesson.id}
-                                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-50"
+                                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-50 transition shadow-2xs"
                                       >
-                                        {uploadingLessonId === lesson.id ? 'Đang tải video...' : lesson.videoUrl ? '🎥 Thay video' : '🎥 Tải video'}
+                                        <svg className="h-3.5 w-3.5 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                        <span>{uploadingLessonId === lesson.id ? 'Đang tải video...' : lesson.videoUrl ? 'Thay video' : 'Thêm video'}</span>
                                       </button>
                                       <input
                                         ref={(el) => { fileInputRefs.current[lesson.id] = el; }}
@@ -534,9 +539,10 @@ export default function ClassDetail() {
                                         type="button"
                                         onClick={() => attachmentFileInputRefs.current[lesson.id]?.click()}
                                         disabled={saving || uploadingAttachmentLessonId === lesson.id}
-                                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-emerald-300 hover:text-emerald-600 disabled:opacity-50"
+                                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-emerald-300 hover:text-emerald-600 disabled:opacity-50 transition shadow-2xs"
                                       >
-                                        {uploadingAttachmentLessonId === lesson.id ? 'Đang tải tài liệu...' : lesson.attachmentUrl ? '📎 Thay tài liệu' : '📎 Tải tài liệu'}
+                                        <svg className="h-3.5 w-3.5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+                                        <span>{uploadingAttachmentLessonId === lesson.id ? 'Đang tải tài liệu...' : lesson.attachmentUrl ? 'Thay tài liệu' : 'Thêm tài liệu'}</span>
                                       </button>
                                       <input
                                         ref={(el) => { attachmentFileInputRefs.current[lesson.id] = el; }}
