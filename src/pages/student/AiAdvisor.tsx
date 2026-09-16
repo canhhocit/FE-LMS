@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { PageTitle, Card, Spinner, ErrorBox } from '../../components/Layout';
+import { Card, Spinner, ErrorBox } from '../../components/Layout';
 import { getMyAiAdvisorAnalysis, askAiAdvisor, type AiAdvisorResponse } from '../../services/aiAdvisorService';
 
 export default function StudentAiAdvisor() {
