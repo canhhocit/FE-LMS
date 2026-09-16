@@ -60,3 +60,59 @@ h6 {
     white-space: nowrap;
   }
 }
+/* Dark Mode System Overrides */
+.dark {
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+  --card: 222 47% 15%;
+  --border: 217 33% 22%;
+  --input: 217 33% 20%;
+  color-scheme: dark;
+}
+
+.dark body {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+.dark main {
+  background-color: #0f172a !important;
+}
+
+.dark .bg-\[\#f5f7fb\] {
+  background-color: #0f172a !important;
+}
+
+.dark .bg-white {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+.dark .bg-slate-50,
+.dark .bg-slate-100 {
+  background-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700 {
+  color: #f8fafc !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500 {
+  color: #cbd5e1 !important;
+}
+
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-300 {
+  border-color: #334155 !important;
+}
+
+.dark input, .dark select, .dark textarea {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #475569 !important;
+}
