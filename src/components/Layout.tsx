@@ -1,12 +1,6 @@
 // Layout chung: sidebar + topbar + content. Items lọc theo role.
 
-// Dark mode state
-const [darkMode, setDarkMode] = useState(false);
-useEffect(() => {
-  const saved = localStorage.getItem('darkMode');
-  if (saved === 'true') setDarkMode(true);
-}, []);
-useEffect(() => { document.documentElement.classList.toggle('dark', darkMode); localStorage.setItem('darkMode', String(darkMode)); }, [darkMode]);import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/useAuth';
 import * as notificationService from '../services/notificationService';
@@ -225,6 +219,11 @@ const NAV: Record<Role, NavSection[]> = {
 const ROLE_LABEL: Record<Role, string> = { STUDENT: 'Sinh viên', LECTURER: 'Giảng viên', ADMIN: 'Quản trị' };
 
 export default function Layout() {
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('darkMode', String(darkMode));
+  }, [darkMode]);
   const { user, logout, hasPermission } = useAuth();
   const nav = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
