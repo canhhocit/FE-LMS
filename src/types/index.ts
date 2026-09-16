@@ -22,6 +22,7 @@ export interface AuthUser {
   type: string;
   id: number;
   email: string;
+  personalEmail?: string | null;
   fullName: string;
   role: Role;
   avatarUrl?: string | null;
@@ -35,6 +36,7 @@ export interface AuthUser {
 export interface User {
   id: number;
   email: string;
+  personalEmail?: string | null;
   fullName: string;
   role: Role;
   active?: boolean;
@@ -156,6 +158,7 @@ export interface DashboardStats {
 export interface UserProfile {
   id: number;
   email: string;
+  personalEmail?: string | null;
   fullName: string;
   role: Role;
   studentCode: string | null;
@@ -170,6 +173,7 @@ export interface UserProfile {
 
 export interface UpdateProfileRequest {
   fullName: string;
+  personalEmail?: string | null;
   dateOfBirth: string | null;
   faculty: string | null;
   major: string | null;

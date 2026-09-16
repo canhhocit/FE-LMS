@@ -58,6 +58,7 @@ export default function LecturerProfile() {
     try {
       const updated = await profileService.updateMyProfile({
         fullName: form.fullName ?? profile.fullName,
+        personalEmail: form.personalEmail ?? profile.personalEmail ?? null,
         dateOfBirth: form.dateOfBirth ?? profile.dateOfBirth ?? null,
         faculty: form.faculty ?? profile.faculty ?? null,
         major: form.major ?? profile.major ?? null,
@@ -101,16 +102,42 @@ export default function LecturerProfile() {
           </button>
         </div>
         <div className="grid md:grid-cols-2 gap-3 text-sm">
-          <div><div className="text-xs text-slate-400">Mã giảng viên</div>
+          <div>
+            <div className="text-xs text-slate-400">Mã giảng viên</div>
             <div className="mt-1">{profile.lecturerCode ?? '-'}</div>
           </div>
-          <div><div className="text-xs text-slate-400">Khoa</div>
+          <div>
+            <div className="text-xs text-slate-400">Email hệ thống</div>
+            <div className="mt-1">{profile.email}</div>
+          </div>
+          <div>
+            <div className="text-xs text-slate-400">Email cá nhân (nhận thông báo & quên mật khẩu)</div>
+            {editing ? (
+              <input
+                type="email"
+                value={form.personalEmail ?? profile.personalEmail ?? ''}
+                onChange={(e) => setForm({ ...form, personalEmail: e.target.value })}
+                className="mt-1 w-full px-2 py-1.5 bg-white border border-slate-200 rounded text-sm"
+                placeholder="VD: email@gmail.com"
+              />
+            ) : (
+              <div className="mt-1">{profile.personalEmail ?? '-'}</div>
+            )}
+          </div>
+          <div>
+            <div className="text-xs text-slate-400">Khoa</div>
             <div className="mt-1">{profile.faculty ?? '-'}</div>
           </div>
-          <div><div className="text-xs text-slate-400">Chuyên ngành</div><div className="mt-1">{profile.major ?? '-'}</div></div>
-          <div><div className="text-xs text-slate-400">Ngày sinh</div><div className="mt-1">{profile.dateOfBirth ?? '-'}</div></div>
+          <div>
+            <div className="text-xs text-slate-400">Chuyên ngành</div>
+            <div className="mt-1">{profile.major ?? '-'}</div>
+          </div>
+          <div>
+            <div className="text-xs text-slate-400">Ngày sinh</div>
+            <div className="mt-1">{profile.dateOfBirth ?? '-'}</div>
+          </div>
         </div>
-        {editing && <button onClick={save} className="mt-3 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500">Lưu</button>}
+        {editing && <button onClick={save} className="mt-3 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium">Lưu thay đổi</button>}
       </Card>
     </div>
   );

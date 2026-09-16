@@ -73,6 +73,7 @@ export default function StudentProfile() {
     try {
       const updated = await profileService.updateMyProfile({
         fullName: form.fullName ?? profile.fullName,
+        personalEmail: form.personalEmail ?? profile.personalEmail ?? null,
         dateOfBirth: form.dateOfBirth ?? profile.dateOfBirth ?? null,
         faculty: form.faculty ?? profile.faculty ?? null,
         major: form.major ?? profile.major ?? null,
@@ -121,6 +122,9 @@ export default function StudentProfile() {
         </div>
         <div className="grid md:grid-cols-2 gap-3 text-sm">
           <Field label="Mã sinh viên" value={profile.studentCode} />
+          <Field label="Email sinh viên (mặc định)" value={profile.email} />
+          <Field label="Email cá nhân (nhận thông báo & quên mật khẩu)" value={profile.personalEmail} editing={editing} type="email"
+            onChange={(v) => setForm({ ...form, personalEmail: v })} />
           <Field label="Ngày sinh" value={profile.dateOfBirth} type="date" editing={editing}
             onChange={(v) => setForm({ ...form, dateOfBirth: v })} />
           <Field label="Khoa" value={profile.faculty} editing={editing}
@@ -129,7 +133,7 @@ export default function StudentProfile() {
             onChange={(v) => setForm({ ...form, major: v })} />
         </div>
         {editing && (
-          <button onClick={save} className="mt-3 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500">Lưu</button>
+          <button onClick={save} className="mt-3 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium">Lưu thay đổi</button>
         )}
       </Card>
       <ChangePasswordCard />
