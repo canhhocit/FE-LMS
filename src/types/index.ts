@@ -84,6 +84,8 @@ export interface Lesson {
   title: string;
   content?: string;
   videoUrl?: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
   sortOrder?: number;
 }
 export interface Announcement {

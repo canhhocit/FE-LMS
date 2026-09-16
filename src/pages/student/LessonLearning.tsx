@@ -174,7 +174,21 @@ export default function StudentLessonLearning() {
         }
 
         const progressData = await progressService.getEnrollmentProgress(matchedRegistration.enrollmentId);
-        setProgress(progressData);
+        if (mounted) setProgress(progressData);
+
+        // Auto mark complete if lesson has no video
+        if (!lesson.videoUrl && matchedRegistration.enrollmentId) {
+          const isAlreadyCompleted = progressData?.lessons.some((item) => item.lessonId === lesson.id && item.isCompleted);
+          if (!isAlreadyCompleted) {
+            try {
+              await progressService.markLessonComplete(lesson.id, matchedRegistration.enrollmentId);
+              const updated = await progressService.getEnrollmentProgress(matchedRegistration.enrollmentId);
+              if (mounted) setProgress(updated);
+            } catch {
+              // Best effort auto-mark
+            }
+          }
+        }
       } catch (e: unknown) {
         setError((e as { message?: string })?.message ?? 'Không thể tải bài học.');
       } finally {
@@ -408,29 +422,59 @@ export default function StudentLessonLearning() {
           <div className="mt-4 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-xl font-bold text-slate-800">{selectedLesson.title}</h2>
-              <div className="flex flex-col items-end gap-1">
-                <button
-                  type="button"
-                  disabled={!canMarkComplete}
-                  onClick={() => void onMarkCompleted()}
-                  className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-all ${
-                    isLessonCompleted
-                      ? 'bg-emerald-600 text-white hover:bg-emerald-500'
-                      : canMarkComplete
-                      ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-md shadow-indigo-200 cursor-pointer'
-                      : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 opacity-80'
-                  }`}
-                >
-                  {isLessonCompleted ? '✓ Đã hoàn thành' : canMarkComplete ? 'Đánh dấu hoàn thành' : '🔒 Đánh dấu hoàn thành'}
-                </button>
-                {!isLessonCompleted && selectedLesson.videoUrl && !canMarkComplete && (
-                  <span className="text-[11px] font-medium text-amber-600">
-                    Cần xem gần hết video (còn dưới 10s) mới được đánh dấu
-                  </span>
-                )}
-              </div>
+              {!selectedLesson.videoUrl ? (
+                <div className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3.5 py-2 text-xs font-semibold text-emerald-700 shadow-sm">
+                  <span>✓ Tự động hoàn thành (Bài học tài liệu)</span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-end gap-1">
+                  <button
+                    type="button"
+                    disabled={!canMarkComplete}
+                    onClick={() => void onMarkCompleted()}
+                    className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-all ${
+                      isLessonCompleted
+                        ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+                        : canMarkComplete
+                        ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-md shadow-indigo-200 cursor-pointer'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 opacity-80'
+                    }`}
+                  >
+                    {isLessonCompleted ? '✓ Đã hoàn thành' : canMarkComplete ? 'Đánh dấu hoàn thành' : '🔒 Đánh dấu hoàn thành'}
+                  </button>
+                  {!isLessonCompleted && selectedLesson.videoUrl && !canMarkComplete && (
+                    <span className="text-[11px] font-medium text-amber-600">
+                      Cần xem gần hết video (còn dưới 10s) mới được đánh dấu
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <div className="text-sm text-slate-600">{selectedLesson.content || 'Chưa có mô tả cho bài học này.'}</div>
+            
+            {/* Attachment File Section */}
+            {selectedLesson.attachmentUrl && (
+              <div className="mt-3 flex items-center gap-3 rounded-xl border border-indigo-100 bg-linear-to-r from-indigo-50/80 to-blue-50/80 p-3.5 text-sm">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold">
+                  📎
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-slate-800 truncate">
+                    {selectedLesson.attachmentName || 'Tài liệu đính kèm bài học'}
+                  </div>
+                  <div className="text-xs text-slate-500">Tài liệu đính kèm kèm theo bài học</div>
+                </div>
+                <a
+                  href={selectedLesson.attachmentUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  download
+                  className="shrink-0 rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-indigo-500 transition-colors shadow-sm"
+                >
+                  Tải về / Xem tài liệu
+                </a>
+              </div>
+            )}
             
             {/* Video Notes Section */}
             <div className="mt-4 rounded-xl border border-slate-200 bg-white overflow-hidden">

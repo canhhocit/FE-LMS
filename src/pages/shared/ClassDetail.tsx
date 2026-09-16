@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import * as clazzService from "../../services/clazzService";
 import * as contentService from "../../services/contentService";
@@ -45,16 +45,29 @@ export default function ClassDetail() {
   const loadChapters = async () => {
     try { const list = await contentService.getChapters(cid); setChapters(list); } catch {}
   };
-  const loadAnns = async () => {
-    try { const list = await contentService.getAnnouncements(cid); setAnns(list); } catch {}
-  };
-    const [studentProgress, setStudentProgress] = useState<EnrollmentProgress | null>(null);
+  const [studentProgress, setStudentProgress] = useState<EnrollmentProgress | null>(null);
   const [saving, setSaving] = useState(false);
-    const [uploadingLessonId, setUploadingLessonId] = useState<number | null>(null);
+  const [uploadingLessonId, setUploadingLessonId] = useState<number | null>(null);
   const [uploadStatus, setUploadStatus] = useState<Record<number, { type: 'success' | 'error'; message: string }>>({});
   const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
+  const attachmentFileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
+  const [uploadingAttachmentLessonId, setUploadingAttachmentLessonId] = useState<number | null>(null);
   const isLecturer = user?.role === 'LECTURER';
   const isStudent = user?.role === 'STUDENT';
+
+  const handleLessonAttachmentUpload = async (lessonId: number, file: File) => {
+    setUploadingAttachmentLessonId(lessonId);
+    try {
+      await contentService.uploadLessonAttachment(lessonId, file);
+      const fresh = await contentService.getChapters(cid);
+      setChapters(fresh);
+      setFlash('Tài liệu đã được tải lên thành công.');
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Upload tài liệu thất bại');
+    } finally {
+      setUploadingAttachmentLessonId(null);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -384,10 +397,46 @@ export default function ClassDetail() {
             <ol className="space-y-3">
               {chapters.map((c: Chapter) => (
                 <li key={c.id} className="border border-slate-200 rounded-lg p-3 bg-white">
-                  <div className="font-medium">{c.title}</div>
-                  <div className="text-xs text-slate-500">Chuong #{c.sortOrder ?? 1}</div>
+                  <div className="flex items-center justify-between gap-2">
+                    {editChapterId === c.id ? (
+                      <div className="flex items-center gap-2 flex-1">
+                        <input
+                          value={editChapterTitle}
+                          onChange={(e) => setEditChapterTitle(e.target.value)}
+                          className="px-2 py-1 text-sm border rounded border-slate-300 flex-1"
+                        />
+                        <button onClick={saveEditChapter} className="px-2 py-1 text-xs rounded bg-indigo-600 text-white">Lưu</button>
+                        <button onClick={() => setEditChapterId(null)} className="px-2 py-1 text-xs rounded bg-slate-200 text-slate-700">Hủy</button>
+                      </div>
+                    ) : (
+                      <>
+                        <div>
+                          <div className="font-semibold text-slate-800">{c.title}</div>
+                          <div className="text-xs text-slate-500">Chương #{c.sortOrder ?? 1}</div>
+                        </div>
+                        {isLecturer && (
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => startEditChapter(c)}
+                              className="px-2 py-1 text-xs rounded border border-slate-200 text-slate-600 hover:bg-slate-50"
+                              title="Sửa tên chương"
+                            >
+                              ✏️ Sửa
+                            </button>
+                            <button
+                              onClick={() => handleDeleteChapter(c.id)}
+                              className="px-2 py-1 text-xs rounded border border-rose-200 text-rose-600 hover:bg-rose-50"
+                              title="Xóa chương"
+                            >
+                              🗑️ Xóa
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
                   {(chapterLessons[c.id]?.length ?? 0) > 0 && (
-                    <ul className="mt-2 space-y-1 pl-4 list-disc text-sm text-slate-600">
+                    <ul className="mt-2 space-y-1.5 pl-2 text-sm text-slate-600">
                       {chapterLessons[c.id]?.map((lesson: Lesson) => {
                         const status = isStudent ? getLessonStatus(lesson.id) : null;
                         const lessonProgress = studentProgress?.lessons.find((item) => item.lessonId === lesson.id);
@@ -395,68 +444,140 @@ export default function ClassDetail() {
                         const isResumeActive = isStudent && !!lessonProgress && !lessonProgress.isCompleted && resumeSeconds > 10;
 
                         return (
-                          <li key={lesson.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-2.5">
+                          <li key={lesson.id} className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2.5 sm:flex-row sm:items-center sm:justify-between">
                             <div className="min-w-0 flex-1">
-                              {user?.role === 'STUDENT' ? (
-                                <Link to={`/student/classes/${cid}/lessons/${lesson.id}`} className="font-medium text-slate-700 hover:text-indigo-600 hover:underline">{lesson.title}</Link>
-                              ) : (
-                                <span className="font-medium text-slate-700">{lesson.title}</span>
-                              )}
-
-                              {lesson.videoUrl && <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="ml-2 text-indigo-600 underline">Video</a>}
-
-                              {isLecturer && (
-                                <div className="mt-2 flex flex-wrap items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => fileInputRefs.current[lesson.id]?.click()}
-                                    disabled={saving || uploadingLessonId === lesson.id}
-                                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-indigo-300 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
-                                  >
-                                    {uploadingLessonId === lesson.id ? (
-                                      <span className="inline-flex items-center gap-1.5">
-                                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-600" />
-                                        Đang tải lên...
-                                      </span>
-                                    ) : lesson.videoUrl ? 'Thay video' : 'Tải video'}
-                                  </button>
+                              {editLessonId === lesson.id ? (
+                                <div className="space-y-1.5 my-1">
                                   <input
-                                    ref={(el) => { fileInputRefs.current[lesson.id] = el; }}
-                                    type="file"
-                                    accept=".mp4,.webm,.mov,.mkv,.avi,video/mp4,video/webm,video/quicktime,video/x-matroska,video/x-msvideo,video/avi"
-                                    className="hidden"
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
-                                      if (!file) return;
-                                      void handleLessonVideoUpload(lesson.id, file);
-                                      e.target.value = '';
-                                    }}
+                                    value={editLessonTitle}
+                                    onChange={(e) => setEditLessonTitle(e.target.value)}
+                                    placeholder="Tên bài học"
+                                    className="w-full px-2 py-1 text-sm border rounded border-slate-300"
                                   />
-                                  {uploadStatus[lesson.id] && (
-                                    <span className={`text-[11px] ${uploadStatus[lesson.id].type === 'error' ? 'text-red-600' : 'text-emerald-600'}`}>
-                                      {uploadStatus[lesson.id].message}
-                                    </span>
-                                  )}
+                                  <textarea
+                                    value={editLessonContent}
+                                    onChange={(e) => setEditLessonContent(e.target.value)}
+                                    placeholder="Nội dung/mô tả bài học"
+                                    rows={2}
+                                    className="w-full px-2 py-1 text-xs border rounded border-slate-300"
+                                  />
+                                  <div className="flex gap-1.5">
+                                    <button onClick={saveEditLesson} className="px-2 py-1 text-xs rounded bg-indigo-600 text-white">Lưu</button>
+                                    <button onClick={() => setEditLessonId(null)} className="px-2 py-1 text-xs rounded bg-slate-200 text-slate-700">Hủy</button>
+                                  </div>
                                 </div>
-                              )}
+                              ) : (
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    {user?.role === 'STUDENT' ? (
+                                      <Link to={`/student/classes/${cid}/lessons/${lesson.id}`} className="font-semibold text-slate-800 hover:text-indigo-600 hover:underline">{lesson.title}</Link>
+                                    ) : (
+                                      <span className="font-semibold text-slate-800">{lesson.title}</span>
+                                    )}
+                                    {isLecturer && (
+                                      <div className="inline-flex items-center gap-1">
+                                        <button
+                                          onClick={() => startEditLesson(lesson)}
+                                          className="text-[11px] text-slate-500 hover:text-indigo-600 px-1"
+                                          title="Sửa bài học"
+                                        >
+                                          ✏️
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteLesson(lesson.id)}
+                                          className="text-[11px] text-slate-500 hover:text-rose-600 px-1"
+                                          title="Xóa bài học"
+                                        >
+                                          🗑️
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
 
-                              {isStudent && (
-                                <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                                  {status && (
-                                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${status.className}`}>
-                                      {status.label}
-                                    </span>
+                                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                                    {lesson.videoUrl && (
+                                      <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-indigo-600 font-medium hover:underline">
+                                        🎥 Video
+                                      </a>
+                                    )}
+                                    {lesson.attachmentUrl && (
+                                      <a href={lesson.attachmentUrl} target="_blank" rel="noreferrer" download className="inline-flex items-center gap-1 text-emerald-600 font-medium hover:underline">
+                                        📎 {lesson.attachmentName || 'Tài liệu'}
+                                      </a>
+                                    )}
+                                  </div>
+
+                                  {isLecturer && (
+                                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => fileInputRefs.current[lesson.id]?.click()}
+                                        disabled={saving || uploadingLessonId === lesson.id}
+                                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-50"
+                                      >
+                                        {uploadingLessonId === lesson.id ? 'Đang tải video...' : lesson.videoUrl ? '🎥 Thay video' : '🎥 Tải video'}
+                                      </button>
+                                      <input
+                                        ref={(el) => { fileInputRefs.current[lesson.id] = el; }}
+                                        type="file"
+                                        accept=".mp4,.webm,.mov,.mkv,.avi"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (!file) return;
+                                          void handleLessonVideoUpload(lesson.id, file);
+                                          e.target.value = '';
+                                        }}
+                                      />
+
+                                      <button
+                                        type="button"
+                                        onClick={() => attachmentFileInputRefs.current[lesson.id]?.click()}
+                                        disabled={saving || uploadingAttachmentLessonId === lesson.id}
+                                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-emerald-300 hover:text-emerald-600 disabled:opacity-50"
+                                      >
+                                        {uploadingAttachmentLessonId === lesson.id ? 'Đang tải tài liệu...' : lesson.attachmentUrl ? '📎 Thay tài liệu' : '📎 Tải tài liệu'}
+                                      </button>
+                                      <input
+                                        ref={(el) => { attachmentFileInputRefs.current[lesson.id] = el; }}
+                                        type="file"
+                                        accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip,.rar"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (!file) return;
+                                          void handleLessonAttachmentUpload(lesson.id, file);
+                                          e.target.value = '';
+                                        }}
+                                      />
+
+                                      {uploadStatus[lesson.id] && (
+                                        <span className={`text-[11px] ${uploadStatus[lesson.id].type === 'error' ? 'text-red-600' : 'text-emerald-600'}`}>
+                                          {uploadStatus[lesson.id].message}
+                                        </span>
+                                      )}
+                                    </div>
                                   )}
-                                  {isResumeActive && (
-                                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
-                                      Học tiếp · {Math.floor(resumeSeconds / 60)}:{String(Math.floor(resumeSeconds % 60)).padStart(2, '0')}
-                                    </span>
+
+                                  {isStudent && (
+                                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                                      {status && (
+                                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${status.className}`}>
+                                          {status.label}
+                                        </span>
+                                      )}
+                                      {isResumeActive && (
+                                        <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                                          Học tiếp · {Math.floor(resumeSeconds / 60)}:{String(Math.floor(resumeSeconds % 60)).padStart(2, '0')}
+                                        </span>
+                                      )}
+                                      {!status || status.label === 'Chưa học' ? (
+                                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                                          Chưa bắt đầu
+                                        </span>
+                                      ) : null}
+                                    </div>
                                   )}
-                                  {!status || status.label === 'Chưa học' ? (
-                                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                                      Chưa bắt đầu
-                                    </span>
-                                  ) : null}
                                 </div>
                               )}
                             </div>
@@ -464,9 +585,9 @@ export default function ClassDetail() {
                             {isStudent ? (
                               <Link
                                 to={`/student/classes/${cid}/lessons/${lesson.id}`}
-                                className={`rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition ${lessonProgress?.isCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'}`}
+                                className={`shrink-0 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition ${lessonProgress?.isCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'}`}
                               >
-                                {lessonProgress?.isCompleted ? 'Ôn tập' : 'Học tiếp'}
+                                {lessonProgress?.isCompleted ? 'Ôn tập' : 'Vào học'}
                               </Link>
                             ) : null}
                           </li>

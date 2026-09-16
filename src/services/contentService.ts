@@ -18,6 +18,14 @@ export const uploadLessonVideo = async (lessonId: number, file: File): Promise<s
   }));
 };
 
+export const uploadLessonAttachment = async (lessonId: number, file: File): Promise<string> => {
+  const form = new FormData();
+  form.append('file', file);
+  return unwrap<string>(apiClient.post(`/lessons/${lessonId}/upload-attachment`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }));
+};
+
 export const getAnnouncements = async (classId: number): Promise<Announcement[]> => unwrap(apiClient.get(`/classes/${classId}/announcements`));
 export const createAnnouncement = async (classId: number, data: { title: string; content: string }): Promise<Announcement> => unwrap(apiClient.post(`/classes/${classId}/announcements`, data));
 export const updateAnnouncement = async (announcementId: number, data: { title: string; content: string }): Promise<Announcement> => unwrap(apiClient.put(`/announcements/${announcementId}`, data));
