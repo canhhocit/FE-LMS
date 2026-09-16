@@ -124,7 +124,11 @@ export function AdminUsers() {
         </button>
       </div>
 
-      {importMsg && <div className="mb-3 rounded border border-emerald-200 bg-emerald-50 text-emerald-700 px-3 py-2 text-sm">{importMsg}</div>}
+      {importMsg && (
+        <div className={`mb-3 rounded border px-3 py-2 text-sm ${importMsg.includes('thành công') ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
+          {importMsg}
+        </div>
+      )}
 
       <Card>
         {loading ? <Spinner /> : users.length === 0 ? <Empty msg="Không có kết quả" /> : (
