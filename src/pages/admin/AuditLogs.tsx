@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as auditService from '../../services/auditLogService';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import type { AuditLogEntry } from '../../services/auditLogService';
@@ -45,10 +45,10 @@ export default function AdminAuditLogs() {
 
       <Card>
         <div className="flex items-center gap-3 mb-4">
-          <input value={filterType} onChange={e => setFilterType(e.target.value)} placeholder="Lá»c theo resource (VD: USER, COURSE...)"
+          <input value={filterType} onChange={e => setFilterType(e.target.value)} placeholder="Lọc theo resource (VD: USER, COURSE...)"
             className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500" />
-          <button aria-label="button" onClick={handleFilter} className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition">Lá»c</button>
-          <button aria-label="button" onClick={handleClear} className="px-4 py-2 rounded-lg text-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition">XoĂ¡ lá»c</button>
+          <button aria-label="button" onClick={handleFilter} className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition">Lọc</button>
+          <button aria-label="button" onClick={handleClear} className="px-4 py-2 rounded-lg text-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Xoá lọc</button>
           <span className="text-xs text-slate-400 ml-auto">Tổng: {totalElements} bản ghi</span>
         </div>
       </Card>
@@ -60,8 +60,8 @@ export default function AdminAuditLogs() {
             <table className="w-full text-sm">
               <thead className="text-xs text-slate-500 border-b border-slate-200 bg-slate-50">
                 <tr>
-                  <th className="text-left p-3">Thá»i gian</th>
-                  <th className="text-left p-3">NgÆ°á»i thá»±c hiá»‡n</th>
+                  <th className="text-left p-3">Thời gian</th>
+                  <th className="text-left p-3">Người thực hiện</th>
                   <th className="text-left p-3">Hành động</th>
                   <th className="text-left p-3">Resource</th>
                   <th className="text-left p-3">Chi tiết</th>
@@ -97,5 +97,3 @@ export default function AdminAuditLogs() {
     </div>
   );
 }
-
-

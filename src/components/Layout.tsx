@@ -208,6 +208,7 @@ const NAV: Record<Role, NavSection[]> = {
         { to: '/admin', label: 'Dashboard', icon: HomeIcon },
         { to: '/admin/users', label: 'Người dùng', icon: UsersIcon },
         { to: '/admin/reports', label: 'Báo cáo', icon: BarChartIcon },
+        { to: '/admin/audit-logs', label: 'Nhật ký hệ thống', icon: FileTextIcon },
         { to: '/admin/permissions', label: 'Phân quyền', icon: KeyIcon, permission: 'SYSTEM_CONFIG' },
       ],
     },
@@ -215,8 +216,11 @@ const NAV: Record<Role, NavSection[]> = {
       title: 'Đào tạo',
       items: [
         { to: '/admin/curricula', label: 'Chương trình ĐT', icon: GraduationCapIcon },
+        { to: '/admin/departments', label: 'Khoa/Bộ môn', icon: UsersIcon },
+        { to: '/admin/administrative-classes', label: 'Lớp hành chính', icon: UsersIcon },
         { to: '/admin/registration', label: 'Đợt đăng ký', icon: ClipboardListIcon },
-        { to: '/admin/classes', label: 'Lớp học', icon: BookOpenIcon },
+        { to: '/admin/classes', label: 'Lớp học phần', icon: BookOpenIcon },
+        { to: '/admin/clazz-permissions', label: 'Phân quyền lớp học', icon: KeyIcon },
       ],
     },
   ],
@@ -304,8 +308,8 @@ export default function Layout() {
           className="fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-[2px] lg:hidden"
         />
       )}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-r border-slate-200/80 bg-white p-4 text-slate-800 shadow-xl transition-transform dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 lg:static lg:w-64 lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Link to={`/${roleLower}`} className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 px-2 pb-5 pt-2">
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-r border-sky-200/70 bg-sky-50/80 p-4 text-slate-800 shadow-xl transition-transform dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 lg:static lg:w-64 lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <Link to={`/${roleLower}`} className="flex items-center gap-3 border-b border-sky-200/50 dark:border-slate-800 px-2 pb-5 pt-2">
           <span className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-600 text-white text-xl font-bold shadow-xs">✦</span>
           <div>
             <div className="font-bold tracking-tight text-slate-900 dark:text-white">LearningHub</div>
@@ -349,7 +353,7 @@ export default function Layout() {
                             `flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition relative ${
                               isActive
                                 ? 'bg-indigo-600 text-white shadow-xs font-semibold'
-                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white'
+                                : 'text-slate-600 hover:bg-sky-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white'
                             }`
                           }
                         >
@@ -374,14 +378,14 @@ export default function Layout() {
             logout();
             nav('/login');
           }}
-          className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition w-full"
+          className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-slate-500 hover:bg-sky-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition w-full"
         >
           <LogOutIcon className="h-4 w-4 opacity-75" />
           <span>Đăng xuất</span>
         </button>
       </aside>
       <main className="min-w-0 flex-1 overflow-auto">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-slate-200/80 bg-white/90 px-4 py-3 text-slate-800 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 sm:px-6">
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-sky-200/70 bg-sky-50/90 px-4 py-3 text-slate-800 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 sm:px-6">
           <div className="flex min-w-0 items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
             <button type="button" aria-label="Mở menu" onClick={() => setSidebarOpen(true)} className="text-xl lg:hidden text-slate-700 dark:text-slate-200">
               ☰
@@ -390,7 +394,7 @@ export default function Layout() {
               Xin chào, <span className="font-semibold text-slate-900 dark:text-white">{user.fullName}</span>
             </span>
           </div>
-          <div className="hidden max-w-md flex-1 items-center rounded-full bg-slate-100 px-4 py-1.5 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400 md:flex">
+          <div className="hidden max-w-md flex-1 items-center rounded-full bg-sky-100/70 px-4 py-1.5 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400 md:flex">
             <span className="mr-2 opacity-60">⌕</span>
             <span>Tìm kiếm thông tin...</span>
           </div>

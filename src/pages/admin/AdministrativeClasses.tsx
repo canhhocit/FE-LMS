@@ -1,7 +1,8 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as acService from '../../services/adminClassService';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import type { AdminClassResponse, AdminClassRequest } from '../../services/adminClassService';
+import type { User } from '../../types';
 
 export default function AdminAdministrativeClasses() {
   const [classes, setClasses] = useState<AdminClassResponse[]>([]);
@@ -12,7 +13,7 @@ export default function AdminAdministrativeClasses() {
   const [className, setClassName] = useState('');
   const [academicYear, setAcademicYear] = useState('');
   const [saving, setSaving] = useState(false);
-  const [selectedStudents, setSelectedStudents] = useState<any[]>([]);
+  const [selectedStudents, setSelectedStudents] = useState<User[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
 
   const load = async () => {
@@ -98,7 +99,7 @@ export default function AdminAdministrativeClasses() {
           </div>
           <div className="flex gap-2 justify-end">
             <button aria-label="button" onClick={cancel} className="px-4 py-2 rounded-lg text-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Huỷ</button>
-            <button aria-label="button" onClick={handleSave} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-semibold bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-50 transition">{saving ? 'Äang lÆ°u...' : 'Lưu'}</button>
+            <button aria-label="button" onClick={handleSave} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-semibold bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-50 transition">{saving ? 'Đang lưu...' : 'Lưu'}</button>
           </div>
         </Card>
       )}
@@ -142,7 +143,7 @@ export default function AdminAdministrativeClasses() {
         <div className="lg:col-span-1">
           <Card>
             <h3 className="font-bold text-slate-800 mb-3">{"Sinh viên " + (selectedClassId ? "(Lớp #" + selectedClassId + ")" : "")}</h3>
-            {selectedStudents.length === 0 ? <Empty msg="Chá»n lá»›p Ä‘á»ƒ xem SV" /> : (
+            {selectedStudents.length === 0 ? <Empty msg="Chọn lớp để xem SV" /> : (
               <ul className="space-y-2 max-h-96 overflow-y-auto">
                 {selectedStudents.map((s, i) => (
                   <li key={i} className="flex items-center gap-3 p-2 rounded-lg bg-slate-50 border border-slate-100">
@@ -161,4 +162,3 @@ export default function AdminAdministrativeClasses() {
     </div>
   );
 }
-

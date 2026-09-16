@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as deptService from '../../services/departmentService';
 import { PageTitle, Card, Spinner, Empty, ErrorBox } from '../../components/Layout';
 import type { DepartmentResponse, DepartmentRequest } from '../../services/departmentService';
@@ -16,7 +16,6 @@ export default function AdminDepartments() {
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
-    const filtered = depts.filter(d => d.name.toLowerCase().includes(search.toLowerCase()) || d.code.toLowerCase().includes(search.toLowerCase()));
     try {
       const list = await deptService.getDepartments();
       setDepts(list);
@@ -93,7 +92,7 @@ export default function AdminDepartments() {
           </div>
           <div className="flex gap-2 justify-end">
             <button aria-label="button" onClick={cancel} className="px-4 py-2 rounded-lg text-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Huỷ</button>
-            <button aria-label="button" onClick={handleSave} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 transition">{saving ? 'Äang lÆ°u...' : 'Lưu'}</button>
+            <button aria-label="button" onClick={handleSave} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 transition">{saving ? 'Đang lưu...' : 'Lưu'}</button>
           </div>
         </Card>
       )}
@@ -132,5 +131,3 @@ export default function AdminDepartments() {
     </div>
   );
 }
-
-
