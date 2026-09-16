@@ -1,4 +1,4 @@
-﻿// AuthProvider component — exports ONLY a React component so Fast Refresh works.
+// AuthProvider component — exports ONLY a React component so Fast Refresh works.
 // The context object and the consumer hook live in their own files:
 //   ./authContext.ts  (context + value type)
 //   ./useAuth.ts      (consumer hook)
@@ -36,6 +36,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   }, []);
 
+  const updateUser = useCallback((u: AuthUser) => {
+    writeStoredUser(u);
+    setUser(u);
+  }, []);
+
   const hasRole = useCallback(
     (...roles: Role[]) => !!user && roles.includes(user.role),
     [user],
@@ -46,7 +51,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     [user],
   );
 
-  const value: AuthCtxValue = { user, loading, login, logout, hasRole, hasPermission };
+  const value: AuthCtxValue = { user, loading, login, logout, updateUser, hasRole, hasPermission };
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 };
+

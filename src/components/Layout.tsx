@@ -240,6 +240,7 @@ const NAV: Record<Role, NavSection[]> = {
 const ROLE_LABEL: Record<Role, string> = { STUDENT: 'Sinh viên', LECTURER: 'Giảng viên', ADMIN: 'Quản trị' };
 
 function FirstLoginModal({ user, onComplete }: { user: AuthUser; onComplete: () => void }) {
+  const { logout, updateUser } = useAuth();
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -273,6 +274,7 @@ function FirstLoginModal({ user, onComplete }: { user: AuthUser; onComplete: () 
     try {
       await authService.changePassword({ oldPassword, newPassword });
       const updated = { ...user, isFirstLogin: false, firstLogin: false };
+      updateUser(updated);
       writeStoredUser(updated);
       onComplete();
     } catch (e: unknown) {
@@ -382,6 +384,18 @@ function FirstLoginModal({ user, onComplete }: { user: AuthUser; onComplete: () 
             {saving ? 'Đang cập nhật...' : 'Xác nhận & Đổi mật khẩu'}
           </button>
         </form>
+        <div className="mt-3 text-center">
+          <button
+            type="button"
+            onClick={() => {
+              logout();
+              window.location.href = '/login';
+            }}
+            className="text-xs text-rose-500 hover:text-rose-600 dark:text-rose-400 font-medium hover:underline transition"
+          >
+            Đăng xuất khỏi tài khoản này
+          </button>
+        </div>
       </div>
     </div>
   );
