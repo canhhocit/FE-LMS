@@ -24,7 +24,7 @@ export default function StudentSchedule() {
   return (
     <div className="space-y-4">
       <PageTitle>Thời khóa biểu cá nhân</PageTitle>
-      <TimetableGrid schedules={schedules} title="📅 Lịch cá nhân" />
+      <TimetableGrid schedules={schedules} title="Lịch cá nhân" />
     </div>
   );
 }

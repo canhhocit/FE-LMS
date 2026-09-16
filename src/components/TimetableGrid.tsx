@@ -10,8 +10,8 @@ interface TimetableGridProps {
 }
 
 const CalendarIcon = ({ className = 'h-5 w-5' }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="4" width="18" height="18" rx="3" ry="3" />
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
     <line x1="16" y1="2" x2="16" y2="6" />
     <line x1="8" y1="2" x2="8" y2="6" />
     <line x1="3" y1="10" x2="21" y2="10" />
@@ -36,6 +36,25 @@ const UserIcon = ({ className = 'h-3.5 w-3.5' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
     <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+const RefreshIcon = ({ className = 'h-3.5 w-3.5' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M23 4v6h-6" />
+    <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+  </svg>
+);
+
+const ChevronLeftIcon = ({ className = 'h-4 w-4' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
+
+const ChevronRightIcon = ({ className = 'h-4 w-4' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6" />
   </svg>
 );
 
@@ -68,7 +87,7 @@ const getScheduleTimeInfo = (item: Schedule) => {
     ? item.endTime
     : calcEnd;
 
-  return { startTime, endTime, periodLabel: `Tiết ${sP}-${eP}`, startPeriodNum: sP, endPeriodNum: eP };
+  return { startTime, endTime, periodLabel: `Tiết ${sP}-${eP}` };
 };
 
 const DEFAULT_DEMO_SCHEDULES: Schedule[] = [
@@ -147,8 +166,8 @@ const DEFAULT_DEMO_SCHEDULES: Schedule[] = [
     clazzId: 6,
     dayOfWeek: 7, // Chủ nhật
     classCode: 'GEN101-01-2026A',
-    className: 'Kỹ năng mềm',
-    courseTitle: 'Kỹ năng mềm',
+    className: 'Kỹ năng học tập',
+    courseTitle: 'Kỹ năng học tập',
     lecturerName: 'Phạm Hồng Thái',
     room: 'Trực tuyến',
     startPeriod: 1,
@@ -159,15 +178,15 @@ const DEFAULT_DEMO_SCHEDULES: Schedule[] = [
 ];
 
 const CARD_STYLES = [
-  { headerBg: 'bg-[#ca8a04]', border: 'border-[#ca8a04]', tagBg: 'bg-amber-100 text-amber-900' },
-  { headerBg: 'bg-[#00376f]', border: 'border-[#00376f]', tagBg: 'bg-blue-100 text-blue-900' },
-  { headerBg: 'bg-[#1d4ed8]', border: 'border-[#1d4ed8]', tagBg: 'bg-indigo-100 text-indigo-900' },
-  { headerBg: 'bg-[#ea580c]', border: 'border-[#ea580c]', tagBg: 'bg-orange-100 text-orange-900' },
-  { headerBg: 'bg-[#059669]', border: 'border-[#059669]', tagBg: 'bg-emerald-100 text-emerald-900' },
+  { headerBg: 'bg-[#ca8a04]', border: 'border-[#ca8a04]' },
+  { headerBg: 'bg-[#00376f]', border: 'border-[#00376f]' },
+  { headerBg: 'bg-[#1d4ed8]', border: 'border-[#1d4ed8]' },
+  { headerBg: 'bg-[#ea580c]', border: 'border-[#ea580c]' },
+  { headerBg: 'bg-[#059669]', border: 'border-[#059669]' },
 ];
 
 const HOURS = [6, 7, 8, 9, 10, 11, 12];
-const HOUR_HEIGHT = 76; // 76px per hour row for spacious vertical cards
+const HOUR_HEIGHT = 76;
 
 export default function TimetableGrid({
   schedules,
@@ -185,7 +204,13 @@ export default function TimetableGrid({
     return { ...s, ...timeInfo };
   });
 
-  // Monday to Sunday
+  // Strip out any accidental emojis passed in title
+  const cleanTitle = (title || 'Lịch cá nhân').replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+
+  const resetToToday = () => {
+    setCurrentDate(new Date(2026, 8, 16));
+  };
+
   const getWeekDates = (date: Date) => {
     const day = date.getDay();
     const diffToMonday = day === 0 ? -6 : 1 - day;
@@ -246,24 +271,40 @@ export default function TimetableGrid({
     return Math.max(1.5, (h2 * 60 + m2 - (h1 * 60 + m1)) / 60);
   };
 
-  // Selected Day Schedules for Today's Agenda list
   const selectedDayOfWeekIndex = (currentDate.getDay() === 0 ? 7 : currentDate.getDay());
   const selectedDaySchedules = displaySchedules.filter((s) => Number(s.dayOfWeek) === selectedDayOfWeekIndex);
-
   const selectedDayName = selectedDayOfWeekIndex === 7 ? 'Chủ nhật' : `Thứ ${selectedDayOfWeekIndex + 1}`;
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 items-start text-slate-800">
-      {/* Main Bright White Timetable Section */}
-      <div className="flex-1 w-full bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5">
-        {/* Title Header */}
-        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200">
-          <CalendarIcon className="h-5 w-5 text-[#00376f]" />
-          <h2 className="text-base font-bold text-[#00376f]">{title}</h2>
+      {/* Main Timetable Section */}
+      <div className="flex-1 w-full min-w-0 bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5">
+        {/* Title Header with SVG Icon & Today Reset Button */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200">
+          <div className="flex items-center gap-2">
+            <CalendarIcon className="h-5 w-5 text-[#00376f]" />
+            <h2 className="text-base font-bold text-[#00376f]">{cleanTitle}</h2>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={resetToToday}
+              className="flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-[#00376f] transition hover:bg-blue-100 active:scale-95 shadow-xs"
+              title="Trở về lịch ngày hôm nay"
+            >
+              <RefreshIcon className="h-3.5 w-3.5 text-[#00376f]" />
+              <span>Hôm nay</span>
+            </button>
+            <div className="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-600">
+              Tuần: {weekDates[0].getDate()}/{weekDates[0].getMonth() + 1} - {weekDates[6].getDate()}/{weekDates[6].getMonth() + 1}/{year}
+            </div>
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <div className="min-w-[800px]">
+        {/* Scrollable Grid Container - 1120px width for spacious columns */}
+        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200">
+          <div className="min-w-[1120px]">
             {/* Header Days Row */}
             <div className="grid grid-cols-[64px_repeat(7,1fr)] border-b-2 border-[#00376f] text-center font-medium text-xs">
               <div className="py-3 text-slate-700 flex items-center justify-center gap-1 font-bold border-r border-slate-200">
@@ -279,14 +320,14 @@ export default function TimetableGrid({
                   <div
                     key={idx}
                     onClick={() => setCurrentDate(d)}
-                    className={`py-2.5 px-1 cursor-pointer transition border-r border-slate-200 ${
+                    className={`py-2.5 px-2 cursor-pointer transition border-r border-slate-200 ${
                       isSelectedDay
                         ? 'bg-[#e8f0fe] text-[#00376f] font-bold rounded-t-lg border-b-2 border-[#00376f]'
                         : 'hover:bg-slate-50 text-slate-700'
                     }`}
                   >
                     <div className="text-sm font-bold">{dayNum}</div>
-                    <div className="text-[11px] text-slate-500">{dayLabel}</div>
+                    <div className="text-xs text-slate-500 font-medium">{dayLabel}</div>
                   </div>
                 );
               })}
@@ -315,7 +356,7 @@ export default function TimetableGrid({
                       <div key={h} style={{ height: `${HOUR_HEIGHT}px` }} className="border-b border-slate-200/80" />
                     ))}
 
-                    {/* Schedule Cards matching screenshot */}
+                    {/* Schedule Cards */}
                     {dayItems.map((item, itemIdx) => {
                       const style = CARD_STYLES[(item.clazzId || item.id || itemIdx) % CARD_STYLES.length];
                       const topOffset = parseTimeToOffset(item.startTime, 6) * HOUR_HEIGHT;
@@ -327,39 +368,52 @@ export default function TimetableGrid({
                           key={item.id || itemIdx}
                           style={{ top: `${topOffset}px`, height: `${cardHeight}px` }}
                           onClick={() => onSelectSchedule?.(item)}
-                          className={`absolute left-0.5 right-0.5 z-10 flex flex-col overflow-hidden bg-white border-2 ${style.border} rounded shadow-sm transition hover:shadow-md cursor-pointer`}
+                          className={`absolute left-1 right-1 z-10 flex flex-col overflow-hidden bg-white border-2 ${style.border} rounded-lg shadow-sm transition hover:shadow-md hover:z-20 cursor-pointer`}
                         >
-                          {/* Colored Header Bar - Two Lines so full name & period fit cleanly */}
-                          <div className={`px-2 py-1.5 text-white font-bold flex flex-col justify-center ${style.headerBg}`}>
-                            <div className="text-[11px] leading-tight truncate">{item.className || item.courseTitle}</div>
-                            <div className="text-[10px] font-normal opacity-95 flex items-center justify-between mt-0.5">
+                          {/* Colored Header Bar */}
+                          <div className={`px-2.5 py-1.5 text-white font-bold flex flex-col justify-center ${style.headerBg}`}>
+                            <div className="text-xs leading-snug break-words font-extrabold">{item.className || item.courseTitle}</div>
+                            <div className="text-[10px] font-normal opacity-95 flex items-center justify-between mt-0.5 pt-0.5 border-t border-white/20">
                               <span>{item.startTime} - {item.endTime}</span>
-                              <span className="bg-white/20 px-1 rounded text-[9px] font-semibold">{item.periodLabel}</span>
+                              <span className="bg-white/20 px-1.5 py-0.2 rounded text-[10px] font-semibold">{item.periodLabel}</span>
                             </div>
                           </div>
 
-                          {/* Card Content - Centered */}
-                          <div className="p-2 flex-1 flex flex-col justify-between text-center text-[11px] space-y-1">
+                          {/* Card Content */}
+                          <div className="p-2 flex-1 flex flex-col justify-between text-center text-xs space-y-1">
                             <div>
-                              <div className="font-semibold text-slate-800 text-[11px] leading-tight break-words">
+                              <div className="font-bold text-slate-800 text-xs leading-tight break-words">
                                 {item.classCode || item.clazzCode}
                               </div>
                             </div>
 
-                            <div className="space-y-0.5 text-[11px] text-slate-700 font-medium">
-                              <div className="text-slate-800 font-bold flex items-center justify-center gap-1">
+                            <div className="space-y-1 text-xs text-slate-700 font-medium pt-1 border-t border-slate-100">
+                              <div className="text-slate-800 font-bold flex items-center justify-center gap-1 text-xs">
                                 <LocationIcon className="h-3.5 w-3.5 text-slate-500" />
                                 <span>{item.room || 'Trực tuyến'}</span>
                               </div>
                               {item.lecturerName && (
-                                <div className="text-slate-600 truncate flex items-center justify-center gap-1">
-                                  <UserIcon className="h-3 w-3 text-slate-400" />
+                                <div className="text-slate-600 truncate flex items-center justify-center gap-1 text-[11px]">
+                                  <UserIcon className="h-3.5 w-3.5 text-slate-400" />
                                   <span className="truncate">{item.lecturerName}</span>
                                 </div>
                               )}
                             </div>
 
-    
+                            {isEditable && onDeleteSchedule && (
+                              <div className="pt-1 flex justify-end">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDeleteSchedule(item.id);
+                                  }}
+                                  className="text-[10px] text-rose-600 font-bold hover:underline"
+                                >
+                                  Xoá
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
@@ -381,9 +435,13 @@ export default function TimetableGrid({
             <span className="text-sm font-bold text-[#00376f]">
               Tháng {month + 1}-{year}
             </span>
-            <div className="flex items-center gap-2 text-[#00376f] font-bold text-sm">
-              <button type="button" onClick={prevMonth} className="hover:opacity-75 px-1 text-base">‹</button>
-              <button type="button" onClick={nextMonth} className="hover:opacity-75 px-1 text-base">›</button>
+            <div className="flex items-center gap-1 text-[#00376f]">
+              <button type="button" onClick={prevMonth} className="p-1 rounded hover:bg-white/50 transition">
+                <ChevronLeftIcon className="h-4 w-4" />
+              </button>
+              <button type="button" onClick={nextMonth} className="p-1 rounded hover:bg-white/50 transition">
+                <ChevronRightIcon className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
@@ -415,6 +473,18 @@ export default function TimetableGrid({
               );
             })}
           </div>
+
+          {/* Reset to Today Button inside Calendar Panel */}
+          <div className="mt-3 border-t border-blue-200/60 pt-2.5 flex justify-center">
+            <button
+              type="button"
+              onClick={resetToToday}
+              className="text-xs font-bold text-[#00376f] hover:underline flex items-center gap-1.5"
+            >
+              <RefreshIcon className="h-3.5 w-3.5 text-[#00376f]" />
+              <span>Về ngày hôm nay</span>
+            </button>
+          </div>
         </div>
 
         {/* Today's Schedule Agenda Panel */}
@@ -430,8 +500,8 @@ export default function TimetableGrid({
           </div>
 
           {selectedDaySchedules.length === 0 ? (
-            <div className="py-6 text-center text-xs text-slate-400">
-              🎉 Không có lịch học vào {selectedDayName}
+            <div className="py-6 text-center text-xs text-slate-400 font-medium">
+              Không có lịch học vào {selectedDayName}
             </div>
           ) : (
             <div className="space-y-2.5">
@@ -439,7 +509,7 @@ export default function TimetableGrid({
                 const style = CARD_STYLES[(item.clazzId || item.id || idx) % CARD_STYLES.length];
 
                 return (
-                  <div key={item.id || idx} className="p-3 rounded-lg border border-slate-100 bg-slate-50/80 hover:bg-blue-50/50 transition text-xs space-y-1.5">
+                  <div key={item.id || idx} className="p-3 rounded-lg border border-slate-200/80 bg-slate-50/80 hover:bg-blue-50/50 transition text-xs space-y-1.5 shadow-xs">
                     <div className="flex items-start justify-between gap-2">
                       <div className="font-bold text-[#00376f] text-xs leading-snug">
                         {item.className || item.courseTitle}
@@ -450,13 +520,22 @@ export default function TimetableGrid({
                     </div>
 
                     <div className="text-[11px] text-slate-600 flex items-center justify-between">
-                      <span className="font-mono text-slate-700 font-semibold">🕒 {item.startTime} - {item.endTime}</span>
-                      <span className="font-semibold text-slate-800">📍 {item.room || 'Trực tuyến'}</span>
+                      <span className="font-mono text-slate-700 font-semibold flex items-center gap-1">
+                        <ClockIcon className="h-3 w-3 text-slate-500" />
+                        <span>{item.startTime} - {item.endTime}</span>
+                      </span>
+                      <span className="font-semibold text-slate-800 flex items-center gap-1">
+                        <LocationIcon className="h-3 w-3 text-slate-500" />
+                        <span>{item.room || 'Trực tuyến'}</span>
+                      </span>
                     </div>
 
                     <div className="text-[10px] text-slate-500 border-t border-slate-200/60 pt-1 flex items-center justify-between">
                       <span className="font-mono">{item.classCode || item.clazzCode}</span>
-                      <span>👤 {item.lecturerName || 'Giảng viên'}</span>
+                      <span className="flex items-center gap-1">
+                        <UserIcon className="h-3 w-3 text-slate-400" />
+                        <span>{item.lecturerName || 'Giảng viên'}</span>
+                      </span>
                     </div>
                   </div>
                 );
