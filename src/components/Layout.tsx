@@ -2,7 +2,9 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth';
 import * as notificationService from '../services/notificationService';
-import type { Role } from '../types';
+import * as authService from '../services/authService';
+import { writeStoredUser } from '../contexts/authStorage';
+import type { Role, AuthUser } from '../types';
 
 const SunIcon = ({ className = 'h-4.5 w-4.5' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -228,6 +230,103 @@ const NAV: Record<Role, NavSection[]> = {
 
 const ROLE_LABEL: Record<Role, string> = { STUDENT: 'Sinh viên', LECTURER: 'Giảng viên', ADMIN: 'Quản trị' };
 
+function FirstLoginModal({ user, onComplete }: { user: AuthUser; onComplete: () => void }) {
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [err, setErr] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErr(null);
+    if (!oldPassword) {
+      setErr('Vui lòng nhập mật khẩu hiện tại.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setErr('Mật khẩu mới phải có ít nhất 6 ký tự.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setErr('Mật khẩu xác nhận không khớp.');
+      return;
+    }
+    setSaving(true);
+    try {
+      await authService.changePassword({ oldPassword, newPassword });
+      const updated = { ...user, isFirstLogin: false, firstLogin: false };
+      writeStoredUser(updated);
+      onComplete();
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Đổi mật khẩu thất bại. Vui lòng kiểm tra lại mật khẩu hiện tại.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+        <div className="mb-4 text-center">
+          <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 text-2xl font-bold">
+            🔑
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Đổi mật khẩu lần đầu</h2>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Tài khoản của bạn vừa đăng nhập lần đầu với mật khẩu mặc định (VD: <code className="font-semibold text-slate-700 dark:text-slate-300">123456</code>). Vui lòng đặt mật khẩu mới để bảo mật tài khoản.
+          </p>
+        </div>
+
+        {err && <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 dark:bg-rose-950/40 dark:border-rose-900/60 dark:text-rose-300">{err}</div>}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Mật khẩu hiện tại</label>
+            <input
+              type="password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              placeholder="Nhập 123456"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Mật khẩu mới</label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Ít nhất 6 ký tự"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Xác nhận mật khẩu mới</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Nhập lại mật khẩu mới"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full py-2.5 rounded-xl font-semibold text-sm bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 transition shadow-sm"
+          >
+            {saving ? 'Đang cập nhật...' : 'Xác nhận & Đổi mật khẩu'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function Layout() {
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('darkMode') === 'true';
@@ -246,6 +345,9 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showFirstLoginModal, setShowFirstLoginModal] = useState<boolean>(() => {
+    return !!(user && (user.isFirstLogin || user.firstLogin));
+  });
 
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => ({
     'Tổng quan': true,
@@ -446,6 +548,10 @@ export default function Layout() {
           <Outlet />
         </div>
       </main>
+
+      {showFirstLoginModal && user && (
+        <FirstLoginModal user={user} onComplete={() => setShowFirstLoginModal(false)} />
+      )}
     </div>
   );
 }
