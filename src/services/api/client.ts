@@ -74,9 +74,14 @@ apiClient.interceptors.response.use(
   },
 );
 
-// Chuẩn hoá response: BE trả {code,message,result} → trả về result
+// Chuẩn hoá response: BE trả {code,message,result} → trả về result, nếu trả về raw data thì trả nguyên r.data
 export interface ApiEnvelope<T> { code: number; message: string; result: T; }
-export const unwrap = <T>(p: Promise<{ data: ApiEnvelope<T> }>) =>
-  p.then((r) => r.data.result);
+export const unwrap = <T>(p: Promise<{ data: any }>): Promise<T> =>
+  p.then((r) => {
+    if (r.data && typeof r.data === 'object' && 'result' in r.data && r.data.result !== undefined) {
+      return r.data.result as T;
+    }
+    return r.data as T;
+  });
 
 export default apiClient;

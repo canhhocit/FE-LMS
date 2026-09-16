@@ -408,7 +408,9 @@ export default function StudentLessonLearning() {
                         const v = videoRef.current;
                         const ts = v ? Math.floor(v.currentTime) : 0;
                         videoLearningService.addNote({ lessonId: lessonNum, noteText: noteText.trim(), timestampSeconds: ts }).then((n) => {
-                          setNotes((prev) => [...prev, n]);
+                          if (n && typeof n === 'object') {
+                            setNotes((prev) => [...prev, n]);
+                          }
                           setNoteText('');
                         });
                       }}
@@ -419,7 +421,7 @@ export default function StudentLessonLearning() {
                   </div>
                   {notes.length > 0 && (
                     <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {notes.map((n, i) => (
+                      {notes.filter((n): n is StudentVideoNote => Boolean(n && typeof n === 'object')).map((n, i) => (
                         <div key={n.id ?? i} className="flex items-start gap-2 rounded-lg bg-slate-50 p-2.5 text-sm group hover:bg-violet-50 transition-colors">
                           <button
                             type="button"
