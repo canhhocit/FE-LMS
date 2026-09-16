@@ -359,10 +359,7 @@ export default function TimetableGrid({
                               )}
                             </div>
 
-                            <div className="flex items-center justify-end gap-1.5 text-[10px] text-slate-400 pt-1">
-                              <span className="hover:text-slate-600">👍</span>
-                              <span className="hover:text-slate-600 font-bold">＋</span>
-                            </div>
+    
                           </div>
                         </div>
                       );
