@@ -146,6 +146,12 @@ const LogOutIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const BellIcon = ({ className = 'h-4.5 w-4.5' }: { className?: string }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} width="18" height="18">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+  </svg>
+);
+
 interface NavItem {
   to: string;
   label: string;
@@ -164,6 +170,7 @@ const NAV: Record<Role, NavSection[]> = {
       title: 'Tổng quan',
       items: [
         { to: '/student', label: 'Trang chủ', icon: HomeIcon },
+        { to: '/student/notifications', label: 'Thông báo', icon: BellIcon },
         { to: '/student/classes', label: 'Lớp học', icon: BookOpenIcon },
         { to: '/student/schedule', label: 'Thời khoá biểu', icon: CalendarIcon },
         { to: '/student/grades', label: 'Kết quả học tập', icon: BarChartIcon },
@@ -184,6 +191,7 @@ const NAV: Record<Role, NavSection[]> = {
       title: 'Tổng quan',
       items: [
         { to: '/lecturer', label: 'Trang chủ', icon: HomeIcon },
+        { to: '/lecturer/notifications', label: 'Thông báo', icon: BellIcon },
         { to: '/lecturer/classes', label: 'Lớp giảng dạy', icon: BookOpenIcon },
       ],
     },
@@ -208,6 +216,7 @@ const NAV: Record<Role, NavSection[]> = {
       title: 'Tổng quan',
       items: [
         { to: '/admin', label: 'Dashboard', icon: HomeIcon },
+        { to: '/admin/notifications', label: 'Thông báo', icon: BellIcon },
         { to: '/admin/users', label: 'Người dùng', icon: UsersIcon },
         { to: '/admin/reports', label: 'Báo cáo', icon: BarChartIcon },
         { to: '/admin/audit-logs', label: 'Nhật ký hệ thống', icon: FileTextIcon },
@@ -502,6 +511,20 @@ export default function Layout() {
           </div>
 
           <div className="relative flex items-center gap-3">
+            {/* Notification Bell Button */}
+            <Link
+              to={`/${roleLower}/notifications`}
+              title="Thông báo"
+              className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-sky-200 bg-white/80 text-slate-700 shadow-xs transition hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 active:scale-95"
+            >
+              <BellIcon className="h-4.5 w-4.5 text-slate-700 dark:text-slate-200" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </Link>
+
             {/* SVG Dark/Light mode toggle button */}
             <button
               type="button"
