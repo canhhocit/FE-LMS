@@ -257,7 +257,7 @@ function FirstLoginModal({ user, onComplete }: { user: AuthUser; onComplete: () 
       setErr('Mật khẩu mới phải có ít nhất 6 ký tự.');
       return;
     }
-    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword);
+    const hasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/]/.test(newPassword);
     if (!hasSpecial) {
       setErr('Mật khẩu mới phải chứa ít nhất 1 ký tự đặc biệt (VD: @, #, $, !...).');
       return;
