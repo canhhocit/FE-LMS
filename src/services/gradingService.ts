@@ -27,18 +27,18 @@ export interface AcademicRiskResponse {
   studentId: number;
   studentName: string;
   riskScore: number;
-  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  riskLevel: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   warningReasons: string[];
 }
 
 export const generateQrCodeToken = async (classId: number): Promise<QrTokenResponse> => {
-  return unwrap<QrTokenResponse>(apiClient.post(/attendance/qr/generate?classId=));
+  return unwrap<QrTokenResponse>(apiClient.post("/attendance/qr/generate?classId=" + classId));
 };
 
 export const validateQrCodeToken = async (classId: number, otpToken: string): Promise<void> => {
-  await unwrap<void>(apiClient.post(/attendance/qr/validate, { classId, otpToken }));
+  await unwrap<void>(apiClient.post("/attendance/qr/validate", { classId, otpToken }));
 };
 
 export const getAcademicRiskWarning = async (studentId: number): Promise<AcademicRiskResponse> => {
-  return unwrap<AcademicRiskResponse>(apiClient.get(/grading/academic-risk/));
+  return unwrap<AcademicRiskResponse>(apiClient.get("/grading/academic-risk/" + studentId));
 };

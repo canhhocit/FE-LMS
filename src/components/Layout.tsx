@@ -6,7 +6,7 @@ useEffect(() => {
   const saved = localStorage.getItem('darkMode');
   if (saved === 'true') setDarkMode(true);
 }, []);
-useEffect(() => { document.documentElement.classList.toggle('dark', darkMode); localStorage.setItem('darkMode', darkMode); }, [darkMode]);import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+useEffect(() => { document.documentElement.classList.toggle('dark', darkMode); localStorage.setItem('darkMode', String(darkMode)); }, [darkMode]);import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/useAuth';
 import * as notificationService from '../services/notificationService';

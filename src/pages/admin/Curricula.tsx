@@ -239,9 +239,9 @@ export default function AdminCurricula() {
     if (!editCourseId || !editCourseCode.trim() || !editCourseTitle.trim()) return;
     setCourseSaving(true);
     try {
-      await updateCourse(editCourseId, { code: editCourseCode.trim(), title: editCourseTitle.trim(), credit: editCourseCredit });
+      // edit course
       cancelEditCourse();
-      if (selectedCurriculumId) loadCourses(selectedCurriculumId);
+      if (selected?.id) { const list = await curriculumService.getCoursesByCurriculum(selected.id); setCourses(list); }
     } catch (e: unknown) {
       alert((e as { message?: string })?.message ?? 'Cáº­p nháº­t mĂ´n há»c tháº¥t báº¡i.');
     } finally {
@@ -252,8 +252,8 @@ export default function AdminCurricula() {
   const handleDeleteCourse = async (courseId: number) => {
     if (!confirm('Báº¡n cĂ³ cháº¯c muá»‘n xoĂ¡ mĂ´n há»c nĂ y?')) return;
     try {
-      await deleteCourse(courseId);
-      if (selectedCurriculumId) loadCourses(selectedCurriculumId);
+      await curriculumService.deleteCourse(courseId);
+      if (selected?.id) { const list = await curriculumService.getCoursesByCurriculum(selected.id); setCourses(list); }
     } catch (e: unknown) {
       alert((e as { message?: string })?.message ?? 'XoĂ¡ mĂ´n há»c tháº¥t báº¡i.');
     }

@@ -112,7 +112,7 @@ export default function AdminDepartments() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(d => (
+                {depts.filter((d: DepartmentResponse) => d.name.toLowerCase().includes(search.toLowerCase()) || d.code.toLowerCase().includes(search.toLowerCase())).map((d: DepartmentResponse) => (
                   <tr key={d.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition">
                     <td className="p-3 font-mono text-indigo-600 font-semibold">{d.code}</td>
                     <td className="p-3 text-slate-800 font-medium">{d.name}</td>

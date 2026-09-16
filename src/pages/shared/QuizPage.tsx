@@ -25,7 +25,27 @@ export default function QuizPage() {
   const [qC, setQC] = useState('');
   const [qD, setQD] = useState('');
   const [savingQ, setSavingQ] = useState(false);
-  const isLecturer = user?.role === 'LECTURER' || user?.role === 'ADMIN';
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiTopic, setAiTopic] = useState('');
+  const [aiNum, setAiNum] = useState(5);
+  const [generatingAi, setGeneratingAi] = useState(false);
+
+  const handleGenerateAi = async () => {
+    if (!aiTopic.trim()) return;
+    setGeneratingAi(true);
+    try {
+      const generated = await quizService.generateAiQuestions({ topic: aiTopic.trim(), numQuestions: aiNum });
+      setQuestions(prev => [...prev, ...generated]);
+      setShowAiModal(false);
+      setAiTopic('');
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Lỗi sinh câu hỏi AI');
+    } finally {
+      setGeneratingAi(false);
+    }
+  };
+  const storedUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+  const isLecturer = storedUser?.role === 'LECTURER' || storedUser?.role === 'ADMIN';
 
   useEffect(() => {
     let mounted = true;

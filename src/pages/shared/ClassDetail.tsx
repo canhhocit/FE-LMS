@@ -5,6 +5,7 @@ import * as contentService from "../../services/contentService";
 // Sprint 1: edit/delete helpers already in contentService
 import * as assessmentService from "../../services/assessmentService";
 import * as registrationService from "../../services/registrationService";
+import * as gradingService from "../../services/gradingService";
 import * as progressService from "../../services/progressService";
 import { useAuth } from "../../contexts/useAuth";
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from "../../components/Layout";
@@ -39,10 +40,17 @@ export default function ClassDetail() {
   const [editAnnId, setEditAnnId] = useState<number | null>(null);
   const [editAnnTitle, setEditAnnTitle] = useState('');
   const [editAnnContent, setEditAnnContent] = useState('');
-  const [studentProgress, setStudentProgress] = useState<EnrollmentProgress | null>(null);
-  const [saving, setSaving] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
-  const [uploadingLessonId, setUploadingLessonId] = useState<number | null>(null);
+
+  const loadChapters = async () => {
+    try { const list = await contentService.getChapters(cid); setChapters(list); } catch {}
+  };
+  const loadAnns = async () => {
+    try { const list = await contentService.getAnnouncements(cid); setAnns(list); } catch {}
+  };
+    const [studentProgress, setStudentProgress] = useState<EnrollmentProgress | null>(null);
+  const [saving, setSaving] = useState(false);
+    const [uploadingLessonId, setUploadingLessonId] = useState<number | null>(null);
   const [uploadStatus, setUploadStatus] = useState<Record<number, { type: 'success' | 'error'; message: string }>>({});
   const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const isLecturer = user?.role === 'LECTURER';

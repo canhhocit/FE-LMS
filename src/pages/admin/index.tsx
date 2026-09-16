@@ -41,7 +41,7 @@ export function AdminDashboard() {
 }
 
 export function AdminUsers() {
-  const [tab, sepTab] = useState<'STUDENT' | 'LECTURER'>('STUDENT');
+  const [tab, setTab] = useState<'STUDENT' | 'LECTURER'>('STUDENT');
   const [kw, setKw] = useState('');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);

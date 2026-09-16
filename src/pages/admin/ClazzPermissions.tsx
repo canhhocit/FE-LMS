@@ -20,7 +20,7 @@ export default function ClazzPermissions() {
   useEffect(() => {
     (async () => {
       try {
-        const list = await clazzService.getAllClasses();
+        const list = await clazzService.getMyClasses();
         setClasses(list);
         if (list.length > 0) setSelectedClass(list[0].id);
       } catch (e: unknown) {
@@ -35,7 +35,7 @@ export default function ClazzPermissions() {
     if (!selectedClass) return;
     (async () => {
       try {
-        const students = await clazzService.getClassMembers(selectedClass);
+        const students = await clazzService.getClassStudents(selectedClass);
         const lects = (students || []).filter((s: any) => s.role === 'LECTURER');
         setLecturers(lects);
         setSelectedLecturer(lects[0]?.id ?? null);
