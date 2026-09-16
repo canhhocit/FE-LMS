@@ -288,8 +288,8 @@ function FirstLoginModal({ user, onComplete }: { user: AuthUser; onComplete: () 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
         <div className="mb-4 text-center">
-          <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 text-2xl font-bold">
-            🔑
+          <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
+            <KeyIcon className="h-6 w-6" />
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">Đổi mật khẩu lần đầu</h2>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -486,7 +486,9 @@ export default function Layout() {
       )}
       <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-r border-sky-200 bg-blue-300 p-4 text-slate-800 shadow-xl transition-transform dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 lg:static lg:w-64 lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Link to={`/${roleLower}`} className="flex items-center gap-3 border-b border-red dark:border-slate-800 px-2 pb-5 pt-2">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-600 text-white text-xl font-bold shadow-xs">✦</span>
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-600 text-white shadow-xs">
+            <GraduationCapIcon className="h-6 w-6 text-white" />
+          </span>
           <div>
             <div className="font-bold tracking-tight text-slate-900 dark:text-white">LearningHub</div>
             <div className="text-xs text-slate-500 dark:text-slate-400">{ROLE_LABEL[role]}</div>
@@ -563,15 +565,15 @@ export default function Layout() {
       <main className="min-w-0 flex-1 overflow-auto">
         <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-sky-200 bg-blue-300 px-4 py-3 text-slate-800 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 sm:px-6">
           <div className="flex min-w-0 items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
-            <button type="button" aria-label="Mở menu" onClick={() => setSidebarOpen(true)} className="text-xl lg:hidden text-slate-700 dark:text-slate-200">
-              ☰
+            <button type="button" aria-label="Mở menu" onClick={() => setSidebarOpen(true)} className="p-1 lg:hidden text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 rounded-lg">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
             <span className="hidden truncate sm:inline">
               Xin chào, <span className="font-semibold text-slate-900 dark:text-white">{user.fullName}</span>
             </span>
           </div>
           <div className="hidden max-w-md flex-1 items-center rounded-full bg-white/80 border border-sky-200/60 px-4 py-1.5 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400 md:flex">
-            <span className="mr-2 opacity-60">⌕</span>
+            <svg className="mr-2 h-4 w-4 opacity-60 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             <span>Tìm kiếm thông tin...</span>
           </div>
 

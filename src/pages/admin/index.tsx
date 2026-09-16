@@ -214,7 +214,12 @@ export function AdminUsers() {
                         disabled={resettingId === u.id}
                         className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300 disabled:opacity-50 transition"
                       >
-                        {resettingId === u.id ? 'Đang reset...' : '🔑 Reset MK'}
+                        {resettingId === u.id ? 'Đang reset...' : (
+                          <span className="inline-flex items-center gap-1">
+                            <svg className="h-3.5 w-3.5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m-5 4a5 5 0 01-5-5 5 5 0 015-5 5 5 0 015 5 5 5 0 01-5 5zm0 0v1a2 2 0 01-2 2h-2a2 2 0 00-2 2v3h2v-2h2v-2h2a2 2 0 002-2v-1.333a5.05 5.05 0 001.36-.67l1.36 1.36a1 1 0 001.414 0l1.414-1.414a1 1 0 000-1.414l-1.36-1.36a5.05 5.05 0 00.67-1.36H15z" /></svg>
+                            Reset MK
+                          </span>
+                        )}
                       </button>
                     </td>
                   </tr>

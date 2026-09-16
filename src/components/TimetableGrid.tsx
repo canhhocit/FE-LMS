@@ -438,7 +438,9 @@ export default function TimetableGrid({
         {/* Bottom Horizontal Scroll Hint Banner */}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 px-1 pt-2 border-t border-slate-100">
           <div className="flex items-center gap-2 font-medium text-slate-600">
-            <span className="inline-block animate-pulse text-blue-600 font-bold">👉</span>
+            <svg className="h-4 w-4 animate-pulse text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
             <span>Di chuyển (cuộn ngang) để xem đầy đủ lịch các ngày trong tuần</span>
           </div>
           <div className="text-[11px] text-slate-400 font-mono">
