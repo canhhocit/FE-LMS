@@ -4,7 +4,8 @@ import { PageTitle, Card, Spinner, Empty, ErrorBox } from '../../components/Layo
 import type { DepartmentResponse, DepartmentRequest } from '../../services/departmentService';
 
 export default function AdminDepartments() {
-  const [depts, setDepts] = useState<DepartmentResponse[]>([]);\n  const [search, setSearch] = useState('');
+  const [depts, setDepts] = useState<DepartmentResponse[]>([]);
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -14,7 +15,8 @@ export default function AdminDepartments() {
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const load = async () => {\n    const filtered = depts.filter(d => d.name.toLowerCase().includes(search.toLowerCase()) || d.code.toLowerCase().includes(search.toLowerCase()));
+  const load = async () => {
+    const filtered = depts.filter(d => d.name.toLowerCase().includes(search.toLowerCase()) || d.code.toLowerCase().includes(search.toLowerCase()));
     try {
       const list = await deptService.getDepartments();
       setDepts(list);

@@ -21,7 +21,7 @@ export function AdminDashboard() {
   const items: { label: string; val: number; color: string }[] = [
     { label: 'NgÆ°á»i dĂ¹ng', val: stats.totalUsers, color: 'text-indigo-300' },
     { label: 'Láº£p há»c', val: stats.totalClasses, color: 'text-emerald-300' },
-    { label: 'Ä‘áº§ng kĂ½ há»c, val: stats.totalEnrollments, color: 'text-amber-300' },
+        { label: 'Đăng ký học', val: stats.totalEnrollments, color: 'text-amber-300' },
     { label: 'BĂ¸i táº­p', val: stats.totalAssignments, color: 'text-rose-300' },
     { label: 'BĂ i Ä‘Ă£ ná»™p', val: stats.totalSubmissions, color: 'text-cyan-300' },
   ];
@@ -126,7 +126,7 @@ export function AdminUsers() {
         {(['STUDENT', 'LECTURER'] as const).map((t) => (
           <button aria-label="button" key={t} onClick={() => setTab(t)}
             className={`px-3 py-1.5 rounded text-sm ${tab === t ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
-            {t === 'STUDENT' ? 'Sinh viĂªn' : 'Giáº£ng viĂªn']
+            {t === 'STUDENT' ? 'Sinh viên' : 'Giảng viên'}
           </button>
         ))}
         <input value={kw} onChange={(e) => setKw(e.target.value)} placeholder="TĂ¬m theo tĂªn/emailâ€¦"
@@ -136,7 +136,7 @@ export function AdminUsers() {
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <button aria-label="button" onClick={openCreateForm} className="px-3 py-2 rounded text-sm bg-indigo-600 text-white hover:bg-indigo-500">+ Táº¡o ngÆ°á»ng dĂ¹ng</button>
         <label className="inline-flex items-center gap-2 rounded border border-dashed border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 cursor-pointer">
-          <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => setSelectedFile(e.target.files?[0] ?? null)} />
+          <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)} />
           {selectedFile ? selectedFile.name : 'Chá»n file Excel'}
         </label>
         <button aria-label="button" onClick={handleImport} disabled={importing || !selectedFile}
