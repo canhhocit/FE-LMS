@@ -48,7 +48,8 @@ const ErrorState = ({ message }: { message: string }) => (
   </div>
 );
 
-const StatusBadge = ({ children, intent = 'neutral', color: _color }: { children: ReactNode; intent?: 'success' | 'warn' | 'error' | 'neutral'; color?: string }) => {
+const StatusBadge = (props: { children: ReactNode; intent?: 'success' | 'warn' | 'error' | 'neutral'; color?: string }) => {
+  const { children, intent = 'neutral' } = props;
   const styles = {
     success: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
     warn: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
