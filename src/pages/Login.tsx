@@ -29,6 +29,7 @@ export default function Login() {
   const loc = useLocation() as { state?: { from?: string } };
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showDemoAccounts, setShowDemoAccounts] = useState(false);
@@ -44,7 +45,7 @@ export default function Login() {
       const to = loc.state?.from;
       nav(to && to !== "/login" ? to : "/", { replace: true });
     } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? "Đăng nhập thất bại");
+      setErr((e as { message?: string })?.message ?? "Tên đăng nhập hoặc mật khẩu không chính xác.");
     } finally {
       setBusy(false);
     }
@@ -138,19 +139,33 @@ export default function Login() {
                   Quên mật khẩu?
                 </Link>
               </div>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                value={pw}
-                onChange={(e) => setPw(e.target.value)}
-                required
-                aria-invalid={Boolean(err)}
-                aria-describedby={err ? 'login-error' : undefined}
-                placeholder="Nhập mật khẩu"
-                className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#00376f] focus:ring-4 focus:ring-blue-900/10"
-              />
+              <div className="relative mt-2">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPw ? "text" : "password"}
+                  autoComplete="current-password"
+                  value={pw}
+                  onChange={(e) => setPw(e.target.value)}
+                  required
+                  aria-invalid={Boolean(err)}
+                  aria-describedby={err ? 'login-error' : undefined}
+                  placeholder="Nhập mật khẩu"
+                  className="h-12 w-full rounded-xl border border-slate-300 bg-white pl-4 pr-11 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#00376f] focus:ring-4 focus:ring-blue-900/10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(!showPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-colors"
+                  title={showPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                >
+                  {showPw ? (
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22" /></svg>
+                  ) : (
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                  )}
+                </button>
+              </div>
             </label>
             {err && (
               <div

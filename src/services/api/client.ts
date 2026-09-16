@@ -17,17 +17,29 @@ apiClient.interceptors.request.use((config) => {
 });
 
 const extractErrorMessage = (error: unknown) => {
+  const requestUrl = (error as { config?: { url?: string } })?.config?.url ?? '';
   const status = (error as { response?: { status?: number } })?.response?.status ?? 500;
   const payload = (error as { response?: { data?: { message?: string; error?: string } } })?.response?.data;
   const raw = payload?.message ?? payload?.error;
+
   if (!error || !(error as { response?: unknown }).response) {
     return 'Không thể kết nối máy chủ. Kiểm tra mạng và thử lại.';
   }
 
+  // Nếu là request đăng nhập bị thất bại (401 hoặc 400)
+  if (requestUrl.includes('/auth/login') && (status === 401 || status === 400)) {
+    return 'Tên đăng nhập hoặc mật khẩu không chính xác.';
+  }
+
   if (status === 400) return raw || 'Dữ liệu không hợp lệ';
-  if (status === 401) return 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
-  if (status === 403) return 'Bạn không có quyền thực hiện thao tác này.';
-  if (status === 404) return 'Không tìm thấy dữ liệu yêu cầu.';
+  if (status === 401) {
+    if (raw && raw !== 'Unauthorized access' && !raw.includes('Unauthorized')) {
+      return raw;
+    }
+    return 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
+  }
+  if (status === 403) return raw || 'Bạn không có quyền thực hiện thao tác này.';
+  if (status === 404) return raw || 'Không tìm thấy dữ liệu yêu cầu.';
   if (status === 409) return raw || 'Dữ liệu bị trùng hoặc xung đột nghiệp vụ.';
   if (status >= 500) return 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.';
   return raw || 'Yêu cầu không thành công';
