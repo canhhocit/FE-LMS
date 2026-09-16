@@ -77,6 +77,7 @@ export default function App() {
             <Route path="/student/classes" element={<StudentClasses />} />
             <Route path="/student/classes/:id" element={<ClassDetail />} />
             <Route path="/student/notifications" element={<NotificationsPage />} />
+            <Route path="/student/registration" element={<StudentRegistrations />} />
             <Route path="/student/registrations" element={<StudentRegistrations />} />
             <Route path="/student/tuition" element={<TuitionPage />} />
             <Route path="/student/quizzes" element={<QuizPage />} />
