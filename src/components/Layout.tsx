@@ -257,6 +257,11 @@ function FirstLoginModal({ user, onComplete }: { user: AuthUser; onComplete: () 
       setErr('Mật khẩu mới phải có ít nhất 6 ký tự.');
       return;
     }
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword);
+    if (!hasSpecial) {
+      setErr('Mật khẩu mới phải chứa ít nhất 1 ký tự đặc biệt (VD: @, #, $, !...).');
+      return;
+    }
     if (newPassword !== confirmPassword) {
       setErr('Mật khẩu xác nhận không khớp.');
       return;
@@ -296,7 +301,7 @@ function FirstLoginModal({ user, onComplete }: { user: AuthUser; onComplete: () 
               type="password"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
-              placeholder="Nhập 123456"
+              placeholder="Mật khẩu ban đầu (VD: 123456)"
               className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
@@ -307,9 +312,10 @@ function FirstLoginModal({ user, onComplete }: { user: AuthUser; onComplete: () 
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Ít nhất 6 ký tự"
+              placeholder="VD: Student@123"
               className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
             />
+            <p className="mt-1 text-[11px] text-slate-400">Yêu cầu: Tối thiểu 6 ký tự và có ít nhất 1 ký tự đặc biệt (@, #, $, !...)</p>
           </div>
 
           <div>
