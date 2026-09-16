@@ -18,11 +18,11 @@ export function AdminDashboard() {
   if (loading) return <Spinner />;
   if (!stats) return null;
   const items: { label: string; val: number; color: string }[] = [
-    { label: 'Người dùng',     val: stats.totalUsers,       color: 'text-indigo-300' },
-    { label: 'Lớp học',        val: stats.totalClasses,     color: 'text-emerald-300' },
-    { label: 'Đăng ký học',    val: stats.totalEnrollments, color: 'text-amber-300' },
-    { label: 'Bài tập',        val: stats.totalAssignments, color: 'text-rose-300' },
-    { label: 'Bài đã nộp',     val: stats.totalSubmissions, color: 'text-cyan-300' },
+    { label: 'Người dùng',     val: stats.totalUsers,       color: 'text-indigo-600 dark:text-indigo-400' },
+    { label: 'Lớp học',        val: stats.totalClasses,     color: 'text-emerald-600 dark:text-emerald-400' },
+    { label: 'Đăng ký học',    val: stats.totalEnrollments, color: 'text-amber-600 dark:text-amber-400' },
+    { label: 'Bài tập',        val: stats.totalAssignments, color: 'text-rose-600 dark:text-rose-400' },
+    { label: 'Bài đã nộp',     val: stats.totalSubmissions, color: 'text-cyan-600 dark:text-cyan-400' },
   ];
   return (
     <div>
