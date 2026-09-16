@@ -162,6 +162,7 @@ const NAV: Record<Role, NavSection[]> = {
       items: [
         { to: '/student/assignments', label: 'Bài tập', icon: FileTextIcon },
         { to: '/student/quizzes', label: 'Quiz', icon: BrainIcon },
+        { to: '/student/ai-advisor', label: 'Cố vấn AI', icon: BrainIcon },
         { to: '/student/grades', label: 'Điểm', icon: BarChartIcon },
         { to: '/student/schedule', label: 'Lịch học', icon: CalendarIcon },
       ],

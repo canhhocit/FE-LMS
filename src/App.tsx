@@ -19,6 +19,7 @@ import StudentAttendance from './pages/student/Attendance';
 import StudentSchedule from './pages/student/Schedule';
 import StudentProfile from './pages/student/Profile';
 import StudentTranscript from './pages/student/Transcript';
+import StudentAiAdvisor from './pages/student/AiAdvisor';
 import StudentLessonLearning from './pages/student/LessonLearning';
 import {
   LecturerDashboard, LecturerClasses, LecturerAssignments, LecturerGrading,
@@ -86,6 +87,7 @@ export default function App() {
             <Route path="/student/schedule" element={<StudentSchedule />} />
             <Route path="/student/profile" element={<StudentProfile />} />
             <Route path="/student/transcript" element={<StudentTranscript />} />
+            <Route path="/student/ai-advisor" element={<StudentAiAdvisor />} />
             <Route path="/student/classes/:classId/lessons/:lessonId" element={<StudentLessonLearning />} />
        </Route>
           <Route element={<ProtectedRoute allow={['LECTURER']}><Layout></Layout></ProtectedRoute>}>
