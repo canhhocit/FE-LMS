@@ -48,6 +48,9 @@ export default function ClassDetail() {
   const [studentProgress, setStudentProgress] = useState<EnrollmentProgress | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingLessonId, setUploadingLessonId] = useState<number | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<Record<number, number>>({});
+  const [attachmentUploadProgress, setAttachmentUploadProgress] = useState<Record<number, number>>({});
+  const [creatingLessonProgress, setCreatingLessonProgress] = useState<number | null>(null);
   const [uploadStatus, setUploadStatus] = useState<Record<number, { type: 'success' | 'error'; message: string }>>({});
   const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const attachmentFileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
@@ -57,8 +60,11 @@ export default function ClassDetail() {
 
   const handleLessonAttachmentUpload = async (lessonId: number, file: File) => {
     setUploadingAttachmentLessonId(lessonId);
+    setAttachmentUploadProgress((prev) => ({ ...prev, [lessonId]: 0 }));
     try {
-      await contentService.uploadLessonAttachment(lessonId, file);
+      await contentService.uploadLessonAttachment(lessonId, file, (percent) => {
+        setAttachmentUploadProgress((prev) => ({ ...prev, [lessonId]: percent }));
+      });
       const fresh = await contentService.getChapters(cid);
       setChapters(fresh);
       setFlash('Tài liệu đã được tải lên thành công.');
@@ -185,13 +191,20 @@ export default function ClassDetail() {
     }
 
     setUploadingLessonId(lessonId);
+    setUploadProgress((prev) => ({ ...prev, [lessonId]: 0 }));
     setUploadStatus((prev) => ({
       ...prev,
-      [lessonId]: { type: 'success', message: 'Đang tải lên...' },
+      [lessonId]: { type: 'success', message: 'Đang tải video 0%...' },
     }));
 
     try {
-      await contentService.uploadLessonVideo(lessonId, file);
+      await contentService.uploadLessonVideo(lessonId, file, (percent) => {
+        setUploadProgress((prev) => ({ ...prev, [lessonId]: percent }));
+        setUploadStatus((prev) => ({
+          ...prev,
+          [lessonId]: { type: 'success', message: `Đang tải video ${percent}%...` },
+        }));
+      });
       const fresh = await contentService.getChapters(cid);
       setChapters(fresh);
       setUploadStatus((prev) => ({
@@ -213,6 +226,9 @@ export default function ClassDetail() {
     if (!isLecturer || !selectedChapterId || !lessonTitle.trim()) return;
     setSaving(true);
     setFlash(null);
+    if (lessonVideo) {
+      setCreatingLessonProgress(0);
+    }
     try {
       const lesson = await contentService.createLesson(selectedChapterId, {
         title: lessonTitle.trim(),
@@ -221,11 +237,16 @@ export default function ClassDetail() {
 
       if (lessonVideo && lesson.id) {
         try {
-          await contentService.uploadLessonVideo(lesson.id, lessonVideo);
+          await contentService.uploadLessonVideo(lesson.id, lessonVideo, (percent) => {
+            setCreatingLessonProgress(percent);
+          });
+          setFlash('Đã tạo bài học và tải video thành công');
         } catch (e) {
           const message = (e as { message?: string })?.message ?? 'Upload video thất bại';
           setFlash(`Đã tạo bài học nhưng upload video thất bại: ${message}`);
         }
+      } else {
+        setFlash('Đã tạo bài học mới');
       }
 
       setLessonTitle('');
@@ -234,12 +255,12 @@ export default function ClassDetail() {
       setSelectedChapterId(selectedChapterId);
       const fresh = await contentService.getChapters(cid);
       setChapters(fresh);
-      if (!lessonVideo || !lesson.id) {
-        setFlash('Đã tạo bài học mới');
-      }
     } catch (e) {
       setFlash((e as { message?: string })?.message ?? 'Tạo bài học thất bại');
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+      setCreatingLessonProgress(null);
+    }
   };
 
   const handleCreateAnnouncement = async () => {
@@ -512,55 +533,125 @@ export default function ClassDetail() {
                                   </div>
 
                                   {isLecturer && (
-                                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                                      <button
-                                        type="button"
-                                        onClick={() => fileInputRefs.current[lesson.id]?.click()}
-                                        disabled={saving || uploadingLessonId === lesson.id}
-                                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-50 transition shadow-2xs"
-                                      >
-                                        <svg className="h-3.5 w-3.5 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                                        <span>{uploadingLessonId === lesson.id ? 'Đang tải video...' : lesson.videoUrl ? 'Thay video' : 'Thêm video'}</span>
-                                      </button>
-                                      <input
-                                        ref={(el) => { fileInputRefs.current[lesson.id] = el; }}
-                                        type="file"
-                                        accept=".mp4,.webm,.mov,.mkv,.avi"
-                                        className="hidden"
-                                        onChange={(e) => {
-                                          const file = e.target.files?.[0];
-                                          if (!file) return;
-                                          void handleLessonVideoUpload(lesson.id, file);
-                                          e.target.value = '';
-                                        }}
-                                      />
+                                    <div className="mt-2 space-y-2">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={() => fileInputRefs.current[lesson.id]?.click()}
+                                          disabled={saving || uploadingLessonId === lesson.id}
+                                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-60 transition shadow-2xs"
+                                        >
+                                          {uploadingLessonId === lesson.id ? (
+                                            <svg className="animate-spin h-3.5 w-3.5 text-indigo-600 shrink-0" viewBox="0 0 24 24" fill="none">
+                                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                          ) : (
+                                            <svg className="h-3.5 w-3.5 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                          )}
+                                          <span>
+                                            {uploadingLessonId === lesson.id
+                                              ? `Đang tải video ${uploadProgress[lesson.id] ?? 0}%...`
+                                              : lesson.videoUrl
+                                              ? 'Thay video'
+                                              : 'Thêm video'}
+                                          </span>
+                                        </button>
+                                        <input
+                                          ref={(el) => { fileInputRefs.current[lesson.id] = el; }}
+                                          type="file"
+                                          accept=".mp4,.webm,.mov,.mkv,.avi"
+                                          className="hidden"
+                                          onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (!file) return;
+                                            void handleLessonVideoUpload(lesson.id, file);
+                                            e.target.value = '';
+                                          }}
+                                        />
 
-                                      <button
-                                        type="button"
-                                        onClick={() => attachmentFileInputRefs.current[lesson.id]?.click()}
-                                        disabled={saving || uploadingAttachmentLessonId === lesson.id}
-                                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-emerald-300 hover:text-emerald-600 disabled:opacity-50 transition shadow-2xs"
-                                      >
-                                        <svg className="h-3.5 w-3.5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
-                                        <span>{uploadingAttachmentLessonId === lesson.id ? 'Đang tải tài liệu...' : lesson.attachmentUrl ? 'Thay tài liệu' : 'Thêm tài liệu'}</span>
-                                      </button>
-                                      <input
-                                        ref={(el) => { attachmentFileInputRefs.current[lesson.id] = el; }}
-                                        type="file"
-                                        accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip,.rar"
-                                        className="hidden"
-                                        onChange={(e) => {
-                                          const file = e.target.files?.[0];
-                                          if (!file) return;
-                                          void handleLessonAttachmentUpload(lesson.id, file);
-                                          e.target.value = '';
-                                        }}
-                                      />
+                                        <button
+                                          type="button"
+                                          onClick={() => attachmentFileInputRefs.current[lesson.id]?.click()}
+                                          disabled={saving || uploadingAttachmentLessonId === lesson.id}
+                                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-emerald-300 hover:text-emerald-600 disabled:opacity-60 transition shadow-2xs"
+                                        >
+                                          {uploadingAttachmentLessonId === lesson.id ? (
+                                            <svg className="animate-spin h-3.5 w-3.5 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="none">
+                                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                          ) : (
+                                            <svg className="h-3.5 w-3.5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+                                          )}
+                                          <span>
+                                            {uploadingAttachmentLessonId === lesson.id
+                                              ? `Đang tải tài liệu ${attachmentUploadProgress[lesson.id] ?? 0}%...`
+                                              : lesson.attachmentUrl
+                                              ? 'Thay tài liệu'
+                                              : 'Thêm tài liệu'}
+                                          </span>
+                                        </button>
+                                        <input
+                                          ref={(el) => { attachmentFileInputRefs.current[lesson.id] = el; }}
+                                          type="file"
+                                          accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip,.rar"
+                                          className="hidden"
+                                          onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (!file) return;
+                                            void handleLessonAttachmentUpload(lesson.id, file);
+                                            e.target.value = '';
+                                          }}
+                                        />
 
-                                      {uploadStatus[lesson.id] && (
-                                        <span className={`text-[11px] ${uploadStatus[lesson.id].type === 'error' ? 'text-red-600' : 'text-emerald-600'}`}>
-                                          {uploadStatus[lesson.id].message}
-                                        </span>
+                                        {uploadStatus[lesson.id] && uploadingLessonId !== lesson.id && (
+                                          <span className={`text-[11px] ${uploadStatus[lesson.id].type === 'error' ? 'text-red-600 font-medium' : 'text-emerald-600 font-medium'}`}>
+                                            {uploadStatus[lesson.id].message}
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      {uploadingLessonId === lesson.id && (
+                                        <div className="w-full max-w-sm space-y-1 bg-indigo-50/70 p-2 rounded-lg border border-indigo-100">
+                                          <div className="flex items-center justify-between text-[11px] font-semibold text-indigo-700">
+                                            <span className="flex items-center gap-1.5">
+                                              <svg className="animate-spin h-3.5 w-3.5 text-indigo-600 shrink-0" viewBox="0 0 24 24" fill="none">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                              </svg>
+                                              Đang tải video bài học lên hệ thống...
+                                            </span>
+                                            <span>{uploadProgress[lesson.id] ?? 0}%</span>
+                                          </div>
+                                          <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                            <div
+                                              className="bg-indigo-600 h-full rounded-full transition-all duration-200 ease-out"
+                                              style={{ width: `${uploadProgress[lesson.id] ?? 0}%` }}
+                                            />
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {uploadingAttachmentLessonId === lesson.id && (
+                                        <div className="w-full max-w-sm space-y-1 bg-emerald-50/70 p-2 rounded-lg border border-emerald-100">
+                                          <div className="flex items-center justify-between text-[11px] font-semibold text-emerald-700">
+                                            <span className="flex items-center gap-1.5">
+                                              <svg className="animate-spin h-3.5 w-3.5 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="none">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                              </svg>
+                                              Đang tải tài liệu lên hệ thống...
+                                            </span>
+                                            <span>{attachmentUploadProgress[lesson.id] ?? 0}%</span>
+                                          </div>
+                                          <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                            <div
+                                              className="bg-emerald-600 h-full rounded-full transition-all duration-200 ease-out"
+                                              style={{ width: `${attachmentUploadProgress[lesson.id] ?? 0}%` }}
+                                            />
+                                          </div>
+                                        </div>
                                       )}
                                     </div>
                                   )}
@@ -602,11 +693,69 @@ export default function ClassDetail() {
                     </ul>
                   )}
                   {isLecturer && (
-                    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
-                      <input value={selectedChapterId === c.id ? lessonTitle : ''} onChange={(e) => { setSelectedChapterId(c.id); setLessonTitle(e.target.value); }} placeholder="Tên bài học" className="w-40 px-2 py-1 rounded border border-slate-200 bg-white text-sm" />
-                      <input value={selectedChapterId === c.id ? lessonContent : ''} onChange={(e) => { setSelectedChapterId(c.id); setLessonContent(e.target.value); }} placeholder="Mô tả bài học" className="w-48 px-2 py-1 rounded border border-slate-200 bg-white text-sm" />
-                      <input type="file" accept="video/*" onChange={(e) => { setSelectedChapterId(c.id); setLessonVideo(e.target.files?.[0] ?? null); }} className="text-xs" />
-                      <button onClick={handleCreateLesson} disabled={saving || !lessonTitle.trim() || selectedChapterId !== c.id} className="px-3 py-1.5 text-sm rounded bg-emerald-600 text-white disabled:opacity-50">+ Bài học</button>
+                    <div className="mt-3 border-t border-slate-100 pt-3 space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <input
+                          value={selectedChapterId === c.id ? lessonTitle : ''}
+                          onChange={(e) => { setSelectedChapterId(c.id); setLessonTitle(e.target.value); }}
+                          placeholder="Tên bài học"
+                          className="w-40 px-2 py-1 rounded border border-slate-200 bg-white text-sm"
+                        />
+                        <input
+                          value={selectedChapterId === c.id ? lessonContent : ''}
+                          onChange={(e) => { setSelectedChapterId(c.id); setLessonContent(e.target.value); }}
+                          placeholder="Mô tả bài học"
+                          className="w-48 px-2 py-1 rounded border border-slate-200 bg-white text-sm"
+                        />
+                        <input
+                          type="file"
+                          accept="video/*"
+                          onChange={(e) => { setSelectedChapterId(c.id); setLessonVideo(e.target.files?.[0] ?? null); }}
+                          className="text-xs"
+                        />
+                        <button
+                          onClick={handleCreateLesson}
+                          disabled={saving || !lessonTitle.trim() || selectedChapterId !== c.id}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition shadow-xs"
+                        >
+                          {saving && selectedChapterId === c.id ? (
+                            <>
+                              <svg className="animate-spin h-3.5 w-3.5 text-white shrink-0" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              <span>
+                                {creatingLessonProgress !== null
+                                  ? `Đang tải video ${creatingLessonProgress}%...`
+                                  : 'Đang tạo...'}
+                              </span>
+                            </>
+                          ) : (
+                            <span>+ Bài học</span>
+                          )}
+                        </button>
+                      </div>
+
+                      {selectedChapterId === c.id && creatingLessonProgress !== null && (
+                        <div className="w-full bg-indigo-50/80 p-2.5 rounded-lg border border-indigo-100 space-y-1">
+                          <div className="flex items-center justify-between text-xs font-semibold text-indigo-700">
+                            <span className="flex items-center gap-1.5">
+                              <svg className="animate-spin h-3.5 w-3.5 text-indigo-600 shrink-0" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Đang tải video cho bài học mới lên máy chủ...
+                            </span>
+                            <span>{creatingLessonProgress}%</span>
+                          </div>
+                          <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                            <div
+                              className="bg-indigo-600 h-full rounded-full transition-all duration-200 ease-out"
+                              style={{ width: `${creatingLessonProgress}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </li>

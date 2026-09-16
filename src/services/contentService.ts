@@ -10,20 +10,44 @@ export const getLessons = async (chapterId: number): Promise<Lesson[]> => unwrap
 export const createLesson = async (chapterId: number, data: Omit<Lesson, 'id' | 'chapterId'>): Promise<Lesson> => unwrap(apiClient.post(`/chapters/${chapterId}/lessons`, data));
 export const updateLesson = async (lessonId: number, data: Partial<Lesson>): Promise<Lesson> => unwrap(apiClient.put(`/lessons/${lessonId}`, data));
 export const deleteLesson = async (lessonId: number): Promise<void> => { await apiClient.delete(`/lessons/${lessonId}`); };
-export const uploadLessonVideo = async (lessonId: number, file: File): Promise<string> => {
+export const uploadLessonVideo = async (
+  lessonId: number,
+  file: File,
+  onProgress?: (percent: number) => void
+): Promise<string> => {
   const form = new FormData();
   form.append('file', file);
-  return unwrap<string>(apiClient.post(`/lessons/${lessonId}/upload-video`, form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }));
+  return unwrap<string>(
+    apiClient.post(`/lessons/${lessonId}/upload-video`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total && onProgress) {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(percent);
+        }
+      },
+    })
+  );
 };
 
-export const uploadLessonAttachment = async (lessonId: number, file: File): Promise<string> => {
+export const uploadLessonAttachment = async (
+  lessonId: number,
+  file: File,
+  onProgress?: (percent: number) => void
+): Promise<string> => {
   const form = new FormData();
   form.append('file', file);
-  return unwrap<string>(apiClient.post(`/lessons/${lessonId}/upload-attachment`, form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }));
+  return unwrap<string>(
+    apiClient.post(`/lessons/${lessonId}/upload-attachment`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total && onProgress) {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(percent);
+        }
+      },
+    })
+  );
 };
 
 export const getAnnouncements = async (classId: number): Promise<Announcement[]> => unwrap(apiClient.get(`/classes/${classId}/announcements`));
