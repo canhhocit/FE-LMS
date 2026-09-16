@@ -416,7 +416,7 @@ export default function Layout() {
               className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm backdrop-blur transition hover:bg-white/20 active:scale-95"
             >
               <span className="text-sm">{darkMode ? "🌙" : "☀️"}</span>
-              <span>{darkMode ? "Chế độ Tối" : "Chế độ Sáng"}</span>
+              
             </button></header>
         <div className="min-h-[calc(100vh-61px)] bg-[#f5f7fb] p-4 sm:p-6 lg:p-8">
           <Outlet />
