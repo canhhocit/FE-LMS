@@ -80,12 +80,20 @@ const getScheduleTimeInfo = (item: Schedule) => {
   const calcStart = PERIOD_TIMES[sP]?.start || '06:45';
   const calcEnd = PERIOD_TIMES[eP]?.end || '09:25';
 
-  const startTime = (item.startTime && item.startTime !== '00:00' && item.startTime !== '00:00:00')
+  let startTime = (item.startTime && item.startTime !== '00:00' && item.startTime !== '00:00:00')
     ? item.startTime
     : calcStart;
-  const endTime = (item.endTime && item.endTime !== '00:00' && item.endTime !== '00:00:00')
+  let endTime = (item.endTime && item.endTime !== '00:00' && item.endTime !== '00:00:00')
     ? item.endTime
     : calcEnd;
+
+  // Fix invalid end times like 04:00 or 02:00 (where endTime <= startTime)
+  const [h1, m1] = startTime.split(':').map(Number);
+  const [h2, m2] = endTime.split(':').map(Number);
+  if ((h2 * 60 + m2) <= (h1 * 60 + m1)) {
+    startTime = calcStart;
+    endTime = calcEnd;
+  }
 
   return { startTime, endTime, periodLabel: `Tiết ${sP}-${eP}` };
 };
@@ -96,7 +104,7 @@ const DEFAULT_DEMO_SCHEDULES: Schedule[] = [
     clazzId: 1,
     dayOfWeek: 1, // Thứ 2
     classCode: 'ENG201-01-2026A',
-    className: 'Tiếng Anh chuyên ngành',
+    className: 'Tiếng Anh chuyên ngành - Nhóm 01',
     courseTitle: 'Tiếng Anh chuyên ngành',
     lecturerName: 'Phạm Thị Bích Ngọc',
     room: 'Trực tuyến',
@@ -110,8 +118,8 @@ const DEFAULT_DEMO_SCHEDULES: Schedule[] = [
     clazzId: 2,
     dayOfWeek: 2, // Thứ 3
     classCode: 'IT101-01-2026A',
-    className: 'Nhập môn Lập trình',
-    courseTitle: 'Nhập môn Lập trình',
+    className: 'Nhập môn lập trình - Nhóm 01',
+    courseTitle: 'Nhập môn lập trình',
     lecturerName: 'Nguyễn Văn An',
     room: 'A301',
     startPeriod: 1,
@@ -124,7 +132,7 @@ const DEFAULT_DEMO_SCHEDULES: Schedule[] = [
     clazzId: 3,
     dayOfWeek: 3, // Thứ 4
     classCode: 'IT202-01-2026A',
-    className: 'Cơ sở dữ liệu',
+    className: 'Cơ sở dữ liệu - Nhóm 01',
     courseTitle: 'Cơ sở dữ liệu',
     lecturerName: 'Trần Thị Bình',
     room: 'B204',
@@ -138,8 +146,8 @@ const DEFAULT_DEMO_SCHEDULES: Schedule[] = [
     clazzId: 4,
     dayOfWeek: 4, // Thứ 5
     classCode: 'IT101-TH-2026A',
-    className: 'Nhập môn Lập trình (Lý thuyết)',
-    courseTitle: 'Nhập môn Lập trình',
+    className: 'Nhập môn lập trình - Nhóm 01 (Lý thuyết)',
+    courseTitle: 'Nhập môn lập trình',
     lecturerName: 'Nguyễn Văn An',
     room: 'LAB-02',
     startPeriod: 4,
@@ -152,28 +160,28 @@ const DEFAULT_DEMO_SCHEDULES: Schedule[] = [
     clazzId: 5,
     dayOfWeek: 6, // Thứ 7
     classCode: 'BUS101-01-2026A',
-    className: 'Nguyên lý Quản trị',
-    courseTitle: 'Nguyên lý Quản trị',
+    className: 'Nguyên lý Marketing - Nhóm 01',
+    courseTitle: 'Nguyên lý Marketing',
     lecturerName: 'Lê Minh Cường',
     room: 'C105',
     startPeriod: 1,
-    endPeriod: 3,
+    endPeriod: 2,
     startTime: '06:45',
-    endTime: '09:25',
+    endTime: '08:25',
   },
   {
     id: 106,
     clazzId: 6,
     dayOfWeek: 7, // Chủ nhật
     classCode: 'GEN101-01-2026A',
-    className: 'Kỹ năng học tập',
+    className: 'Kỹ năng học tập - Nhóm 01',
     courseTitle: 'Kỹ năng học tập',
     lecturerName: 'Phạm Hồng Thái',
     room: 'Trực tuyến',
     startPeriod: 1,
-    endPeriod: 3,
+    endPeriod: 2,
     startTime: '06:45',
-    endTime: '09:25',
+    endTime: '08:25',
   },
 ];
 
@@ -267,7 +275,8 @@ export default function TimetableGrid({
     if (!startTime || !endTime) return 2.6;
     const [h1, m1] = startTime.split(':').map(Number);
     const [h2, m2] = endTime.split(':').map(Number);
-    return Math.max(1.5, (h2 * 60 + m2 - (h1 * 60 + m1)) / 60);
+    const diff = (h2 * 60 + m2 - (h1 * 60 + m1)) / 60;
+    return diff > 0 ? Math.max(2.2, diff) : 2.6;
   };
 
   const selectedDayOfWeekIndex = (currentDate.getDay() === 0 ? 7 : currentDate.getDay());
@@ -336,7 +345,7 @@ export default function TimetableGrid({
 
             {/* Grid Body */}
             <div className="relative grid grid-cols-[70px_repeat(7,1fr)]">
-              {/* STICKY Left Time Column pinned to left on scroll! */}
+              {/* STICKY Left Time Column pinned to left on scroll */}
               <div className="sticky left-0 z-20 bg-white border-r border-slate-200 text-xs font-bold text-slate-700 font-sans shadow-[3px_0_6px_-2px_rgba(0,0,0,0.08)]">
                 {HOURS.map((h) => (
                   <div key={h} style={{ height: `${HOUR_HEIGHT}px` }} className="flex items-start justify-center pt-2 border-b border-slate-200 bg-white">
@@ -357,52 +366,52 @@ export default function TimetableGrid({
                       <div key={h} style={{ height: `${HOUR_HEIGHT}px` }} className="border-b border-slate-200/80" />
                     ))}
 
-                    {/* Schedule Cards */}
+                    {/* Schedule Cards with generous min-height (175px) so bottom text NEVER clips */}
                     {dayItems.map((item, itemIdx) => {
                       const style = CARD_STYLES[(item.clazzId || item.id || itemIdx) % CARD_STYLES.length];
                       const topOffset = parseTimeToOffset(item.startTime, 6) * HOUR_HEIGHT;
                       const durationHours = calculateDuration(item.startTime, item.endTime);
-                      const cardHeight = Math.max(140, durationHours * HOUR_HEIGHT);
+                      const cardHeight = Math.max(175, durationHours * HOUR_HEIGHT);
 
                       return (
                         <div
                           key={item.id || itemIdx}
                           style={{ top: `${topOffset}px`, height: `${cardHeight}px` }}
                           onClick={() => onSelectSchedule?.(item)}
-                          className={`absolute left-1 right-1 z-10 flex flex-col overflow-hidden bg-white border-2 ${style.border} rounded-lg shadow-sm transition hover:shadow-md hover:z-20 cursor-pointer`}
+                          className={`absolute left-1 right-1 z-10 flex flex-col justify-between bg-white border-2 ${style.border} rounded-lg shadow-sm transition hover:shadow-md hover:z-20 cursor-pointer`}
                         >
                           {/* Colored Header Bar */}
                           <div className={`px-2.5 py-1.5 text-white font-bold flex flex-col justify-center ${style.headerBg}`}>
                             <div className="text-xs leading-snug break-words font-extrabold">{item.className || item.courseTitle}</div>
-                            <div className="text-[10px] font-normal opacity-95 flex items-center justify-between mt-0.5 pt-0.5 border-t border-white/20">
+                            <div className="text-[10px] font-normal opacity-95 flex items-center justify-between mt-1 pt-1 border-t border-white/25">
                               <span>{item.startTime} - {item.endTime}</span>
                               <span className="bg-white/20 px-1.5 py-0.2 rounded text-[10px] font-semibold">{item.periodLabel}</span>
                             </div>
                           </div>
 
-                          {/* Card Content */}
+                          {/* Card Content - Spacious layout with no bottom clipping */}
                           <div className="p-2 flex-1 flex flex-col justify-between text-center text-xs space-y-1">
                             <div>
-                              <div className="font-bold text-slate-800 text-xs leading-tight break-words">
+                              <div className="font-bold text-slate-800 text-xs leading-tight break-words pt-0.5">
                                 {item.classCode || item.clazzCode}
                               </div>
                             </div>
 
-                            <div className="space-y-1 text-xs text-slate-700 font-medium pt-1 border-t border-slate-100">
+                            <div className="space-y-1 text-xs text-slate-700 font-medium pt-1 border-t border-slate-100 pb-0.5">
                               <div className="text-slate-800 font-bold flex items-center justify-center gap-1 text-xs">
-                                <LocationIcon className="h-3.5 w-3.5 text-slate-500" />
-                                <span>{item.room || 'Trực tuyến'}</span>
+                                <LocationIcon className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                                <span className="truncate">{item.room || 'Trực tuyến'}</span>
                               </div>
                               {item.lecturerName && (
-                                <div className="text-slate-600 truncate flex items-center justify-center gap-1 text-[11px]">
-                                  <UserIcon className="h-3.5 w-3.5 text-slate-400" />
+                                <div className="text-slate-600 flex items-center justify-center gap-1 text-xs font-semibold">
+                                  <UserIcon className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                                   <span className="truncate">{item.lecturerName}</span>
                                 </div>
                               )}
                             </div>
 
                             {isEditable && onDeleteSchedule && (
-                              <div className="pt-1 flex justify-end">
+                              <div className="pt-0.5 flex justify-end">
                                 <button
                                   type="button"
                                   onClick={(e) => {
