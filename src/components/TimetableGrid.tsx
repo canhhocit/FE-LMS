@@ -9,6 +9,22 @@ interface TimetableGridProps {
   isEditable?: boolean;
 }
 
+const CalendarIcon = ({ className = 'h-5 w-5' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="3" ry="3" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
+
+const ClockIcon = ({ className = 'h-4 w-4' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+
 const PERIOD_TIMES: Record<number, { start: string; end: string }> = {
   1: { start: '06:45', end: '07:30' },
   2: { start: '07:40', end: '08:25' },
@@ -28,8 +44,8 @@ const getScheduleTimeInfo = (item: Schedule) => {
   const sP = item.startPeriod || 1;
   const eP = item.endPeriod || (item.startPeriod ? item.startPeriod + 2 : 3);
 
-  const calcStart = PERIOD_TIMES[sP]?.start || '07:00';
-  const calcEnd = PERIOD_TIMES[eP]?.end || '09:30';
+  const calcStart = PERIOD_TIMES[sP]?.start || '06:45';
+  const calcEnd = PERIOD_TIMES[eP]?.end || '09:25';
 
   const startTime = (item.startTime && item.startTime !== '00:00' && item.startTime !== '00:00:00')
     ? item.startTime
@@ -45,118 +61,83 @@ const DEFAULT_DEMO_SCHEDULES: Schedule[] = [
   {
     id: 101,
     clazzId: 1,
-    dayOfWeek: 2, // Thứ 3
-    classCode: 'IT101-01-2026A',
-    className: 'Nhập môn Lập trình',
-    lecturerName: 'Nguyễn Văn An',
-    room: 'A301',
+    dayOfWeek: 1, // Thứ 2
+    classCode: 'Tiếng Anh chuyên ngành-1-1-26(N12)/74DCTT23_74DCTT24',
+    className: 'Tiếng Anh chuyên ngành',
+    lecturerName: 'Phạm Thị Bích Ngọc',
+    room: 'Trực tuyến',
     startPeriod: 1,
-    endPeriod: 3,
+    endPeriod: 6,
     startTime: '06:45',
-    endTime: '09:25',
+    endTime: '12:10',
   },
   {
     id: 102,
     clazzId: 2,
     dayOfWeek: 3, // Thứ 4
-    classCode: 'IT202-01-2026A',
-    className: 'Cơ sở dữ liệu',
-    lecturerName: 'Trần Thị Bình',
-    room: 'B204',
+    classCode: 'Quản lý dự án phần mềm-1-1-26(N04)/74DCTT24',
+    className: 'Quản lý dự án phần mềm',
+    lecturerName: 'Nguyễn Hữu Mùi',
+    room: 'A8.403',
+    startPeriod: 2,
+    endPeriod: 6,
+    startTime: '07:40',
+    endTime: '12:10',
+  },
+  {
+    id: 103,
+    clazzId: 3,
+    dayOfWeek: 4, // Thứ 5
+    classCode: 'Đồ án Xây dựng và phát triển phần mềm-1-1-26(N04)/74DCTT24',
+    className: 'Đồ án Xây dựng và phát...',
+    lecturerName: 'Lê Trung Kiên',
+    room: 'Trực tuyến',
+    startPeriod: 2,
+    endPeriod: 6,
+    startTime: '07:40',
+    endTime: '12:10',
+  },
+  {
+    id: 104,
+    clazzId: 4,
+    dayOfWeek: 5, // Thứ 6
+    classCode: 'Nhập môn Xử lý ảnh-1-1-26(N04)/74DCTT24',
+    className: 'Nhập môn Xử lý ảnh',
+    lecturerName: 'Đỗ Bảo Long',
+    room: 'A2.303',
     startPeriod: 1,
     endPeriod: 3,
     startTime: '06:45',
     endTime: '09:25',
   },
   {
-    id: 103,
-    clazzId: 3,
-    dayOfWeek: 4, // Thứ 5
-    classCode: 'IT101-01-2026A',
-    className: 'Nhập môn Lập trình (TH)',
-    lecturerName: 'Nguyễn Văn An',
-    room: 'LAB-02',
+    id: 105,
+    clazzId: 4,
+    dayOfWeek: 5, // Thứ 6
+    classCode: 'Nhập môn Xử lý ảnh-1-1-26(N04)/74DCTT24',
+    className: 'Nhập môn Xử lý ảnh',
+    lecturerName: 'Đỗ Bảo Long',
+    room: 'A2.303',
     startPeriod: 4,
     endPeriod: 6,
     startTime: '09:30',
     endTime: '12:10',
   },
-  {
-    id: 104,
-    clazzId: 4,
-    dayOfWeek: 6, // Thứ 7
-    classCode: 'BUS101-01-2026A',
-    className: 'Nguyên lý Quản trị',
-    lecturerName: 'Lê Minh Cường',
-    room: 'C105',
-    startPeriod: 1,
-    endPeriod: 2,
-    startTime: '06:45',
-    endTime: '08:25',
-  },
-  {
-    id: 105,
-    clazzId: 5,
-    dayOfWeek: 7, // Chủ nhật
-    classCode: 'GEN101-01-2026A',
-    className: 'Kỹ năng mềm',
-    lecturerName: 'Phạm Hồng Thái',
-    room: 'Trực tuyến',
-    startPeriod: 1,
-    endPeriod: 2,
-    startTime: '06:45',
-    endTime: '08:25',
-  },
 ];
 
-const CARD_THEMES = [
-  {
-    bg: 'bg-amber-500/10 dark:bg-amber-950/50',
-    border: 'border-amber-400/60 dark:border-amber-600/60',
-    accent: 'bg-amber-600 text-white',
-    text: 'text-amber-950 dark:text-amber-100',
-    subtext: 'text-amber-800/80 dark:text-amber-300/80',
-    badge: 'bg-amber-500/20 text-amber-900 dark:text-amber-200',
-  },
-  {
-    bg: 'bg-indigo-500/10 dark:bg-indigo-950/50',
-    border: 'border-indigo-400/60 dark:border-indigo-600/60',
-    accent: 'bg-indigo-600 text-white',
-    text: 'text-indigo-950 dark:text-indigo-100',
-    subtext: 'text-indigo-800/80 dark:text-indigo-300/80',
-    badge: 'bg-indigo-500/20 text-indigo-900 dark:text-indigo-200',
-  },
-  {
-    bg: 'bg-blue-500/10 dark:bg-blue-950/50',
-    border: 'border-blue-400/60 dark:border-blue-600/60',
-    accent: 'bg-blue-600 text-white',
-    text: 'text-blue-950 dark:text-blue-100',
-    subtext: 'text-blue-800/80 dark:text-blue-300/80',
-    badge: 'bg-blue-500/20 text-blue-900 dark:text-blue-200',
-  },
-  {
-    bg: 'bg-emerald-500/10 dark:bg-emerald-950/50',
-    border: 'border-emerald-400/60 dark:border-emerald-600/60',
-    accent: 'bg-emerald-600 text-white',
-    text: 'text-emerald-950 dark:text-emerald-100',
-    subtext: 'text-emerald-800/80 dark:text-emerald-300/80',
-    badge: 'bg-emerald-500/20 text-emerald-900 dark:text-emerald-200',
-  },
-  {
-    bg: 'bg-orange-500/10 dark:bg-orange-950/50',
-    border: 'border-orange-400/60 dark:border-orange-600/60',
-    accent: 'bg-orange-600 text-white',
-    text: 'text-orange-950 dark:text-orange-100',
-    subtext: 'text-orange-800/80 dark:text-orange-300/80',
-    badge: 'bg-orange-500/20 text-orange-900 dark:text-orange-200',
-  },
+const CARD_STYLES = [
+  { headerBg: 'bg-[#ca8a04]', border: 'border-[#ca8a04]' }, // Golden yellow
+  { headerBg: 'bg-[#00376f]', border: 'border-[#00376f]' }, // Dark Navy
+  { headerBg: 'bg-[#1d4ed8]', border: 'border-[#1d4ed8]' }, // Royal Blue
+  { headerBg: 'bg-[#ea580c]', border: 'border-[#ea580c]' }, // Orange Red
+  { headerBg: 'bg-[#059669]', border: 'border-[#059669]' }, // Emerald
 ];
 
-const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+const HOURS = [6, 7, 8, 9, 10, 11, 12];
 
 export default function TimetableGrid({
   schedules,
-  title = '📅 Lịch cá nhân',
+  title = 'Lịch cá nhân',
   onSelectSchedule,
   onDeleteSchedule,
   isEditable = false,
@@ -165,13 +146,12 @@ export default function TimetableGrid({
 
   const rawSchedules = schedules.length > 0 ? schedules : DEFAULT_DEMO_SCHEDULES;
 
-  // Process schedules with correct times
   const displaySchedules = rawSchedules.map((s) => {
     const timeInfo = getScheduleTimeInfo(s);
     return { ...s, ...timeInfo };
   });
 
-  // Calculate days of the current week (Monday to Sunday)
+  // Monday to Sunday
   const getWeekDates = (date: Date) => {
     const day = date.getDay();
     const diffToMonday = day === 0 ? -6 : 1 - day;
@@ -189,7 +169,6 @@ export default function TimetableGrid({
 
   const weekDates = getWeekDates(currentDate);
 
-  // Month Calendar Navigation
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
@@ -234,229 +213,161 @@ export default function TimetableGrid({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_290px] gap-6 items-start">
-        {/* Main Weekly Timetable Area */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none p-5 sm:p-6 transition-colors">
-          {/* Section Header */}
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
-            <h2 className="text-xl font-bold text-[#00376f] dark:text-blue-400 flex items-center gap-2">
-              <span className="p-2 rounded-xl bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 text-lg">📅</span>
-              <span>{title}</span>
-            </h2>
-            <div className="text-xs font-semibold px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700 shadow-sm">
-              Tuần: <span className="text-[#00376f] dark:text-blue-400 font-bold">{weekDates[0].getDate()}/{weekDates[0].getMonth() + 1}</span> – <span className="text-[#00376f] dark:text-blue-400 font-bold">{weekDates[6].getDate()}/{weekDates[6].getMonth() + 1}/{year}</span>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <div className="min-w-[780px]">
-              {/* Day Column Headers */}
-              <div className="grid grid-cols-[70px_repeat(7,1fr)] border-b border-slate-200 dark:border-slate-800 text-center font-semibold text-sm">
-                <div className="py-3 text-slate-400 dark:text-slate-500 text-xs flex items-center justify-center border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 rounded-tl-2xl">
-                  <span>⏱️ Giờ VN</span>
-                </div>
-                {weekDates.map((d, idx) => {
-                  const dayNum = d.getDate();
-                  const isToday = d.toDateString() === currentDate.toDateString();
-                  const dayLabel = idx === 6 ? 'Chủ nhật' : `Thứ ${idx + 2}`;
-
-                  return (
-                    <div
-                      key={idx}
-                      onClick={() => setCurrentDate(d)}
-                      className={`py-2.5 px-1 cursor-pointer transition border-r border-slate-100 dark:border-slate-800/80 ${
-                        isToday
-                          ? 'bg-[#00376f] text-white rounded-t-2xl shadow-lg shadow-blue-900/20'
-                          : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'
-                      }`}
-                    >
-                      <div className="text-base font-extrabold">{dayNum}</div>
-                      <div className="text-xs font-medium opacity-90">{dayLabel}</div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Grid Body */}
-              <div className="relative grid grid-cols-[70px_repeat(7,1fr)]">
-                {/* Hours Left Column */}
-                <div className="border-r border-slate-200 dark:border-slate-800 text-xs text-slate-400 dark:text-slate-500 font-mono bg-slate-50/30 dark:bg-slate-900/40">
-                  {HOURS.map((h) => (
-                    <div key={h} className="h-16 flex items-start justify-center pt-1.5 border-b border-slate-100 dark:border-slate-800/60">
-                      {`${h}:00`}
-                    </div>
-                  ))}
-                </div>
-
-                {/* 7 Columns for Days */}
-                {Array.from({ length: 7 }).map((_, dayIdx) => {
-                  const dayOfWeekNum = dayIdx + 1; // 1 = Mon, 7 = Sun
-                  const dayItems = displaySchedules.filter((s) => Number(s.dayOfWeek) === dayOfWeekNum);
-
-                  return (
-                    <div key={dayIdx} className="relative border-r border-slate-100 dark:border-slate-800/60 min-h-[832px]">
-                      {/* Grid Horizontal Rows */}
-                      {HOURS.map((h) => (
-                        <div key={h} className="h-16 border-b border-slate-100 dark:border-slate-800/60" />
-                      ))}
-
-                      {/* Schedule Block Cards */}
-                      {dayItems.map((item, itemIdx) => {
-                        const theme = CARD_THEMES[(item.clazzId || item.id || itemIdx) % CARD_THEMES.length];
-                        const topOffset = parseTimeToOffset(item.startTime, 6) * 64;
-                        const durationHours = calculateDuration(item.startTime, item.endTime);
-                        const cardHeight = Math.max(96, durationHours * 64);
-
-                        return (
-                          <div
-                            key={item.id || itemIdx}
-                            style={{ top: `${topOffset}px`, height: `${cardHeight}px` }}
-                            onClick={() => onSelectSchedule?.(item)}
-                            className={`absolute left-1 right-1 z-10 flex flex-col overflow-hidden rounded-2xl border ${theme.border} ${theme.bg} shadow-md transition-all hover:z-30 hover:shadow-xl hover:-translate-y-0.5 cursor-pointer backdrop-blur-sm`}
-                          >
-                            {/* Card Top Pill Bar */}
-                            <div className={`px-2.5 py-1 text-[11px] font-bold truncate flex items-center justify-between ${theme.accent} shadow-sm`}>
-                              <span className="truncate">{item.className || item.courseTitle || 'Môn học'}</span>
-                              <span className="shrink-0 text-[10px] font-semibold opacity-95 ml-1">{item.startTime} - {item.endTime}</span>
-                            </div>
-
-                            {/* Card Content */}
-                            <div className="p-2.5 flex-1 flex flex-col justify-between text-[11px] leading-snug space-y-1">
-                              <div>
-                                <div className={`font-bold ${theme.text} line-clamp-2 text-xs leading-tight`}>
-                                  {item.className || item.courseTitle}
-                                </div>
-                                <div className="mt-1 flex flex-wrap items-center gap-1">
-                                  <span className={`inline-block px-1.5 py-0.5 rounded-md text-[10px] font-mono font-semibold ${theme.badge}`}>
-                                    {item.classCode || item.clazzCode}
-                                  </span>
-                                  <span className="inline-block px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/20 text-amber-900 dark:text-amber-200">
-                                    {item.periodLabel}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className="space-y-1 text-[10px] border-t border-slate-200/50 dark:border-slate-700/50 pt-1.5">
-                                <div className={`flex items-center gap-1 font-semibold ${theme.text}`}>
-                                  <span>📍</span>
-                                  <span className="truncate">{item.room || 'Trực tuyến'}</span>
-                                </div>
-                                {item.lecturerName && (
-                                  <div className={`flex items-center gap-1 truncate ${theme.subtext}`}>
-                                    <span>👤</span>
-                                    <span className="truncate">{item.lecturerName}</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              {isEditable && onDeleteSchedule && (
-                                <div className="pt-1 flex justify-end">
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onDeleteSchedule(item.id);
-                                    }}
-                                    className="text-[10px] text-rose-600 font-bold hover:underline"
-                                  >
-                                    Xoá
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+    <div className="flex flex-col lg:flex-row gap-6 items-start text-slate-800">
+      {/* Main Bright White Timetable Section */}
+      <div className="flex-1 w-full bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5">
+        {/* Title Header */}
+        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200">
+          <CalendarIcon className="h-5 w-5 text-[#00376f]" />
+          <h2 className="text-base font-bold text-[#00376f]">{title}</h2>
         </div>
 
-        {/* Right Mini-Calendar Side Panel */}
-        <div className="space-y-5">
-          {/* Mini Month Calendar Card */}
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none p-5 transition-colors">
-            {/* Header: Month & Prev/Next buttons */}
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <span>🗓️</span>
-                <span>Tháng {month + 1}-{year}</span>
-              </span>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={prevMonth}
-                  className="h-7 w-7 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold transition"
-                  title="Tháng trước"
-                >
-                  ‹
-                </button>
-                <button
-                  type="button"
-                  onClick={nextMonth}
-                  className="h-7 w-7 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold transition"
-                  title="Tháng sau"
-                >
-                  ›
-                </button>
+        <div className="overflow-x-auto">
+          <div className="min-w-[760px]">
+            {/* Header Days Row */}
+            <div className="grid grid-cols-[64px_repeat(7,1fr)] border-b-2 border-[#00376f] text-center font-medium text-xs">
+              <div className="py-2.5 text-slate-700 flex items-center justify-center gap-1 font-bold border-r border-slate-200">
+                <ClockIcon className="h-3.5 w-3.5 text-slate-500" />
+                <span>Giờ VN</span>
               </div>
-            </div>
-
-            {/* Days of week header */}
-            <div className="grid grid-cols-7 text-center text-xs font-bold text-slate-400 dark:text-slate-500 mb-2">
-              <span>T2</span>
-              <span>T3</span>
-              <span>T4</span>
-              <span>T5</span>
-              <span>T6</span>
-              <span>T7</span>
-              <span>Cn</span>
-            </div>
-
-            {/* Days Grid */}
-            <div className="grid grid-cols-7 gap-1 text-center text-xs">
-              {calendarDays.map((cd, idx) => {
-                const isSelected = cd.date.toDateString() === currentDate.toDateString();
+              {weekDates.map((d, idx) => {
+                const dayNum = d.getDate();
+                const isSelectedDay = d.toDateString() === currentDate.toDateString();
+                const dayLabel = idx === 6 ? 'Chủ nhật' : `Thứ ${idx + 2}`;
 
                 return (
-                  <button
+                  <div
                     key={idx}
-                    type="button"
-                    onClick={() => setCurrentDate(cd.date)}
-                    className={`h-8 w-8 mx-auto flex items-center justify-center rounded-full transition font-semibold ${
-                      isSelected
-                        ? 'bg-gradient-to-tr from-amber-500 to-orange-500 text-white font-bold shadow-md shadow-orange-500/30 scale-105'
-                        : cd.isCurrentMonth
-                        ? 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-                        : 'text-slate-300 dark:text-slate-600'
+                    onClick={() => setCurrentDate(d)}
+                    className={`py-2 px-1 cursor-pointer transition border-r border-slate-200 ${
+                      isSelectedDay
+                        ? 'bg-[#e8f0fe] text-[#00376f] font-bold rounded-t-lg border-b-2 border-[#00376f]'
+                        : 'hover:bg-slate-50 text-slate-700'
                     }`}
                   >
-                    {cd.dayNum}
-                  </button>
+                    <div className="text-sm font-bold">{dayNum}</div>
+                    <div className="text-[11px] text-slate-500">{dayLabel}</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Grid Body */}
+            <div className="relative grid grid-cols-[64px_repeat(7,1fr)]">
+              {/* Left Time Column */}
+              <div className="border-r border-slate-200 text-xs font-bold text-slate-700 font-sans">
+                {HOURS.map((h) => (
+                  <div key={h} className="h-16 flex items-start justify-center pt-1 border-b border-slate-200">
+                    {`${h}:00`}
+                  </div>
+                ))}
+              </div>
+
+              {/* 7 Columns for Days */}
+              {Array.from({ length: 7 }).map((_, dayIdx) => {
+                const dayOfWeekNum = dayIdx + 1;
+                const dayItems = displaySchedules.filter((s) => Number(s.dayOfWeek) === dayOfWeekNum);
+
+                return (
+                  <div key={dayIdx} className="relative border-r border-slate-200 min-h-[448px]">
+                    {/* Horizontal hour lines */}
+                    {HOURS.map((h) => (
+                      <div key={h} className="h-16 border-b border-slate-200/80" />
+                    ))}
+
+                    {/* Schedule Cards matching screenshot */}
+                    {dayItems.map((item, itemIdx) => {
+                      const style = CARD_STYLES[(item.clazzId || item.id || itemIdx) % CARD_STYLES.length];
+                      const topOffset = parseTimeToOffset(item.startTime, 6) * 64;
+                      const durationHours = calculateDuration(item.startTime, item.endTime);
+                      const cardHeight = Math.max(90, durationHours * 64);
+
+                      return (
+                        <div
+                          key={item.id || itemIdx}
+                          style={{ top: `${topOffset}px`, height: `${cardHeight}px` }}
+                          onClick={() => onSelectSchedule?.(item)}
+                          className={`absolute left-0.5 right-0.5 z-10 flex flex-col overflow-hidden bg-white border-2 ${style.border} rounded shadow-sm transition hover:shadow-md cursor-pointer`}
+                        >
+                          {/* Colored Header Bar */}
+                          <div className={`px-2 py-1 text-[11px] font-bold text-white truncate flex items-center justify-between ${style.headerBg}`}>
+                            <span className="truncate">{item.className || item.courseTitle}</span>
+                            <span className="shrink-0 text-[10px] font-normal opacity-95 ml-1">{item.startTime} - {item.endTime} ({item.periodLabel})</span>
+                          </div>
+
+                          {/* Card Content - Centered */}
+                          <div className="p-2 flex-1 flex flex-col justify-between text-center text-[11px] space-y-1">
+                            <div>
+                              <div className="font-semibold text-slate-800 text-[11px] leading-tight break-words">
+                                {item.classCode || item.clazzCode}
+                              </div>
+                            </div>
+
+                            <div className="space-y-0.5 text-[11px] text-slate-700 font-medium">
+                              <div className="text-slate-800 font-bold">{item.room || 'Trực tuyến'}</div>
+                              {item.lecturerName && (
+                                <div className="text-slate-600 truncate">{item.lecturerName}</div>
+                              )}
+                            </div>
+
+                            <div className="flex items-center justify-end gap-1 text-[10px] text-slate-400">
+                              <span className="hover:text-slate-600">👍</span>
+                              <span className="hover:text-slate-600">➕</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 );
               })}
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Quick Legend Info Card */}
-          <div className="bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-800/60 dark:to-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 text-xs shadow-md transition-colors space-y-3">
-            <div className="font-bold text-[#00376f] dark:text-blue-400 flex items-center gap-2 text-sm">
-              <span>💡 Ghi chú tiết học</span>
+      {/* Right Soft Blue Sidebar Panel */}
+      <div className="w-full lg:w-72 shrink-0 space-y-4">
+        {/* Soft Blue Mini Calendar Container */}
+        <div className="bg-[#dbe5f9] rounded-xl p-4 shadow-sm">
+          {/* Header Month Nav */}
+          <div className="flex items-center justify-between mb-3 px-1">
+            <span className="text-sm font-bold text-[#00376f]">
+              Tháng {month + 1}-{year}
+            </span>
+            <div className="flex items-center gap-2 text-[#00376f] font-bold text-sm">
+              <button type="button" onClick={prevMonth} className="hover:opacity-75 px-1">‹</button>
+              <button type="button" onClick={nextMonth} className="hover:opacity-75 px-1">›</button>
             </div>
-            <div className="space-y-2 leading-relaxed text-slate-700 dark:text-slate-300">
-              <div className="flex items-center gap-2.5">
-                <span className="h-3 w-3 rounded-full bg-amber-500 shrink-0 shadow-sm shadow-amber-500/50" />
-                <span className="font-medium">Tiết 1 - 6 (Sáng): <strong className="text-slate-900 dark:text-slate-100">06:45 - 12:10</strong></span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <span className="h-3 w-3 rounded-full bg-blue-600 shrink-0 shadow-sm shadow-blue-600/50" />
-                <span className="font-medium">Tiết 7 - 12 (Chiều): <strong className="text-slate-900 dark:text-slate-100">12:30 - 17:55</strong></span>
-              </div>
-            </div>
+          </div>
+
+          {/* Days Header */}
+          <div className="grid grid-cols-7 text-center text-xs font-semibold text-slate-600 mb-2">
+            <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>Cn</span>
+          </div>
+
+          {/* Days Grid */}
+          <div className="grid grid-cols-7 gap-1 text-center text-xs">
+            {calendarDays.map((cd, idx) => {
+              const isSelected = cd.date.toDateString() === currentDate.toDateString();
+
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setCurrentDate(cd.date)}
+                  className={`h-7 w-7 mx-auto flex items-center justify-center rounded-full transition font-medium ${
+                    isSelected
+                      ? 'bg-[#ea580c] text-white font-bold shadow-md'
+                      : cd.isCurrentMonth
+                      ? 'text-slate-800 hover:bg-white/60'
+                      : 'text-slate-400'
+                  }`}
+                >
+                  {cd.dayNum}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
