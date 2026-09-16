@@ -69,7 +69,7 @@ export default function ClazzPermissions() {
       await cpService.grantClazzPermissions(selectedClass, selectedLecturer, permissions);
       setMsg('LÆ°u phĂ¢n quyá»n thĂ nh cĂ´ng!');
     } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'LÆ°u tháº¥t báº¡i');
+      setErr((e as { message?: string })?.message ?? 'Lưu thất bại');
     } finally {
       setSaving(false);
     }
@@ -83,7 +83,7 @@ export default function ClazzPermissions() {
       setPermissions([]);
       setMsg('ÄĂ£ thu há»“i táº¥t cáº£ quyá»n.');
     } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'Thu há»“i tháº¥t báº¡i');
+      setErr((e as { message?: string })?.message ?? 'Thu hồi thất bại');
     }
   };
 
@@ -102,13 +102,13 @@ export default function ClazzPermissions() {
             <h3 className="font-bold text-slate-800 mb-3">Chá»n lá»›p há»c</h3>
             <select value={selectedClass ?? ''} onChange={e => setSelectedClass(Number(e.target.value))}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-violet-500 focus:border-violet-500">
-              {classes.map(c => <option key={c.id} value={c.id}>{c.classCode || c.className || ('Lá»›p #' + c.id)}</option>)}
+              {classes.map(c => <option key={c.id} value={c.id}>{c.classCode || c.className || ('Lớp #' + c.id)}</option>)}
             </select>
           </Card>
 
           <Card>
-            <h3 className="font-bold text-slate-800 mb-3">Giáº£ng viĂªn trong lá»›p</h3>
-            {lecturers.length === 0 ? <Empty msg="KhĂ´ng cĂ³ GV trong lá»›p nĂ y" /> : (
+            <h3 className="font-bold text-slate-800 mb-3">Giảng viên trong lớp</h3>
+            {lecturers.length === 0 ? <Empty msg="Không có GV trong lớp này" /> : (
               <ul className="space-y-2">
                 {lecturers.map(l => (
                   <li key={l.id}>
@@ -132,7 +132,7 @@ export default function ClazzPermissions() {
                 <p className="text-xs text-slate-400 mt-1">{selectedLecturer ? ('User ID: ' + selectedLecturer) : 'ChÆ°a chá»n giáº£ng viĂªn'}</p>
               </div>
               {selectedLecturer && (
-                <button aria-label="button" onClick={handleRevoke} className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 transition">Thu há»“i táº¥t cáº£</button>
+                <button aria-label="button" onClick={handleRevoke} className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 transition">Thu hồi tất cả</button>
               )}
             </div>
 
@@ -149,8 +149,8 @@ export default function ClazzPermissions() {
                           <div className="text-sm font-semibold text-slate-800">{code}</div>
                           <div className="text-xs text-slate-500">
                             {code === 'MANAGE_CONTENT' && 'Quáº£n lĂ½ ná»™i dung (chÆ°Æ¡ng, bĂ i há»c, tĂ i liá»‡u)'}
-                            {code === 'GRADE_STUDENTS' && 'Cháº¥m Ä‘iá»ƒm sinh viĂªn'}
-                            {code === 'MANAGE_ATTENDANCE' && 'Quáº£n lĂ½ Ä‘iá»ƒm danh'}
+                            {code === 'GRADE_STUDENTS' && 'Chấm điểm sinh viên'}
+                            {code === 'MANAGE_ATTENDANCE' && 'Quản lý điểm danh'}
                             {code === 'VIEW_REPORTS' && 'Xem bĂ¡o cĂ¡o lá»›p há»c'}
                           </div>
                         </div>
