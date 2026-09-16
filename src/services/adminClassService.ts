@@ -2,8 +2,7 @@ import { apiClient, unwrap } from './api/client';
 
 export interface AdminClassRequest {
   className: string;
-  facultyId?: number;
-  advisorId?: number;
+  faculty?: string;
   academicYear?: string;
 }
 
