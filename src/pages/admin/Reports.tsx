@@ -29,7 +29,7 @@ export default function AdminReports() {
   const [scanResult, setScanResult] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'reports' | 'tuition'>('reports');
   const [tuitionRates, setTuitionRates] = useState<TuitionRate[]>([]);
-  const [loadingTuition, setLoadingTuition] = useState(false);
+  const [loadingTuition, setLoadingTuition] = useState(true);
   const [editRateId, setEditRateId] = useState<number | null>(null);
   const [editRateYear, setEditRateYear] = useState('');
   const [editRatePrice, setEditRatePrice] = useState(0);
@@ -54,13 +54,29 @@ export default function AdminReports() {
 
   useEffect(() => {
     let m = true;
-    Promise.all([reportService.getEnrollmentsByMonth(), reportService.getAverageScoreByClazz()])
-      .then(([e, s]) => m && (setEnrolls(e), setScores(s)))
+    Promise.all([
+      reportService.getEnrollmentsByMonth(),
+      reportService.getAverageScoreByClazz(),
+      tuitionService.getTuitionRates(),
+    ])
+      .then(([e, s, t]) => {
+        if (m) {
+          setEnrolls(e);
+          setScores(s);
+          setTuitionRates(t);
+        }
+      })
       .catch((e2) => m && setErr((e2 as { message?: string })?.message ?? 'Lỗi tải báo cáo'))
-      .finally(() => m && setLoading(false));
+      .finally(() => {
+        if (m) {
+          setLoading(false);
+          setLoadingTuition(false);
+        }
+      });
 
-    loadTuitionRates();
-    return () => { m = false; };
+    return () => {
+      m = false;
+    };
   }, []);
 
   const handleExportEnrollments = async () => {
