@@ -41,6 +41,7 @@ export default function AdminCurricula() {
   });
   const [submittingCurr, setSubmittingCurr] = useState(false);
   const [addCourseId, setAddCourseId] = useState<string>('');
+  const [addSemesterNo, setAddSemesterNo] = useState<number>(1);
 
   // Prerequisites state
   const [prereqCourse, setPrereqCourse] = useState<Course | null>(null);
@@ -262,7 +263,12 @@ export default function AdminCurricula() {
   const handleAddCourseToCurr = async () => {
     if (!selectedCurriculum || !addCourseId) return;
     try {
-      await curriculumService.addCourseToCurriculum(selectedCurriculum.id, Number(addCourseId));
+      await curriculumService.addCourseToCurriculum(
+        selectedCurriculum.id,
+        Number(addCourseId),
+        Number(addSemesterNo || 1),
+        true
+      );
       setAddCourseId('');
       reloadCurriculumCourses(selectedCurriculum.id);
     } catch (e: unknown) {
@@ -510,11 +516,11 @@ export default function AdminCurricula() {
                 </div>
 
                 {/* Gán môn học mới vào CTĐT */}
-                <div className="flex gap-2 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200 dark:bg-slate-800 dark:border-slate-700">
+                <div className="flex flex-wrap items-center gap-2 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200 dark:bg-slate-800 dark:border-slate-700">
                   <select
                     value={addCourseId}
                     onChange={(e) => setAddCourseId(e.target.value)}
-                    className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm bg-white focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                    className="flex-1 min-w-[200px] rounded-lg border border-slate-300 px-3 py-1.5 text-sm bg-white focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                   >
                     <option value="">-- Chọn môn học để gán vào CTĐT --</option>
                     {courses
@@ -525,6 +531,19 @@ export default function AdminCurricula() {
                         </option>
                       ))}
                   </select>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Học kỳ:</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={addSemesterNo}
+                      onChange={(e) => setAddSemesterNo(Number(e.target.value))}
+                      className="w-16 rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-center bg-white focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                    />
+                  </div>
+
                   <button
                     type="button"
                     onClick={handleAddCourseToCurr}

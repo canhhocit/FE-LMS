@@ -14,8 +14,13 @@ export const removeCourseFromCurriculum = async (curriculumId: number, courseId:
   await apiClient.delete(`/admin/curricula/${curriculumId}/courses/${courseId}`);
 };
 
-export const addCourseToCurriculum = async (curriculumId: number, courseId: number): Promise<void> => {
-  await apiClient.post(`/admin/curricula/${curriculumId}/courses`, { courseId });
+export const addCourseToCurriculum = async (
+  curriculumId: number,
+  courseId: number,
+  semesterNo: number = 1,
+  isRequired: boolean = true
+): Promise<void> => {
+  await apiClient.post(`/admin/curricula/${curriculumId}/courses`, { courseId, semesterNo, isRequired });
 };
 
 export const getPrerequisites = async (id: number): Promise<Prerequisite[]> => unwrap(apiClient.get(`/courses/${id}/prerequisites`));
