@@ -47,6 +47,8 @@ export interface User {
   adminClassId?: number;
   adminClassName?: string;
   faculty?: string;
+  dateOfBirth?: string;
+  major?: string;
 }
 export interface SpringPage<T> {
   content: T[];

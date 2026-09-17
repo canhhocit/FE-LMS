@@ -25,6 +25,8 @@ export interface UserCreateRequest {
   faculty?: string;
   major?: string;
   dateOfBirth?: string;
+  adminClassId?: number;
+  adminClassName?: string;
 }
 
 export const createUser = async (data: UserCreateRequest): Promise<User> =>

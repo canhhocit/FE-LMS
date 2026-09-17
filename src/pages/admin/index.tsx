@@ -1,12 +1,12 @@
-// Admin pages
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import * as clazzService from '../../services/clazzService';
 import * as adminService from '../../services/adminService';
 import { PageTitle, Card, Spinner, Empty, Pill } from '../../components/Layout';
-import { importUsersByRole, exportUsersByRole, resetPassword } from '../../services/userService';
+import { importUsersByRole, exportUsersByRole, resetPassword, createUser, updateUser, updateUserStatus, type UserCreateRequest } from '../../services/userService';
 import * as adminClassService from '../../services/adminClassService';
 import type { AdminClassResponse } from '../../services/adminClassService';
+import { getDepartments, type DepartmentResponse } from '../../services/departmentService';
 import type { Clazz, User, DashboardStats } from '../../types';
 
 export function AdminDashboard() {
@@ -46,6 +46,7 @@ export function AdminUsers() {
   const [kw, setKw] = useState('');
   const [users, setUsers] = useState<User[]>([]);
   const [adminClasses, setAdminClasses] = useState<AdminClassResponse[]>([]);
+  const [departments, setDepartments] = useState<DepartmentResponse[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
@@ -53,8 +54,31 @@ export function AdminUsers() {
   const [importMsg, setImportMsg] = useState<string | null>(null);
   const [resettingId, setResettingId] = useState<number | null>(null);
 
+  // Modal State
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState<'CREATE' | 'EDIT'>('CREATE');
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [submittingUser, setSubmittingUser] = useState(false);
+  const [formErr, setFormErr] = useState<string | null>(null);
+
+  const [userForm, setUserForm] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    role: 'STUDENT' as 'STUDENT' | 'LECTURER',
+    studentCode: '',
+    lecturerCode: '',
+    classMode: 'EXISTING' as 'EXISTING' | 'NEW',
+    adminClassId: '',
+    adminClassName: '',
+    faculty: '',
+    dateOfBirth: '',
+    active: true,
+  });
+
   useEffect(() => {
     adminClassService.getAllAdminClasses().then((list) => setAdminClasses(list)).catch(() => setAdminClasses([]));
+    getDepartments().then((deps) => setDepartments(deps)).catch(() => setDepartments([]));
   }, []);
 
   const load = useCallback(() => {
@@ -68,6 +92,97 @@ export function AdminUsers() {
     const cleanup = load();
     return cleanup;
   }, [load]);
+
+  const openCreateModal = () => {
+    setModalMode('CREATE');
+    setEditingUser(null);
+    setUserForm({
+      fullName: '',
+      email: '',
+      password: '',
+      role: tab,
+      studentCode: '',
+      lecturerCode: '',
+      classMode: 'EXISTING',
+      adminClassId: adminClasses.length > 0 ? String(adminClasses[0].id) : '',
+      adminClassName: '',
+      faculty: departments.length > 0 ? departments[0].name : '',
+      dateOfBirth: '',
+      active: true,
+    });
+    setFormErr(null);
+    setShowModal(true);
+  };
+
+  const openEditModal = (u: User) => {
+    setModalMode('EDIT');
+    setEditingUser(u);
+    setUserForm({
+      fullName: u.fullName || '',
+      email: u.email || '',
+      password: '',
+      role: (u.role === 'LECTURER' ? 'LECTURER' : 'STUDENT') as 'STUDENT' | 'LECTURER',
+      studentCode: u.studentCode || '',
+      lecturerCode: u.lecturerCode || '',
+      classMode: u.adminClassId ? 'EXISTING' : (u.adminClassName ? 'NEW' : 'EXISTING'),
+      adminClassId: u.adminClassId ? String(u.adminClassId) : (adminClasses.length > 0 ? String(adminClasses[0].id) : ''),
+      adminClassName: u.adminClassName || '',
+      faculty: u.faculty || (departments.length > 0 ? departments[0].name : ''),
+      dateOfBirth: u.dateOfBirth || '',
+      active: u.active !== false,
+    });
+    setFormErr(null);
+    setShowModal(true);
+  };
+
+  const handleSaveUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userForm.fullName.trim()) { setFormErr('Vui lòng nhập họ tên'); return; }
+    if (!userForm.email.trim()) { setFormErr('Vui lòng nhập email'); return; }
+
+    setSubmittingUser(true);
+    setFormErr(null);
+    try {
+      const payload: UserCreateRequest = {
+        fullName: userForm.fullName.trim(),
+        email: userForm.email.trim(),
+        role: userForm.role,
+        password: userForm.password || undefined,
+        dateOfBirth: userForm.dateOfBirth || undefined,
+      };
+
+      if (userForm.role === 'STUDENT') {
+        payload.studentCode = userForm.studentCode.trim() || undefined;
+        if (userForm.classMode === 'EXISTING' && userForm.adminClassId) {
+          payload.adminClassId = Number(userForm.adminClassId);
+        } else if (userForm.classMode === 'NEW' && userForm.adminClassName.trim()) {
+          payload.adminClassName = userForm.adminClassName.trim();
+        }
+      } else if (userForm.role === 'LECTURER') {
+        payload.lecturerCode = userForm.lecturerCode.trim() || undefined;
+        payload.faculty = userForm.faculty.trim() || undefined;
+      }
+
+      if (modalMode === 'CREATE') {
+        await createUser(payload);
+        setImportMsg(`Tạo người dùng ${payload.fullName} thành công.`);
+      } else if (editingUser) {
+        await updateUser(editingUser.id, payload);
+        if (editingUser.active !== userForm.active) {
+          await updateUserStatus(editingUser.id, userForm.active ? 'ACTIVE' : 'INACTIVE');
+        }
+        setImportMsg(`Cập nhật thông tin cho ${payload.fullName} thành công.`);
+      }
+
+      setShowModal(false);
+      adminClassService.getAllAdminClasses().then((list) => setAdminClasses(list)).catch(() => {});
+      load();
+    } catch (err: unknown) {
+      setFormErr((err as { message?: string })?.message ?? 'Lưu thông tin thất bại.');
+    } finally {
+      setSubmittingUser(false);
+    }
+  };
 
   const handleImport = async () => {
     if (!selectedFile) {
@@ -157,7 +272,18 @@ export function AdminUsers() {
       </div>
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <label className="inline-flex items-center gap-2 rounded border border-dashed border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 cursor-pointer">
+        <button
+          type="button"
+          onClick={openCreateModal}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-500 shadow-sm transition"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+          Tạo người dùng thủ công
+        </button>
+
+        <div className="h-4 w-px bg-slate-200 mx-1 hidden sm:block"></div>
+
+        <label className="inline-flex items-center gap-2 rounded border border-dashed border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 cursor-pointer hover:border-indigo-300">
           <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)} />
           {selectedFile ? selectedFile.name : 'Chọn file Excel'}
         </label>
@@ -208,19 +334,23 @@ export function AdminUsers() {
                     </td>
                     <td className="p-3 text-center"><Pill color={u.active !== false ? 'green' : 'red'}>{u.active !== false ? 'Active' : 'Inactive'}</Pill></td>
                     <td className="p-3 text-center">
-                      <button
-                        type="button"
-                        onClick={() => void handleResetPassword(u)}
-                        disabled={resettingId === u.id}
-                        className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300 disabled:opacity-50 transition"
-                      >
-                        {resettingId === u.id ? 'Đang reset...' : (
-                          <span className="inline-flex items-center gap-1">
-                            <svg className="h-3.5 w-3.5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m-5 4a5 5 0 01-5-5 5 5 0 015-5 5 5 0 015 5 5 5 0 01-5 5zm0 0v1a2 2 0 01-2 2h-2a2 2 0 00-2 2v3h2v-2h2v-2h2a2 2 0 002-2v-1.333a5.05 5.05 0 001.36-.67l1.36 1.36a1 1 0 001.414 0l1.414-1.414a1 1 0 000-1.414l-1.36-1.36a5.05 5.05 0 00.67-1.36H15z" /></svg>
-                            Reset MK
-                          </span>
-                        )}
-                      </button>
+                      <div className="inline-flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(u)}
+                          className="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition"
+                        >
+                          Sửa
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void handleResetPassword(u)}
+                          disabled={resettingId === u.id}
+                          className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-50 transition"
+                        >
+                          {resettingId === u.id ? 'Đang reset...' : 'Reset MK'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -229,6 +359,252 @@ export function AdminUsers() {
           </div>
         )}
       </Card>
+
+      {/* Modal Tạo / Chỉnh sửa người dùng */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-800 border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-700">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
+                {modalMode === 'CREATE' ? 'Tạo người dùng mới' : 'Chỉnh sửa người dùng'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl font-bold"
+              >
+                &times;
+              </button>
+            </div>
+
+            {formErr && (
+              <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+                {formErr}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveUser} className="mt-4 space-y-4">
+              {modalMode === 'CREATE' && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Vai trò
+                  </label>
+                  <div className="flex gap-4">
+                    <label className="inline-flex items-center gap-1.5 text-sm cursor-pointer text-slate-700 dark:text-slate-300">
+                      <input
+                        type="radio"
+                        name="userRole"
+                        value="STUDENT"
+                        checked={userForm.role === 'STUDENT'}
+                        onChange={() => setUserForm({ ...userForm, role: 'STUDENT' })}
+                      />
+                      Sinh viên
+                    </label>
+                    <label className="inline-flex items-center gap-1.5 text-sm cursor-pointer text-slate-700 dark:text-slate-300">
+                      <input
+                        type="radio"
+                        name="userRole"
+                        value="LECTURER"
+                        checked={userForm.role === 'LECTURER'}
+                        onChange={() => setUserForm({ ...userForm, role: 'LECTURER' })}
+                      />
+                      Giảng viên
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Họ và tên <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={userForm.fullName}
+                  onChange={(e) => setUserForm({ ...userForm, fullName: e.target.value })}
+                  placeholder="Ví dụ: Nguyễn Văn A"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Email <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={userForm.email}
+                  onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                  placeholder="Ví dụ: sv.nguyenvana@learninghub.edu.vn"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                />
+              </div>
+
+              {modalMode === 'CREATE' && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Mật khẩu <span className="text-slate-400 font-normal">(Mặc định: 123456)</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={userForm.password}
+                    onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                    placeholder="Bỏ trống để dùng mật khẩu mặc định"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    {userForm.role === 'STUDENT' ? 'Mã sinh viên' : 'Mã giảng viên'}
+                  </label>
+                  <input
+                    type="text"
+                    value={userForm.role === 'STUDENT' ? userForm.studentCode : userForm.lecturerCode}
+                    onChange={(e) => setUserForm({
+                      ...userForm,
+                      [userForm.role === 'STUDENT' ? 'studentCode' : 'lecturerCode']: e.target.value
+                    })}
+                    placeholder={userForm.role === 'STUDENT' ? 'SV001' : 'GV001'}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Ngày sinh
+                  </label>
+                  <input
+                    type="date"
+                    value={userForm.dateOfBirth}
+                    onChange={(e) => setUserForm({ ...userForm, dateOfBirth: e.target.value })}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  />
+                </div>
+              </div>
+
+              {userForm.role === 'STUDENT' && (
+                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3.5 dark:border-slate-700 dark:bg-slate-800/40">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-2">
+                    Lớp hành chính
+                  </label>
+                  <div className="flex gap-4 mb-2.5">
+                    <label className="inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer text-slate-700 dark:text-slate-300">
+                      <input
+                        type="radio"
+                        name="classMode"
+                        value="EXISTING"
+                        checked={userForm.classMode === 'EXISTING'}
+                        onChange={() => setUserForm({ ...userForm, classMode: 'EXISTING' })}
+                      />
+                      Lớp đã có
+                    </label>
+                    <label className="inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer text-slate-700 dark:text-slate-300">
+                      <input
+                        type="radio"
+                        name="classMode"
+                        value="NEW"
+                        checked={userForm.classMode === 'NEW'}
+                        onChange={() => setUserForm({ ...userForm, classMode: 'NEW' })}
+                      />
+                      + Tạo lớp mới
+                    </label>
+                  </div>
+
+                  {userForm.classMode === 'EXISTING' ? (
+                    <select
+                      value={userForm.adminClassId}
+                      onChange={(e) => setUserForm({ ...userForm, adminClassId: e.target.value })}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                    >
+                      <option value="">-- Chọn lớp hành chính --</option>
+                      {adminClasses.map((ac) => (
+                        <option key={ac.id} value={ac.id}>
+                          {ac.className} ({ac.code || ac.id})
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={userForm.adminClassName}
+                      onChange={(e) => setUserForm({ ...userForm, adminClassName: e.target.value })}
+                      placeholder="Nhập tên lớp mới (Ví dụ: 62PM1, CNTT1-K62)"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                    />
+                  )}
+                </div>
+              )}
+
+              {userForm.role === 'LECTURER' && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Khoa / Bộ môn
+                  </label>
+                  {departments.length > 0 ? (
+                    <select
+                      value={userForm.faculty}
+                      onChange={(e) => setUserForm({ ...userForm, faculty: e.target.value })}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                    >
+                      <option value="">-- Chọn Khoa / Bộ môn --</option>
+                      {departments.map((dep) => (
+                        <option key={dep.id} value={dep.name}>
+                          {dep.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={userForm.faculty}
+                      onChange={(e) => setUserForm({ ...userForm, faculty: e.target.value })}
+                      placeholder="Ví dụ: Công nghệ thông tin"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                    />
+                  )}
+                </div>
+              )}
+
+              {modalMode === 'EDIT' && (
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="userActiveCheck"
+                    checked={userForm.active}
+                    onChange={(e) => setUserForm({ ...userForm, active: e.target.checked })}
+                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <label htmlFor="userActiveCheck" className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                    Hoạt động (Active)
+                  </label>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingUser}
+                  className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+                >
+                  {submittingUser ? 'Đang lưu...' : (modalMode === 'CREATE' ? 'Tạo mới' : 'Cập nhật')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
