@@ -238,7 +238,7 @@ export default function StudentRegistrations() {
               <p className="text-xs text-slate-500">Các lớp học phần nằm trong hồ sơ đăng ký kỳ này của bạn.</p>
             </div>
             <div className="flex gap-2">
-              <Pill intent="info">{myRegistrations.length} lớp học phần</Pill>
+              <Pill intent="neutral">{myRegistrations.length} lớp học phần</Pill>
               <Pill intent="success">Tổng: {totalRegisteredCredits} tín chỉ</Pill>
             </div>
           </div>

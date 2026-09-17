@@ -1,5 +1,5 @@
-// Student Transcript / GPA page
 import { useEffect, useState } from 'react';
+import { Download } from 'lucide-react';
 import * as reportService from '../../services/reportService';
 import { PageTitle, Card, Spinner, Empty, Pill } from '../../components/Layout';
 import type { AcademicStatus, TranscriptItem, GradingPolicy } from '../../types';
@@ -11,6 +11,26 @@ export default function StudentTranscript() {
   const [status, setStatus] = useState<AcademicStatus | null>(null);
   const [policy, setPolicy] = useState<GradingPolicy | null>(null);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    try {
+      setDownloading(true);
+      const blob = await reportService.exportScorePdf();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Bang_Diem_Sinh_Vien_${new Date().toISOString().slice(0, 10)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (_) {
+      alert('Không thể tải PDF bảng điểm lúc này. Vui lòng thử lại sau.');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   useEffect(() => {
     let m = true;
@@ -43,7 +63,18 @@ export default function StudentTranscript() {
 
   return (
     <div>
-      <PageTitle>Bảng điểm (Transcript)</PageTitle>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <PageTitle>Bảng điểm (Transcript)</PageTitle>
+        <button
+          type="button"
+          onClick={handleDownloadPdf}
+          disabled={downloading}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-semibold rounded-xl shadow-md transition disabled:opacity-50 cursor-pointer"
+        >
+          <Download className="w-4 h-4" />
+          {downloading ? 'Đang tạo PDF...' : 'Tải Bảng điểm PDF'}
+        </button>
+      </div>
       {policy !== undefined && (
         <div className="mb-4 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-800 flex justify-between items-center shadow-sm">
           <span className="font-semibold text-blue-900">Trọng số tính điểm áp dụng:</span>

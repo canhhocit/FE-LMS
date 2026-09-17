@@ -587,7 +587,7 @@ export function AdminUsers() {
                       <option value="">-- Chọn lớp hành chính --</option>
                       {adminClasses.map((ac) => (
                         <option key={ac.id} value={ac.id}>
-                          {ac.className} ({ac.code || ac.id})
+                          {ac.className} (ID: {ac.id})
                         </option>
                       ))}
                     </select>

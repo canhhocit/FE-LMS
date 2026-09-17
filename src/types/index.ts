@@ -209,6 +209,7 @@ export interface TuitionInvoice {
   amount: number;
   status: string;
   paidAt?: string;
+  dueDate?: string;
 }
 
 export interface TuitionRate {

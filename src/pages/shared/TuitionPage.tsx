@@ -271,7 +271,7 @@ export default function TuitionPage() {
           <Card>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-lg">Danh sách hóa đơn học phí</h3>
-              <Pill intent="info">{invoices.length} kỳ học</Pill>
+              <Pill intent="neutral">{invoices.length} kỳ học</Pill>
             </div>
 
             {invoices.length === 0 ? (
@@ -287,7 +287,7 @@ export default function TuitionPage() {
                           <span className="font-bold text-slate-800 dark:text-slate-100 text-base">{i.semester} · Năm học {i.academicYear}</span>
                           <div className="text-xs text-slate-500 mt-0.5">Mã hóa đơn: #TUITION-{i.id}</div>
                         </div>
-                        <Pill intent={isPaid ? 'success' : 'danger'}>
+                        <Pill intent={isPaid ? 'success' : 'warn'}>
                           {isPaid ? 'ĐÃ THANH TOÁN' : 'CHƯA THANH TOÁN'}
                         </Pill>
                       </div>
