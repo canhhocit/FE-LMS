@@ -102,39 +102,47 @@ export default function LecturerProfile() {
           </button>
         </div>
         <div className="grid md:grid-cols-2 gap-3 text-sm">
-          <div>
-            <div className="text-xs text-slate-400">Mã giảng viên</div>
-            <div className="mt-1">{profile.lecturerCode ?? '-'}</div>
+          <div className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/70">
+            <div className="text-xs font-semibold text-slate-600 mb-1">Mã giảng viên</div>
+            <div className="text-sm font-semibold text-slate-900">{profile.lecturerCode ?? 'Chưa cấp'}</div>
           </div>
-          <div>
-            <div className="text-xs text-slate-400">Email hệ thống</div>
-            <div className="mt-1">{profile.email}</div>
+          <div className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/70">
+            <div className="text-xs font-semibold text-slate-600 mb-1">Email hệ thống</div>
+            <div className="text-sm font-semibold text-slate-900">{profile.email}</div>
           </div>
-          <div>
-            <div className="text-xs text-slate-400">Email cá nhân (nhận thông báo & quên mật khẩu)</div>
+          <div className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/70">
+            <div className="text-xs font-semibold text-slate-600 mb-1">Email cá nhân (nhận thông báo & quên mật khẩu)</div>
             {editing ? (
               <input
                 type="email"
                 value={form.personalEmail ?? profile.personalEmail ?? ''}
                 onChange={(e) => setForm({ ...form, personalEmail: e.target.value })}
-                className="mt-1 w-full px-2 py-1.5 bg-white border border-slate-200 rounded text-sm"
+                className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="VD: email@gmail.com"
               />
             ) : (
-              <div className="mt-1">{profile.personalEmail ?? '-'}</div>
+              <div className={`text-sm font-semibold ${profile.personalEmail ? 'text-slate-900' : 'text-slate-400 italic'}`}>
+                {profile.personalEmail ?? 'Chưa cập nhật'}
+              </div>
             )}
           </div>
-          <div>
-            <div className="text-xs text-slate-400">Khoa</div>
-            <div className="mt-1">{profile.faculty ?? '-'}</div>
+          <div className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/70">
+            <div className="text-xs font-semibold text-slate-600 mb-1">Khoa</div>
+            <div className={`text-sm font-semibold ${profile.faculty ? 'text-slate-900' : 'text-slate-400 italic'}`}>
+              {profile.faculty ?? 'Chưa cập nhật'}
+            </div>
           </div>
-          <div>
-            <div className="text-xs text-slate-400">Chuyên ngành</div>
-            <div className="mt-1">{profile.major ?? '-'}</div>
+          <div className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/70">
+            <div className="text-xs font-semibold text-slate-600 mb-1">Chuyên ngành</div>
+            <div className={`text-sm font-semibold ${profile.major ? 'text-slate-900' : 'text-slate-400 italic'}`}>
+              {profile.major ?? 'Chưa cập nhật'}
+            </div>
           </div>
-          <div>
-            <div className="text-xs text-slate-400">Ngày sinh</div>
-            <div className="mt-1">{profile.dateOfBirth ?? '-'}</div>
+          <div className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/70">
+            <div className="text-xs font-semibold text-slate-600 mb-1">Ngày sinh</div>
+            <div className={`text-sm font-semibold ${profile.dateOfBirth ? 'text-slate-900' : 'text-slate-400 italic'}`}>
+              {profile.dateOfBirth ?? 'Chưa cập nhật'}
+            </div>
           </div>
         </div>
         {editing && <button onClick={save} className="mt-3 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium">Lưu thay đổi</button>}

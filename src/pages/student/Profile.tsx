@@ -7,21 +7,25 @@ import type { UpdateProfileRequest, UserProfile } from '../../types';
 
 function Field({ label, value, editing, onChange, type = 'text', options, className = '' }:
   { label: string; value?: string | null; editing?: boolean; onChange?: (v: string) => void; type?: string; options?: string[]; className?: string; }) {
+  const displayVal = value && value.trim() !== '' ? value : null;
   return (
-    <div className={className}>
-      <div className="text-xs text-slate-400">{label}</div>
+    <div className={`p-3 rounded-xl border border-slate-200/80 bg-slate-50/70 shadow-2xs ${className}`}>
+      <div className="text-xs font-semibold text-slate-600 mb-1">{label}</div>
       {editing && onChange ? (
         type === 'select' ? (
           <select value={value ?? ''} onChange={(e) => onChange(e.target.value)}
-            className="mt-1 w-full px-2 py-1.5 bg-white border border-slate-200 rounded text-sm">
+            className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500">
             {options?.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
         ) : (
           <input type={type} value={value ?? ''} onChange={(e) => onChange(e.target.value)}
-            className="mt-1 w-full px-2 py-1.5 bg-white border border-slate-200 rounded text-sm" />
+            placeholder="Nhập thông tin..."
+            className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
         )
       ) : (
-        <div className="mt-1">{value ?? '-'}</div>
+        <div className={`text-sm font-semibold ${displayVal ? 'text-slate-900' : 'text-slate-400 italic'}`}>
+          {displayVal ?? 'Chưa cập nhật'}
+        </div>
       )}
     </div>
   );
