@@ -1,6 +1,7 @@
 // Student pages
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Flame } from "lucide-react";
 import * as clazzService from "../../services/clazzService";
 import * as assessmentService from "../../services/assessmentService";
 import * as gradingService from "../../services/gradingService";
@@ -66,15 +67,6 @@ function BellIcon() {
     <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
       <path d="M7 17.5h10l-1.1-1.5V10a4.9 4.9 0 1 0-9.8 0v6l-1.1 1.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
       <path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function FlameIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7" aria-hidden="true">
-      <path d="M12 2.6c2.1 2.6 3.4 4.2 3.4 6.7 0 2.6-1.6 4.2-3.4 5.4-1.8-1.2-3.4-2.8-3.4-5.4 0-2.5 1.3-4.1 3.4-6.7Z" fill="currentColor" opacity="0.96" />
-      <path d="M12 8.7c2.3 1.6 4.1 3.4 4.1 6 0 3-2.4 5.3-4.1 5.3-1.7 0-4.1-2.3-4.1-5.3 0-2.6 1.8-4.4 4.1-6Z" fill="currentColor" opacity="0.78" />
     </svg>
   );
 }
@@ -252,7 +244,7 @@ export function StudentDashboard() {
         </div>
         <div className="flex items-center gap-3">
           <div className="grid h-14 w-14 place-items-center rounded-2xl bg-linear-to-br from-amber-400 to-orange-500 text-white shadow-[0_10px_20px_rgba(251,146,60,0.28)]">
-            <FlameIcon />
+            <Flame className="w-7 h-7" />
           </div>
           <div>
             <div className="text-2xl font-bold text-slate-800">{learningStreak} ngày</div>

@@ -3,14 +3,14 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Megaphone, CheckCircle2, XCircle, ClipboardList, CalendarCheck2,
-  Save, ChevronRight
+  Save, ChevronRight, Flame
 } from 'lucide-react';
 import * as clazzService from '../../services/clazzService';
 import * as assessmentService from '../../services/assessmentService';
 import * as gradingService from '../../services/gradingService';
 import { useAuth } from '../../contexts/useAuth';
 import { PageTitle, Card, Spinner, Empty, Pill } from '../../components/Layout';
-import { TeacherIcon, FlameIcon, DotIcon } from '../../components/icons';
+import { TeacherIcon, DotIcon } from '../../components/icons';
 import type { Clazz, Assignment, Submission, AttendanceRecord } from '../../types';
 
 export function LecturerDashboard() {
@@ -96,7 +96,7 @@ export function LecturerDashboard() {
           </div>
           <div className="flex items-center gap-3">
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-linear-to-br from-amber-400 to-orange-500 text-white flex-shrink-0">
-              <FlameIcon className="w-7 h-7" />
+              <Flame className="w-7 h-7" />
             </div>
             <div>
               <div className="text-2xl font-bold text-slate-800">{teachingStreak} ngày</div>
