@@ -124,6 +124,7 @@ export default function App() {
             <Route path="/admin/clazz-permissions" element={<ClazzPermissions />} />
             <Route path="/admin/departments" element={<AdminDepartments />} />
             <Route path="/admin/administrative-classes" element={<AdminAdministrativeClasses />} />
+            <Route path="/admin/notifications" element={<NotificationsPage />} />
           </Route>
 
           <Route path="*" element={<NotFoundPage />} />

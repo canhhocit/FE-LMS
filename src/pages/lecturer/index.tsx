@@ -294,6 +294,8 @@ export function LecturerGrading() {
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [loading, setLoading] = useState(true);
+  const [publishing, setPublishing] = useState(false);
+  const [publishMsg, setPublishMsg] = useState<string | null>(null);
 
   useEffect(() => {
     let m = true;
@@ -341,17 +343,49 @@ export function LecturerGrading() {
     alert('Đã lưu điểm danh');
   };
 
+  const handlePublishGrades = async () => {
+    if (!selectedClass) return;
+    if (!window.confirm('Công bố điểm sẽ gửi thông báo đến tất cả sinh viên và không thể thu hồi. Bạn có chắc chắn?')) return;
+    setPublishing(true);
+    setPublishMsg(null);
+    try {
+      await gradingService.publishGrades(selectedClass);
+      setPublishMsg('✅ Đã công bố điểm thành công! Sinh viên đã được thông báo.');
+    } catch (e: unknown) {
+      setPublishMsg('❌ ' + ((e as { message?: string })?.message ?? 'Công bố điểm thất bại'));
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   if (loading) return <Spinner />;
   return (
     <div>
-      <PageTitle>Chấm điểm & Điểm danh</PageTitle>
-      <div className="mb-4 flex gap-2 items-center">
-        <label className="text-sm text-slate-400">Lớp:</label>
-        <select value={selectedClass ?? ''} onChange={(e) => setSelectedClass(Number(e.target.value))}
-          className="bg-white border border-slate-200 rounded px-2 py-1 text-sm">
-          {classes.map((c) => <option key={c.id} value={c.id}>{c.classCode} — {c.className}</option>)}
-        </select>
+      <PageTitle>Chấm điểm &amp; Điểm danh</PageTitle>
+      <div className="mb-4 flex flex-wrap gap-3 items-center">
+        <div className="flex gap-2 items-center">
+          <label className="text-sm text-slate-400">Lớp:</label>
+          <select value={selectedClass ?? ''} onChange={(e) => setSelectedClass(Number(e.target.value))}
+            className="bg-white border border-slate-200 rounded px-2 py-1 text-sm">
+            {classes.map((c) => <option key={c.id} value={c.id}>{c.classCode} — {c.className}</option>)}
+          </select>
+        </div>
+        <button
+          onClick={handlePublishGrades}
+          disabled={publishing || !selectedClass}
+          className="ml-auto flex items-center gap-2 px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-medium transition"
+        >
+          {publishing ? (
+            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          ) : '📢'}
+          {publishing ? 'Đang công bố...' : 'Công bố điểm'}
+        </button>
       </div>
+      {publishMsg && (
+        <div className={`mb-3 px-4 py-2 rounded-xl text-sm font-medium ${publishMsg.startsWith('✅') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
+          {publishMsg}
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-4">
         <Card>

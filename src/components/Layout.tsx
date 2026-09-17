@@ -174,6 +174,7 @@ const NAV: Record<Role, NavSection[]> = {
         { to: '/student/classes', label: 'Lớp học', icon: BookOpenIcon },
         { to: '/student/schedule', label: 'Thời khoá biểu', icon: CalendarIcon },
         { to: '/student/grades', label: 'Kết quả học tập', icon: BarChartIcon },
+        { to: '/student/transcript', label: 'Bảng điểm', icon: GraduationCapIcon },
         { to: '/student/tuition', label: 'Học phí', icon: FileTextIcon },
         { to: '/student/registration', label: 'Đăng ký học', icon: BookOpenIcon },
         { to: '/student/ai-advisor', label: 'Cố vấn học tập AI', icon: BrainIcon },
