@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { Search, ListChecks } from 'lucide-react';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import * as registrationService from '../../services/registrationService';
 import type { Registration, RegistrationPeriod, Clazz } from '../../types';
@@ -148,19 +149,20 @@ export default function StudentRegistrations() {
         </div>
       )}
 
-      {/* Navigation Tabs */}
       <div className="mb-4 flex border-b border-slate-200 dark:border-slate-800">
         <button
           onClick={() => setTab('REGISTER')}
-          className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-colors ${tab === 'REGISTER' ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-colors flex items-center gap-1.5 ${tab === 'REGISTER' ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
         >
-          🔍 Đăng ký Lớp học phần mới ({availableClasses.length})
+          <Search className="w-3.5 h-3.5" />
+          Đăng ký Lớp học phần mới ({availableClasses.length})
         </button>
         <button
           onClick={() => setTab('MY_REGISTRATIONS')}
-          className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-colors ${tab === 'MY_REGISTRATIONS' ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-colors flex items-center gap-1.5 ${tab === 'MY_REGISTRATIONS' ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
         >
-          📋 Học phần đã đăng ký ({myRegistrations.length} lớp · {totalRegisteredCredits} tín)
+          <ListChecks className="w-3.5 h-3.5" />
+          Học phần đã đăng ký ({myRegistrations.length} lớp · {totalRegisteredCredits} tín)
         </button>
       </div>
 

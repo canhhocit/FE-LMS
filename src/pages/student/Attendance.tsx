@@ -1,5 +1,6 @@
 // Student Attendance page - full per-session view
 import { useEffect, useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import * as clazzService from '../../services/clazzService';
 import * as gradingService from '../../services/gradingService';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
@@ -119,8 +120,9 @@ export default function StudentAttendance() {
                 />
               </div>
               {absentCount / totalSessions > 0.2 && (
-                <p className="mt-2 text-xs text-rose-600 dark:text-rose-400 font-medium">
-                  ⚠️ Tỷ lệ vắng mặt vượt 20% — có thể ảnh hưởng đến điểm và tư cách dự thi.
+                <p className="mt-2 text-xs text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  Tỷ lệ vắng mặt vượt 20% — có thể ảnh hưởng đến điểm và tư cách dự thi.
                 </p>
               )}
             </Card>

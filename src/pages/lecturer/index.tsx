@@ -1,6 +1,10 @@
 // Lecturer pages
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  Megaphone, CheckCircle2, XCircle, ClipboardList, CalendarCheck2,
+  Save, ChevronRight
+} from 'lucide-react';
 import * as clazzService from '../../services/clazzService';
 import * as assessmentService from '../../services/assessmentService';
 import * as gradingService from '../../services/gradingService';
@@ -350,9 +354,9 @@ export function LecturerGrading() {
     setPublishMsg(null);
     try {
       await gradingService.publishGrades(selectedClass);
-      setPublishMsg('✅ Đã công bố điểm thành công! Sinh viên đã được thông báo.');
+      setPublishMsg('success:Đã công bố điểm thành công! Sinh viên đã được thông báo.');
     } catch (e: unknown) {
-      setPublishMsg('❌ ' + ((e as { message?: string })?.message ?? 'Công bố điểm thất bại'));
+      setPublishMsg('error:' + ((e as { message?: string })?.message ?? 'Công bố điểm thất bại'));
     } finally {
       setPublishing(false);
     }
@@ -377,19 +381,31 @@ export function LecturerGrading() {
         >
           {publishing ? (
             <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-          ) : '📢'}
+          ) : <Megaphone className="w-4 h-4" />}
           {publishing ? 'Đang công bố...' : 'Công bố điểm'}
         </button>
       </div>
-      {publishMsg && (
-        <div className={`mb-3 px-4 py-2 rounded-xl text-sm font-medium ${publishMsg.startsWith('✅') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
-          {publishMsg}
-        </div>
-      )}
+      {publishMsg && (() => {
+        const isSuccess = publishMsg.startsWith('success:');
+        const msg = publishMsg.replace(/^(success|error):/, '');
+        return (
+          <div className={`mb-3 px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 ${
+            isSuccess ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
+          }`}>
+            {isSuccess
+              ? <CheckCircle2 className="w-4 h-4 shrink-0" />
+              : <XCircle className="w-4 h-4 shrink-0" />}
+            {msg}
+          </div>
+        );
+      })()}
 
       <div className="grid lg:grid-cols-2 gap-4">
         <Card>
-          <h3 className="font-semibold mb-3">📝 Bài nộp cần chấm ({subs.filter(s => s.score == null).length})</h3>
+          <h3 className="font-semibold mb-3 flex items-center gap-2">
+            <ClipboardList className="w-4 h-4 text-indigo-500" />
+            Bài nộp cần chấm ({subs.filter(s => s.score == null).length})
+          </h3>
           {subs.length === 0 ? <Empty msg="Chưa có bài nộp" /> : (
             <div className="space-y-2 max-h-125 overflow-auto">
               {subs.map((s) => (
@@ -437,7 +453,10 @@ export function LecturerGrading() {
 
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold">📋 Điểm danh</h3>
+            <h3 className="font-semibold flex items-center gap-2">
+              <CalendarCheck2 className="w-4 h-4 text-indigo-500" />
+              Điểm danh
+            </h3>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
               className="bg-white border border-slate-200 rounded px-2 py-1 text-sm" />
           </div>
@@ -463,7 +482,10 @@ export function LecturerGrading() {
               </tbody>
             </table>
           )}
-          <button onClick={saveAtt} className="mt-3 px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-sm">Lưu điểm danh</button>
+          <button onClick={saveAtt} className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-sm text-white transition">
+            <Save className="w-3.5 h-3.5" />
+            Lưu điểm danh
+          </button>
         </Card>
       </div>
     </div>

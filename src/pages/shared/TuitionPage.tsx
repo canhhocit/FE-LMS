@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { Printer, CheckCircle, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import * as tuitionService from '../../services/tuitionService';
 import type { TuitionInvoice, TuitionRate } from '../../types';
@@ -33,10 +34,11 @@ function printInvoice(inv: TuitionInvoice) {
     }
     .page{max-width:680px;margin:32px auto;background:#fff;border-radius:16px;box-shadow:0 4px 30px rgba(0,0,0,0.10);overflow:hidden}
     .header{background:linear-gradient(135deg,#4f46e5,#2563eb);padding:36px 40px;color:#fff}
-    .header-logo{font-size:22px;font-weight:800;margin-bottom:8px}
+    .header-logo{font-size:22px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:10px}
     .header-title{font-size:18px;font-weight:600;opacity:.9}
     .header-sub{font-size:13px;opacity:.7;margin-top:4px}
-    .badge-paid{display:inline-block;background:#ecfdf5;border:1.5px solid #6ee7b7;color:#065f46;font-weight:700;font-size:13px;padding:6px 18px;border-radius:999px;margin:20px 40px 0}
+    .badge-paid{display:inline-flex;align-items:center;gap:8px;background:#ecfdf5;border:1.5px solid #6ee7b7;color:#065f46;font-weight:700;font-size:13px;padding:6px 18px;border-radius:999px;margin:20px 40px 0}
+    .badge-unpaid{display:inline-flex;align-items:center;gap:8px;background:#fef3c7;border:1.5px solid #fde68a;color:#92400e;font-weight:700;font-size:13px;padding:6px 18px;border-radius:999px;margin:20px 40px 0}
     .section{padding:24px 40px}
     .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#94a3b8;margin-bottom:14px}
     .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
@@ -51,7 +53,7 @@ function printInvoice(inv: TuitionInvoice) {
     .total-amount{font-size:24px;font-weight:800;color:#4f46e5}
     .footer{background:#1e293b;padding:20px 40px;text-align:center}
     .footer p{color:#94a3b8;font-size:12px;line-height:1.8}
-    .print-btn{display:block;margin:24px auto 0;padding:10px 32px;background:#4f46e5;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
+    .print-btn{display:inline-flex;align-items:center;gap:8px;margin:24px auto 0;padding:10px 32px;background:#4f46e5;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
     .print-btn:hover{background:#4338ca}
     .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:80px;font-weight:800;color:rgba(79,70,229,0.06);pointer-events:none;user-select:none;white-space:nowrap}
   </style>
@@ -62,13 +64,26 @@ function printInvoice(inv: TuitionInvoice) {
 
     <!-- Header -->
     <div class="header">
-      <div class="header-logo">🎓 LearningHub</div>
+      <div class="header-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+        LearningHub
+      </div>
       <div class="header-title">Hóa đơn thu học phí</div>
       <div class="header-sub">Phòng Tài chính – Kế toán</div>
     </div>
 
-    <!-- Paid badge -->
-    ${inv.status === 'PAID' ? `<div class="badge-paid">✅ Đã thanh toán</div>` : `<div style="display:inline-block;background:#fef3c7;border:1.5px solid #fde68a;color:#92400e;font-weight:700;font-size:13px;padding:6px 18px;border-radius:999px;margin:20px 40px 0">⚠️ Chưa thanh toán</div>`}
+    <!-- Status badge -->
+    ${inv.status === 'PAID' ? `
+    <div class="badge-paid" style="display:flex;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Đã thanh toán
+    </div>` : `
+    <div class="badge-unpaid" style="display:flex;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Chưa thanh toán
+    </div>`}
 
     <!-- Invoice meta -->
     <div class="section">
@@ -130,7 +145,12 @@ function printInvoice(inv: TuitionInvoice) {
 
     <!-- Print button (hidden when printing) -->
     <div style="padding:20px 40px;text-align:center" class="no-print">
-      <button class="print-btn" onclick="window.print()">🖨️ In hóa đơn</button>
+      <button class="print-btn" onclick="window.print()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:6px">
+          <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        In hóa đơn
+      </button>
     </div>
   </div>
 
@@ -303,9 +323,7 @@ export default function TuitionPage() {
                             title="In hóa đơn"
                             className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium px-3 py-2 text-sm shadow-sm transition-colors"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                            </svg>
+                            <Printer className="w-4 h-4" />
                             In hóa đơn
                           </button>
                           {!isPaid && (
@@ -413,7 +431,12 @@ export default function TuitionPage() {
                     </svg>
                     Đang xử lý...
                   </>
-                ) : '✅ Xác nhận & In hóa đơn'}
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Xác nhận &amp; In hóa đơn
+                  </span>
+                )}
               </button>
             </div>
           </div>
