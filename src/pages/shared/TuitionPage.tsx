@@ -3,9 +3,156 @@ import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../component
 import * as tuitionService from '../../services/tuitionService';
 import type { TuitionInvoice, TuitionRate } from '../../types';
 
-const fmtMoney = (v: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v);
-const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString('vi-VN') : '—';
+const fmtMoney = (v: number) =>
+  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v);
+const fmtDate = (d?: string) =>
+  d ? new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
 
+// ─── Print Invoice helper ────────────────────────────────────────────────────
+function printInvoice(inv: TuitionInvoice) {
+  const amountStr = fmtMoney(inv.amount);
+  const ppCreditStr = fmtMoney(inv.pricePerCredit);
+  const paidAtStr = fmtDate(inv.paidAt);
+  const dueDateStr = fmtDate(inv.dueDate);
+  const invoiceNo = `#TUITION-${inv.id}`;
+  const now = new Date().toLocaleString('vi-VN');
+
+  const html = `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Hóa đơn học phí – ${invoiceNo}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#1e293b;padding:0}
+    @media print{
+      body{background:#fff;padding:0}
+      .no-print{display:none!important}
+      .page{box-shadow:none;border-radius:0;max-width:100%}
+    }
+    .page{max-width:680px;margin:32px auto;background:#fff;border-radius:16px;box-shadow:0 4px 30px rgba(0,0,0,0.10);overflow:hidden}
+    .header{background:linear-gradient(135deg,#4f46e5,#2563eb);padding:36px 40px;color:#fff}
+    .header-logo{font-size:22px;font-weight:800;margin-bottom:8px}
+    .header-title{font-size:18px;font-weight:600;opacity:.9}
+    .header-sub{font-size:13px;opacity:.7;margin-top:4px}
+    .badge-paid{display:inline-block;background:#ecfdf5;border:1.5px solid #6ee7b7;color:#065f46;font-weight:700;font-size:13px;padding:6px 18px;border-radius:999px;margin:20px 40px 0}
+    .section{padding:24px 40px}
+    .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#94a3b8;margin-bottom:14px}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+    .info-item label{display:block;font-size:11px;color:#94a3b8;margin-bottom:3px}
+    .info-item span{font-size:14px;font-weight:600;color:#1e293b}
+    table{width:100%;border-collapse:collapse}
+    th{text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;padding:10px 0;border-bottom:1.5px solid #e2e8f0}
+    td{padding:12px 0;border-bottom:1px solid #f1f5f9;font-size:14px;color:#334155}
+    td:last-child{text-align:right;font-weight:600}
+    .total-row{background:#f8fafc;padding:18px 40px;display:flex;justify-content:space-between;align-items:center;border-top:2px solid #e2e8f0}
+    .total-label{font-size:14px;color:#64748b;font-weight:600}
+    .total-amount{font-size:24px;font-weight:800;color:#4f46e5}
+    .footer{background:#1e293b;padding:20px 40px;text-align:center}
+    .footer p{color:#94a3b8;font-size:12px;line-height:1.8}
+    .print-btn{display:block;margin:24px auto 0;padding:10px 32px;background:#4f46e5;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
+    .print-btn:hover{background:#4338ca}
+    .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:80px;font-weight:800;color:rgba(79,70,229,0.06);pointer-events:none;user-select:none;white-space:nowrap}
+  </style>
+</head>
+<body>
+  <div class="page" style="position:relative">
+    <div class="watermark">LearningHub</div>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-logo">🎓 LearningHub</div>
+      <div class="header-title">Hóa đơn thu học phí</div>
+      <div class="header-sub">Phòng Tài chính – Kế toán</div>
+    </div>
+
+    <!-- Paid badge -->
+    ${inv.status === 'PAID' ? `<div class="badge-paid">✅ Đã thanh toán</div>` : `<div style="display:inline-block;background:#fef3c7;border:1.5px solid #fde68a;color:#92400e;font-weight:700;font-size:13px;padding:6px 18px;border-radius:999px;margin:20px 40px 0">⚠️ Chưa thanh toán</div>`}
+
+    <!-- Invoice meta -->
+    <div class="section">
+      <div class="section-title">Thông tin hóa đơn</div>
+      <div class="info-grid">
+        <div class="info-item"><label>Mã hóa đơn</label><span>${invoiceNo}</span></div>
+        <div class="info-item"><label>Ngày in</label><span>${now}</span></div>
+        <div class="info-item"><label>Học kỳ</label><span>${inv.semester}</span></div>
+        <div class="info-item"><label>Năm học</label><span>${inv.academicYear}</span></div>
+        <div class="info-item"><label>Hạn thanh toán</label><span>${dueDateStr}</span></div>
+        <div class="info-item"><label>${inv.status === 'PAID' ? 'Ngày thanh toán' : 'Trạng thái'}</label><span>${inv.status === 'PAID' ? paidAtStr : 'Cần thanh toán'}</span></div>
+      </div>
+    </div>
+
+    <!-- Student info -->
+    <div class="section" style="padding-top:0">
+      <div class="section-title">Thông tin sinh viên</div>
+      <div class="info-grid">
+        <div class="info-item"><label>Họ và tên</label><span>${inv.studentFullName ?? '—'}</span></div>
+        <div class="info-item"><label>Mã sinh viên</label><span>${inv.studentId ?? '—'}</span></div>
+      </div>
+    </div>
+
+    <!-- Line items -->
+    <div class="section" style="padding-top:0">
+      <div class="section-title">Chi tiết học phí</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Khoản thu</th>
+            <th>Số lượng</th>
+            <th>Đơn giá</th>
+            <th>Thành tiền</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Học phí tín chỉ – Kỳ ${inv.semester}</td>
+            <td>${inv.totalCredits} tín chỉ</td>
+            <td>${ppCreditStr}</td>
+            <td style="color:#4f46e5;font-weight:700">${amountStr}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Total -->
+    <div class="total-row">
+      <span class="total-label">Tổng cộng phải nộp:</span>
+      <span class="total-amount">${amountStr}</span>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>Hóa đơn này được tạo tự động bởi Hệ thống LearningHub.</p>
+      <p>Mọi thắc mắc vui lòng liên hệ Phòng Tài chính – Kế toán của trường.</p>
+      <p style="color:#475569;font-size:11px;margin-top:8px">no-reply@learninghub.edu.vn</p>
+    </div>
+
+    <!-- Print button (hidden when printing) -->
+    <div style="padding:20px 40px;text-align:center" class="no-print">
+      <button class="print-btn" onclick="window.print()">🖨️ In hóa đơn</button>
+    </div>
+  </div>
+
+  <script>
+    // Auto-trigger print dialog when opened standalone
+    window.onload = () => { };
+  </script>
+</body>
+</html>`;
+
+  const w = window.open('', '_blank', 'width=780,height=900');
+  if (!w) {
+    alert('Vui lòng cho phép mở popup để in hóa đơn.');
+    return;
+  }
+  w.document.write(html);
+  w.document.close();
+  // Small delay so fonts load before print
+  setTimeout(() => w.print(), 600);
+}
+
+// ─── Main component ──────────────────────────────────────────────────────────
 export default function TuitionPage() {
   const [invoices, setInvoices] = useState<TuitionInvoice[]>([]);
   const [rates, setRates] = useState<TuitionRate[]>([]);
@@ -48,7 +195,11 @@ export default function TuitionPage() {
     try {
       const updated = await tuitionService.payMyInvoice(payingInvoice.id);
       setInvoices((prev) => prev.map((inv) => inv.id === updated.id ? updated : inv));
-      setSuccessMsg(`Thanh toán thành công hóa đơn học phí ${updated.semester} - ${updated.academicYear}!`);
+      setSuccessMsg(
+        `Thanh toán thành công! Email xác nhận đã được gửi tới địa chỉ email cá nhân của bạn.`
+      );
+      // Auto-print invoice after payment
+      printInvoice(updated);
       setPayingInvoice(null);
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Thanh toán thất bại');
@@ -60,23 +211,23 @@ export default function TuitionPage() {
   if (loading) return <Spinner />;
   if (err && invoices.length === 0) return <ErrorBox msg={err} />;
 
-  const totalPaid = invoices.reduce((sum, i) => sum + (i.status === 'PAID' ? i.amount : 0), 0);
+  const totalPaid   = invoices.reduce((sum, i) => sum + (i.status === 'PAID' ? i.amount : 0), 0);
   const totalUnpaid = invoices.reduce((sum, i) => sum + (i.status !== 'PAID' ? i.amount : 0), 0);
-  const activeRate = rates.find((r) => r.isActive) ?? rates[0];
+  const activeRate  = rates.find((r) => r.isActive) ?? rates[0];
 
   return (
     <div>
       <PageTitle>Thanh toán Học phí</PageTitle>
-      
+
       {successMsg && (
         <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <svg className="h-5 w-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-5 w-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <span>{successMsg}</span>
           </div>
-          <button onClick={() => setSuccessMsg(null)} className="text-xs font-semibold text-emerald-700 hover:underline">Đóng</button>
+          <button onClick={() => setSuccessMsg(null)} className="text-xs font-semibold text-emerald-700 hover:underline ml-4 shrink-0">Đóng</button>
         </div>
       )}
 
@@ -102,7 +253,7 @@ export default function TuitionPage() {
               <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-lg">Danh sách hóa đơn học phí</h3>
               <Pill intent="info">{invoices.length} kỳ học</Pill>
             </div>
-            
+
             {invoices.length === 0 ? (
               <Empty msg="Hiện tại bạn chưa có hóa đơn học phí nào" />
             ) : (
@@ -140,22 +291,35 @@ export default function TuitionPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-center justify-between pt-1 gap-2 flex-wrap">
                         <div>
                           <span className="text-xs text-slate-500 block">Tổng tiền học phí:</span>
                           <span className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">{fmtMoney(i.amount)}</span>
                         </div>
-                        {!isPaid && (
+                        <div className="flex items-center gap-2">
+                          {/* Print button – always available */}
                           <button
-                            onClick={() => setPayingInvoice(i)}
-                            className="rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 text-sm shadow-sm transition-colors flex items-center gap-1.5"
+                            onClick={() => printInvoice(i)}
+                            title="In hóa đơn"
+                            className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium px-3 py-2 text-sm shadow-sm transition-colors"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                             </svg>
-                            Thanh toán ngay
+                            In hóa đơn
                           </button>
-                        )}
+                          {!isPaid && (
+                            <button
+                              onClick={() => setPayingInvoice(i)}
+                              className="rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 text-sm shadow-sm transition-colors flex items-center gap-1.5"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                              </svg>
+                              Thanh toán ngay
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -190,7 +354,7 @@ export default function TuitionPage() {
       {/* Modal Mô phỏng Cổng thanh toán VNPay / VietQR */}
       {payingInvoice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in duration-150">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <div className="h-9 w-9 rounded-lg bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
@@ -228,27 +392,19 @@ export default function TuitionPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 dark:border-indigo-900/50 dark:bg-indigo-950/30 p-3 text-center">
-                <p className="text-xs text-indigo-800 dark:text-indigo-300 font-medium">Hệ thống đang ở chế độ mô phỏng thanh toán trực tuyến.</p>
-                <p className="text-[11px] text-indigo-600 dark:text-indigo-400 mt-0.5">Nhấn "Xác nhận đã thanh toán" để hoàn tất giao dịch.</p>
+              <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 dark:border-indigo-900/50 dark:bg-indigo-950/30 p-3">
+                <p className="text-xs text-indigo-800 dark:text-indigo-300 font-medium text-center">Hệ thống đang ở chế độ mô phỏng thanh toán trực tuyến.</p>
+                <p className="text-[11px] text-indigo-600 dark:text-indigo-400 mt-0.5 text-center">Sau khi xác nhận, hóa đơn sẽ được in và email xác nhận gửi về địa chỉ email cá nhân.</p>
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setPayingInvoice(null)}
-                disabled={isProcessing}
-                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-              >
+            <div className="mt-4 flex items-center justify-end gap-3">
+              <button type="button" onClick={() => setPayingInvoice(null)} disabled={isProcessing}
+                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
                 Hủy
               </button>
-              <button
-                type="button"
-                onClick={() => void handlePay()}
-                disabled={isProcessing}
-                className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-500 shadow-sm transition disabled:opacity-50 flex items-center gap-2"
-              >
+              <button type="button" onClick={() => void handlePay()} disabled={isProcessing}
+                className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-500 shadow-sm transition disabled:opacity-50 flex items-center gap-2">
                 {isProcessing ? (
                   <>
                     <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
@@ -257,9 +413,7 @@ export default function TuitionPage() {
                     </svg>
                     Đang xử lý...
                   </>
-                ) : (
-                  'Xác nhận đã thanh toán'
-                )}
+                ) : '✅ Xác nhận & In hóa đơn'}
               </button>
             </div>
           </div>
