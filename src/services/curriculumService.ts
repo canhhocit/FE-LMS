@@ -1,11 +1,11 @@
 import { apiClient, unwrap } from './api/client';
-import type { Curriculum, Course, Prerequisite, GradingPolicy, GpaScaleRule } from '../types';
+import type { Curriculum, Course, CurriculumCourseItem, Prerequisite, GradingPolicy, GpaScaleRule } from '../types';
 export const getCurricula = async (): Promise<Curriculum[]> => unwrap(apiClient.get('/admin/curricula'));
 export const getCurriculum = async (id: number): Promise<Curriculum> => unwrap(apiClient.get(`/curricula/${id}`));
 export const createCurriculum = async (data: Omit<Curriculum, 'id'>): Promise<Curriculum> => unwrap(apiClient.post('/admin/curricula', data));
 export const updateCurriculum = async (id: number, data: Partial<Curriculum>): Promise<Curriculum> => unwrap(apiClient.put(`/admin/curricula/${id}`, data));
 export const deleteCurriculum = async (id: number): Promise<void> => { await apiClient.delete(`/admin/curricula/${id}`); };
-export const getCoursesByCurriculum = async (id: number): Promise<Course[]> => unwrap(apiClient.get(`/curricula/${id}/courses`));
+export const getCoursesByCurriculum = async (id: number): Promise<CurriculumCourseItem[]> => unwrap(apiClient.get(`/curricula/${id}/courses`));
 export const getAllCourses = async (): Promise<Course[]> => unwrap(apiClient.get('/admin/courses'));
 export const createCourse = async (data: Omit<Course, 'id' | 'createdAt'>): Promise<Course> => unwrap(apiClient.post('/admin/courses', data));
 export const updateCourse = async (id: number, data: Partial<Course>): Promise<Course> => unwrap(apiClient.put(`/admin/courses/${id}`, data));

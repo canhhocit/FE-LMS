@@ -302,6 +302,16 @@ export interface Course {
   credit: number;
   createdAt: string;
 }
+export interface CurriculumCourseItem {
+  id: number;
+  curriculumId: number;
+  courseId: number;
+  courseCode: string;
+  courseTitle: string;
+  credits: number;
+  semesterNo?: number;
+  isRequired?: boolean;
+}
 export interface Prerequisite {
   id: number;
   courseId: number;

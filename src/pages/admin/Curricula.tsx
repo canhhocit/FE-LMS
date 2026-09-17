@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import * as curriculumService from '../../services/curriculumService';
 import { getDepartments, type DepartmentResponse } from '../../services/departmentService';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
-import type { Curriculum, Course, Prerequisite } from '../../types';
+import type { Curriculum, Course, CurriculumCourseItem, Prerequisite } from '../../types';
 
 export default function AdminCurricula() {
   const [activeTab, setActiveTab] = useState<'COURSES' | 'CURRICULA'>('COURSES');
@@ -29,7 +29,7 @@ export default function AdminCurricula() {
 
   // Curricula state
   const [selectedCurriculum, setSelectedCurriculum] = useState<Curriculum | null>(null);
-  const [curriculumCourses, setCurriculumCourses] = useState<Course[]>([]);
+  const [curriculumCourses, setCurriculumCourses] = useState<CurriculumCourseItem[]>([]);
   const [loadingCurrCourses, setLoadingCurrCourses] = useState(false);
   const [showCurrModal, setShowCurrModal] = useState(false);
   const [currModalMode, setCurrModalMode] = useState<'CREATE' | 'EDIT'>('CREATE');
@@ -356,7 +356,7 @@ export default function AdminCurricula() {
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 shadow-sm transition"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-              + Thêm môn học mới
+              Thêm môn học mới
             </button>
           </div>
 
@@ -503,7 +503,7 @@ export default function AdminCurricula() {
                   >
                     <option value="">-- Chọn môn học để gán vào CTĐT --</option>
                     {courses
-                      .filter((c) => !curriculumCourses.some((cc) => cc.id === c.id))
+                      .filter((c) => !curriculumCourses.some((cc) => cc.courseId === c.id || cc.id === c.id))
                       .map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.code} - {c.title} ({c.credit} tín chỉ)
@@ -536,24 +536,31 @@ export default function AdminCurricula() {
                         </tr>
                       </thead>
                       <tbody>
-                        {curriculumCourses.map((c) => (
-                          <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition">
-                            <td className="p-3 font-mono font-semibold text-indigo-600">{c.code}</td>
-                            <td className="p-3 font-medium text-slate-800 dark:text-slate-100">{c.title}</td>
-                            <td className="p-3 text-center">
-                              <Pill color="indigo">{c.credit} TC</Pill>
-                            </td>
-                            <td className="p-3 text-center">
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveCourseFromCurr(c.id)}
-                                className="rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition"
-                              >
-                                Gỡ khỏi CTĐT
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                        {curriculumCourses.map((c) => {
+                          const code = c.courseCode || (c as any).code || '-';
+                          const title = c.courseTitle || (c as any).title || '-';
+                          const credit = c.credits ?? (c as any).credit ?? 0;
+                          const targetCourseId = c.courseId || c.id;
+
+                          return (
+                            <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition">
+                              <td className="p-3 font-mono font-semibold text-indigo-600">{code}</td>
+                              <td className="p-3 font-medium text-slate-800 dark:text-slate-100">{title}</td>
+                              <td className="p-3 text-center">
+                                <Pill color="indigo">{credit} TC</Pill>
+                              </td>
+                              <td className="p-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveCourseFromCurr(targetCourseId)}
+                                  className="rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition"
+                                >
+                                  Gỡ khỏi CTĐT
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
