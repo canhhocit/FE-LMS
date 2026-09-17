@@ -103,29 +103,49 @@ export default function RegistrationPeriods() {
               {formError}
             </div>
           )}
-          <div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
-            <input aria-label="Tên đợt đăng ký" required placeholder="Tên đợt" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
-            <input aria-label="Học kỳ" placeholder="Học kỳ (VD: HK1)" value={form.semester} onChange={(e) => setForm({ ...form, semester: e.target.value })}
-              className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
-            <input aria-label="Năm học" placeholder="Năm học (VD: 2026-2027)" value={form.academicYear} onChange={(e) => setForm({ ...form, academicYear: e.target.value })}
-              className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
-            <input aria-label="Thời gian bắt đầu" required type="datetime-local" value={form.openAt} onChange={(e) => setForm({ ...form, openAt: e.target.value })}
-              className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
-            <input aria-label="Thời gian kết thúc" required type="datetime-local" value={form.closeAt} onChange={(e) => setForm({ ...form, closeAt: e.target.value })}
-              className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
-            <input aria-label="Tín chỉ tối đa" type="number" min="0" placeholder="Tín chỉ tối đa" value={form.maxCredits} onChange={(e) => setForm({ ...form, maxCredits: e.target.value })}
-              className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
-            <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
-              <input
-                aria-label="Mở ngay cho sinh viên đăng ký"
-                type="checkbox"
-                checked={form.isActive}
-                onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-              />
-              Mở ngay cho sinh viên đăng ký
-            </label>
+          <div className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <label className="block mb-1 text-xs font-medium text-slate-600">Tên đợt đăng ký <span className="text-rose-500">*</span></label>
+              <input aria-label="Tên đợt đăng ký" required placeholder="VD: Đợt đăng ký học phần HK1" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+            <div>
+              <label className="block mb-1 text-xs font-medium text-slate-600">Học kỳ</label>
+              <input aria-label="Học kỳ" placeholder="HK1 / HK2 / HK3" value={form.semester} onChange={(e) => setForm({ ...form, semester: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+            <div>
+              <label className="block mb-1 text-xs font-medium text-slate-600">Năm học</label>
+              <input aria-label="Năm học" placeholder="VD: 2026-2027" value={form.academicYear} onChange={(e) => setForm({ ...form, academicYear: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+            <div>
+              <label className="block mb-1 text-xs font-medium text-slate-600">Thời gian bắt đầu mở đợt <span className="text-rose-500">*</span></label>
+              <input aria-label="Thời gian bắt đầu" required type="datetime-local" value={form.openAt} onChange={(e) => setForm({ ...form, openAt: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+            <div>
+              <label className="block mb-1 text-xs font-medium text-slate-600">Thời gian kết thúc (Hạn đóng đợt & Hạn học phí) <span className="text-rose-500">*</span></label>
+              <input aria-label="Thời gian kết thúc" required type="datetime-local" value={form.closeAt} onChange={(e) => setForm({ ...form, closeAt: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+            <div>
+              <label className="block mb-1 text-xs font-medium text-slate-600">Số tín chỉ tối đa (Trần tín chỉ)</label>
+              <input aria-label="Số tín chỉ tối đa" type="number" min="1" placeholder="Số tín chỉ tối đa (Mặc định 24)" value={form.maxCredits} onChange={(e) => setForm({ ...form, maxCredits: e.target.value })}
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+            </div>
+            <div className="sm:col-span-2 lg:col-span-3">
+              <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-700 cursor-pointer">
+                <input
+                  aria-label="Mở ngay cho sinh viên đăng ký"
+                  type="checkbox"
+                  checked={form.isActive}
+                  onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span className="font-medium">Mở ngay đợt đăng ký này cho sinh viên</span>
+              </label>
+            </div>
           </div>
           <button onClick={submit} disabled={submitting} className="mt-3 rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60">
             {submitting ? 'Đang tạo...' : 'Tạo'}

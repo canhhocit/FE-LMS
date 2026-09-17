@@ -54,6 +54,12 @@ export function AdminUsers() {
   const [importMsg, setImportMsg] = useState<string | null>(null);
   const [resettingId, setResettingId] = useState<number | null>(null);
 
+  // Pagination State
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+
   // Modal State
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<'CREATE' | 'EDIT'>('CREATE');
@@ -83,10 +89,25 @@ export function AdminUsers() {
 
   const load = useCallback(() => {
     let mounted = true;
-    const p = tab === 'STUDENT' ? adminService.listStudents(kw) : adminService.listLecturers(kw);
-    p.then((data) => mounted && setUsers(data)).finally(() => mounted && setLoading(false));
+    setLoading(true);
+    const p = tab === 'STUDENT' 
+      ? adminService.listStudentsPage(kw, selectedClass, page, pageSize) 
+      : adminService.listLecturersPage(kw, page, pageSize);
+      
+    p.then((res) => {
+      if (!mounted) return;
+      setUsers(res.content);
+      setTotalPages(res.totalPages);
+      setTotalElements(res.totalElements);
+    }).catch(() => {
+      if (!mounted) return;
+      setUsers([]);
+      setTotalPages(0);
+      setTotalElements(0);
+    }).finally(() => mounted && setLoading(false));
+    
     return () => { mounted = false; };
-  }, [tab, kw]);
+  }, [tab, kw, selectedClass, page, pageSize]);
 
   useEffect(() => {
     const cleanup = load();
@@ -246,7 +267,7 @@ export function AdminUsers() {
       <PageTitle>Người dùng</PageTitle>
       <div className="flex flex-wrap gap-2 mb-3 items-center">
         {(['STUDENT', 'LECTURER'] as const).map((t) => (
-          <button key={t} onClick={() => { setTab(t); setSelectedClass(''); }}
+          <button key={t} onClick={() => { setTab(t); setSelectedClass(''); setPage(0); }}
             className={`px-3 py-1.5 rounded text-sm ${tab === t ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
             {t === 'STUDENT' ? 'Sinh viên' : 'Giảng viên'}
           </button>
@@ -255,7 +276,7 @@ export function AdminUsers() {
         {tab === 'STUDENT' && adminClasses.length > 0 && (
           <select
             value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
+            onChange={(e) => { setSelectedClass(e.target.value); setPage(0); }}
             className="px-3 py-1.5 bg-white border border-slate-200 rounded text-sm text-slate-700 focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value="">-- Tất cả lớp hành chính --</option>
@@ -267,7 +288,7 @@ export function AdminUsers() {
           </select>
         )}
 
-        <input value={kw} onChange={(e) => setKw(e.target.value)} placeholder="Tìm theo tên/email…"
+        <input value={kw} onChange={(e) => { setKw(e.target.value); setPage(0); }} placeholder="Tìm theo tên/email…"
           className="ml-auto min-w-55 px-3 py-1.5 bg-white border border-slate-200 rounded text-sm text-slate-700" />
       </div>
 
@@ -304,58 +325,100 @@ export function AdminUsers() {
       )}
 
       <Card>
-        {loading ? <Spinner /> : filteredUsers.length === 0 ? <Empty msg="Không có kết quả" /> : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-xs text-slate-500 border-b border-slate-200 bg-slate-50">
-                <tr>
-                  <th className="text-left p-3">#</th>
-                  <th className="text-left p-3">{tab === 'STUDENT' ? 'Mã SV' : 'Mã GV'}</th>
-                  <th className="text-left p-3">Họ tên</th>
-                  <th className="text-left p-3">Email</th>
-                  <th className="text-left p-3">{tab === 'STUDENT' ? 'Lớp hành chính' : 'Khoa / Bộ môn'}</th>
-                  <th className="text-center p-3">Trạng thái</th>
-                  <th className="text-center p-3">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((u, i) => (
-                  <tr key={u.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition">
-                    <td className="p-3 text-slate-500">{i + 1}</td>
-                    <td className="p-3 font-mono text-xs text-indigo-600 font-semibold">{u.studentCode || u.lecturerCode || '-'}</td>
-                    <td className="p-3 font-medium text-slate-800">{u.fullName}</td>
-                    <td className="p-3 text-slate-500">{u.email}</td>
-                    <td className="p-3 text-slate-600 font-medium">
-                      {tab === 'STUDENT' ? (
-                        u.adminClassName ? <Pill color="indigo">{u.adminClassName}</Pill> : '-'
-                      ) : (
-                        u.faculty || '-'
-                      )}
-                    </td>
-                    <td className="p-3 text-center"><Pill color={u.active !== false ? 'green' : 'red'}>{u.active !== false ? 'Active' : 'Inactive'}</Pill></td>
-                    <td className="p-3 text-center">
-                      <div className="inline-flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(u)}
-                          className="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition"
-                        >
-                          Sửa
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void handleResetPassword(u)}
-                          disabled={resettingId === u.id}
-                          className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-50 transition"
-                        >
-                          {resettingId === u.id ? 'Đang reset...' : 'Reset MK'}
-                        </button>
-                      </div>
-                    </td>
+        {loading ? <Spinner /> : users.length === 0 ? <Empty msg="Không có kết quả" /> : (
+          <div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-xs text-slate-500 border-b border-slate-200 bg-slate-50">
+                  <tr>
+                    <th className="text-left p-3">#</th>
+                    <th className="text-left p-3">{tab === 'STUDENT' ? 'Mã SV' : 'Mã GV'}</th>
+                    <th className="text-left p-3">Họ tên</th>
+                    <th className="text-left p-3">Email</th>
+                    <th className="text-left p-3">{tab === 'STUDENT' ? 'Lớp hành chính' : 'Khoa / Bộ môn'}</th>
+                    <th className="text-center p-3">Trạng thái</th>
+                    <th className="text-center p-3">Thao tác</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {users.map((u, i) => (
+                    <tr key={u.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition">
+                      <td className="p-3 text-slate-500">{page * pageSize + i + 1}</td>
+                      <td className="p-3 font-mono text-xs text-indigo-600 font-semibold">{u.studentCode || u.lecturerCode || '-'}</td>
+                      <td className="p-3 font-medium text-slate-800">{u.fullName}</td>
+                      <td className="p-3 text-slate-500">{u.email}</td>
+                      <td className="p-3 text-slate-600 font-medium">
+                        {tab === 'STUDENT' ? (
+                          u.adminClassName ? <Pill color="indigo">{u.adminClassName}</Pill> : '-'
+                        ) : (
+                          u.faculty || '-'
+                        )}
+                      </td>
+                      <td className="p-3 text-center"><Pill color={u.active !== false ? 'green' : 'red'}>{u.active !== false ? 'Active' : 'Inactive'}</Pill></td>
+                      <td className="p-3 text-center">
+                        <div className="inline-flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(u)}
+                            className="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition"
+                          >
+                            Sửa
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void handleResetPassword(u)}
+                            disabled={resettingId === u.id}
+                            className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-50 transition"
+                          >
+                            {resettingId === u.id ? 'Đang reset...' : 'Reset MK'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3 mt-3 px-2">
+              <div className="text-xs text-slate-500">
+                Hiển thị <span className="font-semibold text-slate-700">{users.length > 0 ? page * pageSize + 1 : 0}</span> - <span className="font-semibold text-slate-700">{Math.min((page + 1) * pageSize, totalElements)}</span> trên tổng số <span className="font-semibold text-slate-700">{totalElements}</span> người dùng
+              </div>
+
+              <div className="flex items-center gap-2">
+                <select
+                  value={pageSize}
+                  onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
+                  className="px-2.5 py-1 bg-white border border-slate-200 rounded text-xs text-slate-700 font-medium"
+                >
+                  <option value={10}>10 dòng / trang</option>
+                  <option value={20}>20 dòng / trang</option>
+                  <option value={50}>50 dòng / trang</option>
+                  <option value={100}>100 dòng / trang</option>
+                </select>
+
+                <button
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="px-3 py-1 text-xs font-semibold rounded border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition"
+                >
+                  &laquo; Trước
+                </button>
+
+                <span className="text-xs text-slate-600 font-medium px-1">
+                  Trang {page + 1} / {Math.max(1, totalPages)}
+                </span>
+
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="px-3 py-1 text-xs font-semibold rounded border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition"
+                >
+                  Sau &raquo;
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </Card>
