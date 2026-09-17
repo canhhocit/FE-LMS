@@ -76,10 +76,10 @@ apiClient.interceptors.response.use(
 
 // Chuẩn hoá response: BE trả {code,message,result} → trả về result, nếu trả về raw data thì trả nguyên r.data
 export interface ApiEnvelope<T> { code: number; message: string; result: T; }
-export const unwrap = <T>(p: Promise<{ data: any }>): Promise<T> =>
+export const unwrap = <T>(p: Promise<{ data: unknown }>): Promise<T> =>
   p.then((r) => {
-    if (r.data && typeof r.data === 'object' && 'result' in r.data && r.data.result !== undefined) {
-      return r.data.result as T;
+    if (r.data && typeof r.data === 'object' && 'result' in r.data && (r.data as Record<string, unknown>).result !== undefined) {
+      return (r.data as Record<string, unknown>).result as T;
     }
     return r.data as T;
   });

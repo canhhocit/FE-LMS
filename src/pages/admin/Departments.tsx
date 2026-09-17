@@ -5,7 +5,6 @@ import type { DepartmentResponse, DepartmentRequest } from '../../services/depar
 
 export default function AdminDepartments() {
   const [depts, setDepts] = useState<DepartmentResponse[]>([]);
-  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -26,7 +25,20 @@ export default function AdminDepartments() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const list = await deptService.getDepartments();
+        if (mounted) setDepts(list);
+      } catch (e: unknown) {
+        if (mounted) setErr((e as { message?: string })?.message ?? 'Lỗi tải dữ liệu');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const openCreate = () => { setEditId(null); setCode(''); setName(''); setDescription(''); setShowForm(true); };
   const openEdit = (d: DepartmentResponse) => { setEditId(d.id); setCode(d.code); setName(d.name); setDescription(d.description ?? ''); setShowForm(true); };

@@ -27,7 +27,20 @@ export default function AdminAdministrativeClasses() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const list = await acService.getAllAdminClasses();
+        if (mounted) setClasses(list);
+      } catch (e: unknown) {
+        if (mounted) setErr((e as { message?: string })?.message ?? 'Lỗi tải dữ liệu');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const openCreate = () => { setEditId(null); setClassName(''); setAcademicYear(''); setShowForm(true); };
   const openEdit = (c: AdminClassResponse) => { setEditId(c.id); setClassName(c.className); setAcademicYear(c.academicYear ?? ''); setShowForm(true); };

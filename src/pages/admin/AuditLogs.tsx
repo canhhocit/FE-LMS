@@ -28,12 +28,32 @@ export default function AdminAuditLogs() {
     }
   };
 
-  useEffect(() => { load(0); }, []);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await auditService.getAuditLogs(0, 20);
+        if (mounted) {
+          setLogs(res.content || []);
+          setTotalPages(res.totalPages || 0);
+          setTotalElements(res.totalElements || 0);
+          setPage(0);
+          setErr(null);
+        }
+      } catch (e: unknown) {
+        if (mounted) setErr((e as { message?: string })?.message ?? 'Lỗi tải nhật ký hệ thống');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const handleFilter = () => { load(0, filterType); };
   const handleClear = () => { setFilterType(''); load(0); };
 
-  const resultColor = (r: string) => {
+  const resultColor = (r: string): 'emerald' | 'rose' | 'slate' => {
     if (r === 'SUCCESS') return 'emerald';
     if (r === 'FAILURE') return 'rose';
     return 'slate';
@@ -78,7 +98,7 @@ export default function AdminAuditLogs() {
                     <td className="p-3 text-xs text-slate-500">{log.resourceType} #{log.resourceId}</td>
                     <td className="p-3 text-xs text-slate-400 max-w-xs truncate">{log.detail || '-'}</td>
                     <td className="p-3 text-xs text-slate-400 font-mono">{log.ipAddress || '-'}</td>
-                    <td className="p-3 text-center"><Pill color={resultColor(log.result) as any}>{log.result}</Pill></td>
+                    <td className="p-3 text-center"><Pill color={resultColor(log.result)}>{log.result}</Pill></td>
                   </tr>
                 ))}
               </tbody>

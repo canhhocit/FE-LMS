@@ -41,6 +41,7 @@ export default function StudentLessonLearning() {
   const [showNotes, setShowNotes] = useState(false);
   const [videoDuration, setVideoDuration] = useState<number>(0);
   const [maxWatchedSec, setMaxWatchedSec] = useState<number>(0);
+  const [currentVideoTime, setCurrentVideoTime] = useState<number>(0);
 
   const resumeKey = useMemo(
     () => `learninghub:resume:${classNum}:${lessonNum}`,
@@ -280,6 +281,11 @@ export default function StudentLessonLearning() {
                 🔒 Chống tua tiến
               </span>
             )}
+            {quizzes.length > 0 && (
+              <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-1 text-xs font-medium text-amber-700">
+                {quizzes.length} câu hỏi video
+              </span>
+            )}
             {hasResume && (
               <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700">
                 Tiếp tục từ {formatTime(resumeSeconds)}
@@ -295,7 +301,7 @@ export default function StudentLessonLearning() {
             <button
               type="button"
               onClick={() => seekVideo(10)}
-              disabled={!isLessonCompleted && (videoRef.current?.currentTime ?? 0) + 10 > maxWatchedTimeRef.current}
+              disabled={!isLessonCompleted && currentVideoTime + 10 > maxWatchedSec}
               className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               +10s
@@ -381,6 +387,7 @@ export default function StudentLessonLearning() {
                   const video = videoRef.current;
                   if (!video) return;
                   const current = Number(video.currentTime || 0);
+                  setCurrentVideoTime(current);
 
                   // Kiểm tra và ghi nhận thời lượng xem lớn nhất
                   if (!isLessonCompleted) {

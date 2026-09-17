@@ -1,5 +1,5 @@
 import React from 'react';
-﻿// App router + provider stack
+// App router + provider stack
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './contexts/useAuth';

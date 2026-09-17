@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
+import React, { useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 
 interface AvatarUploaderProps {
   currentAvatar?: string | null;

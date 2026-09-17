@@ -1,60 +1,74 @@
 import { useEffect, useState } from 'react';
 import * as clazzService from '../../services/clazzService';
 import * as cpService from '../../services/clazzPermissionService';
-import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
+import { PageTitle, Card, Spinner, Empty, ErrorBox } from '../../components/Layout';
+import type { Clazz, User } from '../../types';
 
 interface Lecturer { id: number; fullName: string; email: string; }
 
 export default function ClazzPermissions() {
-  const [classes, setClasses] = useState<any[]>([]);
+  const [classes, setClasses] = useState<Clazz[]>([]);
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
   const [lecturers, setLecturers] = useState<Lecturer[]>([]);
   const [selectedLecturer, setSelectedLecturer] = useState<number | null>(null);
   const [permissions, setPermissions] = useState<string[]>([]);
-  const [allPerms, setAllPerms] = useState<string[]>(['MANAGE_CONTENT', 'GRADE_STUDENTS', 'MANAGE_ATTENDANCE', 'VIEW_REPORTS']);
+  const allPerms = ['MANAGE_CONTENT', 'GRADE_STUDENTS', 'MANAGE_ATTENDANCE', 'VIEW_REPORTS'];
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
   useEffect(() => {
+    let mounted = true;
     (async () => {
       try {
         const list = await clazzService.getMyClasses();
-        setClasses(list);
-        if (list.length > 0) setSelectedClass(list[0].id);
+        if (mounted) {
+          setClasses(list);
+          if (list.length > 0) setSelectedClass(list[0].id);
+        }
       } catch (e: unknown) {
-        setErr((e as { message?: string })?.message ?? 'Lỗi tải lớp học');
+        if (mounted) setErr((e as { message?: string })?.message ?? 'Lỗi tải lớp học');
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     })();
+    return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
     if (!selectedClass) return;
+    let mounted = true;
     (async () => {
       try {
         const students = await clazzService.getClassStudents(selectedClass);
-        const lects = (students || []).filter((s: any) => s.role === 'LECTURER');
-        setLecturers(lects);
-        setSelectedLecturer(lects[0]?.id ?? null);
+        const lects = (students || []).filter((s: User) => s.role === 'LECTURER');
+        if (mounted) {
+          setLecturers(lects);
+          setSelectedLecturer(lects[0]?.id ?? null);
+        }
       } catch {
-        setLecturers([]);
+        if (mounted) setLecturers([]);
       }
     })();
+    return () => { mounted = false; };
   }, [selectedClass]);
 
   useEffect(() => {
-    if (!selectedClass || !selectedLecturer) { setPermissions([]); return; }
+    let mounted = true;
+    if (!selectedClass || !selectedLecturer) {
+      setPermissions([]);
+      return;
+    }
     (async () => {
       try {
         const perms = await cpService.getClazzPermissions(selectedClass, selectedLecturer);
-        setPermissions(perms);
+        if (mounted) setPermissions(perms);
       } catch {
-        setPermissions([]);
+        if (mounted) setPermissions([]);
       }
     })();
+    return () => { mounted = false; };
   }, [selectedClass, selectedLecturer]);
 
   const togglePerm = (code: string) => {
