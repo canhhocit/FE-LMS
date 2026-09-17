@@ -486,17 +486,17 @@ export default function Layout() {
           className="fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-[2px] lg:hidden"
         />
       )}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-r border-sky-200 bg-blue-300 p-4 text-slate-800 shadow-xl transition-transform dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 lg:static lg:w-64 lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Link to={`/${roleLower}`} className="flex items-center gap-3 border-b border-red dark:border-slate-800 px-2 pb-5 pt-2">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-600 text-white shadow-xs">
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-r border-slate-200/90 bg-white/95 p-4 text-slate-800 shadow-xl backdrop-blur-md transition-transform dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-100 lg:static lg:w-64 lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <Link to={`/${roleLower}`} className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800/80 px-2 pb-5 pt-2">
+          <span className="grid h-10 w-10 place-items-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-500/20">
             <GraduationCapIcon className="h-6 w-6 text-white" />
           </span>
           <div>
-            <div className="font-bold tracking-tight text-slate-900 dark:text-white">LearningHub</div>
-            <div className="text-xs text-slate-500 dark:text-slate-400">{ROLE_LABEL[role]}</div>
+            <div className="font-bold tracking-tight text-slate-900 dark:text-white text-base">LearningHub</div>
+            <div className="text-xs font-medium text-slate-500 dark:text-slate-400">{ROLE_LABEL[role]}</div>
           </div>
         </Link>
-        <nav className="mt-6 flex-1 space-y-4 overflow-y-auto pr-1">
+        <nav className="mt-5 flex-1 space-y-4 overflow-y-auto pr-1">
           {sections.map((section) => {
             const filteredItems = section.items.filter(
               (it) => !it.permission || hasPermission(it.permission)
@@ -509,13 +509,13 @@ export default function Layout() {
                 <button
                   type="button"
                   onClick={() => toggleSection(section.title)}
-                  className="flex w-full items-center justify-between px-2 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 transition group"
+                  className="flex w-full items-center justify-between px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition group"
                 >
                   <span>{section.title}</span>
                   <ChevronDownIcon
                     className={`h-3 w-3 transform transition-transform duration-200 ${
                       isSectionOpen ? '' : '-rotate-90'
-                    } text-slate-500 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-slate-300`}
+                    } text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300`}
                   />
                 </button>
 
@@ -530,14 +530,14 @@ export default function Layout() {
                           end={it.to === `/${roleLower}`}
                           onClick={() => setSidebarOpen(false)}
                           className={({ isActive }) =>
-                            `flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition relative ${
+                            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 relative ${
                               isActive
-                                ? 'bg-indigo-600 text-white shadow-xs font-semibold'
-                                : 'text-slate-700 hover:bg-sky-200/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white'
+                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25 font-semibold'
+                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white'
                             }`
                           }
                         >
-                          <IconComponent className="h-4.5 w-4.5 shrink-0 opacity-80" />
+                          <IconComponent className="h-4.5 w-4.5 shrink-0 opacity-85" />
                           <span>{it.label}</span>
                           {it.to.includes('/notifications') && unreadCount > 0 && (
                             <span className="ml-auto inline-flex items-center justify-center h-5 w-5 rounded-full bg-rose-500 text-white text-xs font-bold shadow-xs">
@@ -558,23 +558,23 @@ export default function Layout() {
             logout();
             nav('/login');
           }}
-          className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-slate-600 hover:bg-sky-200/70 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition w-full"
+          className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition w-full"
         >
           <LogOutIcon className="h-4 w-4 opacity-75" />
           <span>Đăng xuất</span>
         </button>
       </aside>
       <main className="min-w-0 flex-1 overflow-auto">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-sky-200 bg-blue-300 px-4 py-3 text-slate-800 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 sm:px-6">
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-slate-200/80 bg-white/90 px-4 py-3 text-slate-800 shadow-2xs backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:text-slate-100 sm:px-6">
           <div className="flex min-w-0 items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
-            <button type="button" aria-label="Mở menu" onClick={() => setSidebarOpen(true)} className="p-1 lg:hidden text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 rounded-lg">
+            <button type="button" aria-label="Mở menu" onClick={() => setSidebarOpen(true)} className="p-1 lg:hidden text-slate-700 dark:text-slate-200 hover:bg-slate-100 rounded-lg">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
             <span className="hidden truncate sm:inline">
               Xin chào, <span className="font-semibold text-slate-900 dark:text-white">{user.fullName}</span>
             </span>
           </div>
-          <div className="hidden max-w-md flex-1 items-center rounded-full bg-white/80 border border-sky-200/60 px-4 py-1.5 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400 md:flex">
+          <div className="hidden max-w-md flex-1 items-center rounded-xl bg-slate-100/80 border border-slate-200/80 px-4 py-1.5 text-sm text-slate-500 dark:bg-slate-800 dark:border-slate-700/80 dark:text-slate-400 md:flex">
             <svg className="mr-2 h-4 w-4 opacity-60 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             <span>Tìm kiếm thông tin...</span>
           </div>
