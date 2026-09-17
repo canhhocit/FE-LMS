@@ -172,6 +172,8 @@ export interface UserProfile {
   status: string;
   avatarUrl?: string | null;
   curriculumId?: number | null;
+  adminClassName?: string | null;
+  curriculumName?: string | null;
 }
 
 export interface UpdateProfileRequest {
