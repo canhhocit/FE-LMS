@@ -263,7 +263,7 @@ export default function StudentLessonLearning() {
 
       <div className="grid gap-5 xl:grid-cols-[1.7fr_0.9fr]">
         <Card>
-          <div className="mb-3 flex flex-wrap items-center gap-2">
+          <div className="mb-3 flex items-center gap-2 overflow-x-auto pb-1 max-w-full whitespace-nowrap sm:flex-wrap sm:whitespace-normal scrollbar-none">
             {isLessonCompleted ? (
               <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
                 Đã học
