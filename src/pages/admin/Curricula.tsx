@@ -49,49 +49,64 @@ export default function AdminCurricula() {
   const [addPrereqCourseId, setAddPrereqCourseId] = useState<string>('');
 
   // Initial Load
-  const loadInitial = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [cuList, coList, depList] = await Promise.all([
-        curriculumService.getCurricula(),
-        curriculumService.getAllCourses(),
-        getDepartments().catch(() => []),
-      ]);
-      setCurricula(cuList);
-      setCourses(coList);
-      setDepartments(depList);
-      if (cuList.length > 0 && !selectedCurriculum) {
-        setSelectedCurriculum(cuList[0]);
-      }
-    } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'Lỗi khi tải dữ liệu');
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedCurriculum]);
-
   useEffect(() => {
-    loadInitial();
+    let mounted = true;
+    Promise.all([
+      curriculumService.getCurricula(),
+      curriculumService.getAllCourses(),
+      getDepartments().catch(() => []),
+    ])
+      .then(([cuList, coList, depList]) => {
+        if (!mounted) return;
+        setCurricula(cuList);
+        setCourses(coList);
+        setDepartments(depList);
+        if (cuList.length > 0) {
+          setSelectedCurriculum(cuList[0]);
+        }
+      })
+      .catch((e: unknown) => {
+        if (!mounted) return;
+        setErr((e as { message?: string })?.message ?? 'Lỗi khi tải dữ liệu');
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Load courses of selected curriculum
-  const loadCurriculumCourses = useCallback(async (currId: number) => {
-    setLoadingCurrCourses(true);
+  const selectedCurrId = selectedCurriculum?.id;
+  const reloadCurriculumCourses = useCallback(async (currId: number) => {
     try {
       const list = await curriculumService.getCoursesByCurriculum(currId);
       setCurriculumCourses(list);
     } catch {
       setCurriculumCourses([]);
-    } finally {
-      setLoadingCurrCourses(false);
     }
   }, []);
 
   useEffect(() => {
-    if (selectedCurriculum) {
-      loadCurriculumCourses(selectedCurriculum.id);
-    }
-  }, [selectedCurriculum, loadCurriculumCourses]);
+    if (!selectedCurrId) return;
+    let mounted = true;
+    setLoadingCurrCourses(true);
+    curriculumService
+      .getCoursesByCurriculum(selectedCurrId)
+      .then((list) => {
+        if (mounted) setCurriculumCourses(list);
+      })
+      .catch(() => {
+        if (mounted) setCurriculumCourses([]);
+      })
+      .finally(() => {
+        if (mounted) setLoadingCurrCourses(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [selectedCurrId]);
 
   // Load Prerequisites
   const loadPrerequisites = async (courseId: number) => {
@@ -167,7 +182,7 @@ export default function AdminCurricula() {
       const coList = await curriculumService.getAllCourses();
       setCourses(coList);
       if (selectedCurriculum) {
-        loadCurriculumCourses(selectedCurriculum.id);
+        reloadCurriculumCourses(selectedCurriculum.id);
       }
     } catch (e: unknown) {
       alert((e as { message?: string })?.message ?? 'Xóa môn học thất bại.');
@@ -249,7 +264,7 @@ export default function AdminCurricula() {
     try {
       await curriculumService.addCourseToCurriculum(selectedCurriculum.id, Number(addCourseId));
       setAddCourseId('');
-      loadCurriculumCourses(selectedCurriculum.id);
+      reloadCurriculumCourses(selectedCurriculum.id);
     } catch (e: unknown) {
       alert((e as { message?: string })?.message ?? 'Gán môn học thất bại.');
     }
@@ -260,7 +275,7 @@ export default function AdminCurricula() {
     if (!confirm('Bạn có chắc muốn gỡ môn học này khỏi chương trình đào tạo?')) return;
     try {
       await curriculumService.removeCourseFromCurriculum(selectedCurriculum.id, courseId);
-      loadCurriculumCourses(selectedCurriculum.id);
+      reloadCurriculumCourses(selectedCurriculum.id);
     } catch (e: unknown) {
       alert((e as { message?: string })?.message ?? 'Gỡ môn học thất bại.');
     }
