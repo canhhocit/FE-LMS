@@ -231,6 +231,7 @@ const NAV: Record<Role, NavSection[]> = {
         { to: '/admin/administrative-classes', label: 'Lớp hành chính', icon: UsersIcon },
         { to: '/admin/registration', label: 'Đợt đăng ký', icon: ClipboardListIcon },
         { to: '/admin/classes', label: 'Lớp học phần', icon: BookOpenIcon },
+        { to: '/admin/tuition', label: 'Quản lý học phí', icon: FileTextIcon },
         { to: '/admin/clazz-permissions', label: 'Phân quyền lớp học', icon: KeyIcon },
       ],
     },

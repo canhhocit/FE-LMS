@@ -12,3 +12,6 @@ export const updateTuitionRate = async (id: number, data: { academicYear?: strin
 export const deleteTuitionRate = async (id: number): Promise<void> => {
   await apiClient.delete(`/admin/tuition/rates/${id}`);
 };
+
+export const payMyInvoice = async (invoiceId: number): Promise<TuitionInvoice> =>
+  unwrap(apiClient.post(`/me/tuition/${invoiceId}/pay`));

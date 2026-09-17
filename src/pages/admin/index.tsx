@@ -235,39 +235,257 @@ export function AdminUsers() {
 
 export function AdminClasses() {
   const [classes, setClasses] = useState<Clazz[]>([]);
+  const [courses, setCourses] = useState<import('../../types').Course[]>([]);
+  const [lecturers, setLecturers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    let m = true;
-    clazzService.getMyClasses().then((c) => m && setClasses(c)).finally(() => m && setLoading(false));
-    return () => { m = false; };
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({
+    classCode: '',
+    className: '',
+    courseId: '',
+    lecturerId: '',
+    maxStudents: '50',
+    semester: 'HK1',
+    academicYear: '2026-2027',
+  });
+
+  const loadData = useCallback(() => {
+    let mounted = true;
+    Promise.all([
+      clazzService.getMyClasses(),
+      import('../../services/curriculumService').then((m) => m.getAllCourses()),
+      adminService.listLecturers(''),
+    ])
+      .then(([classList, courseList, lecturerList]) => {
+        if (!mounted) return;
+        setClasses(classList);
+        setCourses(courseList);
+        setLecturers(lecturerList);
+      })
+      .catch((e: unknown) => {
+        if (!mounted) return;
+        setErr((e as { message?: string })?.message ?? 'Lỗi tải danh sách lớp');
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => { mounted = false; };
   }, []);
+
+  useEffect(() => {
+    const cleanup = loadData();
+    return cleanup;
+  }, [loadData]);
+
+  const handleCreate = async () => {
+    if (!form.classCode.trim()) { setErr('Vui lòng nhập mã lớp học phần'); return; }
+    if (!form.className.trim()) { setErr('Vui lòng nhập tên lớp học phần'); return; }
+    if (!form.courseId) { setErr('Vui lòng chọn môn học'); return; }
+
+    const maxStuds = Number(form.maxStudents);
+    if (!Number.isFinite(maxStuds) || maxStuds <= 0) {
+      setErr('Sĩ số tối đa phải lớn hơn 0');
+      return;
+    }
+
+    setSubmitting(true);
+    setErr(null);
+    try {
+      await clazzService.createClazz({
+        classCode: form.classCode.trim(),
+        className: form.className.trim(),
+        courseId: Number(form.courseId),
+        courseTitle: null,
+        lecturerId: form.lecturerId ? Number(form.lecturerId) : null,
+        lecturerName: null,
+        maxStudents: maxStuds,
+        semester: form.semester,
+        academicYear: form.academicYear,
+        createdAt: new Date().toISOString(),
+      });
+      setShowForm(false);
+      setForm({
+        classCode: '',
+        className: '',
+        courseId: '',
+        lecturerId: '',
+        maxStudents: '50',
+        semester: 'HK1',
+        academicYear: '2026-2027',
+      });
+      loadData();
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Tạo lớp học phần thất bại');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa lớp học phần này?')) return;
+    try {
+      await clazzService.deleteClazz(id);
+      setClasses((prev) => prev.filter((c) => c.id !== id));
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Không thể xóa lớp (có thể đã có SV đăng ký)');
+    }
+  };
+
   if (loading) return <Spinner />;
+
   return (
     <div>
-      <PageTitle>Tất cả lớp học</PageTitle>
+      <PageTitle>Quản lý Lớp học phần</PageTitle>
+      
+      {err && (
+        <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700 flex justify-between items-center">
+          <span>{err}</span>
+          <button onClick={() => setErr(null)} className="text-xs font-semibold">Đóng</button>
+        </div>
+      )}
+
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="text-sm text-slate-500">Tạo và phân công giảng viên, đặt sĩ số giới hạn cho các Lớp học phần</div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 transition"
+        >
+          {showForm ? 'Hủy' : '+ Tạo Lớp học phần mới'}
+        </button>
+      </div>
+
+      {showForm && (
+        <Card className="mb-6 border-2 border-indigo-100">
+          <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-3">Tạo Lớp học phần cho sinh viên đăng ký</h3>
+          <div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Mã lớp học phần *</label>
+              <input
+                placeholder="VD: INT3306_01"
+                value={form.classCode}
+                onChange={(e) => setForm({ ...form, classCode: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Tên lớp học phần *</label>
+              <input
+                placeholder="VD: Lập trình Mạng - Nhóm 1"
+                value={form.className}
+                onChange={(e) => setForm({ ...form, className: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Môn học (Khóa học) *</label>
+              <select
+                value={form.courseId}
+                onChange={(e) => setForm({ ...form, courseId: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2"
+              >
+                <option value="">-- Chọn môn học --</option>
+                {courses.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    [{c.code}] {c.title} ({c.credit} tín chỉ)
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Giảng viên phụ trách</label>
+              <select
+                value={form.lecturerId}
+                onChange={(e) => setForm({ ...form, lecturerId: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2"
+              >
+                <option value="">-- Chọn giảng viên --</option>
+                {lecturers.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.fullName} ({l.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Sĩ số tối đa (Giới hạn SV) *</label>
+              <input
+                type="number"
+                min="1"
+                placeholder="VD: 50"
+                value={form.maxStudents}
+                onChange={(e) => setForm({ ...form, maxStudents: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 font-bold text-indigo-600"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">Học kỳ</label>
+                <input
+                  placeholder="HK1"
+                  value={form.semester}
+                  onChange={(e) => setForm({ ...form, semester: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">Năm học</label>
+                <input
+                  placeholder="2026-2027"
+                  value={form.academicYear}
+                  onChange={(e) => setForm({ ...form, academicYear: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2"
+                />
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => void handleCreate()}
+            disabled={submitting}
+            className="mt-4 rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+          >
+            {submitting ? 'Đang tạo...' : 'Tạo Lớp học phần'}
+          </button>
+        </Card>
+      )}
+
       <Card>
-        {classes.length === 0 ? <Empty msg="Chưa có lớp nào" /> : (
+        {classes.length === 0 ? <Empty msg="Chưa có lớp học phần nào" /> : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left border-collapse">
               <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-600 border-b border-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-800">
                 <tr>
-                  <th className="py-3 px-4">Mã lớp</th>
-                  <th className="py-3 px-4">Tên lớp</th>
+                  <th className="py-3 px-4">Mã lớp HP</th>
+                  <th className="py-3 px-4">Tên lớp HP</th>
+                  <th className="py-3 px-4">Tên Môn học</th>
                   <th className="py-3 px-4">Giảng viên</th>
-                  <th className="py-3 px-4 text-center">SV tối đa</th>
+                  <th className="py-3 px-4 text-center">Sĩ số tối đa</th>
                   <th className="py-3 px-4 text-center">Học kỳ</th>
+                  <th className="py-3 px-4 text-right">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
                 {classes.map((c) => (
                   <tr key={c.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-semibold text-indigo-600 dark:text-indigo-400">{c.classCode}</td>
+                    <td className="py-3.5 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">{c.classCode}</td>
                     <td className="py-3.5 px-4 font-medium text-slate-800 dark:text-slate-100">
                       <Link to={`/admin/classes/${c.id}`} className="hover:underline text-indigo-600 dark:text-indigo-400">{c.className}</Link>
                     </td>
+                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">{c.courseTitle || '-'}</td>
                     <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">{c.lecturerName || '-'}</td>
-                    <td className="py-3.5 px-4 text-center font-medium text-slate-700 dark:text-slate-300">{c.maxStudents}</td>
-                    <td className="py-3.5 px-4 text-center"><Pill intent="success">{c.semester}</Pill></td>
+                    <td className="py-3.5 px-4 text-center font-bold text-slate-800 dark:text-slate-200">
+                      <span className="rounded bg-indigo-50 px-2 py-1 text-xs text-indigo-700 font-extrabold">{c.maxStudents ?? 'Không giới hạn'}</span>
+                    </td>
+                    <td className="py-3.5 px-4 text-center"><Pill intent="success">{c.semester} · {c.academicYear}</Pill></td>
+                    <td className="py-3.5 px-4 text-right">
+                      <button
+                        onClick={() => void handleDelete(c.id)}
+                        className="rounded px-2 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50"
+                      >
+                        Xóa
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

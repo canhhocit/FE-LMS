@@ -69,6 +69,7 @@ export interface Clazz {
   lecturerId: number | null;
   lecturerName: string | null;
   maxStudents: number;
+  currentStudents?: number;
   createdAt: string;
 }
 

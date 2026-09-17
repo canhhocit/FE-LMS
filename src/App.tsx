@@ -32,9 +32,10 @@ import AdminCurricula from './pages/admin/Curricula';
 import AdminDepartments from './pages/admin/Departments';
 import AdminAdministrativeClasses from './pages/admin/AdministrativeClasses';
 import RegistrationPeriods from './pages/admin/RegistrationPeriods';
+import AdminTuitionManagement from './pages/admin/TuitionManagement';
 import AdminPermissions from './pages/admin/Permissions';
 import AdminAuditLogs from './pages/admin/AuditLogs';
-const ClazzPermissions = React.lazy(() => import('./pages/admin/ClazzPermissions'))
+const ClazzPermissions = React.lazy(() => import('./pages/admin/ClazzPermissions'));
 import NotificationsPage from './pages/shared/Notifications';
 import TuitionPage from './pages/shared/TuitionPage';
 import QuizPage from './pages/shared/QuizPage';
@@ -57,8 +58,8 @@ function NotFoundPage() {
       <p className="text-slate-600 mb-6">Duong dan ban truy cap khong ton tai</p>
       <a href="/" className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white">
         Ve trang chu
-   </a>
- </div>
+      </a>
+    </div>
   );
 }
 
@@ -72,7 +73,9 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/403" element={<ForbiddenPage />} />
           <Route path="/" element={<RootRedirect />} />
-          <Route element={<ProtectedRoute allow={['STUDENT']}><Layout></Layout></ProtectedRoute>}>
+          
+          {/* Student Routes */}
+          <Route element={<ProtectedRoute allow={['STUDENT']}><Layout /></ProtectedRoute>}>
             <Route path="/student" element={<StudentDashboard />} />
             <Route path="/student/classes" element={<StudentClasses />} />
             <Route path="/student/classes/:id" element={<ClassDetail />} />
@@ -90,8 +93,10 @@ export default function App() {
             <Route path="/student/transcript" element={<StudentTranscript />} />
             <Route path="/student/ai-advisor" element={<StudentAiAdvisor />} />
             <Route path="/student/classes/:classId/lessons/:lessonId" element={<StudentLessonLearning />} />
-       </Route>
-          <Route element={<ProtectedRoute allow={['LECTURER']}><Layout></Layout></ProtectedRoute>}>
+          </Route>
+
+          {/* Lecturer Routes */}
+          <Route element={<ProtectedRoute allow={['LECTURER']}><Layout /></ProtectedRoute>}>
             <Route path="/lecturer" element={<LecturerDashboard />} />
             <Route path="/lecturer/classes" element={<LecturerClasses />} />
             <Route path="/lecturer/classes/:id" element={<ClassDetail />} />
@@ -102,25 +107,28 @@ export default function App() {
             <Route path="/lecturer/grading" element={<LecturerGrading />} />
             <Route path="/lecturer/schedule" element={<LecturerSchedule />} />
             <Route path="/lecturer/profile" element={<LecturerProfile />} />
-       </Route>
-          <Route element={<ProtectedRoute allow={['ADMIN']}><Layout></Layout></ProtectedRoute>}>
+          </Route>
+
+          {/* Admin Routes */}
+          <Route element={<ProtectedRoute allow={['ADMIN']}><Layout /></ProtectedRoute>}>
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/classes" element={<AdminClasses />} />
             <Route path="/admin/classes/:id" element={<ClassDetail />} />
             <Route path="/admin/curricula" element={<AdminCurricula />} />
             <Route path="/admin/registration" element={<RegistrationPeriods />} />
+            <Route path="/admin/tuition" element={<AdminTuitionManagement />} />
             <Route path="/admin/reports" element={<AdminReports />} />
             <Route path="/admin/permissions" element={<AdminPermissions />} />
             <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
             <Route path="/admin/clazz-permissions" element={<ClazzPermissions />} />
             <Route path="/admin/departments" element={<AdminDepartments />} />
             <Route path="/admin/administrative-classes" element={<AdminAdministrativeClasses />} />
-       </Route>
+          </Route>
+
           <Route path="*" element={<NotFoundPage />} />
-     </Routes>
-   </BrowserRouter>
- </AuthProvider>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
-
