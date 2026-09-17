@@ -4,14 +4,18 @@ export interface AdminClassRequest {
   className: string;
   faculty?: string;
   academicYear?: string;
+  curriculumId?: number;
 }
 
 export interface AdminClassResponse {
   id: number;
   className: string;
+  faculty?: string;
   facultyName?: string;
   advisorName?: string;
   academicYear?: string;
+  curriculumId?: number;
+  curriculumName?: string;
   studentCount?: number;
 }
 
