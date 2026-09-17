@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Lock, Check, CheckCircle2, AlertCircle, HelpCircle, FileText, Download, RotateCcw } from 'lucide-react';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import * as clazzService from '../../services/clazzService';
 import * as contentService from '../../services/contentService';
@@ -277,12 +278,14 @@ export default function StudentLessonLearning() {
               </span>
             )}
             {!isLessonCompleted && (
-              <span className="rounded-full bg-rose-50 border border-rose-200 px-2.5 py-1 text-xs font-medium text-rose-600">
-                🔒 Chống tua tiến
+              <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 border border-rose-200 px-2.5 py-1 text-xs font-medium text-rose-600">
+                <Lock className="w-3 h-3" />
+                Chống tua tiến
               </span>
             )}
             {quizzes.length > 0 && (
-              <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-1 text-xs font-medium text-amber-700">
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-1 text-xs font-medium text-amber-700">
+                <HelpCircle className="w-3 h-3" />
                 {quizzes.length} câu hỏi video
               </span>
             )}
@@ -294,7 +297,7 @@ export default function StudentLessonLearning() {
             <button
               type="button"
               onClick={() => seekVideo(-10)}
-              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer"
             >
               -10s
             </button>
@@ -302,7 +305,7 @@ export default function StudentLessonLearning() {
               type="button"
               onClick={() => seekVideo(10)}
               disabled={!isLessonCompleted && currentVideoTime + 10 > maxWatchedSec}
-              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
             >
               +10s
             </button>
@@ -314,8 +317,9 @@ export default function StudentLessonLearning() {
                 video.currentTime = 0;
                 saveResumePosition(0);
               }}
-              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer"
             >
+              <RotateCcw className="w-3 h-3" />
               Bắt đầu lại
             </button>
           </div>
@@ -439,19 +443,35 @@ export default function StudentLessonLearning() {
                     type="button"
                     disabled={!canMarkComplete}
                     onClick={() => void onMarkCompleted()}
-                    className={`rounded-lg px-3.5 py-2 text-sm font-semibold transition-all ${
+                    className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition-all ${
                       isLessonCompleted
                         ? 'bg-emerald-600 text-white hover:bg-emerald-500'
                         : canMarkComplete
                         ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-md shadow-indigo-200 cursor-pointer'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 opacity-80'
+                        : 'bg-slate-200 text-slate-500 cursor-not-allowed border border-slate-300 opacity-80'
                     }`}
                   >
-                    {isLessonCompleted ? '✓ Đã hoàn thành' : canMarkComplete ? 'Đánh dấu hoàn thành' : '🔒 Đánh dấu hoàn thành'}
+                    {isLessonCompleted ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 text-white" />
+                        Đã hoàn thành
+                      </>
+                    ) : canMarkComplete ? (
+                      <>
+                        <Check className="w-4 h-4 text-white" />
+                        Đánh dấu hoàn thành
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="w-4 h-4 text-slate-500" />
+                        Đánh dấu hoàn thành
+                      </>
+                    )}
                   </button>
                   {!isLessonCompleted && selectedLesson.videoUrl && !canMarkComplete && (
-                    <span className="text-[11px] font-medium text-amber-600">
-                      Cần xem gần hết video (còn dưới 10s) mới được đánh dấu
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+                      Cần xem hết video mới tính
                     </span>
                   )}
                 </div>
