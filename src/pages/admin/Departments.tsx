@@ -7,6 +7,7 @@ export default function AdminDepartments() {
   const [depts, setDepts] = useState<DepartmentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [code, setCode] = useState('');
@@ -80,7 +81,16 @@ export default function AdminDepartments() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <PageTitle>Quản lý Khoa / Bộ môn</PageTitle>
-        <button aria-label="button" onClick={openCreate} className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition shadow-sm">+ Thêm khoa</button>
+        <div className="flex items-center gap-3">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Tìm kiếm khoa/bộ môn..."
+            className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-indigo-500"
+          />
+          <button aria-label="button" onClick={openCreate} className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition shadow-sm">+ Thêm khoa</button>
+        </div>
       </div>
 
       {err && <div className="p-3 rounded-lg text-sm bg-rose-50 border border-rose-200 text-rose-700">{err}</div>}
