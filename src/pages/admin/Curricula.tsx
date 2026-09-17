@@ -92,17 +92,19 @@ export default function AdminCurricula() {
   useEffect(() => {
     if (!selectedCurrId) return;
     let mounted = true;
-    setLoadingCurrCourses(true);
     curriculumService
       .getCoursesByCurriculum(selectedCurrId)
       .then((list) => {
-        if (mounted) setCurriculumCourses(list);
+        if (mounted) {
+          setCurriculumCourses(list);
+          setLoadingCurrCourses(false);
+        }
       })
       .catch(() => {
-        if (mounted) setCurriculumCourses([]);
-      })
-      .finally(() => {
-        if (mounted) setLoadingCurrCourses(false);
+        if (mounted) {
+          setCurriculumCourses([]);
+          setLoadingCurrCourses(false);
+        }
       });
     return () => {
       mounted = false;
@@ -571,10 +573,11 @@ export default function AdminCurricula() {
                       </thead>
                       <tbody>
                         {curriculumCourses.map((c) => {
-                          const code = c.courseCode || (c as any).code || '-';
-                          const title = c.courseTitle || (c as any).title || '-';
-                          const credit = c.credits ?? (c as any).credit ?? 0;
-                          const targetCourseId = c.courseId || c.id;
+                          const item = c as CurriculumCourseItem & { code?: string; title?: string; credit?: number };
+                          const code = item.courseCode || item.code || '-';
+                          const title = item.courseTitle || item.title || '-';
+                          const credit = item.credits ?? item.credit ?? 0;
+                          const targetCourseId = item.courseId || item.id;
 
                           return (
                             <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition">
