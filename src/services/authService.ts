@@ -5,6 +5,10 @@ export const login = async (body: LoginRequest): Promise<AuthUser> => {
   return unwrap<AuthUser>(apiClient.post('/auth/login', body));
 };
 
+export const googleLogin = async (googleEmail: string, googleIdToken?: string): Promise<AuthUser> => {
+  return unwrap<AuthUser>(apiClient.post('/auth/google', { googleEmail, googleIdToken }));
+};
+
 export const refresh = async (refreshToken: string): Promise<AuthUser> =>
   unwrap<AuthUser>(apiClient.post('/auth/refresh', { refreshToken }));
 
