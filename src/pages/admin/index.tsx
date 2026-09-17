@@ -241,6 +241,16 @@ export function AdminClasses() {
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [editingClazz, setEditingClazz] = useState<Clazz | null>(null);
+  const [editForm, setEditForm] = useState({
+    classCode: '',
+    className: '',
+    courseId: '',
+    lecturerId: '',
+    maxStudents: '50',
+    semester: 'HK1',
+    academicYear: '2026-2027',
+  });
   const [form, setForm] = useState({
     classCode: '',
     className: '',
@@ -278,6 +288,52 @@ export function AdminClasses() {
     const cleanup = loadData();
     return cleanup;
   }, [loadData]);
+
+  const openEdit = (c: Clazz) => {
+    setEditingClazz(c);
+    setShowForm(false);
+    setEditForm({
+      classCode: c.classCode,
+      className: c.className,
+      courseId: String(c.courseId || ''),
+      lecturerId: c.lecturerId ? String(c.lecturerId) : '',
+      maxStudents: String(c.maxStudents ?? 50),
+      semester: c.semester || 'HK1',
+      academicYear: c.academicYear || '2026-2027',
+    });
+  };
+
+  const handleUpdate = async () => {
+    if (!editingClazz) return;
+    if (!editForm.classCode.trim()) { setErr('Vui lòng nhập mã lớp học phần'); return; }
+    if (!editForm.className.trim()) { setErr('Vui lòng nhập tên lớp học phần'); return; }
+
+    const maxStuds = Number(editForm.maxStudents);
+    if (!Number.isFinite(maxStuds) || maxStuds <= 0) {
+      setErr('Sĩ số tối đa phải lớn hơn 0');
+      return;
+    }
+
+    setSubmitting(true);
+    setErr(null);
+    try {
+      await clazzService.updateClazz(editingClazz.id, {
+        classCode: editForm.classCode.trim(),
+        className: editForm.className.trim(),
+        courseId: editForm.courseId ? Number(editForm.courseId) : editingClazz.courseId,
+        lecturerId: editForm.lecturerId ? Number(editForm.lecturerId) : null,
+        maxStudents: maxStuds,
+        semester: editForm.semester,
+        academicYear: editForm.academicYear,
+      });
+      setEditingClazz(null);
+      loadData();
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Cập nhật lớp học phần thất bại');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleCreate = async () => {
     if (!form.classCode.trim()) { setErr('Vui lòng nhập mã lớp học phần'); return; }
@@ -355,6 +411,110 @@ export function AdminClasses() {
           {showForm ? 'Hủy' : '+ Tạo Lớp học phần mới'}
         </button>
       </div>
+
+      {editingClazz && (
+        <Card className="mb-6 border-2 border-indigo-200 bg-indigo-50/40 dark:bg-indigo-950/20">
+          <div className="flex items-center justify-between mb-3 border-b border-indigo-100 pb-2">
+            <h3 className="font-bold text-indigo-900 dark:text-indigo-200">
+              Chỉnh sửa & Phân công Giảng viên cho lớp: <span className="font-mono text-indigo-700 dark:text-indigo-300">{editingClazz.classCode}</span>
+            </h3>
+            <button onClick={() => setEditingClazz(null)} className="text-xs font-semibold text-slate-500 hover:text-slate-700">Hủy</button>
+          </div>
+          <div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Mã lớp học phần *</label>
+              <input
+                value={editForm.classCode}
+                onChange={(e) => setEditForm({ ...editForm, classCode: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Tên lớp học phần *</label>
+              <input
+                value={editForm.className}
+                onChange={(e) => setEditForm({ ...editForm, className: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Môn học (Khóa học)</label>
+              <select
+                value={editForm.courseId}
+                onChange={(e) => setEditForm({ ...editForm, courseId: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700"
+              >
+                <option value="">-- Chọn môn học --</option>
+                {courses.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    [{c.code}] {c.title} ({c.credit} tín chỉ)
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-1 font-bold">
+                Giảng viên phụ trách (Gán lại)
+              </label>
+              <select
+                value={editForm.lecturerId}
+                onChange={(e) => setEditForm({ ...editForm, lecturerId: e.target.value })}
+                className="w-full rounded-lg border-2 border-indigo-300 bg-white px-3 py-2 font-semibold text-indigo-900 shadow-sm focus:border-indigo-500 focus:outline-none dark:bg-slate-800 dark:border-indigo-600 dark:text-indigo-200"
+              >
+                <option value="">-- Chưa gán giảng viên --</option>
+                {lecturers.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.fullName} ({l.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Sĩ số tối đa *</label>
+              <input
+                type="number"
+                min="1"
+                value={editForm.maxStudents}
+                onChange={(e) => setEditForm({ ...editForm, maxStudents: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 font-bold text-indigo-600 dark:bg-slate-800 dark:border-slate-700"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">Học kỳ</label>
+                <input
+                  value={editForm.semester}
+                  onChange={(e) => setEditForm({ ...editForm, semester: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">Năm học</label>
+                <input
+                  value={editForm.academicYear}
+                  onChange={(e) => setEditForm({ ...editForm, academicYear: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex items-center gap-2">
+            <button
+              onClick={() => void handleUpdate()}
+              disabled={submitting}
+              className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 transition"
+            >
+              {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
+            </button>
+            <button
+              onClick={() => setEditingClazz(null)}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              Hủy
+            </button>
+          </div>
+        </Card>
+      )}
 
       {showForm && (
         <Card className="mb-6 border-2 border-indigo-100">
@@ -473,15 +633,27 @@ export function AdminClasses() {
                       <Link to={`/admin/classes/${c.id}`} className="hover:underline text-indigo-600 dark:text-indigo-400">{c.className}</Link>
                     </td>
                     <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">{c.courseTitle || '-'}</td>
-                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">{c.lecturerName || '-'}</td>
+                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">
+                      {c.lecturerName ? (
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">{c.lecturerName}</span>
+                      ) : (
+                        <span className="italic text-amber-600 dark:text-amber-400">Chưa phân công</span>
+                      )}
+                    </td>
                     <td className="py-3.5 px-4 text-center font-bold text-slate-800 dark:text-slate-200">
                       <span className="rounded bg-indigo-50 px-2 py-1 text-xs text-indigo-700 font-extrabold">{c.maxStudents ?? 'Không giới hạn'}</span>
                     </td>
                     <td className="py-3.5 px-4 text-center"><Pill intent="success">{c.semester} · {c.academicYear}</Pill></td>
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-3.5 px-4 text-right space-x-1.5">
+                      <button
+                        onClick={() => openEdit(c)}
+                        className="rounded px-2.5 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900 transition"
+                      >
+                        Sửa / Gán GV
+                      </button>
                       <button
                         onClick={() => void handleDelete(c.id)}
-                        className="rounded px-2 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50"
+                        className="rounded px-2.5 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                       >
                         Xóa
                       </button>
