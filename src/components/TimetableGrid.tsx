@@ -203,7 +203,7 @@ export default function TimetableGrid({
   onDeleteSchedule,
   isEditable = false,
 }: TimetableGridProps) {
-  const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 8, 16));
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
   const rawSchedules = schedules.length > 0 ? schedules : DEFAULT_DEMO_SCHEDULES;
 
@@ -215,7 +215,7 @@ export default function TimetableGrid({
   const cleanTitle = (title || 'Lịch cá nhân').replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
 
   const resetToToday = () => {
-    setCurrentDate(new Date(2026, 8, 16));
+    setCurrentDate(new Date());
   };
 
   const getWeekDates = (date: Date) => {
