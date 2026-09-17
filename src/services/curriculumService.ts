@@ -8,6 +8,7 @@ export const deleteCurriculum = async (id: number): Promise<void> => { await api
 export const getCoursesByCurriculum = async (id: number): Promise<Course[]> => unwrap(apiClient.get(`/curricula/${id}/courses`));
 export const getAllCourses = async (): Promise<Course[]> => unwrap(apiClient.get('/admin/courses'));
 export const createCourse = async (data: Omit<Course, 'id' | 'createdAt'>): Promise<Course> => unwrap(apiClient.post('/admin/courses', data));
+export const updateCourse = async (id: number, data: Partial<Course>): Promise<Course> => unwrap(apiClient.put(`/admin/courses/${id}`, data));
 export const deleteCourse = async (id: number): Promise<void> => { await apiClient.delete(`/admin/courses/${id}`); };
 export const removeCourseFromCurriculum = async (curriculumId: number, courseId: number): Promise<void> => {
   await apiClient.delete(`/admin/curricula/${curriculumId}/courses/${courseId}`);
