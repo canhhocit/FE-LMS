@@ -3,32 +3,51 @@ import { Bot, Search, Calendar, User, BookOpen, X, Sparkles } from 'lucide-react
 
 export const DraggableAiCompanion: React.FC = () => {
   const [position, setPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight - 180 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const [isOpenInput, setIsOpenInput] = useState(false);
   const [query, setQuery] = useState('');
   const [aiReply, setAiReply] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
+  const hasMovedRef = useRef(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+  const initialBotPos = useRef({ x: 0, y: 0 });
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setDragOffset({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y,
-    });
+    if (e.button !== 0) return; // Only left click
+    isDraggingRef.current = true;
+    hasMovedRef.current = false;
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+    initialBotPos.current = { ...position };
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      if (!isDraggingRef.current) return;
+      const dx = moveEvent.clientX - dragStartPos.current.x;
+      const dy = moveEvent.clientY - dragStartPos.current.y;
+
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        hasMovedRef.current = true;
+      }
+
+      const newX = Math.max(10, Math.min(window.innerWidth - 80, initialBotPos.current.x + dx));
+      const newY = Math.max(10, Math.min(window.innerHeight - 80, initialBotPos.current.y + dy));
+      setPosition({ x: newX, y: newY });
+    };
+
+    const onMouseUp = () => {
+      isDraggingRef.current = false;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    const newX = Math.max(10, Math.min(window.innerWidth - 90, e.clientX - dragOffset.x));
-    const newY = Math.max(10, Math.min(window.innerHeight - 90, e.clientY - dragOffset.y));
-    setPosition({ x: newX, y: newY });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
+  const handleMascotClick = () => {
+    if (hasMovedRef.current) return; // Ignore click if dragging
+    setIsOpenInput((prev) => !prev);
   };
 
   const handleQuickAsk = (topic: string) => {
@@ -47,17 +66,15 @@ export const DraggableAiCompanion: React.FC = () => {
     <div
       ref={containerRef}
       style={{ left: `${position.x}px`, top: `${position.y}px` }}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      className="fixed z-50 select-none transition-shadow cursor-grab active:cursor-grabbing"
+      className="fixed z-50 select-none transition-shadow"
     >
       {/* Floating Mascot Button */}
       <div
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => !isOpenInput && setIsHovered(false)}
         onMouseDown={handleMouseDown}
-        onClick={() => setIsOpenInput(!isOpenInput)}
-        className="relative group"
+        onClick={handleMascotClick}
+        className="relative group cursor-grab active:cursor-grabbing"
       >
         <div className="w-16 h-16 rounded-full bg-linear-to-tr from-indigo-600 via-purple-600 to-pink-500 p-1 shadow-2xl hover:scale-110 transition duration-300 flex items-center justify-center">
           <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white relative overflow-hidden">
