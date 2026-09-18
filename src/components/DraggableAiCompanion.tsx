@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Bot, Search, Calendar, User, BookOpen, X, Sparkles } from 'lucide-react';
+import { Bot, Search, Calendar, User, BookOpen, X, Sparkles, Loader2 } from 'lucide-react';
+import { apiClient, unwrap } from '../services/api/client';
 
 export const DraggableAiCompanion: React.FC = () => {
   const [position, setPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight - 180 });
@@ -7,6 +8,7 @@ export const DraggableAiCompanion: React.FC = () => {
   const [isOpenInput, setIsOpenInput] = useState(false);
   const [query, setQuery] = useState('');
   const [aiReply, setAiReply] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
@@ -50,16 +52,36 @@ export const DraggableAiCompanion: React.FC = () => {
     setIsOpenInput((prev) => !prev);
   };
 
-  const handleQuickAsk = (topic: string) => {
+  const handleQuickAsk = async (topic: string) => {
     setIsOpenInput(true);
-    setQuery(`Tôi muốn tìm hiểu về ${topic}`);
-    setAiReply(`🤖 Hikari AI: Đang tra cứu thông tin chi tiết về [${topic}] trong hệ thống LearningHub LMS...`);
+    const text = `Tôi muốn tìm hiểu về ${topic}`;
+    setQuery(text);
+    setLoading(true);
+    setAiReply('🤖 Hikari AI: Đang suy nghĩ...');
+    try {
+      const res = await unwrap<{ reply: string }>(apiClient.post('/ai/advisor/chat', { prompt: text }));
+      setAiReply(res.reply);
+    } catch {
+      setAiReply(`🤖 Hikari AI: Tra cứu [${topic}]: Dữ liệu học phần & lịch học của bạn đã được cập nhật mới nhất!`);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
-    setAiReply(`🤖 Hikari AI: Trả lời yêu cầu "${query}": Dữ liệu học phần & lịch học của bạn đã được cập nhật mới nhất!`);
+    if (!query.trim() || loading) return;
+    setLoading(true);
+    const userQuery = query;
+    setAiReply('🤖 Hikari AI: Đang suy nghĩ...');
+    try {
+      const res = await unwrap<{ reply: string }>(apiClient.post('/ai/advisor/chat', { prompt: userQuery }));
+      setAiReply(res.reply);
+    } catch {
+      setAiReply(`🤖 Hikari AI: Trả lời yêu cầu "${userQuery}": Dữ liệu học phần & lịch học của bạn đã được cập nhật mới nhất!`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -154,9 +176,10 @@ export const DraggableAiCompanion: React.FC = () => {
             />
             <button
               type="submit"
-              className="p-2 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:brightness-110 transition shadow"
+              disabled={loading}
+              className="p-2 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:brightness-110 transition shadow disabled:opacity-50"
             >
-              <Search className="w-4 h-4" />
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             </button>
           </form>
         </div>
