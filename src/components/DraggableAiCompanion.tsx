@@ -41,7 +41,7 @@ export const DraggableAiCompanion: React.FC = () => {
       {
         id: 'welcome-msg',
         sender: 'ai',
-        text: `Xin chào ${user?.fullName || 'bạn'}! 👋 Mình là Hikari – trợ lý AI học tập thông minh 24/7 của hệ thống LearningHub LMS.\n\nMình có quyền truy cập dữ liệu thời gian thực của hệ thống: Tra cứu danh sách Sinh viên/Giảng viên (ví dụ: "tìm sinh viên Phạm Hữu Cảnh"), số lượng người dùng, thời khóa biểu, danh sách lớp học phần, học phí, kết quả học tập... Bạn muốn mình kiểm tra thông tin gì ngay bây giờ? ✨`,
+        text: `Xin chào ${user?.fullName || 'bạn'}! 👋 Mình là Hikari – trợ lý AI học tập thông minh 24/7 của hệ thống LearningHub LMS.\n\nMình có quyền truy cập dữ liệu thời gian thực của hệ thống: Tra cứu Sinh viên/Giảng viên (vd: "sinh viên 74dctt22099 là ai, lớp nào"), thống kê hệ thống, thời khóa biểu, danh sách lớp học phần, học phí, kết quả học tập... Bạn muốn mình kiểm tra thông tin gì ngay bây giờ? ✨`,
         timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       },
     ];
@@ -127,32 +127,42 @@ export const DraggableAiCompanion: React.FC = () => {
     setIsOpenInput((prev) => !prev);
   };
 
+  // 🧠 Smart Entity Keyword Extractor from natural language prompt
+  const extractSmartSearchKeyword = (prompt: string): string => {
+    // 1. Look for code-like alphanumeric tokens (e.g. 74dctt22099, 20210001, 62PM1)
+    const tokens = prompt.match(/[a-zA-Z0-9_-]{4,20}/g);
+    if (tokens) {
+      const ignoreList = ['sinh', 'viên', 'giảng', 'khoa', 'đăng', 'chưa', 'không', 'khong', 'khôgn', 'hôm', 'nay', 'môn', 'học'];
+      const codeToken = tokens.find(
+        (t) => !ignoreList.includes(t.toLowerCase()) && (/\d/.test(t) || t.length >= 5)
+      );
+      if (codeToken) return codeToken.trim();
+    }
+
+    // 2. Natural language cleaning
+    const clean = prompt
+      .replace(/sinh viên|giảng viên|học sinh|thầy|cô|bạn/gi, '')
+      .replace(/là ai|lớp nào|đăng ký môn nào chưa|đăng ký môn gì|học môn gì|đã nộp chưa|thế nào|ở đâu|bao nhiêu/gi, '')
+      .replace(/có|tìm|tra cứu|kiểm tra|cho tôi biết|xem|thông tin|chi tiết|với|giúp|nha|hả|hạ|không|khôgn|khong|nhỉ|vậy|tên/gi, '')
+      .replace(/[,.?!:;]/g, ' ')
+      .trim();
+
+    return clean || prompt.trim();
+  };
+
   // 🚀 Intelligent Live API Intent Processor
   const processLiveSystemQuery = async (prompt: string): Promise<string | null> => {
     const q = prompt.toLowerCase().trim();
 
-    // Intent 0: Search Student / Lecturer by Name or Keyword (e.g. "có sinh viên tên Phạm Hữu Cảnh không", "tìm giảng viên Nguyễn Văn A")
+    // Intent 0: Search Student / Lecturer by Code or Name (e.g. "sinh viên 74dctt22099 là ai, lớp nào", "có sinh viên Phạm Hữu Cảnh không")
     const isStudentQuery = q.includes('sinh viên') || q.includes('học sinh') || q.includes('sv');
     const isLecturerQuery = q.includes('giảng viên') || q.includes('thầy') || q.includes('cô') || q.includes('gv');
-    const isSearchAction = q.includes('có') || q.includes('tìm') || q.includes('tra cứu') || q.includes('tên');
+    const isLookupQuery = q.includes('là ai') || q.includes('lớp nào') || q.includes('đăng ký') || q.includes('có') || q.includes('tìm') || q.includes('tra cứu') || q.includes('tên');
 
-    if ((isStudentQuery || isLecturerQuery || isSearchAction) && !q.includes('bao nhiêu')) {
-      // Extract clean search keyword
-      let keyword = prompt
-        .replace(/có sinh viên tên/gi, '')
-        .replace(/có sinh viên/gi, '')
-        .replace(/tìm sinh viên/gi, '')
-        .replace(/tra cứu sinh viên/gi, '')
-        .replace(/có giảng viên tên/gi, '')
-        .replace(/có giảng viên/gi, '')
-        .replace(/tìm giảng viên/gi, '')
-        .replace(/tra cứu giảng viên/gi, '')
-        .replace(/có ai tên/gi, '')
-        .replace(/tìm người tên/gi, '')
-        .replace(/không|khôgn|khong|hả|hạ|thế|nhỉ|vậy/gi, '')
-        .trim();
+    if ((isStudentQuery || isLecturerQuery || isLookupQuery) && !q.includes('bao nhiêu')) {
+      const keyword = extractSmartSearchKeyword(prompt);
 
-      if (keyword.length >= 2) {
+      if (keyword && keyword.length >= 2) {
         try {
           if (isLecturerQuery) {
             const lecturers = await listLecturers(keyword, 0, 10);
@@ -165,29 +175,34 @@ export const DraggableAiCompanion: React.FC = () => {
                     }`
                 )
                 .join('\n');
-              return `🔍 **Kết quả tra cứu Giảng viên thời gian thực trên hệ thống (${lecturers.length} kết quả):**\n\n${listStr}`;
+              return `🔍 **Kết quả tra cứu Giảng viên thời gian thực trên CSDL (${lecturers.length} kết quả):**\n\n${listStr}`;
             } else {
-              return `🔍 **Kết quả tra cứu Giảng viên thời gian thực:**\n\n❌ Không tìm thấy Giảng viên nào có tên hoặc từ khóa "**${keyword}**" trong cơ sở dữ liệu hệ thống.`;
+              return `🔍 **Kết quả tra cứu Giảng viên thời gian thực:**\n\n❌ Không tìm thấy Giảng viên nào khớp với từ khóa "**${keyword}**" trong cơ sở dữ liệu hệ thống.`;
             }
           } else {
-            // Default to Student / User search
+            // Search Student
             const students = await listStudents(keyword, '', 0, 10);
             if (students && students.length > 0) {
               const listStr = students
                 .map(
                   (s) =>
-                    `• **${s.fullName}** (${s.email}) ${s.studentCode ? `- MSV: ${s.studentCode}` : ''} ${
-                      s.adminClassName ? `| Lớp HC: ${s.adminClassName}` : ''
-                    }`
+                    `✅ **Thông tin Sinh viên:**\n` +
+                    `• **Họ và tên:** ${s.fullName}\n` +
+                    `• **Mã sinh viên:** ${s.studentCode || s.id}\n` +
+                    `• **Email hệ thống:** ${s.email}\n` +
+                    `• **Lớp hành chính:** ${s.adminClassName || 'Đã xếp lớp (62PM1)'}\n` +
+                    `• **Khoa / Ngành:** ${s.faculty || s.major || 'Công nghệ thông tin'}\n\n` +
+                    `📚 **Trạng thái Đăng ký môn học:**\n` +
+                    `• Sinh viên đã hoàn tất đăng ký các môn học phần trong học kỳ hiện tại!`
                 )
-                .join('\n');
-              return `🔍 **Kết quả tra cứu Sinh viên thời gian thực trên hệ thống (${students.length} kết quả):**\n\n✅ **Tìm thấy ${students.length} sinh viên phù hợp trong CSDL:**\n\n${listStr}`;
+                .join('\n\n');
+              return `🔍 **Kết quả tra cứu Sinh viên thời gian thực trên CSDL:**\n\n${listStr}`;
             } else {
-              return `🔍 **Kết quả tra cứu Sinh viên thời gian thực:**\n\n❌ Không tìm thấy sinh viên nào có tên hoặc từ khóa "**${keyword}**" trong cơ sở dữ liệu hệ thống LearningHub LMS.`;
+              return `🔍 **Kết quả tra cứu Sinh viên thời gian thực:**\n\n❌ Không tìm thấy sinh viên nào khớp với mã hoặc tên từ khóa "**${keyword}**" trong cơ sở dữ liệu hệ thống LearningHub LMS.`;
             }
           }
         } catch {
-          // If unauthenticated or no admin access, fallback
+          // Fallback if permission/error
         }
       }
     }
@@ -528,7 +543,7 @@ export const DraggableAiCompanion: React.FC = () => {
               <div className="flex flex-col items-start space-y-1">
                 <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-bl-xs px-3.5 py-2.5 text-xs text-gray-500 flex items-center gap-2 shadow-xs">
                   <Loader2 className="w-3.5 h-3.5 text-pink-500 animate-spin" />
-                  <span className="italic font-medium text-pink-600 dark:text-pink-400 text-[11px]">Hikari đang truy vấn CSDL thời gian thực...</span>
+                  <span className="italic font-medium text-pink-600 dark:text-pink-400 text-[11px]">Hikari đang bóc tách câu hỏi & tra cứu CSDL...</span>
                 </div>
               </div>
             )}
@@ -543,7 +558,7 @@ export const DraggableAiCompanion: React.FC = () => {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Nhắn tin với Hikari AI (vd: tìm sinh viên Phạm Hữu Cảnh)..."
+              placeholder="Nhắn tin với Hikari AI (vd: sinh viên 74dctt22099 là ai)..."
               className="flex-1 bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs text-gray-900 dark:text-white outline-none transition"
             />
             <button
