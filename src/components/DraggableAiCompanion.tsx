@@ -606,9 +606,9 @@ export const DraggableAiCompanion: React.FC = () => {
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full border border-purple-600" />
               </div>
               <div>
-                <h3 className="text-sm font-bold tracking-tight">Hikari AI Companion</h3>
+                <h3 className="text-sm font-bold tracking-tight">AI Companion</h3>
                 <p className="text-[10px] text-pink-100 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Live CSDL • Cho phép Kéo thả Size & Copy
+                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Live AI Companion
                 </p>
               </div>
             </div>
@@ -702,7 +702,7 @@ export const DraggableAiCompanion: React.FC = () => {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Nhắn tin với Hikari AI (vd: là đăng ký những môn nào)..."
+              placeholder="Bạn cần cái chó gì?"
               className="flex-1 bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs text-gray-900 dark:text-white outline-none transition select-text"
             />
             <button
