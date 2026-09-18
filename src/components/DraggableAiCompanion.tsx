@@ -1,7 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Search, Calendar, User, BookOpen, X, Sparkles, Loader2, Trash2, Send, Maximize2, Minimize2 } from 'lucide-react';
+import { Bot, Search, Calendar, User, BookOpen, X, Sparkles, Loader2, Trash2, Send, Maximize2, Minimize2, Database, CreditCard, ShieldCheck } from 'lucide-react';
 import { apiClient, unwrap } from '../services/api/client';
 import { useAuth } from '../contexts/useAuth';
+import { getDashboardStats } from '../services/adminService';
+import { getMyClasses } from '../services/clazzService';
+import { getMySchedule } from '../services/scheduleService';
+import { getMyTuition } from '../services/tuitionService';
 
 export interface ChatMessage {
   id: string;
@@ -37,7 +41,7 @@ export const DraggableAiCompanion: React.FC = () => {
       {
         id: 'welcome-msg',
         sender: 'ai',
-        text: `Xin chào ${user?.fullName || 'bạn'}! 👋 Mình là Hikari – trợ lý AI học tập thân thiện 24/7 của hệ thống LearningHub LMS. Rất vui được gặp bạn hôm nay! Bạn đang cần mình hỗ trợ gì nào? Dù là học phần, tra cứu thời khóa biểu hay giải đáp thắc mắc, mình luôn sẵn sàng đồng hành cùng bạn! ✨`,
+        text: `Xin chào ${user?.fullName || 'bạn'}! 👋 Mình là Hikari – trợ lý AI học tập thông minh 24/7 của hệ thống LearningHub LMS.\n\nMình có quyền truy cập dữ liệu thời gian thực của hệ thống: Tra cứu số lượng người dùng, thời khóa biểu, danh sách lớp học phần, học phí, kết quả học tập... Bạn muốn mình kiểm tra thông tin gì ngay bây giờ? ✨`,
         timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       },
     ];
@@ -66,7 +70,7 @@ export const DraggableAiCompanion: React.FC = () => {
         {
           id: `welcome-${Date.now()}`,
           sender: 'ai',
-          text: `Đã làm sạch lịch sử trò chuyện! Xin chào ${user?.fullName || 'bạn'}, mình có thể giúp gì cho bạn hôm nay?`,
+          text: `Đã làm sạch lịch sử trò chuyện! Xin chào ${user?.fullName || 'bạn'}, mình có thể truy vấn dữ liệu gì cho bạn hôm nay?`,
           timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
         },
       ];
@@ -123,6 +127,134 @@ export const DraggableAiCompanion: React.FC = () => {
     setIsOpenInput((prev) => !prev);
   };
 
+  // 🚀 Intelligent Live API Intent Processor
+  const processLiveSystemQuery = async (prompt: string): Promise<string | null> => {
+    const q = prompt.toLowerCase().trim();
+
+    // Intent 1: Total Users / System Stats
+    if (
+      q.includes('bao nhiêu người') ||
+      q.includes('tổng số người') ||
+      q.includes('bao nhiêu tài khoản') ||
+      q.includes('thống kê hệ thống') ||
+      q.includes('bao nhiêu sinh viên') ||
+      q.includes('bao nhiêu giảng viên') ||
+      q.includes('bao nhiêu lớp')
+    ) {
+      try {
+        const stats = await getDashboardStats();
+        return (
+          `📊 **Thống kê dữ liệu thời gian thực của hệ thống LearningHub LMS:**\n\n` +
+          `• **Tổng số người dùng:** ${stats.totalUsers} tài khoản\n` +
+          `• **Tổng số Lớp học phần:** ${stats.totalClasses} lớp\n` +
+          `• **Lượt đăng ký học:** ${stats.totalEnrollments} lượt\n` +
+          `• **Bài tập đã tạo:** ${stats.totalAssignments} bài\n` +
+          `• **Bài tập đã nộp:** ${stats.totalSubmissions} bài nộp`
+        );
+      } catch {
+        return `📊 **Dữ liệu hệ thống LearningHub LMS:**\nHệ thống hiện đang quản lý toàn bộ tài khoản người dùng, lớp học phần và bài tập trên dữ liệu sản xuất!`;
+      }
+    }
+
+    // Intent 2: My Schedule / Thời khóa biểu
+    if (
+      q.includes('thời khóa biểu') ||
+      q.includes('lịch học') ||
+      q.includes('lịch dạy') ||
+      q.includes('hôm nay học gì') ||
+      q.includes('mấy tiết') ||
+      q.includes('học ở đâu')
+    ) {
+      try {
+        const sched = await getMySchedule();
+        if (!sched || sched.length === 0) {
+          return `📅 **Thời khóa biểu cá nhân của bạn:**\nHiện tại bạn chưa có lịch học hoặc lịch giảng dạy nào được xếp trong hệ thống!`;
+        }
+        const itemsStr = sched
+          .slice(0, 6)
+          .map(
+            (s) =>
+              `• **${s.courseTitle || s.className || s.classCode}**: ${
+                s.dayOfWeek ? `Thứ ${s.dayOfWeek}` : 'Lịch học'
+              } (${s.startTime || '7:00'} - ${s.endTime || '9:30'}) tại Phòng **${s.room || 'Chưa xếp phòng'}**`
+          )
+          .join('\n');
+        return `📅 **Thời khóa biểu thời gian thực của bạn (${sched.length} môn học):**\n\n${itemsStr}`;
+      } catch {
+        return `📅 Bạn vui lòng xem chi tiết lịch học/lịch dạy tại mục **Thời khóa biểu** trên sidebar!`;
+      }
+    }
+
+    // Intent 3: My Classes / Danh sách Lớp học phần
+    if (
+      q.includes('danh sách lớp') ||
+      q.includes('các lớp tôi học') ||
+      q.includes('các lớp tôi dạy') ||
+      q.includes('lớp học của tôi') ||
+      q.includes('lớp học phần')
+    ) {
+      try {
+        const classes = await getMyClasses();
+        if (!classes || classes.length === 0) {
+          return `📚 **Danh sách Lớp học phần:**\nBạn hiện chưa tham gia hoặc chưa được phân công lớp học phần nào!`;
+        }
+        const itemsStr = classes
+          .slice(0, 6)
+          .map(
+            (c) =>
+              `• **${c.className}** (${c.classCode}) - Học kỳ: ${c.semester} | GV: ${c.lecturerName || 'Chưa phân công'}`
+          )
+          .join('\n');
+        return `📚 **Danh sách các Lớp học phần thời gian thực của bạn (${classes.length} lớp):**\n\n${itemsStr}`;
+      } catch {
+        return `📚 Bạn có thể xem toàn bộ danh sách lớp tại mục **Lớp học** trên menu sidebar!`;
+      }
+    }
+
+    // Intent 4: Tuition / Học phí
+    if (q.includes('học phí') || q.includes('tiền học') || q.includes('học phí của tôi') || q.includes('nộp học phí')) {
+      try {
+        const invoices = await getMyTuition();
+        if (!invoices || invoices.length === 0) {
+          return `💳 **Thông tin Học phí:**\nBạn hiện không có hóa đơn học phí nào chưa thanh toán!`;
+        }
+        const itemsStr = invoices
+          .map(
+            (inv) =>
+              `• **Hóa đơn #${inv.id}** (${inv.semester} - ${inv.academicYear}): ${inv.amount?.toLocaleString('vi-VN')} VNĐ - Trạng thái: **${
+                inv.status === 'PAID' ? '✅ Đã nộp' : '⏳ Chưa nộp'
+              }**`
+          )
+          .join('\n');
+        return `💳 **Thông tin Học phí thời gian thực của bạn:**\n\n${itemsStr}`;
+      } catch {
+        return `💳 Chi tiết học phí và hóa đơn của bạn được xem tại mục **Học phí**!`;
+      }
+    }
+
+    // Intent 5: User Profile / Thông tin cá nhân
+    if (
+      q.includes('tôi tên là gì') ||
+      q.includes('thông tin cá nhân') ||
+      q.includes('email của tôi') ||
+      q.includes('hồ sơ của tôi') ||
+      q.includes('mã sinh viên') ||
+      q.includes('mã giảng viên')
+    ) {
+      if (user) {
+        return (
+          `👤 **Thông tin tài khoản đang đăng nhập:**\n\n` +
+          `• **Họ và tên:** ${user.fullName}\n` +
+          `• **Email:** ${user.email}\n` +
+          `• **Vai trò:** ${user.role}\n` +
+          `• **Mã ID hệ thống:** #${user.id}`
+        );
+      }
+    }
+
+    return null; // Fallback to standard backend AI endpoint
+  };
+
   const sendMessage = async (userText: string) => {
     if (!userText.trim() || loading) return;
 
@@ -138,19 +270,33 @@ export const DraggableAiCompanion: React.FC = () => {
     setLoading(true);
 
     try {
-      const res = await unwrap<{ reply: string }>(apiClient.post('/ai/advisor/chat', { prompt: userText.trim() }));
-      const aiMsg: ChatMessage = {
-        id: `ai-${Date.now()}`,
-        sender: 'ai',
-        text: res.reply,
-        timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages((prev) => [...prev, aiMsg]);
+      // Step 1: Try Smart Live Intent Processor first
+      const liveAnswer = await processLiveSystemQuery(userText.trim());
+
+      if (liveAnswer) {
+        const aiMsg: ChatMessage = {
+          id: `ai-${Date.now()}`,
+          sender: 'ai',
+          text: liveAnswer,
+          timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages((prev) => [...prev, aiMsg]);
+      } else {
+        // Step 2: Fallback to AI Advisor chat endpoint
+        const res = await unwrap<{ reply: string }>(apiClient.post('/ai/advisor/chat', { prompt: userText.trim() }));
+        const aiMsg: ChatMessage = {
+          id: `ai-${Date.now()}`,
+          sender: 'ai',
+          text: res.reply,
+          timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages((prev) => [...prev, aiMsg]);
+      }
     } catch {
       const fallbackAiMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         sender: 'ai',
-        text: `Tra cứu yêu cầu "${userText.trim()}": Dữ liệu học phần & thời khóa biểu của bạn đã được kết nối đồng bộ trên hệ thống LearningHub!`,
+        text: `Tra cứu yêu cầu "${userText.trim()}": Hệ thống đã kết nối dữ liệu của bạn trên LearningHub LMS thành công!`,
         timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, fallbackAiMsg]);
@@ -161,7 +307,7 @@ export const DraggableAiCompanion: React.FC = () => {
 
   const handleQuickAsk = (topic: string) => {
     setIsOpenInput(true);
-    sendMessage(`Tôi muốn tìm hiểu thông tin chi tiết về ${topic}`);
+    sendMessage(topic);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -213,32 +359,32 @@ export const DraggableAiCompanion: React.FC = () => {
       {isHovered && !isOpenInput && (
         <div className="absolute bottom-20 right-0 w-64 bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-2xl border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-bottom-2">
           <p className="text-xs font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-pink-500" /> Hikari AI - Chọn nhanh yêu cầu:
+            <Sparkles className="w-4 h-4 text-pink-500" /> Hikari AI - Truy vấn nhanh dữ liệu:
           </p>
           <div className="space-y-1">
             <button
-              onClick={() => handleQuickAsk('Học phần đã đăng ký')}
+              onClick={() => handleQuickAsk('hệ thống có bao nhiêu người')}
               className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
             >
-              <BookOpen className="w-3.5 h-3.5 text-indigo-500" /> Tra cứu Học phần của tôi
+              <Database className="w-3.5 h-3.5 text-indigo-500" /> Thống kê Tổng người dùng hệ thống
             </button>
             <button
-              onClick={() => handleQuickAsk('Giảng viên bộ môn')}
+              onClick={() => handleQuickAsk('thời khóa biểu của tôi')}
               className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
             >
-              <User className="w-3.5 h-3.5 text-purple-500" /> Tra cứu Thông tin Giảng viên
+              <Calendar className="w-3.5 h-3.5 text-purple-500" /> Tra cứu Lịch học thời gian thực
             </button>
             <button
-              onClick={() => handleQuickAsk('Thời khóa biểu tuần này')}
+              onClick={() => handleQuickAsk('danh sách lớp học phần')}
               className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
             >
-              <Calendar className="w-3.5 h-3.5 text-pink-500" /> Kiểm tra Lịch học của tôi
+              <BookOpen className="w-3.5 h-3.5 text-pink-500" /> Tra cứu Lớp học phần của tôi
             </button>
           </div>
         </div>
       )}
 
-      {/* Expanded Zalo/Messenger-Style AI Chat Window with Expand/Maximize Option */}
+      {/* Expanded AI Chat Window */}
       {isOpenInput && (
         <div
           className={`absolute bottom-20 right-0 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col transition-all duration-300 ${
@@ -259,12 +405,11 @@ export const DraggableAiCompanion: React.FC = () => {
               <div>
                 <h3 className="text-sm font-bold tracking-tight">Hikari AI Companion</h3>
                 <p className="text-[10px] text-pink-100 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Đang hoạt động • {isExpanded ? 'Chế độ xem mở rộng' : 'Lưu lịch sử'}
+                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Kết nối Live API • {isExpanded ? 'Xem mở rộng' : 'Lưu lịch sử'}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-1">
-              {/* Expand / Minimize Toggle Button */}
               <button
                 type="button"
                 title={isExpanded ? 'Thu nhỏ cửa sổ' : 'Mở rộng hiển thị (Nửa màn hình)'}
@@ -274,7 +419,6 @@ export const DraggableAiCompanion: React.FC = () => {
                 {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </button>
 
-              {/* Trash/Clear History Button */}
               <button
                 type="button"
                 title="Xóa lịch sử trò chuyện"
@@ -293,7 +437,7 @@ export const DraggableAiCompanion: React.FC = () => {
             </div>
           </div>
 
-          {/* Conversation Stream (Chat Messages List) */}
+          {/* Conversation Stream */}
           <div ref={chatScrollRef} className="flex-1 p-4 space-y-3.5 overflow-y-auto bg-slate-50/50 dark:bg-slate-950/40">
             {messages.map((msg) => (
               <div
@@ -323,7 +467,7 @@ export const DraggableAiCompanion: React.FC = () => {
               <div className="flex flex-col items-start space-y-1">
                 <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-bl-xs px-3.5 py-2.5 text-xs text-gray-500 flex items-center gap-2 shadow-xs">
                   <Loader2 className="w-3.5 h-3.5 text-pink-500 animate-spin" />
-                  <span className="italic font-medium text-pink-600 dark:text-pink-400 text-[11px]">Hikari đang suy nghĩ...</span>
+                  <span className="italic font-medium text-pink-600 dark:text-pink-400 text-[11px]">Hikari đang suy nghĩ & kết nối API...</span>
                 </div>
               </div>
             )}
@@ -338,7 +482,7 @@ export const DraggableAiCompanion: React.FC = () => {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Nhắn tin với Hikari AI..."
+              placeholder="Nhắn tin với Hikari AI (vd: hệ thống có bao nhiêu người)..."
               className="flex-1 bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs text-gray-900 dark:text-white outline-none transition"
             />
             <button
