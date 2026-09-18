@@ -143,7 +143,45 @@ export default function StudentProfile() {
         )}
       </Card>
       <ChangePasswordCard />
+      <AiSettingsCard />
     </div>
+  );
+}
+
+function AiSettingsCard() {
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const handleClear = () => {
+    if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử trò chuyện với Trợ lý Hikari AI không?')) {
+      const stored = JSON.parse(localStorage.getItem('lms_auth') ?? 'null');
+      const userId = stored?.id || 'guest';
+      localStorage.removeItem(`lms_ai_chat_history_${userId}`);
+      window.dispatchEvent(new Event('lms_clear_ai_chat'));
+      setMsg('Đã xóa sạch toàn bộ lịch sử chat với Hikari AI thành công!');
+      setTimeout(() => setMsg(null), 4000);
+    }
+  };
+
+  return (
+    <Card className="mt-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            🤖 Cài đặt Lịch sử Trợ lý AI (Hikari Companion)
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Xóa toàn bộ các tin nhắn tra cứu và lịch sử hội thoại đã lưu giữa bạn và trợ lý AI Hikari.
+          </p>
+        </div>
+        <button
+          onClick={handleClear}
+          className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-300 font-semibold text-xs border border-rose-200 dark:border-rose-900 transition shrink-0 cursor-pointer"
+        >
+          🗑️ Xóa Lịch sử Chat AI
+        </button>
+      </div>
+      {msg && <div className="mt-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">{msg}</div>}
+    </Card>
   );
 }
 
