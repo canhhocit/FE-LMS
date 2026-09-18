@@ -12,7 +12,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('lms_theme');
-    if (saved === 'dark' || saved === 'light') return saved;
+    if (saved === 'dark') return 'dark';
     return 'light';
   });
 
@@ -24,6 +24,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       root.classList.remove('dark');
     }
     localStorage.setItem('lms_theme', theme);
+    localStorage.setItem('darkMode', String(theme === 'dark'));
   }, [theme]);
 
   const toggleTheme = () => {
