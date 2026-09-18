@@ -485,7 +485,7 @@ export default function Layout() {
   const roleLower = role.toLowerCase();
 
   return (
-    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
+    <div className="h-screen w-screen flex overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       {sidebarOpen && (
         <button
           type="button"
@@ -494,7 +494,7 @@ export default function Layout() {
           className="fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-[2px] lg:hidden"
         />
       )}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col border-r border-slate-200/90 bg-white/95 p-4 text-slate-800 shadow-xl backdrop-blur-md transition-transform dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-100 lg:static lg:w-64 lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 flex h-full w-72 shrink-0 flex-col border-r border-slate-200/90 bg-white/95 p-4 text-slate-800 shadow-xl backdrop-blur-md transition-transform dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-100 lg:static lg:h-screen lg:w-64 lg:translate-x-0 lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Link to={`/${roleLower}`} className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800/80 px-2 pb-5 pt-2">
           <span className="grid h-10 w-10 place-items-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-500/20">
             <GraduationCapIcon className="h-6 w-6 text-white" />
@@ -572,8 +572,9 @@ export default function Layout() {
           <span>Đăng xuất</span>
         </button>
       </aside>
-      <main className="min-w-0 flex-1 overflow-auto">
-        <header className="relative w-full z-20 flex items-center justify-between gap-4 border-b border-slate-200/80 bg-white/90 px-4 py-3 text-slate-800 shadow-2xs backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:text-slate-100 sm:px-6">
+
+      <div className="flex flex-1 flex-col h-full min-w-0 overflow-hidden">
+        <header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center justify-between gap-4 border-b border-slate-200/80 bg-white/90 px-4 py-3 text-slate-800 shadow-2xs backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:text-slate-100 sm:px-6">
           <div className="flex min-w-0 items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
             <button type="button" aria-label="Mở menu" onClick={() => setSidebarOpen(true)} className="p-1 lg:hidden text-slate-700 dark:text-slate-200 hover:bg-slate-100 rounded-lg">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
@@ -644,10 +645,11 @@ export default function Layout() {
             </div>
           </div>
         </header>
-        <div className="min-h-[calc(100vh-61px)] bg-slate-50/80 dark:bg-slate-950 p-4 sm:p-6 lg:p-8">
+
+        <main className="flex-1 overflow-y-auto bg-slate-50/80 dark:bg-slate-950 p-4 sm:p-6 lg:p-8">
           <Outlet />
-        </div>
-      </main>
+        </main>
+      </div>
 
       {showFirstLoginModal && user && (
         <FirstLoginModal user={user} onComplete={() => setShowFirstLoginModal(false)} />
