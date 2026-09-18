@@ -12,11 +12,7 @@ interface StudentTrainingScore {
 }
 
 export const HomeroomGradebook: React.FC = () => {
-  const [students, setStudents] = useState<StudentTrainingScore[]>([
-    { id: 1, studentCode: '20210001', fullName: 'Nguyễn Văn Nam', className: '62PM1', gpa: 8.5, trainingScore: 88, classification: 'Tốt' },
-    { id: 2, studentCode: '20210002', fullName: 'Trần Thị Mai', className: '62PM1', gpa: 9.1, trainingScore: 95, classification: 'Xuất sắc' },
-    { id: 3, studentCode: '20210003', fullName: 'Lê Hoàng Anh', className: '62PM1', gpa: 7.2, trainingScore: 78, classification: 'Khá' },
-  ]);
+  const [students, setStudents] = useState<StudentTrainingScore[]>([]);
 
   const [msg, setMsg] = useState('');
 

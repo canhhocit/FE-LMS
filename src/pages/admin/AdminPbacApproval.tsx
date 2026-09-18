@@ -24,50 +24,8 @@ interface AuditLog {
 }
 
 export const AdminPbacApproval: React.FC = () => {
-  const [requests, setRequests] = useState<PbacRequest[]>([
-    {
-      id: 101,
-      lecturerName: 'TS. Nguyễn Văn A',
-      className: 'Lập trình Flutter (62PM1_L01)',
-      reason: 'Nhập nhầm điểm thành phần cột giữa kỳ cho 2 sinh viên',
-      status: 'PENDING',
-      createdAt: '2026-09-18 18:30:00',
-    },
-    {
-      id: 102,
-      lecturerName: 'PGS.TS Trần Thị B',
-      className: 'Công nghệ phần mềm (62PM1_L02)',
-      reason: 'Cập nhật điểm minh chứng chuyên cần bổ sung',
-      status: 'APPROVED',
-      validUntil: '2026-09-18 20:00:00',
-      createdAt: '2026-09-18 17:15:00',
-    },
-  ]);
-
-  const [auditLogs] = useState<AuditLog[]>([
-    {
-      id: 1,
-      action: 'SỬA ĐIỂM GIỮA KỲ',
-      performedBy: 'TS. Nguyễn Văn A',
-      className: 'Lập trình Flutter (62PM1_L01)',
-      targetStudent: 'SV Nguyễn Văn Nam (MSV: 20210001)',
-      oldValue: 'Cột Giữa Kỳ: 6.5',
-      newValue: 'Cột Giữa Kỳ: 8.5',
-      approvedBy: 'Admin Hệ Thống',
-      timestamp: '2026-09-18 17:45:12',
-    },
-    {
-      id: 2,
-      action: 'CẤP QUYỀN PBAC SỬA ĐIỂM',
-      performedBy: 'TS. Nguyễn Văn A',
-      className: 'Lập trình Flutter (62PM1_L01)',
-      targetStudent: 'Toàn bộ Lớp L01',
-      oldValue: 'Trạng thái: KHÓA ĐIỂM',
-      newValue: 'Cấp quyền sửa điểm (Thời hạn 60 phút)',
-      approvedBy: 'Admin Hệ Thống',
-      timestamp: '2026-09-18 17:15:00',
-    },
-  ]);
+  const [requests, setRequests] = useState<PbacRequest[]>([]);
+  const [auditLogs] = useState<AuditLog[]>([]);
 
   const [duration, setDuration] = useState('60');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'REVOKED'>('ALL');

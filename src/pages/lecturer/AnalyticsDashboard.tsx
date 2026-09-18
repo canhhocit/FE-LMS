@@ -5,20 +5,8 @@ import {
 } from 'recharts';
 import { TrendingUp, Users, Award, AlertTriangle, Download, Filter } from 'lucide-react';
 
-const gradeDistributionData = [
-  { grade: 'A+ (9.0-10)', count: 14 },
-  { grade: 'A (8.5-8.9)', count: 28 },
-  { grade: 'B+ (8.0-8.4)', count: 35 },
-  { grade: 'B (7.0-7.9)', count: 22 },
-  { grade: 'C (5.5-6.9)', count: 12 },
-  { grade: 'D/F (< 5.5)', count: 5 },
-];
-
-const attendanceData = [
-  { name: 'Đúng giờ', value: 78, color: '#10B981' },
-  { name: 'Đi muộn', value: 14, color: '#F59E0B' },
-  { name: 'Vắng mặt', value: 8, color: '#EF4444' },
-];
+const gradeDistributionData: { grade: string; count: number }[] = [];
+const attendanceData: { name: string; value: number; color: string }[] = [];
 
 export const AnalyticsDashboard: React.FC = () => {
   const [selectedSemester, setSelectedSemester] = useState('HK1-2026');

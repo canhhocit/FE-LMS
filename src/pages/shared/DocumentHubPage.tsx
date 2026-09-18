@@ -5,17 +5,8 @@ export const DocumentHubPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'REQUESTS' | 'STUDENT_FORMS' | 'LECTURER_TEMPLATES'>('STUDENT_FORMS');
   const [msg, setMsg] = useState('');
 
-  const studentForms = [
-    { id: 1, title: 'Đơn xin hoãn nộp Học phí', category: 'Sinh viên', format: 'DOCX / PDF', size: '45 KB' },
-    { id: 2, title: 'Mẫu đơn xin Bảo lưu kết quả học tập', category: 'Sinh viên', format: 'DOCX', size: '52 KB' },
-    { id: 3, title: 'Đơn đăng ký thi bổ sung / Miễn giảm', category: 'Sinh viên', format: 'PDF', size: '38 KB' },
-  ];
-
-  const lecturerTemplates = [
-    { id: 101, title: 'Biểu mẫu Bảng điểm Rèn luyện Lớp Hành chính', category: 'Giảng viên', format: 'XLSX', size: '120 KB' },
-    { id: 102, title: 'Mẫu Danh sách Sinh viên dự thi & Điểm môn học', category: 'Giảng viên', format: 'XLSX', size: '95 KB' },
-    { id: 103, title: 'Mẫu Biểu mẫu Xét tốt nghiệp Niên khóa', category: 'Giảng viên', format: 'XLSX / CSV', size: '150 KB' },
-  ];
+  const studentForms: { id: number; title: string; category: string; format: string; size: string }[] = [];
+  const lecturerTemplates: { id: number; title: string; category: string; format: string; size: string }[] = [];
 
   const handleDownload = (filename: string) => {
     setMsg(`✅ Đã bắt đầu tải xuống mẫu: ${filename}`);

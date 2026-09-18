@@ -13,27 +13,7 @@ interface RequestItem {
 }
 
 export const PermissionRequestsPage: React.FC = () => {
-  const [requests, setRequests] = useState<RequestItem[]>([
-    {
-      id: 101,
-      classId: 1,
-      className: 'Lớp Lập trình Flutter - 62PM1_L01',
-      permissionType: 'Sửa điểm Học phần (Lớp L01)',
-      reason: 'Nhập nhầm điểm thành phần cột giữa kỳ cho 2 sinh viên',
-      status: 'APPROVED',
-      validUntil: '2026-09-18 20:00:00',
-      createdAt: '2026-09-18 18:30:00',
-    },
-    {
-      id: 102,
-      classId: 2,
-      className: 'Lớp Công nghệ phần mềm - 62PM1_L02',
-      permissionType: 'Sửa điểm Chuyên cần',
-      reason: 'Cập nhật sinh viên có giấy xin phép vắng mặt bổ sung',
-      status: 'PENDING',
-      createdAt: '2026-09-18 18:45:00',
-    },
-  ]);
+  const [requests, setRequests] = useState<RequestItem[]>([]);
 
   const [classId, setClassId] = useState('1');
   const [reason, setReason] = useState('');
