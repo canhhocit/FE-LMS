@@ -72,7 +72,9 @@ export const AdminPbacApproval: React.FC = () => {
   const [duration, setDuration] = useState('60');
 
   const handleApprove = (id: number) => {
-    const validTime = new Date(Date.now() + Number(duration) * 60000).toLocaleString();
+    const targetTime = new Date();
+    targetTime.setMinutes(targetTime.getMinutes() + Number(duration));
+    const validTime = targetTime.toLocaleString();
     setRequests(requests.map(r => r.id === id ? { ...r, status: 'APPROVED', validUntil: validTime } : r));
   };
 
@@ -87,7 +89,7 @@ export const AdminPbacApproval: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between">
+      <div className="bg-linear-to-r from-blue-700 via-indigo-700 to-purple-800 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <ShieldCheck className="w-7 h-7 text-emerald-400" />

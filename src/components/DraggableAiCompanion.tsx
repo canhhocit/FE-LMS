@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Bot, MessageSquare, Search, Calendar, User, BookOpen, X, Sparkles } from 'lucide-react';
+import { Bot, Search, Calendar, User, BookOpen, X, Sparkles } from 'lucide-react';
 
 export const DraggableAiCompanion: React.FC = () => {
   const [position, setPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight - 180 });
@@ -59,7 +59,7 @@ export const DraggableAiCompanion: React.FC = () => {
         onClick={() => setIsOpenInput(!isOpenInput)}
         className="relative group"
       >
-        <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 p-1 shadow-2xl hover:scale-110 transition duration-300 flex items-center justify-center">
+        <div className="w-16 h-16 rounded-full bg-linear-to-tr from-indigo-600 via-purple-600 to-pink-500 p-1 shadow-2xl hover:scale-110 transition duration-300 flex items-center justify-center">
           <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white relative overflow-hidden">
             <Bot className="w-9 h-9 text-pink-400 animate-pulse" />
             <span className="absolute bottom-1 right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-slate-900" />
@@ -102,7 +102,7 @@ export const DraggableAiCompanion: React.FC = () => {
       {/* Expanded Interactive AI Dialog Box */}
       {isOpenInput && (
         <div className="absolute bottom-20 right-0 w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-in zoom-in-95 duration-200">
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 text-white flex items-center justify-between">
+          <div className="bg-linear-to-r from-indigo-600 to-purple-600 p-4 text-white flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="w-6 h-6 text-pink-300" />
               <div>
@@ -137,7 +137,7 @@ export const DraggableAiCompanion: React.FC = () => {
             />
             <button
               type="submit"
-              className="p-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:brightness-110 transition shadow"
+              className="p-2 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:brightness-110 transition shadow"
             >
               <Search className="w-4 h-4" />
             </button>

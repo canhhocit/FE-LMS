@@ -81,7 +81,7 @@ export const PermissionRequestsPage: React.FC = () => {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       {/* Banner */}
-      <div className="bg-gradient-to-r from-amber-500 via-orange-600 to-red-600 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between">
+      <div className="bg-linear-to-r from-amber-500 via-orange-600 to-red-600 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Key className="w-7 h-7" />
@@ -142,7 +142,7 @@ export const PermissionRequestsPage: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md hover:brightness-110 transition disabled:opacity-50"
+            className="flex items-center justify-center gap-2 bg-linear-to-r from-amber-600 to-orange-600 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md hover:brightness-110 transition disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
             {isSubmitting ? 'Đang gửi...' : 'Gửi Yêu Cầu Cấp Quyền'}

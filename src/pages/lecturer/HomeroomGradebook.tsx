@@ -41,7 +41,7 @@ export const HomeroomGradebook: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Banner */}
-      <div className="bg-gradient-to-r from-teal-600 via-emerald-600 to-green-700 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between">
+      <div className="bg-linear-to-r from-teal-600 via-emerald-600 to-green-700 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Users className="w-7 h-7" />
