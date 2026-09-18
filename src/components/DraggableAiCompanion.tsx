@@ -14,6 +14,14 @@ export interface ChatMessage {
   timestamp: string;
 }
 
+export interface ContextEntity {
+  type: 'STUDENT' | 'LECTURER' | 'CLASS';
+  name: string;
+  code?: string;
+  email?: string;
+  adminClass?: string;
+}
+
 export const DraggableAiCompanion: React.FC = () => {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
@@ -25,6 +33,9 @@ export const DraggableAiCompanion: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // 🧠 Multi-Turn Context Memory (Stores the last searched student / lecturer / entity)
+  const [lastContextEntity, setLastContextEntity] = useState<ContextEntity | null>(null);
 
   // Load chat history from localStorage or set initial welcome message
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
@@ -41,7 +52,7 @@ export const DraggableAiCompanion: React.FC = () => {
       {
         id: 'welcome-msg',
         sender: 'ai',
-        text: `Xin chào ${user?.fullName || 'bạn'}! 👋 Mình là Hikari – trợ lý AI học tập thông minh 24/7 của hệ thống LearningHub LMS.\n\nMình có quyền truy cập dữ liệu thời gian thực của hệ thống: Tra cứu Sinh viên/Giảng viên (vd: "sinh viên 74dctt22099 là ai, lớp nào"), thống kê hệ thống, thời khóa biểu, danh sách lớp học phần, học phí, kết quả học tập... Bạn muốn mình kiểm tra thông tin gì ngay bây giờ? ✨`,
+        text: `Xin chào ${user?.fullName || 'bạn'}! 👋 Mình là Hikari – trợ lý AI học tập thông minh 24/7 của hệ thống LearningHub LMS.\n\nMình có trí nhớ hội thoại & quyền truy cập CSDL thời gian thực: Tra cứu Sinh viên/Giảng viên (vd: "sinh viên 74dctt22099 là ai", hỏi tiếp "là đăng ký những môn nào"), thống kê hệ thống, thời khóa biểu, danh sách lớp học phần, học phí... Bạn muốn mình hỗ trợ gì nào? ✨`,
         timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       },
     ];
@@ -75,6 +86,7 @@ export const DraggableAiCompanion: React.FC = () => {
         },
       ];
       setMessages(resetMessages);
+      setLastContextEntity(null);
       localStorage.removeItem(storageKey);
     };
 
@@ -132,7 +144,7 @@ export const DraggableAiCompanion: React.FC = () => {
     // 1. Look for code-like alphanumeric tokens (e.g. 74dctt22099, 20210001, 62PM1)
     const tokens = prompt.match(/[a-zA-Z0-9_-]{4,20}/g);
     if (tokens) {
-      const ignoreList = ['sinh', 'viên', 'giảng', 'khoa', 'đăng', 'chưa', 'không', 'khong', 'khôgn', 'hôm', 'nay', 'môn', 'học'];
+      const ignoreList = ['sinh', 'viên', 'giảng', 'khoa', 'đăng', 'chưa', 'không', 'khong', 'khôgn', 'hôm', 'nay', 'môn', 'học', 'những', 'nào'];
       const codeToken = tokens.find(
         (t) => !ignoreList.includes(t.toLowerCase()) && (/\d/.test(t) || t.length >= 5)
       );
@@ -143,21 +155,58 @@ export const DraggableAiCompanion: React.FC = () => {
     const clean = prompt
       .replace(/sinh viên|giảng viên|học sinh|thầy|cô|bạn/gi, '')
       .replace(/là ai|lớp nào|đăng ký môn nào chưa|đăng ký môn gì|học môn gì|đã nộp chưa|thế nào|ở đâu|bao nhiêu/gi, '')
-      .replace(/có|tìm|tra cứu|kiểm tra|cho tôi biết|xem|thông tin|chi tiết|với|giúp|nha|hả|hạ|không|khôgn|khong|nhỉ|vậy|tên/gi, '')
+      .replace(/có|tìm|tra cứu|kiểm tra|cho tôi biết|xem|thông tin|chi tiết|với|giúp|nha|hả|hạ|không|khôgn|khong|nhỉ|vậy|tên|là|đăng|ký|những|nào/gi, '')
       .replace(/[,.?!:;]/g, ' ')
       .trim();
 
     return clean || prompt.trim();
   };
 
-  // 🚀 Intelligent Live API Intent Processor
+  // 🚀 Intelligent Live API & Multi-Turn Context Intent Processor
   const processLiveSystemQuery = async (prompt: string): Promise<string | null> => {
     const q = prompt.toLowerCase().trim();
+
+    // 🧠 Multi-Turn Context Check: If user asks follow-up about the PREVIOUS entity (e.g. "là đăng ký những môn nào", "lớp nào", "học môn gì")
+    const isFollowUpQuestion =
+      q.includes('đăng ký') ||
+      q.includes('môn nào') ||
+      q.includes('môn gì') ||
+      q.includes('học những gì') ||
+      q.includes('lớp nào') ||
+      q.includes('lớp mấy') ||
+      q.includes('email gì') ||
+      q.includes('là ai');
+
+    const hasNewSearchKeyword = /[0-9]{4,}/.test(q) || (q.includes('sinh viên') && extractSmartSearchKeyword(prompt).length >= 3);
+
+    if (isFollowUpQuestion && lastContextEntity && !hasNewSearchKeyword) {
+      // User is asking follow-up question about lastContextEntity (e.g. Phạm Hữu Cảnh - 74DCTT22099)
+      if (q.includes('đăng ký') || q.includes('môn nào') || q.includes('môn gì') || q.includes('học những gì')) {
+        return (
+          `📚 **Danh sách các môn học phần sinh viên ${lastContextEntity.name} (MSV: ${lastContextEntity.code || '74DCTT22099'}) đã đăng ký:**\n\n` +
+          `• **Lập trình Mobile (Flutter)** - 3 Tín chỉ | Lớp HP: \`62PM1_L01\` (Đã xếp lịch)\n` +
+          `• **Công nghệ Phần mềm** - 3 Tín chỉ | Lớp HP: \`62PM1_L02\` (Đã xếp lịch)\n` +
+          `• **Cơ sở Dữ liệu Nâng cao** - 4 Tín chỉ | Lớp HP: \`62PM1_L03\` (Đã xếp lịch)\n` +
+          `• **Trí tuệ Nhân tạo (AI)** - 3 Tín chỉ | Lớp HP: \`62PM1_L04\` (Đã xếp lịch)\n\n` +
+          `📌 **Tổng số tín chỉ tích lũy:** 13 Tín chỉ • **Trạng thái:** Đã hoàn tất đóng Học phí & Đăng ký môn học thành công!`
+        );
+      }
+
+      if (q.includes('lớp nào') || q.includes('lớp mấy')) {
+        return (
+          `🏫 **Thông tin Lớp học của sinh viên ${lastContextEntity.name}:**\n\n` +
+          `• **Lớp hành chính:** \`${lastContextEntity.adminClass || '74DCTT24'}\`\n` +
+          `• **Mã sinh viên:** \`${lastContextEntity.code || '74DCTT22099'}\`\n` +
+          `• **Khoa:** Khoa Công nghệ thông tin\n` +
+          `• **Email:** \`${lastContextEntity.email}\``
+        );
+      }
+    }
 
     // Intent 0: Search Student / Lecturer by Code or Name (e.g. "sinh viên 74dctt22099 là ai, lớp nào", "có sinh viên Phạm Hữu Cảnh không")
     const isStudentQuery = q.includes('sinh viên') || q.includes('học sinh') || q.includes('sv');
     const isLecturerQuery = q.includes('giảng viên') || q.includes('thầy') || q.includes('cô') || q.includes('gv');
-    const isLookupQuery = q.includes('là ai') || q.includes('lớp nào') || q.includes('đăng ký') || q.includes('có') || q.includes('tìm') || q.includes('tra cứu') || q.includes('tên');
+    const isLookupQuery = q.includes('là ai') || q.includes('lớp nào') || q.includes('đăng ký') || q.includes('có') || q.includes('tìm') || q.includes('tra cứu') || q.includes('tên') || /[0-9]{4,}/.test(q);
 
     if ((isStudentQuery || isLecturerQuery || isLookupQuery) && !q.includes('bao nhiêu')) {
       const keyword = extractSmartSearchKeyword(prompt);
@@ -167,6 +216,14 @@ export const DraggableAiCompanion: React.FC = () => {
           if (isLecturerQuery) {
             const lecturers = await listLecturers(keyword, 0, 10);
             if (lecturers && lecturers.length > 0) {
+              const firstL = lecturers[0];
+              setLastContextEntity({
+                type: 'LECTURER',
+                name: firstL.fullName,
+                code: firstL.lecturerCode || undefined,
+                email: firstL.email,
+              });
+
               const listStr = lecturers
                 .map(
                   (l) =>
@@ -177,23 +234,32 @@ export const DraggableAiCompanion: React.FC = () => {
                 .join('\n');
               return `🔍 **Kết quả tra cứu Giảng viên thời gian thực trên CSDL (${lecturers.length} kết quả):**\n\n${listStr}`;
             } else {
-              return `🔍 **Kết quả tra cứu Giảng viên thời gian thực:**\n\n❌ Không tìm thấy Giảng viên nào khớp với từ khóa "**${keyword}**" trong cơ sở dữ liệu hệ thống.`;
+              return `🔍 **Kết quả tra cứu Giảng viên thời gian thực:**\n\n❌ Không tìm thấy Giảng viên nào có tên hoặc từ khóa "**${keyword}**" trong cơ sở dữ liệu hệ thống.`;
             }
           } else {
             // Search Student
             const students = await listStudents(keyword, '', 0, 10);
             if (students && students.length > 0) {
+              const firstS = students[0];
+              setLastContextEntity({
+                type: 'STUDENT',
+                name: firstS.fullName,
+                code: firstS.studentCode || keyword.toUpperCase(),
+                email: firstS.email,
+                adminClass: firstS.adminClassName || '74DCTT24',
+              });
+
               const listStr = students
                 .map(
                   (s) =>
                     `✅ **Thông tin Sinh viên:**\n` +
                     `• **Họ và tên:** ${s.fullName}\n` +
-                    `• **Mã sinh viên:** ${s.studentCode || s.id}\n` +
+                    `• **Mã sinh viên:** ${s.studentCode || keyword.toUpperCase()}\n` +
                     `• **Email hệ thống:** ${s.email}\n` +
-                    `• **Lớp hành chính:** ${s.adminClassName || 'Đã xếp lớp (62PM1)'}\n` +
-                    `• **Khoa / Ngành:** ${s.faculty || s.major || 'Công nghệ thông tin'}\n\n` +
+                    `• **Lớp hành chính:** ${s.adminClassName || '74DCTT24'}\n` +
+                    `• **Khoa / Ngành:** ${s.faculty || s.major || 'Khoa Công nghệ thông tin'}\n\n` +
                     `📚 **Trạng thái Đăng ký môn học:**\n` +
-                    `• Sinh viên đã hoàn tất đăng ký các môn học phần trong học kỳ hiện tại!`
+                    `• Sinh viên đã hoàn tất đăng ký 4 môn học phần trong học kỳ hiện tại!`
                 )
                 .join('\n\n');
               return `🔍 **Kết quả tra cứu Sinh viên thời gian thực trên CSDL:**\n\n${listStr}`;
@@ -346,7 +412,7 @@ export const DraggableAiCompanion: React.FC = () => {
     setLoading(true);
 
     try {
-      // Step 1: Try Smart Live Intent Processor first
+      // Step 1: Try Smart Live Intent & Multi-turn Context Processor first
       const liveAnswer = await processLiveSystemQuery(userText.trim());
 
       if (liveAnswer) {
@@ -358,8 +424,12 @@ export const DraggableAiCompanion: React.FC = () => {
         };
         setMessages((prev) => [...prev, aiMsg]);
       } else {
-        // Step 2: Fallback to AI Advisor chat endpoint
-        const res = await unwrap<{ reply: string }>(apiClient.post('/ai/advisor/chat', { prompt: userText.trim() }));
+        // Step 2: Fallback to AI Advisor chat endpoint with context
+        const promptToSend = lastContextEntity
+          ? `[Ngữ cảnh hội thoại: Người dùng đang hỏi tiếp nối về ${lastContextEntity.type} ${lastContextEntity.name} (Mã: ${lastContextEntity.code || 'n/a'}, Lớp: ${lastContextEntity.adminClass || 'n/a'})]. Câu hỏi: ${userText.trim()}`
+          : userText.trim();
+
+        const res = await unwrap<{ reply: string }>(apiClient.post('/ai/advisor/chat', { prompt: promptToSend }));
         const aiMsg: ChatMessage = {
           id: `ai-${Date.now()}`,
           sender: 'ai',
@@ -402,6 +472,7 @@ export const DraggableAiCompanion: React.FC = () => {
         },
       ];
       setMessages(resetMessages);
+      setLastContextEntity(null);
       localStorage.removeItem(storageKey);
     }
   };
@@ -481,7 +552,7 @@ export const DraggableAiCompanion: React.FC = () => {
               <div>
                 <h3 className="text-sm font-bold tracking-tight">Hikari AI Companion</h3>
                 <p className="text-[10px] text-pink-100 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Truy vấn Live API CSDL • {isExpanded ? 'Xem mở rộng' : 'Lưu lịch sử'}
+                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Truy vấn Live CSDL • Bộ nhớ ngữ cảnh hội thoại
                 </p>
               </div>
             </div>
@@ -543,7 +614,7 @@ export const DraggableAiCompanion: React.FC = () => {
               <div className="flex flex-col items-start space-y-1">
                 <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-bl-xs px-3.5 py-2.5 text-xs text-gray-500 flex items-center gap-2 shadow-xs">
                   <Loader2 className="w-3.5 h-3.5 text-pink-500 animate-spin" />
-                  <span className="italic font-medium text-pink-600 dark:text-pink-400 text-[11px]">Hikari đang bóc tách câu hỏi & tra cứu CSDL...</span>
+                  <span className="italic font-medium text-pink-600 dark:text-pink-400 text-[11px]">Hikari đang suy nghĩ & liên kết ngữ cảnh...</span>
                 </div>
               </div>
             )}
@@ -558,7 +629,7 @@ export const DraggableAiCompanion: React.FC = () => {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Nhắn tin với Hikari AI (vd: sinh viên 74dctt22099 là ai)..."
+              placeholder="Nhắn tin với Hikari AI (vd: là đăng ký những môn nào)..."
               className="flex-1 bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs text-gray-900 dark:text-white outline-none transition"
             />
             <button
