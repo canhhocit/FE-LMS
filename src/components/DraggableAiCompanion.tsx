@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Search, Calendar, User, BookOpen, X, Sparkles, Loader2, Trash2, Send, Maximize2, Minimize2, Database, CreditCard, ShieldCheck } from 'lucide-react';
+import { Bot, Search, Calendar, User, BookOpen, X, Sparkles, Loader2, Trash2, Send, Maximize2, Minimize2, Database, CreditCard, ShieldCheck, Copy, Check, Move } from 'lucide-react';
 import { apiClient, unwrap } from '../services/api/client';
 import { useAuth } from '../contexts/useAuth';
 import { getDashboardStats, listStudents, listLecturers } from '../services/adminService';
@@ -33,6 +33,11 @@ export const DraggableAiCompanion: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Custom resizable size when expanded
+  const [expandedSize, setExpandedSize] = useState({ width: 660, height: 550 });
+  const isResizingRef = useRef(false);
 
   // 🧠 Multi-Turn Context Memory (Stores the last searched student / lecturer / entity)
   const [lastContextEntity, setLastContextEntity] = useState<ContextEntity | null>(null);
@@ -139,9 +144,46 @@ export const DraggableAiCompanion: React.FC = () => {
     setIsOpenInput((prev) => !prev);
   };
 
+  // Copy message text handler
+  const handleCopyMessage = (msgId: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(msgId);
+    setTimeout(() => setCopiedId(null), 2500);
+  };
+
+  // Resizing logic for expanded window (Drag top-left corner to resize width/height UPWARDS and LEFTWARDS)
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isResizingRef.current = true;
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startWidth = expandedSize.width;
+    const startHeight = expandedSize.height;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      if (!isResizingRef.current) return;
+      const dx = startX - moveEvent.clientX;
+      const dy = startY - moveEvent.clientY;
+
+      const newWidth = Math.max(360, Math.min(window.innerWidth - 32, startWidth + dx));
+      const newHeight = Math.max(380, Math.min(window.innerHeight - 80, startHeight + dy));
+      setExpandedSize({ width: newWidth, height: newHeight });
+    };
+
+    const onMouseUp = () => {
+      isResizingRef.current = false;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
   // 🧠 Smart Entity Keyword Extractor from natural language prompt
   const extractSmartSearchKeyword = (prompt: string): string => {
-    // 1. Look for code-like alphanumeric tokens (e.g. 74dctt22099, 20210001, 62PM1)
     const tokens = prompt.match(/[a-zA-Z0-9_-]{4,20}/g);
     if (tokens) {
       const ignoreList = ['sinh', 'viên', 'giảng', 'khoa', 'đăng', 'chưa', 'không', 'khong', 'khôgn', 'hôm', 'nay', 'môn', 'học', 'những', 'nào'];
@@ -151,7 +193,6 @@ export const DraggableAiCompanion: React.FC = () => {
       if (codeToken) return codeToken.trim();
     }
 
-    // 2. Natural language cleaning
     const clean = prompt
       .replace(/sinh viên|giảng viên|học sinh|thầy|cô|bạn/gi, '')
       .replace(/là ai|lớp nào|đăng ký môn nào chưa|đăng ký môn gì|học môn gì|đã nộp chưa|thế nào|ở đâu|bao nhiêu/gi, '')
@@ -166,7 +207,7 @@ export const DraggableAiCompanion: React.FC = () => {
   const processLiveSystemQuery = async (prompt: string): Promise<string | null> => {
     const q = prompt.toLowerCase().trim();
 
-    // 🧠 Multi-Turn Context Check: If user asks follow-up about the PREVIOUS entity (e.g. "là đăng ký những môn nào", "lớp nào", "học môn gì")
+    // 🧠 Multi-Turn Context Check
     const isFollowUpQuestion =
       q.includes('đăng ký') ||
       q.includes('môn nào') ||
@@ -180,7 +221,6 @@ export const DraggableAiCompanion: React.FC = () => {
     const hasNewSearchKeyword = /[0-9]{4,}/.test(q) || (q.includes('sinh viên') && extractSmartSearchKeyword(prompt).length >= 3);
 
     if (isFollowUpQuestion && lastContextEntity && !hasNewSearchKeyword) {
-      // User is asking follow-up question about lastContextEntity (e.g. Phạm Hữu Cảnh - 74DCTT22099)
       if (q.includes('đăng ký') || q.includes('môn nào') || q.includes('môn gì') || q.includes('học những gì')) {
         return (
           `📚 **Danh sách các môn học phần sinh viên ${lastContextEntity.name} (MSV: ${lastContextEntity.code || '74DCTT22099'}) đã đăng ký:**\n\n` +
@@ -203,7 +243,7 @@ export const DraggableAiCompanion: React.FC = () => {
       }
     }
 
-    // Intent 0: Search Student / Lecturer by Code or Name (e.g. "sinh viên 74dctt22099 là ai, lớp nào", "có sinh viên Phạm Hữu Cảnh không")
+    // Intent 0: Search Student / Lecturer by Code or Name
     const isStudentQuery = q.includes('sinh viên') || q.includes('học sinh') || q.includes('sv');
     const isLecturerQuery = q.includes('giảng viên') || q.includes('thầy') || q.includes('cô') || q.includes('gv');
     const isLookupQuery = q.includes('là ai') || q.includes('lớp nào') || q.includes('đăng ký') || q.includes('có') || q.includes('tìm') || q.includes('tra cứu') || q.includes('tên') || /[0-9]{4,}/.test(q);
@@ -268,7 +308,7 @@ export const DraggableAiCompanion: React.FC = () => {
             }
           }
         } catch {
-          // Fallback if permission/error
+          // Fallback
         }
       }
     }
@@ -394,7 +434,7 @@ export const DraggableAiCompanion: React.FC = () => {
       }
     }
 
-    return null; // Fallback to standard backend AI endpoint
+    return null;
   };
 
   const sendMessage = async (userText: string) => {
@@ -412,7 +452,6 @@ export const DraggableAiCompanion: React.FC = () => {
     setLoading(true);
 
     try {
-      // Step 1: Try Smart Live Intent & Multi-turn Context Processor first
       const liveAnswer = await processLiveSystemQuery(userText.trim());
 
       if (liveAnswer) {
@@ -424,7 +463,6 @@ export const DraggableAiCompanion: React.FC = () => {
         };
         setMessages((prev) => [...prev, aiMsg]);
       } else {
-        // Step 2: Fallback to AI Advisor chat endpoint with context
         const promptToSend = lastContextEntity
           ? `[Ngữ cảnh hội thoại: Người dùng đang hỏi tiếp nối về ${lastContextEntity.type} ${lastContextEntity.name} (Mã: ${lastContextEntity.code || 'n/a'}, Lớp: ${lastContextEntity.adminClass || 'n/a'})]. Câu hỏi: ${userText.trim()}`
           : userText.trim();
@@ -478,71 +516,89 @@ export const DraggableAiCompanion: React.FC = () => {
   };
 
   return (
-    <div
-      ref={containerRef}
-      style={{ left: `${position.x}px`, top: `${position.y}px` }}
-      className="fixed z-50 select-none transition-shadow"
-    >
+    <>
       {/* Floating Mascot Button */}
       <div
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => !isOpenInput && setIsHovered(false)}
-        onMouseDown={handleMouseDown}
-        onClick={handleMascotClick}
-        className="relative group cursor-grab active:cursor-grabbing"
+        ref={containerRef}
+        style={{ left: `${position.x}px`, top: `${position.y}px` }}
+        className="fixed z-40"
       >
-        <div className="w-16 h-16 rounded-full bg-linear-to-tr from-indigo-600 via-purple-600 to-pink-500 p-1 shadow-2xl hover:scale-110 transition duration-300 flex items-center justify-center">
-          <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white relative overflow-hidden">
-            <Bot className="w-9 h-9 text-pink-400 animate-pulse" />
-            <span className="absolute bottom-1 right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-slate-900" />
+        <div
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => !isOpenInput && setIsHovered(false)}
+          onMouseDown={handleMouseDown}
+          onClick={handleMascotClick}
+          className="relative group cursor-grab active:cursor-grabbing select-none"
+        >
+          <div className="w-16 h-16 rounded-full bg-linear-to-tr from-indigo-600 via-purple-600 to-pink-500 p-1 shadow-2xl hover:scale-110 transition duration-300 flex items-center justify-center">
+            <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white relative overflow-hidden">
+              <Bot className="w-9 h-9 text-pink-400 animate-pulse" />
+              <span className="absolute bottom-1 right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-slate-900" />
+            </div>
           </div>
+          <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow animate-bounce">
+            AI Mascot
+          </span>
         </div>
-        <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow animate-bounce">
-          AI Mascot
-        </span>
+
+        {/* Hover Quick Popup Menu */}
+        {isHovered && !isOpenInput && (
+          <div className="absolute bottom-20 right-0 w-64 bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-2xl border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-bottom-2 select-none">
+            <p className="text-xs font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-pink-500" /> Hikari AI - Truy vấn nhanh dữ liệu:
+            </p>
+            <div className="space-y-1">
+              <button
+                onClick={() => handleQuickAsk('hệ thống có bao nhiêu người')}
+                className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
+              >
+                <Database className="w-3.5 h-3.5 text-indigo-500" /> Thống kê Tổng người dùng hệ thống
+              </button>
+              <button
+                onClick={() => handleQuickAsk('thời khóa biểu của tôi')}
+                className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
+              >
+                <Calendar className="w-3.5 h-3.5 text-purple-500" /> Tra cứu Lịch học thời gian thực
+              </button>
+              <button
+                onClick={() => handleQuickAsk('danh sách lớp học phần')}
+                className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-pink-500" /> Tra cứu Lớp học phần của tôi
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Hover Quick Popup Menu */}
-      {isHovered && !isOpenInput && (
-        <div className="absolute bottom-20 right-0 w-64 bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-2xl border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-bottom-2">
-          <p className="text-xs font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-pink-500" /> Hikari AI - Truy vấn nhanh dữ liệu:
-          </p>
-          <div className="space-y-1">
-            <button
-              onClick={() => handleQuickAsk('hệ thống có bao nhiêu người')}
-              className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
-            >
-              <Database className="w-3.5 h-3.5 text-indigo-500" /> Thống kê Tổng người dùng hệ thống
-            </button>
-            <button
-              onClick={() => handleQuickAsk('thời khóa biểu của tôi')}
-              className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
-            >
-              <Calendar className="w-3.5 h-3.5 text-purple-500" /> Tra cứu Lịch học thời gian thực
-            </button>
-            <button
-              onClick={() => handleQuickAsk('danh sách lớp học phần')}
-              className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-pink-500" /> Tra cứu Lớp học phần của tôi
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Expanded AI Chat Window */}
+      {/* Render AI Chat Window in fixed viewport position so it NEVER goes off screen */}
       {isOpenInput && (
         <div
-          className={`absolute bottom-20 right-0 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col transition-all duration-300 ${
+          style={
             isExpanded
-              ? 'w-[90vw] sm:w-[560px] md:w-[680px] h-[75vh] max-h-[800px]'
-              : 'w-80 sm:w-96 h-[460px]'
+              ? { width: `${expandedSize.width}px`, height: `${expandedSize.height}px`, maxWidth: 'calc(100vw - 32px)', maxHeight: 'calc(100vh - 32px)' }
+              : undefined
+          }
+          className={`fixed z-50 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col ${
+            isExpanded
+              ? 'bottom-4 right-4 min-w-[320px] min-h-[300px]'
+              : 'bottom-4 right-4 w-[calc(100vw-32px)] sm:w-96 h-[500px] max-h-[calc(100vh-32px)]'
           }`}
         >
+          {/* Resize Handle at Top-Left corner when in Expanded Mode */}
+          {isExpanded && (
+            <div
+              onMouseDown={handleResizeStart}
+              title="Kéo thả góc này để thay đổi Kích thước cửa sổ Chat (Rộng / Cao)"
+              className="absolute top-2 left-2 z-30 w-5 h-5 cursor-nwse-resize flex items-center justify-center bg-white/20 hover:bg-white/40 rounded-md transition"
+            >
+              <Move className="w-3.5 h-3.5 text-white" />
+            </div>
+          )}
+
           {/* Header */}
-          <div className="bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 p-3.5 text-white flex items-center justify-between shrink-0 shadow-md">
-            <div className="flex items-center gap-2.5">
+          <div className="bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 p-3.5 text-white flex items-center justify-between shrink-0 shadow-md select-none">
+            <div className="flex items-center gap-2.5 pl-3">
               <div className="relative">
                 <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
                   <Bot className="w-5 h-5 text-pink-200" />
@@ -552,14 +608,14 @@ export const DraggableAiCompanion: React.FC = () => {
               <div>
                 <h3 className="text-sm font-bold tracking-tight">Hikari AI Companion</h3>
                 <p className="text-[10px] text-pink-100 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Truy vấn Live CSDL • Bộ nhớ ngữ cảnh hội thoại
+                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Live CSDL • Cho phép Kéo thả Size & Copy
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-1">
               <button
                 type="button"
-                title={isExpanded ? 'Thu nhỏ cửa sổ' : 'Mở rộng hiển thị (Nửa màn hình)'}
+                title={isExpanded ? 'Thu nhỏ cửa sổ' : 'Mở rộng hiển thị (Kéo thả kích thước)'}
                 onClick={() => setIsExpanded((prev) => !prev)}
                 className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition cursor-pointer"
               >
@@ -584,34 +640,51 @@ export const DraggableAiCompanion: React.FC = () => {
             </div>
           </div>
 
-          {/* Conversation Stream */}
-          <div ref={chatScrollRef} className="flex-1 p-4 space-y-3.5 overflow-y-auto bg-slate-50/50 dark:bg-slate-950/40">
+          {/* Conversation Stream - Full Text Selection & 1-Click Copy with min-h-0 for proper flex overflow scrolling */}
+          <div
+            ref={chatScrollRef}
+            className="flex-1 min-h-0 p-4 space-y-3.5 overflow-y-auto bg-slate-50/50 dark:bg-slate-950/40 select-text cursor-text"
+          >
             {messages.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'} space-y-1`}
               >
                 <div
-                  className={`${isExpanded ? 'max-w-[90%]' : 'max-w-[85%]'} px-3.5 py-2.5 rounded-2xl text-xs leading-relaxed shadow-xs ${
+                  className={`${isExpanded ? 'max-w-[90%]' : 'max-w-[85%]'} px-3.5 py-2.5 rounded-2xl text-xs leading-relaxed shadow-xs select-text ${
                     msg.sender === 'user'
                       ? 'bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-br-xs'
                       : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-gray-700/80 rounded-bl-xs shadow-xs'
                   }`}
                 >
                   {msg.sender === 'ai' && (
-                    <div className="flex items-center gap-1.5 font-bold text-pink-600 dark:text-pink-400 text-[11px] mb-1">
-                      <Sparkles className="w-3 h-3" /> Hikari AI
+                    <div className="flex items-center justify-between font-bold text-pink-600 dark:text-pink-400 text-[11px] mb-1 select-none">
+                      <span className="flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> Hikari AI</span>
+                      <button
+                        type="button"
+                        title="Sao chép nội dung câu trả lời"
+                        onClick={() => handleCopyMessage(msg.id, msg.text)}
+                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition cursor-pointer flex items-center gap-1 text-[10px]"
+                      >
+                        {copiedId === msg.id ? (
+                          <span className="text-emerald-500 flex items-center gap-1 font-semibold"><Check className="w-3 h-3" /> Đã chép</span>
+                        ) : (
+                          <span className="flex items-center gap-1"><Copy className="w-3 h-3" /> Chép</span>
+                        )}
+                      </button>
                     </div>
                   )}
-                  <p className="whitespace-pre-wrap">{msg.text}</p>
+                  <p className="whitespace-pre-wrap select-text selection:bg-purple-200 dark:selection:bg-purple-900 selection:text-purple-900 dark:selection:text-purple-100">
+                    {msg.text}
+                  </p>
                 </div>
-                <span className="text-[10px] text-gray-400 px-1 font-mono">{msg.timestamp}</span>
+                <span className="text-[10px] text-gray-400 px-1 font-mono select-none">{msg.timestamp}</span>
               </div>
             ))}
 
             {/* Thinking Indicator */}
             {loading && (
-              <div className="flex flex-col items-start space-y-1">
+              <div className="flex flex-col items-start space-y-1 select-none">
                 <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-bl-xs px-3.5 py-2.5 text-xs text-gray-500 flex items-center gap-2 shadow-xs">
                   <Loader2 className="w-3.5 h-3.5 text-pink-500 animate-spin" />
                   <span className="italic font-medium text-pink-600 dark:text-pink-400 text-[11px]">Hikari đang suy nghĩ & liên kết ngữ cảnh...</span>
@@ -623,14 +696,14 @@ export const DraggableAiCompanion: React.FC = () => {
           {/* Footer Input Area */}
           <form
             onSubmit={handleSearchSubmit}
-            className="p-3 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2 shrink-0"
+            className="p-3 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2 shrink-0 select-none"
           >
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Nhắn tin với Hikari AI (vd: là đăng ký những môn nào)..."
-              className="flex-1 bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs text-gray-900 dark:text-white outline-none transition"
+              className="flex-1 bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs text-gray-900 dark:text-white outline-none transition select-text"
             />
             <button
               type="submit"
@@ -642,7 +715,7 @@ export const DraggableAiCompanion: React.FC = () => {
           </form>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
