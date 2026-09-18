@@ -5,6 +5,7 @@ import * as notificationService from '../services/notificationService';
 import * as authService from '../services/authService';
 import { writeStoredUser } from '../contexts/authStorage';
 import type { Role, AuthUser } from '../types';
+import DraggableAiCompanion from './DraggableAiCompanion';
 
 const SunIcon = ({ className = 'h-4.5 w-4.5' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -644,6 +645,8 @@ export default function Layout() {
       {showFirstLoginModal && user && (
         <FirstLoginModal user={user} onComplete={() => setShowFirstLoginModal(false)} />
       )}
+
+      <DraggableAiCompanion />
     </div>
   );
 }

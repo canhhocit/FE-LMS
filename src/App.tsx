@@ -65,6 +65,10 @@ function NotFoundPage() {
 
 import { ThemeProvider } from './context/ThemeContext';
 import AnalyticsDashboard from './pages/lecturer/AnalyticsDashboard';
+import PermissionRequestsPage from './pages/lecturer/PermissionRequestsPage';
+import AdminPbacApproval from './pages/admin/AdminPbacApproval';
+import HomeroomGradebook from './pages/lecturer/HomeroomGradebook';
+import DocumentHubPage from './pages/shared/DocumentHubPage';
 
 export default function App() {
   return (
@@ -88,6 +92,7 @@ export default function App() {
               <Route path="/student/registrations" element={<StudentRegistrations />} />
               <Route path="/student/tuition" element={<TuitionPage />} />
               <Route path="/student/quizzes" element={<QuizPage />} />
+              <Route path="/student/documents" element={<DocumentHubPage />} />
               <Route path="/student/forum" element={<Forum />} />
               <Route path="/student/assignments" element={<StudentAssignments />} />
               <Route path="/student/grades" element={<StudentGrades />} />
@@ -106,10 +111,13 @@ export default function App() {
               <Route path="/lecturer/classes/:id" element={<ClassDetail />} />
               <Route path="/lecturer/notifications" element={<NotificationsPage />} />
               <Route path="/lecturer/quizzes" element={<QuizPage />} />
+              <Route path="/lecturer/documents" element={<DocumentHubPage />} />
               <Route path="/lecturer/forum" element={<Forum />} />
               <Route path="/lecturer/assignments" element={<LecturerAssignments />} />
               <Route path="/lecturer/grading" element={<LecturerGrading />} />
               <Route path="/lecturer/analytics" element={<AnalyticsDashboard />} />
+              <Route path="/lecturer/permission-requests" element={<PermissionRequestsPage />} />
+              <Route path="/lecturer/homeroom" element={<HomeroomGradebook />} />
               <Route path="/lecturer/schedule" element={<LecturerSchedule />} />
               <Route path="/lecturer/profile" element={<LecturerProfile />} />
             </Route>
@@ -124,6 +132,8 @@ export default function App() {
             <Route path="/admin/registration" element={<RegistrationPeriods />} />
             <Route path="/admin/tuition" element={<AdminTuitionManagement />} />
             <Route path="/admin/reports" element={<AdminReports />} />
+            <Route path="/admin/pbac-approvals" element={<AdminPbacApproval />} />
+            <Route path="/admin/documents" element={<DocumentHubPage />} />
             <Route path="/admin/permissions" element={<AdminPermissions />} />
             <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
             <Route path="/admin/clazz-permissions" element={<ClazzPermissions />} />
