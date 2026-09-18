@@ -178,6 +178,11 @@ const NAV: Record<Role, NavSection[]> = {
         { to: '/student/transcript', label: 'Bảng điểm', icon: GraduationCapIcon },
         { to: '/student/tuition', label: 'Học phí', icon: FileTextIcon },
         { to: '/student/registration', label: 'Đăng ký học', icon: BookOpenIcon },
+      ],
+    },
+    {
+      title: 'Biểu mẫu & AI',
+      items: [
         { to: '/student/documents', label: 'Kho Biểu mẫu & Đơn', icon: FileTextIcon },
         { to: '/student/ai-advisor', label: 'Cố vấn học tập AI', icon: BrainIcon },
       ],
@@ -200,15 +205,20 @@ const NAV: Record<Role, NavSection[]> = {
       ],
     },
     {
-      title: 'Quản lý & Cấp quyền',
+      title: 'Quản lý Giảng dạy',
       items: [
         { to: '/lecturer/assignments', label: 'Bài tập', icon: FileTextIcon },
         { to: '/lecturer/quizzes', label: 'Quiz', icon: BrainIcon },
         { to: '/lecturer/grading', label: 'Chấm điểm', icon: CheckCircleIcon },
-        { to: '/lecturer/permission-requests', label: 'Yêu cầu Cấp quyền PBAC', icon: KeyIcon },
         { to: '/lecturer/homeroom', label: 'Điểm rèn luyện (GVCN)', icon: UsersIcon },
-        { to: '/lecturer/documents', label: 'Kho Biểu mẫu & Đơn', icon: FileTextIcon },
         { to: '/lecturer/schedule', label: 'Lịch dạy', icon: CalendarIcon },
+      ],
+    },
+    {
+      title: 'Biểu mẫu & Cấp quyền',
+      items: [
+        { to: '/lecturer/documents', label: 'Kho Biểu mẫu & Đơn', icon: FileTextIcon },
+        { to: '/lecturer/permission-requests', label: 'Yêu cầu Cấp quyền PBAC', icon: KeyIcon },
       ],
     },
     {
@@ -226,9 +236,7 @@ const NAV: Record<Role, NavSection[]> = {
         { to: '/admin/notifications', label: 'Thông báo', icon: BellIcon },
         { to: '/admin/users', label: 'Người dùng', icon: UsersIcon },
         { to: '/admin/reports', label: 'Báo cáo', icon: BarChartIcon },
-        { to: '/admin/pbac-approvals', label: 'Phê duyệt PBAC & Logs', icon: KeyIcon },
         { to: '/admin/audit-logs', label: 'Nhật ký hệ thống', icon: FileTextIcon },
-        { to: '/admin/documents', label: 'Kho Biểu mẫu & Đơn', icon: FileTextIcon },
         { to: '/admin/permissions', label: 'Phân quyền', icon: KeyIcon, permission: 'SYSTEM_CONFIG' },
       ],
     },
@@ -242,6 +250,13 @@ const NAV: Record<Role, NavSection[]> = {
         { to: '/admin/classes', label: 'Lớp học phần', icon: BookOpenIcon },
         { to: '/admin/tuition', label: 'Quản lý học phí', icon: FileTextIcon },
         { to: '/admin/clazz-permissions', label: 'Phân quyền lớp học', icon: KeyIcon },
+      ],
+    },
+    {
+      title: 'Biểu mẫu & Phê duyệt',
+      items: [
+        { to: '/admin/documents', label: 'Kho Biểu mẫu & Đơn', icon: FileTextIcon },
+        { to: '/admin/pbac-approvals', label: 'Phê duyệt PBAC & Logs', icon: KeyIcon },
       ],
     },
   ],

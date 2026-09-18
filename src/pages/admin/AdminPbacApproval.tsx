@@ -70,6 +70,12 @@ export const AdminPbacApproval: React.FC = () => {
   ]);
 
   const [duration, setDuration] = useState('60');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'REVOKED'>('ALL');
+
+  const pendingCount = requests.filter(r => r.status === 'PENDING').length;
+  const filteredRequests = statusFilter === 'ALL' 
+    ? requests 
+    : requests.filter(r => r.status === statusFilter);
 
   const handleApprove = (id: number) => {
     const targetTime = new Date();
@@ -123,6 +129,65 @@ export const AdminPbacApproval: React.FC = () => {
           </div>
         </div>
 
+        {/* Filter Tabs */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
+          <button
+            onClick={() => setStatusFilter('ALL')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+              statusFilter === 'ALL'
+                ? 'bg-indigo-600 text-white shadow-xs'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
+            }`}
+          >
+            Tất cả ({requests.length})
+          </button>
+          <button
+            onClick={() => setStatusFilter('PENDING')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              statusFilter === 'PENDING'
+                ? 'bg-amber-500 text-white shadow-xs'
+                : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100'
+            }`}
+          >
+            <Clock className="w-3.5 h-3.5" /> Chờ duyệt
+            {pendingCount > 0 && (
+              <span className="bg-amber-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full ml-1">
+                {pendingCount}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setStatusFilter('APPROVED')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              statusFilter === 'APPROVED'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'
+            }`}
+          >
+            <CheckCircle2 className="w-3.5 h-3.5" /> Đã duyệt
+          </button>
+          <button
+            onClick={() => setStatusFilter('REJECTED')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              statusFilter === 'REJECTED'
+                ? 'bg-rose-600 text-white shadow-xs'
+                : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100'
+            }`}
+          >
+            <XCircle className="w-3.5 h-3.5" /> Từ chối
+          </button>
+          <button
+            onClick={() => setStatusFilter('REVOKED')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              statusFilter === 'REVOKED'
+                ? 'bg-gray-800 text-white shadow-xs'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
+            }`}
+          >
+            <Ban className="w-3.5 h-3.5" /> Đã thu hồi
+          </button>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -137,7 +202,7 @@ export const AdminPbacApproval: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
-              {requests.map((r) => (
+              {filteredRequests.map((r) => (
                 <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50">
                   <td className="py-3.5 px-4 font-mono font-bold text-indigo-600">#{r.id}</td>
                   <td className="py-3.5 px-4 font-semibold text-gray-900 dark:text-white flex items-center gap-2">
