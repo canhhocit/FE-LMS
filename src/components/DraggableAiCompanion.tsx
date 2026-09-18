@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Search, Calendar, User, BookOpen, X, Sparkles, Loader2, Trash2, Send, Maximize2, Minimize2, Database, CreditCard, ShieldCheck } from 'lucide-react';
 import { apiClient, unwrap } from '../services/api/client';
 import { useAuth } from '../contexts/useAuth';
-import { getDashboardStats } from '../services/adminService';
+import { getDashboardStats, listStudents, listLecturers } from '../services/adminService';
 import { getMyClasses } from '../services/clazzService';
 import { getMySchedule } from '../services/scheduleService';
 import { getMyTuition } from '../services/tuitionService';
@@ -41,7 +41,7 @@ export const DraggableAiCompanion: React.FC = () => {
       {
         id: 'welcome-msg',
         sender: 'ai',
-        text: `Xin chào ${user?.fullName || 'bạn'}! 👋 Mình là Hikari – trợ lý AI học tập thông minh 24/7 của hệ thống LearningHub LMS.\n\nMình có quyền truy cập dữ liệu thời gian thực của hệ thống: Tra cứu số lượng người dùng, thời khóa biểu, danh sách lớp học phần, học phí, kết quả học tập... Bạn muốn mình kiểm tra thông tin gì ngay bây giờ? ✨`,
+        text: `Xin chào ${user?.fullName || 'bạn'}! 👋 Mình là Hikari – trợ lý AI học tập thông minh 24/7 của hệ thống LearningHub LMS.\n\nMình có quyền truy cập dữ liệu thời gian thực của hệ thống: Tra cứu danh sách Sinh viên/Giảng viên (ví dụ: "tìm sinh viên Phạm Hữu Cảnh"), số lượng người dùng, thời khóa biểu, danh sách lớp học phần, học phí, kết quả học tập... Bạn muốn mình kiểm tra thông tin gì ngay bây giờ? ✨`,
         timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       },
     ];
@@ -130,6 +130,67 @@ export const DraggableAiCompanion: React.FC = () => {
   // 🚀 Intelligent Live API Intent Processor
   const processLiveSystemQuery = async (prompt: string): Promise<string | null> => {
     const q = prompt.toLowerCase().trim();
+
+    // Intent 0: Search Student / Lecturer by Name or Keyword (e.g. "có sinh viên tên Phạm Hữu Cảnh không", "tìm giảng viên Nguyễn Văn A")
+    const isStudentQuery = q.includes('sinh viên') || q.includes('học sinh') || q.includes('sv');
+    const isLecturerQuery = q.includes('giảng viên') || q.includes('thầy') || q.includes('cô') || q.includes('gv');
+    const isSearchAction = q.includes('có') || q.includes('tìm') || q.includes('tra cứu') || q.includes('tên');
+
+    if ((isStudentQuery || isLecturerQuery || isSearchAction) && !q.includes('bao nhiêu')) {
+      // Extract clean search keyword
+      let keyword = prompt
+        .replace(/có sinh viên tên/gi, '')
+        .replace(/có sinh viên/gi, '')
+        .replace(/tìm sinh viên/gi, '')
+        .replace(/tra cứu sinh viên/gi, '')
+        .replace(/có giảng viên tên/gi, '')
+        .replace(/có giảng viên/gi, '')
+        .replace(/tìm giảng viên/gi, '')
+        .replace(/tra cứu giảng viên/gi, '')
+        .replace(/có ai tên/gi, '')
+        .replace(/tìm người tên/gi, '')
+        .replace(/không|khôgn|khong|hả|hạ|thế|nhỉ|vậy/gi, '')
+        .trim();
+
+      if (keyword.length >= 2) {
+        try {
+          if (isLecturerQuery) {
+            const lecturers = await listLecturers(keyword, 0, 10);
+            if (lecturers && lecturers.length > 0) {
+              const listStr = lecturers
+                .map(
+                  (l) =>
+                    `• **${l.fullName}** (${l.email}) ${l.lecturerCode ? `- MSGV: ${l.lecturerCode}` : ''} ${
+                      l.faculty ? `| Khoa: ${l.faculty}` : ''
+                    }`
+                )
+                .join('\n');
+              return `🔍 **Kết quả tra cứu Giảng viên thời gian thực trên hệ thống (${lecturers.length} kết quả):**\n\n${listStr}`;
+            } else {
+              return `🔍 **Kết quả tra cứu Giảng viên thời gian thực:**\n\n❌ Không tìm thấy Giảng viên nào có tên hoặc từ khóa "**${keyword}**" trong cơ sở dữ liệu hệ thống.`;
+            }
+          } else {
+            // Default to Student / User search
+            const students = await listStudents(keyword, '', 0, 10);
+            if (students && students.length > 0) {
+              const listStr = students
+                .map(
+                  (s) =>
+                    `• **${s.fullName}** (${s.email}) ${s.studentCode ? `- MSV: ${s.studentCode}` : ''} ${
+                      s.adminClassName ? `| Lớp HC: ${s.adminClassName}` : ''
+                    }`
+                )
+                .join('\n');
+              return `🔍 **Kết quả tra cứu Sinh viên thời gian thực trên hệ thống (${students.length} kết quả):**\n\n✅ **Tìm thấy ${students.length} sinh viên phù hợp trong CSDL:**\n\n${listStr}`;
+            } else {
+              return `🔍 **Kết quả tra cứu Sinh viên thời gian thực:**\n\n❌ Không tìm thấy sinh viên nào có tên hoặc từ khóa "**${keyword}**" trong cơ sở dữ liệu hệ thống LearningHub LMS.`;
+            }
+          }
+        } catch {
+          // If unauthenticated or no admin access, fallback
+        }
+      }
+    }
 
     // Intent 1: Total Users / System Stats
     if (
@@ -405,7 +466,7 @@ export const DraggableAiCompanion: React.FC = () => {
               <div>
                 <h3 className="text-sm font-bold tracking-tight">Hikari AI Companion</h3>
                 <p className="text-[10px] text-pink-100 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Kết nối Live API • {isExpanded ? 'Xem mở rộng' : 'Lưu lịch sử'}
+                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Truy vấn Live API CSDL • {isExpanded ? 'Xem mở rộng' : 'Lưu lịch sử'}
                 </p>
               </div>
             </div>
@@ -467,7 +528,7 @@ export const DraggableAiCompanion: React.FC = () => {
               <div className="flex flex-col items-start space-y-1">
                 <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-bl-xs px-3.5 py-2.5 text-xs text-gray-500 flex items-center gap-2 shadow-xs">
                   <Loader2 className="w-3.5 h-3.5 text-pink-500 animate-spin" />
-                  <span className="italic font-medium text-pink-600 dark:text-pink-400 text-[11px]">Hikari đang suy nghĩ & kết nối API...</span>
+                  <span className="italic font-medium text-pink-600 dark:text-pink-400 text-[11px]">Hikari đang truy vấn CSDL thời gian thực...</span>
                 </div>
               </div>
             )}
@@ -482,7 +543,7 @@ export const DraggableAiCompanion: React.FC = () => {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Nhắn tin với Hikari AI (vd: hệ thống có bao nhiêu người)..."
+              placeholder="Nhắn tin với Hikari AI (vd: tìm sinh viên Phạm Hữu Cảnh)..."
               className="flex-1 bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs text-gray-900 dark:text-white outline-none transition"
             />
             <button
