@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Search, Calendar, User, BookOpen, X, Sparkles, Loader2, Trash2, Send, CornerDownLeft } from 'lucide-react';
+import { Bot, Search, Calendar, User, BookOpen, X, Sparkles, Loader2, Trash2, Send, Maximize2, Minimize2 } from 'lucide-react';
 import { apiClient, unwrap } from '../services/api/client';
 import { useAuth } from '../contexts/useAuth';
 
@@ -18,6 +18,7 @@ export const DraggableAiCompanion: React.FC = () => {
   const [position, setPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight - 180 });
   const [isHovered, setIsHovered] = useState(false);
   const [isOpenInput, setIsOpenInput] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -84,7 +85,7 @@ export const DraggableAiCompanion: React.FC = () => {
         chatScrollRef.current?.scrollTo({ top: chatScrollRef.current.scrollHeight, behavior: 'smooth' });
       }, 100);
     }
-  }, [messages, isOpenInput]);
+  }, [messages, isOpenInput, isExpanded]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
@@ -237,9 +238,15 @@ export const DraggableAiCompanion: React.FC = () => {
         </div>
       )}
 
-      {/* Expanded Zalo/Messenger-Style AI Chat Window */}
+      {/* Expanded Zalo/Messenger-Style AI Chat Window with Expand/Maximize Option */}
       {isOpenInput && (
-        <div className="absolute bottom-20 right-0 w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col h-[460px]">
+        <div
+          className={`absolute bottom-20 right-0 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col transition-all duration-300 ${
+            isExpanded
+              ? 'w-[90vw] sm:w-[560px] md:w-[680px] h-[75vh] max-h-[800px]'
+              : 'w-80 sm:w-96 h-[460px]'
+          }`}
+        >
           {/* Header */}
           <div className="bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 p-3.5 text-white flex items-center justify-between shrink-0 shadow-md">
             <div className="flex items-center gap-2.5">
@@ -252,11 +259,22 @@ export const DraggableAiCompanion: React.FC = () => {
               <div>
                 <h3 className="text-sm font-bold tracking-tight">Hikari AI Companion</h3>
                 <p className="text-[10px] text-pink-100 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Đang hoạt động • Lưu lịch sử
+                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Đang hoạt động • {isExpanded ? 'Chế độ xem mở rộng' : 'Lưu lịch sử'}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-1">
+              {/* Expand / Minimize Toggle Button */}
+              <button
+                type="button"
+                title={isExpanded ? 'Thu nhỏ cửa sổ' : 'Mở rộng hiển thị (Nửa màn hình)'}
+                onClick={() => setIsExpanded((prev) => !prev)}
+                className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition cursor-pointer"
+              >
+                {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </button>
+
+              {/* Trash/Clear History Button */}
               <button
                 type="button"
                 title="Xóa lịch sử trò chuyện"
@@ -283,7 +301,7 @@ export const DraggableAiCompanion: React.FC = () => {
                 className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'} space-y-1`}
               >
                 <div
-                  className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-xs leading-relaxed shadow-xs ${
+                  className={`${isExpanded ? 'max-w-[90%]' : 'max-w-[85%]'} px-3.5 py-2.5 rounded-2xl text-xs leading-relaxed shadow-xs ${
                     msg.sender === 'user'
                       ? 'bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-br-xs'
                       : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-gray-700/80 rounded-bl-xs shadow-xs'
