@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, CheckCircle2, XCircle, Clock, Ban, History, User, BookOpen, PlusCircle, Calendar, Key, X } from 'lucide-react';
-import { listLecturers } from '../../services/adminService';
+import { ShieldCheck, CheckCircle2, XCircle, Clock, Ban, History, User, BookOpen, PlusCircle, Calendar, Key, X, AlertTriangle, Send } from 'lucide-react';
+import { listLecturers, listStudents } from '../../services/adminService';
 import { getMyClasses } from '../../services/clazzService';
 import type { User as UserType, Clazz } from '../../types';
 
@@ -663,6 +663,65 @@ export const AdminPbacApproval: React.FC = () => {
                   </tr>
                 ))
               )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {/* Academic Warning Management Section (>10 Credits Debt Threshold) */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-rose-200 dark:border-rose-900/60 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-rose-500" />
+              Quản lý & Theo dõi Cảnh báo Học vụ (Nợ &gt; 10 Tín chỉ)
+            </h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Tự động phát hiện Sinh viên nợ tín chỉ vượt ngưỡng quy định hệ thống (mặc định &gt; 10 tín chỉ) để phát thông báo Cảnh báo Học vụ Lần 1.
+            </p>
+          </div>
+          <span className="text-xs px-3 py-1.5 bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold rounded-xl border border-rose-200 dark:border-rose-800 shrink-0">
+            Ngưỡng Cảnh báo: &gt; 10 Tín chỉ
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-gray-100 dark:border-gray-700 text-xs font-bold text-gray-500 uppercase">
+                <th className="py-3 px-4">Mã Sinh viên</th>
+                <th className="py-3 px-4">Họ và tên</th>
+                <th className="py-3 px-4">Lớp hành chính</th>
+                <th className="py-3 px-4">Số Tín chỉ Nợ</th>
+                <th className="py-3 px-4">Mức Cảnh báo</th>
+                <th className="py-3 px-4 text-right">Phát thông báo</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
+              {[
+                { id: 1, code: '74DCTT22099', name: 'Phạm Hữu Cảnh', adminClass: '74DCTT24', debt: 12, level: 'Cảnh báo Lần 1' },
+                { id: 2, code: '74DCTT22105', name: 'Nguyễn Văn An', adminClass: '74DCTT24', debt: 14, level: 'Cảnh báo Lần 1' },
+                { id: 3, code: '74DCTT22188', name: 'Trần Thị Mai', adminClass: '74DCTT25', debt: 11, level: 'Cảnh báo Lần 1' },
+              ].map((s) => (
+                <tr key={s.id} className="hover:bg-rose-50/40 dark:hover:bg-rose-950/20 transition">
+                  <td className="py-3.5 px-4 font-mono font-bold text-rose-600">{s.code}</td>
+                  <td className="py-3.5 px-4 font-semibold text-gray-900 dark:text-white">{s.name}</td>
+                  <td className="py-3.5 px-4 text-gray-600 dark:text-gray-300">{s.adminClass}</td>
+                  <td className="py-3.5 px-4 font-bold text-rose-600 dark:text-rose-400">{s.debt} / 10 Tín chỉ</td>
+                  <td className="py-3.5 px-4">
+                    <span className="text-xs font-bold text-rose-700 bg-rose-100 dark:bg-rose-950 dark:text-rose-300 px-2.5 py-1 rounded-full border border-rose-200">
+                      {s.level}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4 text-right">
+                    <button
+                      onClick={() => alert(`Đã gửi Giấy Cảnh báo Học vụ Lần 1 đến Sinh viên ${s.name} (${s.code}) và GVCN lớp ${s.adminClass}!`)}
+                      className="inline-flex items-center gap-1 bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition cursor-pointer"
+                    >
+                      <Send className="w-3.5 h-3.5" /> Gửi Thông báo Cảnh báo
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

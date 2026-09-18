@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Search, Calendar, User, BookOpen, X, Sparkles, Loader2, Trash2, Send, Maximize2, Minimize2, Database, CreditCard, ShieldCheck, Copy, Check, Move } from 'lucide-react';
+import { Bot, Search, Calendar, User, BookOpen, X, Sparkles, Loader2, Trash2, Send, Maximize2, Minimize2, Database, CreditCard, ShieldCheck, Copy, Check, Move, Download } from 'lucide-react';
 import { apiClient, unwrap } from '../services/api/client';
 import { useAuth } from '../contexts/useAuth';
 import { getDashboardStats, listStudents, listLecturers } from '../services/adminService';
@@ -26,6 +26,28 @@ export const DraggableAiCompanion: React.FC = () => {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
   const storageKey = `lms_ai_chat_history_${userId}`;
+  const configKey = `lms_ai_config_${userId}`;
+
+  // Dynamic AI Persona Config State
+  const [aiConfig, setAiConfig] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(configKey) || '{}');
+    } catch { return {}; }
+  });
+
+  const aiName = aiConfig.aiName || 'Hikari AI';
+
+  useEffect(() => {
+    const handleConfigUpdate = () => {
+      try {
+        setAiConfig(JSON.parse(localStorage.getItem(configKey) || '{}'));
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener('lms_update_ai_config', handleConfigUpdate);
+    return () => window.removeEventListener('lms_update_ai_config', handleConfigUpdate);
+  }, [configKey]);
 
   const [position, setPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight - 180 });
   const [isHovered, setIsHovered] = useState(false);
@@ -500,18 +522,37 @@ export const DraggableAiCompanion: React.FC = () => {
   };
 
   const handleClearHistory = () => {
-    if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử trò chuyện với Hikari AI không?')) {
+    if (confirm(`Bạn có chắc chắn muốn xóa toàn bộ lịch sử trò chuyện với ${aiName} không?`)) {
       const resetMessages: ChatMessage[] = [
         {
           id: `welcome-${Date.now()}`,
           sender: 'ai',
-          text: `Đã xóa lịch sử chat thành công! Xin chào ${user?.fullName || 'bạn'}, mình có thể trợ giúp gì cho bạn hôm nay?`,
+          text: `Đã xóa lịch sử chat thành công! Xin chào ${user?.fullName || 'bạn'}, ${aiName} có thể trợ giúp gì cho bạn hôm nay?`,
           timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
         },
       ];
       setMessages(resetMessages);
       setLastContextEntity(null);
       localStorage.removeItem(storageKey);
+    }
+  };
+
+  const handleExportHistory = () => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (!saved) {
+        alert('Chưa có lịch sử trò chuyện để xuất!');
+        return;
+      }
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(saved);
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute('href', dataStr);
+      downloadAnchor.setAttribute('download', `ai_chat_history_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    } catch {
+      alert('Không thể xuất file lịch sử chat!');
     }
   };
 
@@ -606,13 +647,21 @@ export const DraggableAiCompanion: React.FC = () => {
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full border border-purple-600" />
               </div>
               <div>
-                <h3 className="text-sm font-bold tracking-tight">AI Companion</h3>
+                <h3 className="text-sm font-bold tracking-tight">{aiName}</h3>
                 <p className="text-[10px] text-pink-100 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Live AI Companion
+                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Live Persona • Custom Instructions
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-1">
+              <button
+                type="button"
+                title="Xuất file lịch sử trò chuyện (.json)"
+                onClick={handleExportHistory}
+                className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+              </button>
               <button
                 type="button"
                 title={isExpanded ? 'Thu nhỏ cửa sổ' : 'Mở rộng hiển thị (Kéo thả kích thước)'}
