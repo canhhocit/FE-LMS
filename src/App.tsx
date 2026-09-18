@@ -63,51 +63,56 @@ function NotFoundPage() {
   );
 }
 
+import { ThemeProvider } from './context/ThemeContext';
+import AnalyticsDashboard from './pages/lecturer/AnalyticsDashboard';
+
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/403" element={<ForbiddenPage />} />
-          <Route path="/" element={<RootRedirect />} />
-          
-          {/* Student Routes */}
-          <Route element={<ProtectedRoute allow={['STUDENT']}><Layout /></ProtectedRoute>}>
-            <Route path="/student" element={<StudentDashboard />} />
-            <Route path="/student/classes" element={<StudentClasses />} />
-            <Route path="/student/classes/:id" element={<ClassDetail />} />
-            <Route path="/student/notifications" element={<NotificationsPage />} />
-            <Route path="/student/registration" element={<StudentRegistrations />} />
-            <Route path="/student/registrations" element={<StudentRegistrations />} />
-            <Route path="/student/tuition" element={<TuitionPage />} />
-            <Route path="/student/quizzes" element={<QuizPage />} />
-            <Route path="/student/forum" element={<Forum />} />
-            <Route path="/student/assignments" element={<StudentAssignments />} />
-            <Route path="/student/grades" element={<StudentGrades />} />
-            <Route path="/student/attendance" element={<StudentAttendance />} />
-            <Route path="/student/schedule" element={<StudentSchedule />} />
-            <Route path="/student/profile" element={<StudentProfile />} />
-            <Route path="/student/transcript" element={<StudentTranscript />} />
-            <Route path="/student/ai-advisor" element={<StudentAiAdvisor />} />
-            <Route path="/student/classes/:classId/lessons/:lessonId" element={<StudentLessonLearning />} />
-          </Route>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/403" element={<ForbiddenPage />} />
+            <Route path="/" element={<RootRedirect />} />
+            
+            {/* Student Routes */}
+            <Route element={<ProtectedRoute allow={['STUDENT']}><Layout /></ProtectedRoute>}>
+              <Route path="/student" element={<StudentDashboard />} />
+              <Route path="/student/classes" element={<StudentClasses />} />
+              <Route path="/student/classes/:id" element={<ClassDetail />} />
+              <Route path="/student/notifications" element={<NotificationsPage />} />
+              <Route path="/student/registration" element={<StudentRegistrations />} />
+              <Route path="/student/registrations" element={<StudentRegistrations />} />
+              <Route path="/student/tuition" element={<TuitionPage />} />
+              <Route path="/student/quizzes" element={<QuizPage />} />
+              <Route path="/student/forum" element={<Forum />} />
+              <Route path="/student/assignments" element={<StudentAssignments />} />
+              <Route path="/student/grades" element={<StudentGrades />} />
+              <Route path="/student/attendance" element={<StudentAttendance />} />
+              <Route path="/student/schedule" element={<StudentSchedule />} />
+              <Route path="/student/profile" element={<StudentProfile />} />
+              <Route path="/student/transcript" element={<StudentTranscript />} />
+              <Route path="/student/ai-advisor" element={<StudentAiAdvisor />} />
+              <Route path="/student/classes/:classId/lessons/:lessonId" element={<StudentLessonLearning />} />
+            </Route>
 
-          {/* Lecturer Routes */}
-          <Route element={<ProtectedRoute allow={['LECTURER']}><Layout /></ProtectedRoute>}>
-            <Route path="/lecturer" element={<LecturerDashboard />} />
-            <Route path="/lecturer/classes" element={<LecturerClasses />} />
-            <Route path="/lecturer/classes/:id" element={<ClassDetail />} />
-            <Route path="/lecturer/notifications" element={<NotificationsPage />} />
-            <Route path="/lecturer/quizzes" element={<QuizPage />} />
-            <Route path="/lecturer/forum" element={<Forum />} />
-            <Route path="/lecturer/assignments" element={<LecturerAssignments />} />
-            <Route path="/lecturer/grading" element={<LecturerGrading />} />
-            <Route path="/lecturer/schedule" element={<LecturerSchedule />} />
-            <Route path="/lecturer/profile" element={<LecturerProfile />} />
-          </Route>
+            {/* Lecturer Routes */}
+            <Route element={<ProtectedRoute allow={['LECTURER']}><Layout /></ProtectedRoute>}>
+              <Route path="/lecturer" element={<LecturerDashboard />} />
+              <Route path="/lecturer/classes" element={<LecturerClasses />} />
+              <Route path="/lecturer/classes/:id" element={<ClassDetail />} />
+              <Route path="/lecturer/notifications" element={<NotificationsPage />} />
+              <Route path="/lecturer/quizzes" element={<QuizPage />} />
+              <Route path="/lecturer/forum" element={<Forum />} />
+              <Route path="/lecturer/assignments" element={<LecturerAssignments />} />
+              <Route path="/lecturer/grading" element={<LecturerGrading />} />
+              <Route path="/lecturer/analytics" element={<AnalyticsDashboard />} />
+              <Route path="/lecturer/schedule" element={<LecturerSchedule />} />
+              <Route path="/lecturer/profile" element={<LecturerProfile />} />
+            </Route>
 
           {/* Admin Routes */}
           <Route element={<ProtectedRoute allow={['ADMIN']}><Layout /></ProtectedRoute>}>
@@ -129,7 +134,8 @@ export default function App() {
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
