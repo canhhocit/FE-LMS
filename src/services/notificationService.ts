@@ -33,3 +33,12 @@ export const markAsRead = async (id: number): Promise<void> => {
     throw error;
   }
 };
+
+export const markAllAsRead = async (): Promise<void> => {
+  try {
+    await apiClient.patch('/me/notifications/read-all');
+    notifyNotificationsUpdated(0);
+  } catch (error) {
+    throw error;
+  }
+};

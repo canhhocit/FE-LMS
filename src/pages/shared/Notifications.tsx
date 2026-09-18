@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { CheckCheck } from 'lucide-react';
 import { useAuth } from '../../contexts/useAuth';
 import * as notificationService from '../../services/notificationService';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
@@ -53,13 +54,37 @@ export default function NotificationsPage() {
     }
   };
 
+  const onMarkAllRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setItems((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Không thể đánh dấu tất cả thông báo đã đọc');
+    }
+  };
+
   if (loading) return <Spinner />;
   if (err) return <ErrorBox msg={err} />;
 
+  const hasUnread = items.some((n) => !n.isRead);
+
   return (
     <div>
-      <PageTitle>Thông báo</PageTitle>
-      <div className="mb-4 text-sm text-slate-600">Xin chào, {user?.fullName}</div>
+      <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <PageTitle>Thông báo</PageTitle>
+          <div className="text-sm text-slate-600 dark:text-slate-400">Xin chào, {user?.fullName}</div>
+        </div>
+        {hasUnread && (
+          <button
+            onClick={onMarkAllRead}
+            className="flex items-center gap-1.5 self-start sm:self-auto bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold px-4 py-2 rounded-xl transition shadow-xs cursor-pointer"
+          >
+            <CheckCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            Đánh dấu tất cả là đã đọc
+          </button>
+        )}
+      </div>
       {items.length === 0 ? <Empty msg="Chưa có thông báo nào" /> : (
         <div className="space-y-3">
           {items.map((n) => {
