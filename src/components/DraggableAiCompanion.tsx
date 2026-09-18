@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Search, Calendar, User, BookOpen, X, Sparkles, Loader2, Trash2, Send, Maximize2, Minimize2, Database, CreditCard, ShieldCheck, Copy, Check, Move, Download } from 'lucide-react';
+import { Bot, Search, Calendar, User, BookOpen, X, Sparkles, Loader2, Trash2, Send, Maximize2, Minimize2, Database, CreditCard, ShieldCheck, Copy, Check, Move, Download, Settings } from 'lucide-react';
 import { apiClient, unwrap } from '../services/api/client';
 import { useAuth } from '../contexts/useAuth';
 import { getDashboardStats, listStudents, listLecturers } from '../services/adminService';
@@ -654,6 +654,18 @@ export const DraggableAiCompanion: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-1">
+              <button
+                type="button"
+                title="Mở Cài đặt Cá nhân hóa AI (System Prompt & Persona)"
+                onClick={() => {
+                  const role = user?.role;
+                  const profilePath = role === 'LECTURER' ? '/lecturer/profile' : role === 'ADMIN' ? '/admin/profile' : '/student/profile';
+                  window.location.href = profilePath;
+                }}
+                className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition cursor-pointer"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
               <button
                 type="button"
                 title="Xuất file lịch sử trò chuyện (.json)"
