@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import { ShieldCheck, CheckCircle2, XCircle, Clock, Ban, History, User, BookOpen, PlusCircle, Calendar, Key, AlertCircle, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ShieldCheck, CheckCircle2, XCircle, Clock, Ban, History, User, BookOpen, PlusCircle, Calendar, Key, X } from 'lucide-react';
+import { listLecturers } from '../../services/adminService';
+import { getMyClasses } from '../../services/clazzService';
+import type { User as UserType, Clazz } from '../../types';
 
 interface PbacRequest {
   id: number;
@@ -32,19 +35,68 @@ export const AdminPbacApproval: React.FC = () => {
   const [customMinutes, setCustomMinutes] = useState('45');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'REVOKED'>('ALL');
 
+  // Backend Data for Comboboxes
+  const [lecturersList, setLecturersList] = useState<UserType[]>([]);
+  const [classesList, setClassesList] = useState<Clazz[]>([]);
+
   // Direct Grant Modal State
   const [showDirectModal, setShowDirectModal] = useState(false);
-  const [directLecturer, setDirectLecturer] = useState('');
-  const [directClass, setDirectClass] = useState('');
+  const [selectedLecturerId, setSelectedLecturerId] = useState<number | ''>('');
+  const [selectedClassId, setSelectedClassId] = useState<number | ''>('');
   const [directPermType, setDirectPermType] = useState('Sửa điểm Học phần');
+  
+  // Expiration Time Mode (Preset duration vs Exact Date+Time Picker)
+  const [timeMode, setTimeMode] = useState<'PRESET' | 'EXACT_DATETIME'>('PRESET');
   const [directDuration, setDirectDuration] = useState('60');
   const [directCustomMinutes, setDirectCustomMinutes] = useState('90');
+  const [exactDateTime, setExactDateTime] = useState<string>(() => {
+    const d = new Date();
+    d.setHours(d.getHours() + 2);
+    return d.toISOString().slice(0, 16);
+  });
   const [directReason, setDirectReason] = useState('');
 
-  const pendingCount = requests.filter(r => r.status === 'PENDING').length;
-  const filteredRequests = statusFilter === 'ALL' 
-    ? requests 
-    : requests.filter(r => r.status === statusFilter);
+  // Fetch Lecturers and Classes when Modal opens
+  useEffect(() => {
+    if (showDirectModal) {
+      listLecturers('', 0, 200)
+        .then((res) => {
+          setLecturersList(res || []);
+          if (res && res.length > 0) {
+            setSelectedLecturerId(res[0].id);
+          }
+        })
+        .catch(() => {});
+
+      getMyClasses()
+        .then((res) => {
+          setClassesList(res || []);
+        })
+        .catch(() => {});
+    }
+  }, [showDirectModal]);
+
+  // Filter Classes taught by the selected Lecturer
+  const filteredClasses = classesList.filter((c) => {
+    if (!selectedLecturerId) return true;
+    return c.lecturerId === Number(selectedLecturerId);
+  });
+
+  // Auto-select class when filtered list updates
+  useEffect(() => {
+    if (filteredClasses.length > 0) {
+      setSelectedClassId(filteredClasses[0].id);
+    } else if (classesList.length > 0) {
+      setSelectedClassId(classesList[0].id);
+    } else {
+      setSelectedClassId('');
+    }
+  }, [selectedLecturerId, classesList]);
+
+  const pendingCount = requests.filter((r) => r.status === 'PENDING').length;
+  const filteredRequests = statusFilter === 'ALL'
+    ? requests
+    : requests.filter((r) => r.status === statusFilter);
 
   const calculateValidTime = (dur: string, customMinStr?: string) => {
     if (dur === 'NEVER') return 'Không hết hạn (Vĩnh viễn)';
@@ -57,11 +109,10 @@ export const AdminPbacApproval: React.FC = () => {
   const handleApprove = (id: number, overrideDuration?: string) => {
     const durToUse = overrideDuration || duration;
     const validTime = calculateValidTime(durToUse, customMinutes);
-    
-    setRequests(requests.map(r => r.id === id ? { ...r, status: 'APPROVED', validUntil: validTime } : r));
-    
-    // Log action
-    const req = requests.find(r => r.id === id);
+
+    setRequests(requests.map((r) => (r.id === id ? { ...r, status: 'APPROVED', validUntil: validTime } : r)));
+
+    const req = requests.find((r) => r.id === id);
     if (req) {
       const newLog: AuditLog = {
         id: Date.now(),
@@ -79,24 +130,44 @@ export const AdminPbacApproval: React.FC = () => {
   };
 
   const handleReject = (id: number) => {
-    setRequests(requests.map(r => r.id === id ? { ...r, status: 'REJECTED' } : r));
+    setRequests(requests.map((r) => (r.id === id ? { ...r, status: 'REJECTED' } : r)));
   };
 
   const handleRevoke = (id: number) => {
-    setRequests(requests.map(r => r.id === id ? { ...r, status: 'REVOKED' } : r));
+    setRequests(requests.map((r) => (r.id === id ? { ...r, status: 'REVOKED' } : r)));
   };
 
   const handleDirectGrantSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!directLecturer.trim() || !directClass.trim()) return;
 
-    const validTime = calculateValidTime(directDuration, directCustomMinutes);
+    // Get selected lecturer details
+    const selectedLecturerObj = lecturersList.find((l) => l.id === Number(selectedLecturerId));
+    const lecturerNameStr = selectedLecturerObj
+      ? `${selectedLecturerObj.fullName} (${selectedLecturerObj.email})`
+      : 'Giảng viên hệ thống';
+
+    // Get selected class details
+    const selectedClassObj = classesList.find((c) => c.id === Number(selectedClassId));
+    const classNameStr = selectedClassObj
+      ? `${selectedClassObj.className} (${selectedClassObj.classCode})`
+      : 'Lớp học phần';
+
+    // Calculate Expiry Time
+    let validTime = '';
+    if (timeMode === 'EXACT_DATETIME') {
+      const pickedDate = new Date(exactDateTime);
+      validTime = pickedDate.toLocaleString('vi-VN');
+    } else {
+      validTime = calculateValidTime(directDuration, directCustomMinutes);
+    }
 
     const newGrant: PbacRequest = {
       id: Date.now(),
-      lecturerName: directLecturer.trim(),
-      className: directClass.trim(),
-      reason: directReason.trim() ? `[Admin gán trực tiếp] ${directReason.trim()}` : '[Admin gán trực tiếp]',
+      lecturerName: lecturerNameStr,
+      className: classNameStr,
+      reason: directReason.trim()
+        ? `[Admin gán trực tiếp - ${directPermType}] ${directReason.trim()}`
+        : `[Admin gán trực tiếp - ${directPermType}]`,
       status: 'APPROVED',
       validUntil: validTime,
       createdAt: new Date().toLocaleString('vi-VN'),
@@ -109,18 +180,16 @@ export const AdminPbacApproval: React.FC = () => {
       id: Date.now(),
       action: 'ADMIN CHỦ ĐỘNG CẤP QUYỀN PBAC',
       performedBy: 'Admin Hệ Thống',
-      className: directClass.trim(),
-      targetStudent: directLecturer.trim(),
+      className: classNameStr,
+      targetStudent: lecturerNameStr,
       oldValue: 'Chưa có quyền',
-      newValue: `Gán trực tiếp quyền: ${directPermType} (${validTime})`,
+      newValue: `Gán trực tiếp: ${directPermType} (Hạn: ${validTime})`,
       approvedBy: 'Admin Hệ Thống',
       timestamp: new Date().toLocaleString('vi-VN'),
     };
     setAuditLogs([newLog, ...auditLogs]);
 
-    // Reset & close
-    setDirectLecturer('');
-    setDirectClass('');
+    // Reset & Close Modal
     setDirectReason('');
     setShowDirectModal(false);
   };
@@ -135,7 +204,7 @@ export const AdminPbacApproval: React.FC = () => {
             Phê duyệt & Chủ động Cấp quyền PBAC
           </h1>
           <p className="text-blue-100 text-sm mt-1">
-            Cấp quyền sửa điểm tạm thời cho Giảng viên (từ Yêu cầu gửi về HOẶC Chủ động gán trực tiếp không cần gửi yêu cầu)
+            Cấp quyền sửa điểm tạm thời cho Giảng viên (Phê duyệt từ yêu cầu HOẶC Chủ động gán trực tiếp qua Combobox)
           </p>
         </div>
         <button
@@ -165,32 +234,63 @@ export const AdminPbacApproval: React.FC = () => {
             </div>
 
             <form onSubmit={handleDirectGrantSubmit} className="space-y-4 text-sm">
+              {/* Combobox 1: Giảng viên */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                  Giảng viên được cấp quyền *
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5">
+                  <User className="w-4 h-4 text-indigo-500" /> Giảng viên được cấp quyền *
                 </label>
-                <input
-                  type="text"
+                <select
+                  value={selectedLecturerId}
+                  onChange={(e) => setSelectedLecturerId(Number(e.target.value))}
                   required
-                  placeholder="Ví dụ: TS. Nguyễn Văn A hoặc email/MSGV"
-                  value={directLecturer}
-                  onChange={(e) => setDirectLecturer(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2 text-gray-900 dark:text-white font-medium outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-gray-900 dark:text-white font-medium outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                >
+                  {lecturersList.length === 0 ? (
+                    <option value="">-- Đang tải danh sách Giảng viên... --</option>
+                  ) : (
+                    lecturersList.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.fullName} ({l.email}) {l.lecturerCode ? `- MSGV: ${l.lecturerCode}` : ''}
+                      </option>
+                    ))
+                  )}
+                </select>
               </div>
 
+              {/* Combobox 2: Lớp học phần (Tự động load theo Giảng viên) */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                  Lớp học phần *
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5 justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <BookOpen className="w-4 h-4 text-indigo-500" /> Lớp học phần *
+                  </span>
+                  <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold">
+                    (Tự động lọc theo Giảng viên)
+                  </span>
                 </label>
-                <input
-                  type="text"
+                <select
+                  value={selectedClassId}
+                  onChange={(e) => setSelectedClassId(Number(e.target.value))}
                   required
-                  placeholder="Ví dụ: Lập trình Flutter (62PM1_L01)"
-                  value={directClass}
-                  onChange={(e) => setDirectClass(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2 text-gray-900 dark:text-white font-medium outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-gray-900 dark:text-white font-medium outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                >
+                  {filteredClasses.length === 0 ? (
+                    classesList.length === 0 ? (
+                      <option value="">-- Đang tải danh sách Lớp học phần... --</option>
+                    ) : (
+                      classesList.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.className} ({c.classCode}) {c.lecturerName ? `- GV: ${c.lecturerName}` : ''}
+                        </option>
+                      ))
+                    )
+                  ) : (
+                    filteredClasses.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.className} ({c.classCode}) - Học kỳ {c.semester}
+                      </option>
+                    ))
+                  )}
+                </select>
               </div>
 
               <div>
@@ -205,44 +305,85 @@ export const AdminPbacApproval: React.FC = () => {
                   <option value="Sửa điểm Học phần">Sửa điểm Học phần (Lớp học phần)</option>
                   <option value="Sửa điểm Chuyên cần">Sửa điểm Chuyên cần & Điểm danh</option>
                   <option value="Nhập điểm Thi bổ sung">Nhập điểm Thi bổ sung / Miễn giảm</option>
-                  <option value="Cấp quyền Khóa/Mở bài thi">Cấp quyền Mở lại bài nộp bài tập</option>
+                  <option value="Mở lại bài nộp bài tập">Cấp quyền Mở lại nộp bài tập</option>
                 </select>
               </div>
 
-              {/* Expiration Duration Selection */}
+              {/* Set Time Mode: Presets vs Exact Date + Time Picker */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center justify-between">
-                  <span>Thời hạn hiệu lực của quyền *</span>
-                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">Tự động hết hạn khi hết thời gian</span>
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <select
-                    value={directDuration}
-                    onChange={(e) => setDirectDuration(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none cursor-pointer"
-                  >
-                    <option value="30">30 Phút</option>
-                    <option value="60">60 Phút (1 Giờ)</option>
-                    <option value="120">120 Phút (2 Giờ)</option>
-                    <option value="240">4 Giờ</option>
-                    <option value="1440">24 Giờ (1 Ngày)</option>
-                    <option value="4320">3 Ngày (72 Giờ)</option>
-                    <option value="10080">7 Ngày (1 Tuần)</option>
-                    <option value="NEVER">Vĩnh viễn (Không hết hạn)</option>
-                    <option value="CUSTOM">Tùy chỉnh số phút...</option>
-                  </select>
-
-                  {directDuration === 'CUSTOM' && (
-                    <input
-                      type="number"
-                      min="1"
-                      placeholder="Số phút"
-                      value={directCustomMinutes}
-                      onChange={(e) => setDirectCustomMinutes(e.target.value)}
-                      className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none"
-                    />
-                  )}
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-emerald-500" /> Thiết lập Thời gian hết hạn *
+                  </label>
+                  <div className="flex items-center gap-2 text-[11px] font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setTimeMode('PRESET')}
+                      className={`px-2 py-0.5 rounded cursor-pointer transition ${
+                        timeMode === 'PRESET'
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                      }`}
+                    >
+                      Khoảng thời gian
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTimeMode('EXACT_DATETIME')}
+                      className={`px-2 py-0.5 rounded cursor-pointer transition ${
+                        timeMode === 'EXACT_DATETIME'
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                      }`}
+                    >
+                      Chọn Ngày + Giờ cụ thể
+                    </button>
+                  </div>
                 </div>
+
+                {timeMode === 'PRESET' ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <select
+                      value={directDuration}
+                      onChange={(e) => setDirectDuration(e.target.value)}
+                      className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none cursor-pointer"
+                    >
+                      <option value="30">30 Phút</option>
+                      <option value="60">60 Phút (1 Giờ)</option>
+                      <option value="120">120 Phút (2 Giờ)</option>
+                      <option value="240">4 Giờ</option>
+                      <option value="1440">24 Giờ (1 Ngày)</option>
+                      <option value="4320">3 Ngày (72 Giờ)</option>
+                      <option value="10080">7 Ngày (1 Tuần)</option>
+                      <option value="NEVER">Vĩnh viễn (Không hết hạn)</option>
+                      <option value="CUSTOM">Tùy chỉnh số phút...</option>
+                    </select>
+
+                    {directDuration === 'CUSTOM' && (
+                      <input
+                        type="number"
+                        min="1"
+                        placeholder="Số phút"
+                        value={directCustomMinutes}
+                        onChange={(e) => setDirectCustomMinutes(e.target.value)}
+                        className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs font-bold text-gray-900 dark:text-white outline-none"
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      type="datetime-local"
+                      required
+                      value={exactDateTime}
+                      onChange={(e) => setExactDateTime(e.target.value)}
+                      className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2 text-gray-900 dark:text-white font-mono font-bold text-xs outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                    />
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+                      Chọn ngày và giờ chính xác đến từng phút quyền sẽ tự động hết hạn.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -258,7 +399,7 @@ export const AdminPbacApproval: React.FC = () => {
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                 <button
                   type="button"
                   onClick={() => setShowDirectModal(false)}
@@ -402,7 +543,9 @@ export const AdminPbacApproval: React.FC = () => {
                       {r.lecturerName}
                     </td>
                     <td className="py-3.5 px-4 text-gray-700 dark:text-gray-300">
-                      <span className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-indigo-400" /> {r.className}</span>
+                      <span className="flex items-center gap-1.5">
+                        <BookOpen className="w-3.5 h-3.5 text-indigo-400" /> {r.className}
+                      </span>
                     </td>
                     <td className="py-3.5 px-4 text-gray-600 dark:text-gray-400 max-w-xs truncate">
                       {r.grantedDirectly && (
@@ -413,10 +556,26 @@ export const AdminPbacApproval: React.FC = () => {
                       {r.reason}
                     </td>
                     <td className="py-3.5 px-4">
-                      {r.status === 'PENDING' && <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">Chờ duyệt</span>}
-                      {r.status === 'APPROVED' && <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Đã cấp quyền</span>}
-                      {r.status === 'REJECTED' && <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200">Từ chối</span>}
-                      {r.status === 'REVOKED' && <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-200">Thu hồi</span>}
+                      {r.status === 'PENDING' && (
+                        <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                          Chờ duyệt
+                        </span>
+                      )}
+                      {r.status === 'APPROVED' && (
+                        <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                          Đã cấp quyền
+                        </span>
+                      )}
+                      {r.status === 'REJECTED' && (
+                        <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200">
+                          Từ chối
+                        </span>
+                      )}
+                      {r.status === 'REVOKED' && (
+                        <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-200">
+                          Thu hồi
+                        </span>
+                      )}
                     </td>
                     <td className="py-3.5 px-4 text-xs font-mono text-gray-500 font-semibold">{r.validUntil || 'Chưa cấp'}</td>
                     <td className="py-3.5 px-4 text-right space-x-2">
@@ -426,7 +585,13 @@ export const AdminPbacApproval: React.FC = () => {
                             onClick={() => handleApprove(r.id)}
                             className="inline-flex items-center gap-1 bg-emerald-600 text-white font-semibold px-3 py-1.5 rounded-lg text-xs hover:bg-emerald-500 transition shadow cursor-pointer"
                           >
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Duyệt ({duration === 'CUSTOM' ? `${customMinutes}m` : duration === 'NEVER' ? 'Vĩnh viễn' : `${duration}m`})
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Duyệt (
+                            {duration === 'CUSTOM'
+                              ? `${customMinutes}m`
+                              : duration === 'NEVER'
+                              ? 'Vĩnh viễn'
+                              : `${duration}m`}
+                            )
                           </button>
                           <button
                             onClick={() => handleReject(r.id)}
