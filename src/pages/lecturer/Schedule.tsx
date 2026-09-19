@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import * as clazzService from '../../services/clazzService';
 import * as scheduleService from '../../services/scheduleService';
+import { useAuth } from '../../contexts/useAuth';
 import { PageTitle, Card, Spinner, ErrorBox } from '../../components/Layout';
 import TimetableGrid from '../../components/TimetableGrid';
 import type { Clazz, Schedule } from '../../types';
@@ -8,6 +9,7 @@ import type { Clazz, Schedule } from '../../types';
 const DAY_NAMES = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
 
 export default function LecturerSchedule() {
+  const { user } = useAuth();
   const [classes, setClasses] = useState<Clazz[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,45 +21,32 @@ export default function LecturerSchedule() {
   const [endPeriod, setEndPeriod] = useState<number>(2);
   const [room, setRoom] = useState('');
 
-  const loadSchedules = async (classId: number) => {
-    const data = await scheduleService.getClazzSchedule(classId);
-    setSchedules(data);
+  const loadData = async () => {
+    try {
+      const [myClasses, mySchedules] = await Promise.all([
+        clazzService.getMyClasses(),
+        scheduleService.getMySchedule(),
+      ]);
+      setClasses(myClasses);
+      if (myClasses.length > 0 && selectedClassId === null) {
+        setSelectedClassId(myClasses[0].id);
+      }
+      // Ensure lecturerName is explicitly set to logged in lecturer's name if missing
+      const formattedSchedules = mySchedules.map((s) => ({
+        ...s,
+        lecturerName: s.lecturerName || user?.fullName || 'Giảng viên',
+      }));
+      setSchedules(formattedSchedules);
+    } catch (e) {
+      setErr((e as { message?: string })?.message ?? 'Lỗi tải lịch giảng dạy cá nhân');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const myClasses = await clazzService.getMyClasses();
-        if (!mounted) return;
-        setClasses(myClasses);
-        if (myClasses.length > 0) {
-          setSelectedClassId(myClasses[0].id);
-        }
-      } catch (e) {
-        if (mounted) setErr((e as { message?: string })?.message ?? 'Lỗi tải lịch giảng dạy');
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => { mounted = false; };
+    void loadData();
   }, []);
-
-  useEffect(() => {
-    if (selectedClassId == null) return;
-    let mounted = true;
-    (async () => {
-      try {
-        const data = await scheduleService.getClazzSchedule(selectedClassId);
-        if (mounted) {
-          setSchedules(data);
-        }
-      } catch (e) {
-        if (mounted) setErr((e as { message?: string })?.message ?? 'Lỗi tải lịch');
-      }
-    })();
-    return () => { mounted = false; };
-  }, [selectedClassId]);
 
   const resetForm = () => {
     setSelectedScheduleId(null);
@@ -77,7 +66,7 @@ export default function LecturerSchedule() {
       } else {
         await scheduleService.updateSchedule(selectedScheduleId, { dayOfWeek, startPeriod, endPeriod, room: room.trim() || undefined });
       }
-      await loadSchedules(selectedClassId);
+      await loadData();
       resetForm();
       setErr(null);
     } catch (e) {
@@ -88,7 +77,7 @@ export default function LecturerSchedule() {
   const removeSchedule = async (scheduleId: number) => {
     try {
       await scheduleService.deleteSchedule(scheduleId);
-      if (selectedClassId != null) await loadSchedules(selectedClassId);
+      await loadData();
       if (selectedScheduleId === scheduleId) resetForm();
     } catch (e) {
       setErr((e as { message?: string })?.message ?? 'Xoá lịch thất bại');

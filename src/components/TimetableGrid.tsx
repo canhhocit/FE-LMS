@@ -205,7 +205,9 @@ export default function TimetableGrid({
 }: TimetableGridProps) {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
-  const rawSchedules = schedules.length > 0 ? schedules : DEFAULT_DEMO_SCHEDULES;
+  const rawSchedules = (schedules && schedules.length > 0)
+    ? schedules
+    : (schedules === undefined ? DEFAULT_DEMO_SCHEDULES : []);
 
   const displaySchedules = rawSchedules.map((s) => {
     const timeInfo = getScheduleTimeInfo(s);
