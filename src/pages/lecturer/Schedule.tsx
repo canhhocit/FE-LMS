@@ -86,6 +86,7 @@ export default function LecturerSchedule() {
 
   const fillForm = (item: Schedule) => {
     setSelectedScheduleId(item.id);
+    if (item.clazzId) setSelectedClassId(item.clazzId);
     setDayOfWeek(item.dayOfWeek ?? 1);
     setStartPeriod(item.startPeriod ?? 1);
     setEndPeriod(item.endPeriod ?? 2);
