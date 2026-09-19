@@ -4,6 +4,7 @@ import {
   PieChart, Pie, Cell, Legend
 } from 'recharts';
 import { TrendingUp, Users, Award, AlertTriangle, Download, Filter } from 'lucide-react';
+import { apiClient } from '../../services/api/client';
 
 const gradeDistributionData: { grade: string; count: number }[] = [];
 const attendanceData: { name: string; value: number; color: string }[] = [];
@@ -35,7 +36,7 @@ export const AnalyticsDashboard: React.FC = () => {
             <option value="HK2-2025" className="text-gray-900">Học kỳ 2 - 2025</option>
           </select>
           <button
-            onClick={() => window.open('http://localhost:8080/api/v1/reports/class/1/excel', '_blank')}
+            onClick={() => window.open(`${apiClient.defaults.baseURL}/reports/class/1/excel`, '_blank')}
             className="flex items-center gap-2 bg-white text-indigo-700 font-semibold px-4 py-2 rounded-xl text-sm shadow hover:bg-blue-50 transition"
           >
             <Download className="w-4 h-4" />

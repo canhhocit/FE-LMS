@@ -2,7 +2,7 @@ import axios from 'axios';
 import { readStoredUser, writeStoredUser, clearStoredUser } from '../../contexts/authStorage';
 import type { AuthUser } from '../../types';
 
-const baseURL = (import.meta.env.VITE_API_BASE_URL as string) || '/api/v1';
+const baseURL = (import.meta.env.VITE_API_BASE_URL as string) || 'https://learninghub-6jdb.onrender.com/api/v1';
 
 export const apiClient = axios.create({
   baseURL,
