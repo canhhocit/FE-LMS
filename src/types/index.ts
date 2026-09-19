@@ -30,6 +30,11 @@ export interface AuthUser {
   firstLogin?: boolean;
   refreshToken: string | null;
   permissions?: string[];
+  studentCode?: string;
+  lecturerCode?: string;
+  adminClassName?: string;
+  faculty?: string;
+  major?: string;
 }
 
 // ===== User (Admin) =====

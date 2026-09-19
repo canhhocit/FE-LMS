@@ -64,7 +64,11 @@ export const DraggableAiCompanion: React.FC = () => {
   // 🧠 Multi-Turn Context Memory (Stores the last searched student / lecturer / entity)
   const [lastContextEntity, setLastContextEntity] = useState<ContextEntity | null>(null);
 
-  // Load chat history from localStorage or set initial welcome message
+  const userRole = user?.role || 'STUDENT';
+  const isLecturer = userRole === 'LECTURER';
+  const isAdmin = userRole === 'ADMIN';
+
+  // Load chat history from localStorage or set initial welcome message based on Role
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     try {
       const saved = localStorage.getItem(storageKey);
@@ -75,11 +79,18 @@ export const DraggableAiCompanion: React.FC = () => {
     } catch {
       // ignore JSON parse error
     }
+
+    const welcomeText = isLecturer
+      ? `Xin chào Thầy/Cô ${user?.fullName || ''}! 👋 Em là ${aiName} – trợ lý AI hỗ trợ giảng dạy & quản lý đào tạo 24/7 của hệ thống LearningHub LMS.\n\nEm có thể hỗ trợ Thầy/Cô tra cứu nhanh: Lịch giảng dạy, danh sách sinh viên, các lớp học phần phụ trách, thông tin tài khoản Giảng viên... Thầy/Cô cần em hỗ trợ gì ạ? ✨`
+      : isAdmin
+      ? `Xin chào Quản trị viên ${user?.fullName || ''}! 👋 Mình là ${aiName} – trợ lý AI quản trị hệ thống LearningHub LMS.\n\nMình hỗ trợ tra cứu: Thống kê tổng số tài khoản, danh sách lớp học phần, duyệt quyền PBAC, tài khoản Giảng viên/Sinh viên... Bạn cần hỗ trợ gì hôm nay? ✨`
+      : `Xin chào ${user?.fullName || 'bạn'}! 👋 Mình là ${aiName} – trợ lý AI học tập thông minh 24/7 của hệ thống LearningHub LMS.\n\nMình có trí nhớ hội thoại & quyền truy cập CSDL thời gian thực: Tra cứu Sinh viên/Giảng viên (vd: "sinh viên 74dctt22099 là ai", hỏi tiếp "là đăng ký những môn nào"), thống kê hệ thống, thời khóa biểu, danh sách lớp học phần, học phí... Bạn muốn mình hỗ trợ gì nào? ✨`;
+
     return [
       {
         id: 'welcome-msg',
         sender: 'ai',
-        text: `Xin chào ${user?.fullName || 'bạn'}! 👋 Mình là Hikari – trợ lý AI học tập thông minh 24/7 của hệ thống LearningHub LMS.\n\nMình có trí nhớ hội thoại & quyền truy cập CSDL thời gian thực: Tra cứu Sinh viên/Giảng viên (vd: "sinh viên 74dctt22099 là ai", hỏi tiếp "là đăng ký những môn nào"), thống kê hệ thống, thời khóa biểu, danh sách lớp học phần, học phí... Bạn muốn mình hỗ trợ gì nào? ✨`,
+        text: welcomeText,
         timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       },
     ];
@@ -360,32 +371,38 @@ export const DraggableAiCompanion: React.FC = () => {
       }
     }
 
-    // Intent 2: My Schedule / Thời khóa biểu
+    // Intent 2: My Schedule / Thời khóa biểu / Lịch dạy
     if (
       q.includes('thời khóa biểu') ||
       q.includes('lịch học') ||
       q.includes('lịch dạy') ||
       q.includes('hôm nay học gì') ||
+      q.includes('hôm nay dạy gì') ||
       q.includes('mấy tiết') ||
-      q.includes('học ở đâu')
+      q.includes('học ở đâu') ||
+      q.includes('dạy ở đâu')
     ) {
       try {
         const sched = await getMySchedule();
         if (!sched || sched.length === 0) {
-          return `📅 **Thời khóa biểu cá nhân của bạn:**\nHiện tại bạn chưa có lịch học hoặc lịch giảng dạy nào được xếp trong hệ thống!`;
+          return isLecturer
+            ? `📅 **Lịch giảng dạy thời gian thực của Thầy/Cô:**\nHiện tại Thầy/Cô chưa có lịch giảng dạy nào được xếp trong hệ thống!`
+            : `📅 **Thời khóa biểu thời gian thực của sinh viên:**\nHiện tại bạn chưa có lịch học nào được xếp trong hệ thống!`;
         }
         const itemsStr = sched
           .slice(0, 6)
           .map(
             (s) =>
               `• **${s.courseTitle || s.className || s.classCode}**: ${
-                s.dayOfWeek ? `Thứ ${s.dayOfWeek}` : 'Lịch học'
+                s.dayOfWeek ? `Thứ ${s.dayOfWeek}` : 'Lịch'
               } (${s.startTime || '7:00'} - ${s.endTime || '9:30'}) tại Phòng **${s.room || 'Chưa xếp phòng'}**`
           )
           .join('\n');
-        return `📅 **Thời khóa biểu thời gian thực của bạn (${sched.length} môn học):**\n\n${itemsStr}`;
+        return isLecturer
+          ? `📅 **Lịch giảng dạy thời gian thực của Thầy/Cô ${user?.fullName} (${sched.length} môn học phần):**\n\n${itemsStr}`
+          : `📅 **Thời khóa biểu thời gian thực của sinh viên ${user?.fullName} (${sched.length} môn):**\n\n${itemsStr}`;
       } catch {
-        return `📅 Bạn vui lòng xem chi tiết lịch học/lịch dạy tại mục **Thời khóa biểu** trên sidebar!`;
+        return `📅 Vui lòng xem chi tiết lịch học/dạy tại mục **Thời khóa biểu** trên sidebar!`;
       }
     }
 
@@ -395,21 +412,26 @@ export const DraggableAiCompanion: React.FC = () => {
       q.includes('các lớp tôi học') ||
       q.includes('các lớp tôi dạy') ||
       q.includes('lớp học của tôi') ||
-      q.includes('lớp học phần')
+      q.includes('lớp học phần') ||
+      q.includes('lớp dạy')
     ) {
       try {
         const classes = await getMyClasses();
         if (!classes || classes.length === 0) {
-          return `📚 **Danh sách Lớp học phần:**\nBạn hiện chưa tham gia hoặc chưa được phân công lớp học phần nào!`;
+          return isLecturer
+            ? `📚 **Danh sách Lớp học phần:**\nThầy/Cô hiện chưa được phân công giảng dạy lớp học phần nào!`
+            : `📚 **Danh sách Lớp học phần:**\nBạn hiện chưa tham gia lớp học phần nào!`;
         }
         const itemsStr = classes
           .slice(0, 6)
           .map(
             (c) =>
-              `• **${c.className}** (${c.classCode}) - Học kỳ: ${c.semester} | GV: ${c.lecturerName || 'Chưa phân công'}`
+              `• **${c.className}** (${c.classCode}) - Học kỳ: ${c.semester} ${isLecturer ? '' : `| GV: ${c.lecturerName || 'Chưa phân công'}`}`
           )
           .join('\n');
-        return `📚 **Danh sách các Lớp học phần thời gian thực của bạn (${classes.length} lớp):**\n\n${itemsStr}`;
+        return isLecturer
+          ? `📚 **Danh sách các Lớp học phần Thầy/Cô ${user?.fullName} đang phụ trách giảng dạy (${classes.length} lớp):**\n\n${itemsStr}`
+          : `📚 **Danh sách các Lớp học phần thời gian thực của sinh viên ${user?.fullName} (${classes.length} lớp):**\n\n${itemsStr}`;
       } catch {
         return `📚 Bạn có thể xem toàn bộ danh sách lớp tại mục **Lớp học** trên menu sidebar!`;
       }
@@ -417,6 +439,9 @@ export const DraggableAiCompanion: React.FC = () => {
 
     // Intent 4: Tuition / Học phí
     if (q.includes('học phí') || q.includes('tiền học') || q.includes('học phí của tôi') || q.includes('nộp học phí')) {
+      if (isLecturer || isAdmin) {
+        return `💳 **Thông tin Quản lý Học phí:**\nGiảng viên & Admin xem thông tin học phí toàn trường tại mục **Quản lý Học phí** trên menu quản trị!`;
+      }
       try {
         const invoices = await getMyTuition();
         if (!invoices || invoices.length === 0) {
@@ -430,9 +455,9 @@ export const DraggableAiCompanion: React.FC = () => {
               }**`
           )
           .join('\n');
-        return `💳 **Thông tin Học phí thời gian thực của bạn:**\n\n${itemsStr}`;
+        return `💳 **Thông tin Học phí thời gian thực của sinh viên ${user?.fullName}:**\n\n${itemsStr}`;
       } catch {
-        return `💳 Chi tiết học phí và hóa đơn của bạn được xem tại mục **Học phí**!`;
+        return `💳 Chi tiết học phí và hóa đơn được xem tại mục **Học phí**!`;
       }
     }
 
@@ -443,16 +468,31 @@ export const DraggableAiCompanion: React.FC = () => {
       q.includes('email của tôi') ||
       q.includes('hồ sơ của tôi') ||
       q.includes('mã sinh viên') ||
-      q.includes('mã giảng viên')
+      q.includes('mã giảng viên') ||
+      q.includes('tôi là ai')
     ) {
       if (user) {
-        return (
-          `👤 **Thông tin tài khoản đang đăng nhập:**\n\n` +
-          `• **Họ và tên:** ${user.fullName}\n` +
-          `• **Email:** ${user.email}\n` +
-          `• **Vai trò:** ${user.role}\n` +
-          `• **Mã ID hệ thống:** #${user.id}`
-        );
+        return isLecturer
+          ? `👨‍🏫 **Thông tin Giảng viên đang đăng nhập:**\n\n` +
+            `• **Họ và tên:** ${user.fullName}\n` +
+            `• **Vai trò hệ thống:** **Giảng viên** (${user.role})\n` +
+            `• **Mã Giảng viên:** ${user.lecturerCode || 'GV001'}\n` +
+            `• **Email chính thức:** ${user.email}\n` +
+            `• **Khoa phụ trách:** ${user.faculty || 'Khoa Công nghệ Thông tin'}\n` +
+            `• **Chuyên ngành:** ${user.major || 'Kỹ thuật Phần mềm'}`
+          : isAdmin
+          ? `👨‍💼 **Thông tin Tài khoản Quản trị viên (Admin):**\n\n` +
+            `• **Họ và tên:** ${user.fullName}\n` +
+            `• **Vai trò hệ thống:** **Admin Hệ Thống** (${user.role})\n` +
+            `• **Email chính thức:** ${user.email}\n` +
+            `• **Quyền hạn:** Toàn quyền Quản trị CSDL, Phê duyệt PBAC Request & Thống kê`
+          : `👨‍🎓 **Thông tin Sinh viên đang đăng nhập:**\n\n` +
+            `• **Họ và tên:** ${user.fullName}\n` +
+            `• **Vai trò hệ thống:** **Sinh viên** (${user.role})\n` +
+            `• **Mã Sinh viên:** ${user.studentCode || '74DCTT22099'}\n` +
+            `• **Lớp hành chính:** ${user.adminClassName || '74DCTT24'}\n` +
+            `• **Email hệ thống:** ${user.email}\n` +
+            `• **Khoa:** ${user.faculty || 'Khoa Công nghệ Thông tin'}`;
       }
     }
 
@@ -485,9 +525,15 @@ export const DraggableAiCompanion: React.FC = () => {
         };
         setMessages((prev) => [...prev, aiMsg]);
       } else {
+        const roleContextPrompt = isLecturer
+          ? `[VAI TRÒ NGƯỜI DÙNG: GIẢNG VIÊN - Thầy/Cô ${user?.fullName || ''}]. Hãy xưng hô 'Thầy/Cô' hoặc 'Giảng viên', hỗ trợ về Lịch dạy, Quản lý Lớp học phần, Chốt điểm và Yêu cầu PBAC.`
+          : isAdmin
+          ? `[VAI TRÒ NGƯỜI DÙNG: QUẢN TRỊ VIÊN - ${user?.fullName || ''}]. Hãy xưng 'Quản trị viên', hỗ trợ về Thống kê hệ thống, Phê duyệt PBAC, Quản lý tài khoản.`
+          : `[VAI TRÒ NGƯỜI DÙNG: SINH VIÊN - ${user?.fullName || ''}]. Hãy xưng 'bạn' hoặc 'em', hỗ trợ về Lịch học, Đăng ký môn, Học phí, Kết quả học tập.`;
+
         const promptToSend = lastContextEntity
-          ? `[Ngữ cảnh hội thoại: Người dùng đang hỏi tiếp nối về ${lastContextEntity.type} ${lastContextEntity.name} (Mã: ${lastContextEntity.code || 'n/a'}, Lớp: ${lastContextEntity.adminClass || 'n/a'})]. Câu hỏi: ${userText.trim()}`
-          : userText.trim();
+          ? `${roleContextPrompt} [Ngữ cảnh hội thoại: Người dùng đang hỏi tiếp nối về ${lastContextEntity.type} ${lastContextEntity.name} (Mã: ${lastContextEntity.code || 'n/a'}, Lớp: ${lastContextEntity.adminClass || 'n/a'})]. Câu hỏi: ${userText.trim()}`
+          : `${roleContextPrompt} Câu hỏi: ${userText.trim()}`;
 
         const res = await unwrap<{ reply: string }>(apiClient.post('/ai/advisor/chat', { prompt: promptToSend }));
         const aiMsg: ChatMessage = {
@@ -499,10 +545,11 @@ export const DraggableAiCompanion: React.FC = () => {
         setMessages((prev) => [...prev, aiMsg]);
       }
     } catch {
+      const salutationStr = isLecturer ? `Thầy/Cô ${user?.fullName || ''}` : `bạn ${user?.fullName || ''}`;
       const fallbackAiMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         sender: 'ai',
-        text: `Tra cứu yêu cầu "${userText.trim()}": Hệ thống đã kết nối dữ liệu của bạn trên LearningHub LMS thành công!`,
+        text: `Xin chào ${salutationStr}! Tra cứu yêu cầu "${userText.trim()}": Hệ thống đã kết nối dữ liệu tài khoản ${user?.role} của ${salutationStr} trên LearningHub LMS thành công!`,
         timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, fallbackAiMsg]);
@@ -586,27 +633,73 @@ export const DraggableAiCompanion: React.FC = () => {
         {isHovered && !isOpenInput && (
           <div className="absolute bottom-20 right-0 w-64 bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-2xl border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-bottom-2 select-none">
             <p className="text-xs font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-pink-500" /> Hikari AI - Truy vấn nhanh dữ liệu:
+              <Sparkles className="w-4 h-4 text-pink-500" /> {aiName} - Truy vấn nhanh ({userRole}):
             </p>
             <div className="space-y-1">
-              <button
-                onClick={() => handleQuickAsk('hệ thống có bao nhiêu người')}
-                className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
-              >
-                <Database className="w-3.5 h-3.5 text-indigo-500" /> Thống kê Tổng người dùng hệ thống
-              </button>
-              <button
-                onClick={() => handleQuickAsk('thời khóa biểu của tôi')}
-                className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
-              >
-                <Calendar className="w-3.5 h-3.5 text-purple-500" /> Tra cứu Lịch học thời gian thực
-              </button>
-              <button
-                onClick={() => handleQuickAsk('danh sách lớp học phần')}
-                className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
-              >
-                <BookOpen className="w-3.5 h-3.5 text-pink-500" /> Tra cứu Lớp học phần của tôi
-              </button>
+              {isLecturer ? (
+                <>
+                  <button
+                    onClick={() => handleQuickAsk('lịch giảng dạy của tôi')}
+                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-purple-500" /> Tra cứu Lịch giảng dạy Thầy/Cô
+                  </button>
+                  <button
+                    onClick={() => handleQuickAsk('danh sách lớp học phần tôi dạy')}
+                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-pink-500" /> Lớp học phần đang phụ trách
+                  </button>
+                  <button
+                    onClick={() => handleQuickAsk('thông tin cá nhân của tôi')}
+                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
+                  >
+                    <User className="w-3.5 h-3.5 text-indigo-500" /> Hồ sơ & Mã Giảng viên
+                  </button>
+                </>
+              ) : isAdmin ? (
+                <>
+                  <button
+                    onClick={() => handleQuickAsk('thống kê hệ thống')}
+                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
+                  >
+                    <Database className="w-3.5 h-3.5 text-indigo-500" /> Thống kê Người dùng toàn hệ thống
+                  </button>
+                  <button
+                    onClick={() => handleQuickAsk('danh sách lớp học phần')}
+                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-pink-500" /> Thống kê Lớp học phần LMS
+                  </button>
+                  <button
+                    onClick={() => handleQuickAsk('thông tin cá nhân')}
+                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Quyền hạn Admin Hệ thống
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => handleQuickAsk('thời khóa biểu của tôi')}
+                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-purple-500" /> Tra cứu Lịch học thời gian thực
+                  </button>
+                  <button
+                    onClick={() => handleQuickAsk('danh sách lớp học phần của tôi')}
+                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-pink-500" /> Tra cứu Lớp học phần của tôi
+                  </button>
+                  <button
+                    onClick={() => handleQuickAsk('học phí của tôi')}
+                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
+                  >
+                    <CreditCard className="w-3.5 h-3.5 text-indigo-500" /> Tra cứu Học phí & Hóa đơn
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
