@@ -193,7 +193,7 @@ const CARD_STYLES = [
   { headerBg: 'bg-[#059669]', border: 'border-[#059669]' },
 ];
 
-const HOURS = [6, 7, 8, 9, 10, 11, 12];
+const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
 const HOUR_HEIGHT = 76;
 
 export default function TimetableGrid({
