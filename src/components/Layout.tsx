@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/useAuth";
 import { useTheme } from "../context/ThemeContext";
 import * as notificationService from "../services/notificationService";
 import * as authService from "../services/authService";
+import * as acService from "../services/adminClassService";
 import { writeStoredUser } from "../contexts/authStorage";
 import type { Role, AuthUser } from "../types";
 import DraggableAiCompanion from "./DraggableAiCompanion";
@@ -876,6 +877,8 @@ export default function Layout() {
     },
   );
 
+  const [isGvcn, setIsGvcn] = useState<boolean>(false);
+
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
     () => ({
       "Tổng quan": true,
@@ -892,6 +895,30 @@ export default function Layout() {
       [title]: !prev[title],
     }));
   };
+
+  useEffect(() => {
+    let mounted = true;
+    if (user?.role === "LECTURER") {
+      acService
+        .getAllAdminClasses()
+        .then((classes) => {
+          if (!mounted) return;
+          const check = classes.some(
+            (c) =>
+              c.homeroomTeacherId === user.id ||
+              (user.lecturerCode && c.homeroomTeacherCode === user.lecturerCode) ||
+              (user.fullName && (c.homeroomTeacherName === user.fullName || c.advisorName === user.fullName))
+          );
+          setIsGvcn(check);
+        })
+        .catch(() => {
+          if (mounted) setIsGvcn(false);
+        });
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [user?.role, user?.id, user?.lecturerCode, user?.fullName]);
 
   useEffect(() => {
     let mounted = true;
@@ -967,7 +994,9 @@ export default function Layout() {
         <nav className="mt-5 flex-1 space-y-4 overflow-y-auto pr-1">
           {sections.map((section) => {
             const filteredItems = section.items.filter(
-              (it) => !it.permission || hasPermission(it.permission),
+              (it) =>
+                (!it.permission || hasPermission(it.permission)) &&
+                (it.to !== "/lecturer/homeroom" || isGvcn),
             );
             if (filteredItems.length === 0) return null;
             const isSectionOpen = openSections[section.title] ?? true;

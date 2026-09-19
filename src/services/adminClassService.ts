@@ -5,6 +5,7 @@ export interface AdminClassRequest {
   faculty?: string;
   academicYear?: string;
   curriculumId?: number;
+  homeroomTeacherId?: number;
 }
 
 export interface AdminClassResponse {
@@ -16,6 +17,9 @@ export interface AdminClassResponse {
   academicYear?: string;
   curriculumId?: number;
   curriculumName?: string;
+  homeroomTeacherId?: number;
+  homeroomTeacherName?: string;
+  homeroomTeacherCode?: string;
   studentCount?: number;
 }
 

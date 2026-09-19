@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import * as acService from '../../services/adminClassService';
+import { listLecturers } from '../../services/adminService';
 import { getDepartments, type DepartmentResponse } from '../../services/departmentService';
 import { getCurricula } from '../../services/curriculumService';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
@@ -10,6 +11,7 @@ export default function AdminAdministrativeClasses() {
   const [classes, setClasses] = useState<AdminClassResponse[]>([]);
   const [departments, setDepartments] = useState<DepartmentResponse[]>([]);
   const [curricula, setCurricula] = useState<Curriculum[]>([]);
+  const [lecturers, setLecturers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
@@ -18,6 +20,7 @@ export default function AdminAdministrativeClasses() {
   const [className, setClassName] = useState('');
   const [faculty, setFaculty] = useState('');
   const [curriculumId, setCurriculumId] = useState<string>('');
+  const [homeroomTeacherId, setHomeroomTeacherId] = useState<string>('');
   const [academicYear, setAcademicYear] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -26,14 +29,16 @@ export default function AdminAdministrativeClasses() {
 
   const load = async () => {
     try {
-      const [classList, depList, currList] = await Promise.all([
+      const [classList, depList, currList, lecList] = await Promise.all([
         acService.getAllAdminClasses(),
         getDepartments().catch(() => []),
         getCurricula().catch(() => []),
+        listLecturers().catch(() => []),
       ]);
       setClasses(classList);
       setDepartments(depList);
       setCurricula(currList);
+      setLecturers(lecList);
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Lỗi tải dữ liệu');
     } finally {
@@ -45,15 +50,17 @@ export default function AdminAdministrativeClasses() {
     let mounted = true;
     (async () => {
       try {
-        const [classList, depList, currList] = await Promise.all([
+        const [classList, depList, currList, lecList] = await Promise.all([
           acService.getAllAdminClasses(),
           getDepartments().catch(() => []),
           getCurricula().catch(() => []),
+          listLecturers().catch(() => []),
         ]);
         if (mounted) {
           setClasses(classList);
           setDepartments(depList);
           setCurricula(currList);
+          setLecturers(lecList);
         }
       } catch (e: unknown) {
         if (mounted) setErr((e as { message?: string })?.message ?? 'Lỗi tải dữ liệu');
@@ -69,6 +76,7 @@ export default function AdminAdministrativeClasses() {
     setClassName('');
     setFaculty(departments.length > 0 ? departments[0].name : '');
     setCurriculumId(curricula.length > 0 ? String(curricula[0].id) : '');
+    setHomeroomTeacherId('');
     setAcademicYear('2024-2028');
     setShowForm(true);
   };
@@ -78,6 +86,7 @@ export default function AdminAdministrativeClasses() {
     setClassName(c.className);
     setFaculty(c.faculty || c.facultyName || (departments.length > 0 ? departments[0].name : ''));
     setCurriculumId(c.curriculumId ? String(c.curriculumId) : '');
+    setHomeroomTeacherId(c.homeroomTeacherId ? String(c.homeroomTeacherId) : '');
     setAcademicYear(c.academicYear ?? '');
     setShowForm(true);
   };
@@ -92,6 +101,7 @@ export default function AdminAdministrativeClasses() {
         className: className.trim(),
         faculty: faculty.trim() || undefined,
         curriculumId: curriculumId ? Number(curriculumId) : undefined,
+        homeroomTeacherId: homeroomTeacherId ? Number(homeroomTeacherId) : undefined,
         academicYear: academicYear.trim() || undefined,
       };
       if (editId) {
@@ -186,6 +196,21 @@ export default function AdminAdministrativeClasses() {
                 ))}
               </select>
             </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Giảng viên chủ nhiệm (GVCN)</label>
+              <select
+                value={homeroomTeacherId}
+                onChange={(e) => setHomeroomTeacherId(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-violet-500 focus:border-violet-500 font-medium text-slate-800"
+              >
+                <option value="">-- Chưa gán Giảng viên chủ nhiệm --</option>
+                {lecturers.map((lec) => (
+                  <option key={lec.id} value={lec.id}>
+                    👨‍🏫 {lec.fullName || lec.email} {lec.lecturerCode ? `(${lec.lecturerCode})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="flex gap-2 justify-end">
             <button aria-label="button" onClick={cancel} className="px-4 py-2 rounded-lg text-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Huỷ</button>
@@ -204,6 +229,7 @@ export default function AdminAdministrativeClasses() {
                     <tr>
                       <th className="text-left p-3">Tên lớp</th>
                       <th className="text-left p-3">Khoa</th>
+                      <th className="text-left p-3">GVCN</th>
                       <th className="text-left p-3">Chương trình đào tạo</th>
                       <th className="text-center p-3">Khóa</th>
                       <th className="text-center p-3">SV</th>
@@ -215,6 +241,15 @@ export default function AdminAdministrativeClasses() {
                       <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition">
                         <td className="p-3 font-semibold text-violet-700">{c.className}</td>
                         <td className="p-3 text-slate-600 font-medium">{c.faculty || c.facultyName || '-'}</td>
+                        <td className="p-3 font-semibold text-slate-800">
+                          {c.homeroomTeacherName || c.advisorName ? (
+                            <span className="flex items-center gap-1.5 text-slate-800 font-semibold">
+                              <span className="text-xs">👨‍🏫</span> {c.homeroomTeacherName || c.advisorName}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-slate-400 italic">Chưa gán</span>
+                          )}
+                        </td>
                         <td className="p-3 text-slate-600">
                           {c.curriculumName ? <Pill color="indigo">{c.curriculumName}</Pill> : '-'}
                         </td>
