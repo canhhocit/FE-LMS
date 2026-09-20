@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, CheckCircle2, XCircle, Clock, Ban, History, User, BookOpen, PlusCircle, Calendar, Key, X, AlertTriangle, Send } from 'lucide-react';
-import { listLecturers, listStudents } from '../../services/adminService';
+import { listLecturers } from '../../services/adminService';
 import { getMyClasses } from '../../services/clazzService';
 import type { User as UserType, Clazz } from '../../types';
 
@@ -26,6 +26,8 @@ interface AuditLog {
   approvedBy: string;
   timestamp: string;
 }
+
+const generateId = () => Math.floor(Math.random() * 10000000) + 1;
 
 export const AdminPbacApproval: React.FC = () => {
   const [requests, setRequests] = useState<PbacRequest[]>([]);
@@ -61,37 +63,44 @@ export const AdminPbacApproval: React.FC = () => {
     if (showDirectModal) {
       listLecturers('', 0, 200)
         .then((res) => {
-          setLecturersList(res || []);
-          if (res && res.length > 0) {
-            setSelectedLecturerId(res[0].id);
+          const list = res || [];
+          setLecturersList(list);
+          if (list.length > 0) {
+            const firstLecId = list[0].id;
+            setSelectedLecturerId(firstLecId);
           }
         })
         .catch(() => {});
 
       getMyClasses()
         .then((res) => {
-          setClassesList(res || []);
+          const list = res || [];
+          setClassesList(list);
+          if (list.length > 0) {
+            setSelectedClassId(list[0].id);
+          }
         })
         .catch(() => {});
     }
   }, [showDirectModal]);
+
+  const handleLecturerSelectChange = (lecturerIdNum: number) => {
+    setSelectedLecturerId(lecturerIdNum);
+    const matching = classesList.filter((c) => c.lecturerId === lecturerIdNum);
+    if (matching.length > 0) {
+      setSelectedClassId(matching[0].id);
+    } else if (classesList.length > 0) {
+      setSelectedClassId(classesList[0].id);
+    } else {
+      setSelectedClassId('');
+    }
+  };
 
   // Filter Classes taught by the selected Lecturer
   const filteredClasses = classesList.filter((c) => {
     if (!selectedLecturerId) return true;
     return c.lecturerId === Number(selectedLecturerId);
   });
-
-  // Auto-select class when filtered list updates
-  useEffect(() => {
-    if (filteredClasses.length > 0) {
-      setSelectedClassId(filteredClasses[0].id);
-    } else if (classesList.length > 0) {
-      setSelectedClassId(classesList[0].id);
-    } else {
-      setSelectedClassId('');
-    }
-  }, [selectedLecturerId, classesList]);
 
   const pendingCount = requests.filter((r) => r.status === 'PENDING').length;
   const filteredRequests = statusFilter === 'ALL'
@@ -115,7 +124,7 @@ export const AdminPbacApproval: React.FC = () => {
     const req = requests.find((r) => r.id === id);
     if (req) {
       const newLog: AuditLog = {
-        id: Date.now(),
+        id: generateId(),
         action: 'PHÊ DUYỆT CẤP QUYỀN PBAC',
         performedBy: req.lecturerName,
         className: req.className,
@@ -153,23 +162,19 @@ export const AdminPbacApproval: React.FC = () => {
       : 'Lớp học phần';
 
     // Calculate Expiry Time
-    let validTime = '';
-    if (timeMode === 'EXACT_DATETIME') {
-      const pickedDate = new Date(exactDateTime);
-      validTime = pickedDate.toLocaleString('vi-VN');
-    } else {
-      validTime = calculateValidTime(directDuration, directCustomMinutes);
-    }
+    const computedValidTime = timeMode === 'EXACT_DATETIME'
+      ? new Date(exactDateTime).toLocaleString('vi-VN')
+      : calculateValidTime(directDuration, directCustomMinutes);
 
     const newGrant: PbacRequest = {
-      id: Date.now(),
+      id: generateId(),
       lecturerName: lecturerNameStr,
       className: classNameStr,
       reason: directReason.trim()
         ? `[Admin gán trực tiếp - ${directPermType}] ${directReason.trim()}`
         : `[Admin gán trực tiếp - ${directPermType}]`,
       status: 'APPROVED',
-      validUntil: validTime,
+      validUntil: computedValidTime,
       createdAt: new Date().toLocaleString('vi-VN'),
       grantedDirectly: true,
     };
@@ -177,21 +182,20 @@ export const AdminPbacApproval: React.FC = () => {
     setRequests([newGrant, ...requests]);
 
     const newLog: AuditLog = {
-      id: Date.now(),
+      id: generateId(),
       action: 'ADMIN CHỦ ĐỘNG CẤP QUYỀN PBAC',
       performedBy: 'Admin Hệ Thống',
       className: classNameStr,
       targetStudent: lecturerNameStr,
       oldValue: 'Chưa có quyền',
-      newValue: `Gán trực tiếp: ${directPermType} (Hạn: ${validTime})`,
+      newValue: `Admin cấp trực tiếp quyền: ${directPermType} (Thời hạn: ${computedValidTime})`,
       approvedBy: 'Admin Hệ Thống',
       timestamp: new Date().toLocaleString('vi-VN'),
     };
     setAuditLogs([newLog, ...auditLogs]);
 
-    // Reset & Close Modal
-    setDirectReason('');
     setShowDirectModal(false);
+    setDirectReason('');
   };
 
   return (
@@ -241,7 +245,7 @@ export const AdminPbacApproval: React.FC = () => {
                 </label>
                 <select
                   value={selectedLecturerId}
-                  onChange={(e) => setSelectedLecturerId(Number(e.target.value))}
+                  onChange={(e) => handleLecturerSelectChange(Number(e.target.value))}
                   required
                   className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-gray-900 dark:text-white font-medium outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                 >
