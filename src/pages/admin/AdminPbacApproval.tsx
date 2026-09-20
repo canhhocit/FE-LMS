@@ -236,7 +236,7 @@ export const AdminPbacApproval: React.FC = () => {
             <form onSubmit={handleDirectGrantSubmit} className="space-y-4 text-sm">
               {/* Combobox 1: Giảng viên */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5">
+                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5">
                   <User className="w-4 h-4 text-indigo-500" /> Giảng viên được cấp quyền *
                 </label>
                 <select
@@ -259,7 +259,7 @@ export const AdminPbacApproval: React.FC = () => {
 
               {/* Combobox 2: Lớp học phần (Tự động load theo Giảng viên) */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5 justify-between">
+                <label className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-1.5 justify-between">
                   <span className="flex items-center gap-1.5">
                     <BookOpen className="w-4 h-4 text-indigo-500" /> Lớp học phần *
                   </span>

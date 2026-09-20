@@ -314,7 +314,7 @@ export default function TimetableGrid({
 
         {/* Scrollable Grid Container - Sticky Left Time Column */}
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 relative">
-          <div className="min-w-[1120px]">
+          <div className="min-w-280">
             {/* Header Days Row */}
             <div className="grid grid-cols-[70px_repeat(7,1fr)] border-b-2 border-[#00376f] text-center font-medium text-xs">
               {/* Sticky Top-Left Corner Cell */}
@@ -384,7 +384,7 @@ export default function TimetableGrid({
                         >
                           {/* Colored Header Bar */}
                           <div className={`px-2.5 py-1.5 text-white font-bold flex flex-col justify-center ${style.headerBg}`}>
-                            <div className="text-xs leading-snug break-words font-extrabold">{item.className || item.courseTitle}</div>
+                            <div className="text-xs leading-snug wrap-break-word font-extrabold">{item.className || item.courseTitle}</div>
                             <div className="text-[10px] font-normal opacity-95 flex items-center justify-between mt-1 pt-1 border-t border-white/25">
                               <span>{item.startTime} - {item.endTime}</span>
                               <span className="bg-white/20 px-1.5 py-0.2 rounded text-[10px] font-semibold">{item.periodLabel}</span>
@@ -394,7 +394,7 @@ export default function TimetableGrid({
                           {/* Card Content - Spacious layout with no bottom clipping */}
                           <div className="p-2 flex-1 flex flex-col justify-between text-center text-xs space-y-1">
                             <div>
-                              <div className="font-bold text-slate-800 text-xs leading-tight break-words pt-0.5">
+                              <div className="font-bold text-slate-800 text-xs leading-tight wrap-break-word pt-0.5">
                                 {item.classCode || item.clazzCode}
                               </div>
                             </div>

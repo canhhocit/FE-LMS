@@ -715,8 +715,8 @@ export const DraggableAiCompanion: React.FC = () => {
           }
           className={`fixed z-50 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col ${
             isExpanded
-              ? 'bottom-4 right-4 min-w-[320px] min-h-[300px]'
-              : 'bottom-4 right-4 w-[calc(100vw-32px)] sm:w-96 h-[500px] max-h-[calc(100vh-32px)]'
+              ? 'bottom-4 right-4 min-w-[320px] min-h-75'
+              : 'bottom-4 right-4 w-[calc(100vw-32px)] sm:w-96 h-125 max-h-[calc(100vh-32px)]'
           }`}
         >
           {/* Resize Handle at Top-Left corner when in Expanded Mode */}
