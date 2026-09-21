@@ -82,6 +82,14 @@ export default function StudentRegistrations() {
 
   const totalRegisteredCredits = myRegistrations.reduce((sum, r) => sum + (r.credits ?? 0), 0);
 
+  const now = new Date();
+  const openAt = activePeriod?.openAt ? new Date(activePeriod.openAt) : null;
+  const closeAt = activePeriod?.closeAt ? new Date(activePeriod.closeAt) : null;
+
+  const isPeriodOpen = !!(openAt && closeAt && now >= openAt && now <= closeAt);
+  const isPeriodExpired = !!(closeAt && now > closeAt);
+  const isPeriodUpcoming = !!(openAt && now < openAt);
+
   return (
     <div>
       <PageTitle>Cổng Đăng ký Học phần</PageTitle>
@@ -92,7 +100,7 @@ export default function StudentRegistrations() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
+                <span className={`h-3 w-3 rounded-full ${isPeriodOpen ? 'bg-emerald-500 animate-pulse' : isPeriodExpired ? 'bg-rose-500' : 'bg-amber-500'}`} />
                 <h2 className="text-lg font-bold text-indigo-900 dark:text-indigo-200">{activePeriod.name}</h2>
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
@@ -104,13 +112,25 @@ export default function StudentRegistrations() {
                 <span className="text-xs text-slate-500 block">Trần tín chỉ tối đa:</span>
                 <span className="text-lg font-bold text-indigo-700 dark:text-indigo-300">{activePeriod.maxCredits ?? 'Không giới hạn'} tín chỉ</span>
               </div>
-              <Pill intent="success">ĐANG MỞ ĐĂNG KÝ</Pill>
+              {isPeriodOpen && <Pill intent="success">ĐANG MỞ ĐĂNG KÝ</Pill>}
+              {isPeriodExpired && <Pill intent="error">ĐÃ HẾT HẠN ĐĂNG KÝ</Pill>}
+              {isPeriodUpcoming && <Pill intent="warn">SẮP MỞ ĐĂNG KÝ</Pill>}
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-indigo-100 dark:border-slate-800 flex flex-wrap gap-4 text-xs text-slate-600 dark:text-slate-400">
             <div>⏰ <span className="font-medium">Thời gian mở:</span> {fmtDate(activePeriod.openAt)}</div>
             <div>⏳ <span className="font-medium">Thời gian đóng:</span> {fmtDate(activePeriod.closeAt)}</div>
           </div>
+          {isPeriodExpired && (
+            <div className="mt-3 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2">
+              ⚠️ Đợt đăng ký này đã chính thức hết hạn vào lúc {fmtDate(activePeriod.closeAt)}. Hiện tại hệ thống không nhận thêm lượt đăng ký mới.
+            </div>
+          )}
+          {isPeriodUpcoming && (
+            <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium flex items-center gap-2">
+              ⏳ Đợt đăng ký chưa bắt đầu. Đợt đăng ký sẽ tự động mở vào lúc {fmtDate(activePeriod.openAt)}.
+            </div>
+          )}
         </div>
       ) : (
         <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/50 p-4 text-amber-800 flex items-center gap-3">
@@ -216,10 +236,10 @@ export default function StudentRegistrations() {
                           <button
                             type="button"
                             onClick={() => void handleRegister(c)}
-                            disabled={isFull || isRegistering}
-                            className={`rounded-lg px-4 py-1.5 text-xs font-bold transition shadow-sm ${isFull ? 'bg-slate-100 text-slate-400 cursor-not-allowed dark:bg-slate-800' : 'bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50'}`}
+                            disabled={isFull || isRegistering || !isPeriodOpen}
+                            className={`rounded-lg px-4 py-1.5 text-xs font-bold transition shadow-sm ${!isPeriodOpen || isFull ? 'bg-slate-100 text-slate-400 cursor-not-allowed dark:bg-slate-800' : 'bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50'}`}
                           >
-                            {isRegistering ? 'Đang đăng ký...' : isFull ? 'Đã đủ sĩ số' : '+ Đăng ký'}
+                            {isRegistering ? 'Đang đăng ký...' : isFull ? 'Đã đủ sĩ số' : isPeriodExpired ? 'Hết hạn đăng ký' : isPeriodUpcoming ? 'Chưa tới giờ' : '+ Đăng ký'}
                           </button>
                         </td>
                       </tr>
