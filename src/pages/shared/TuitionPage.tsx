@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Printer, CheckCircle, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { Printer, CheckCircle2, QrCode, ExternalLink, RefreshCw } from 'lucide-react';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import * as tuitionService from '../../services/tuitionService';
-import type { TuitionInvoice, TuitionRate } from '../../types';
+import type { TuitionInvoice, TuitionRate, PayOSPaymentResponse } from '../../types';
 
 const fmtMoney = (v: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v);
@@ -143,83 +143,84 @@ function printInvoice(inv: TuitionInvoice) {
       <p style="color:#475569;font-size:11px;margin-top:8px">no-reply@learninghub.edu.vn</p>
     </div>
 
-    <!-- Print button (hidden when printing) -->
+    <!-- Print button -->
     <div style="padding:20px 40px;text-align:center" class="no-print">
-      <button class="print-btn" onclick="window.print()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:6px">
-          <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
-        </svg>
-        In hóa đơn
-      </button>
+      <button class="print-btn" onclick="window.print()">In hóa đơn</button>
     </div>
   </div>
-
-  <script>
-    // Auto-trigger print dialog when opened standalone
-    window.onload = () => { };
-  </script>
 </body>
 </html>`;
 
-  const w = window.open('', '_blank', 'width=780,height=900');
-  if (!w) {
-    alert('Vui lòng cho phép mở popup để in hóa đơn.');
-    return;
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.write(html);
+    win.document.close();
   }
-  w.document.write(html);
-  w.document.close();
-  // Small delay so fonts load before print
-  setTimeout(() => w.print(), 600);
 }
 
-// ─── Main component ──────────────────────────────────────────────────────────
 export default function TuitionPage() {
   const [invoices, setInvoices] = useState<TuitionInvoice[]>([]);
   const [rates, setRates] = useState<TuitionRate[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [flashMsg, setFlashMsg] = useState<string | null>(null);
+
+  // Payment states
   const [payingInvoice, setPayingInvoice] = useState<TuitionInvoice | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [payOSData, setPayOSData] = useState<PayOSPaymentResponse | null>(null);
+  const [creatingPayOS, setCreatingPayOS] = useState(false);
 
-  const loadData = useCallback(() => {
-    let mounted = true;
-    Promise.all([
-      tuitionService.getMyTuition(),
-      tuitionService.getTuitionRates(),
-    ])
-      .then(([list, rateList]) => {
-        if (!mounted) return;
-        setInvoices(list);
-        setRates(rateList);
-      })
-      .catch((e: unknown) => {
-        if (!mounted) return;
-        setErr((e as { message?: string })?.message ?? 'Không tải được học phí');
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-    return () => { mounted = false; };
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [invs, rts] = await Promise.all([
+        tuitionService.getMyTuition().catch(() => []),
+        tuitionService.getTuitionRates().catch(() => []),
+      ]);
+      setInvoices(invs);
+      setRates(rts);
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Lỗi tải dữ liệu học phí');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    const cleanup = loadData();
-    return cleanup;
-  }, [loadData]);
+    void fetchData();
+
+    // Check if returning from PayOS redirect (query params: ?status=PAID&invoiceId=123)
+    const searchParams = new URLSearchParams(window.location.search);
+    const status = searchParams.get('status');
+    const invoiceId = searchParams.get('invoiceId');
+
+    if (status === 'PAID' && invoiceId) {
+      const invId = Number(invoiceId);
+      if (!isNaN(invId)) {
+        tuitionService.verifyPayOSPayment(invId)
+          .then((updated) => {
+            setInvoices((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
+            setFlashMsg('Thanh toán thành công qua Cổng PayOS! Hóa đơn đã được gạch nợ.');
+          })
+          .catch(() => {
+            // Silence error if already verified
+          })
+          .finally(() => {
+            // Clean up URL query parameters
+            window.history.replaceState({}, document.title, window.location.pathname);
+          });
+      }
+    }
+  }, [fetchData]);
 
   const handlePay = async () => {
     if (!payingInvoice) return;
     setIsProcessing(true);
-    setErr(null);
     try {
       const updated = await tuitionService.payMyInvoice(payingInvoice.id);
-      setInvoices((prev) => prev.map((inv) => inv.id === updated.id ? updated : inv));
-      setSuccessMsg(
-        `Thanh toán thành công! Email xác nhận đã được gửi tới địa chỉ email cá nhân của bạn.`
-      );
-      // Auto-print invoice after payment
-      printInvoice(updated);
+      setInvoices((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
+      setFlashMsg('Thanh toán học phí thành công!');
       setPayingInvoice(null);
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Thanh toán thất bại');
@@ -228,113 +229,165 @@ export default function TuitionPage() {
     }
   };
 
-  if (loading) return <Spinner />;
-  if (err && invoices.length === 0) return <ErrorBox msg={err} />;
+  const handleCreatePayOS = async (inv: TuitionInvoice) => {
+    setCreatingPayOS(true);
+    setErr(null);
+    try {
+      const payOSResp = await tuitionService.createPayOSPayment(inv.id);
+      setPayOSData(payOSResp);
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Tạo link thanh toán PayOS thất bại');
+    } finally {
+      setCreatingPayOS(false);
+    }
+  };
 
-  const totalPaid   = invoices.reduce((sum, i) => sum + (i.status === 'PAID' ? i.amount : 0), 0);
-  const totalUnpaid = invoices.reduce((sum, i) => sum + (i.status !== 'PAID' ? i.amount : 0), 0);
-  const activeRate  = rates.find((r) => r.isActive) ?? rates[0];
+  const handleVerifyPayOS = async () => {
+    if (!payOSData) return;
+    setIsProcessing(true);
+    try {
+      const updated = await tuitionService.verifyPayOSPayment(payOSData.invoiceId);
+      setInvoices((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
+      setFlashMsg('Xác nhận thanh toán PayOS thành công! Hóa đơn đã được gạch nợ.');
+      setPayOSData(null);
+      setPayingInvoice(null);
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Xác minh thanh toán thất bại');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  if (loading) return <Spinner />;
+  if (err) return <ErrorBox msg={err} />;
+
+  const unpaidInvoices = invoices.filter((i) => i.status !== 'PAID');
+  const totalUnpaidAmount = unpaidInvoices.reduce((acc, i) => acc + i.amount, 0);
 
   return (
-    <div>
-      <PageTitle>Thanh toán Học phí</PageTitle>
+    <div className="space-y-6">
+      <PageTitle>Học Phí & Nghĩa Vụ Tài Chính</PageTitle>
 
-      {successMsg && (
-        <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <svg className="h-5 w-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            <span>{successMsg}</span>
-          </div>
-          <button onClick={() => setSuccessMsg(null)} className="text-xs font-semibold text-emerald-700 hover:underline ml-4 shrink-0">Đóng</button>
+      {flashMsg && (
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center justify-between shadow-xs">
+          <span className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            {flashMsg}
+          </span>
+          <button onClick={() => setFlashMsg(null)} className="text-xs font-bold hover:underline">Đóng</button>
         </div>
       )}
 
-      <div className="grid md:grid-cols-3 gap-4 mb-6">
-        <Card className="border-l-4 border-l-emerald-500">
-          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">Tổng đã thanh toán</div>
-          <div className="text-2xl font-bold text-emerald-600 mt-1">{fmtMoney(totalPaid)}</div>
+      {/* Summary Stats Cards */}
+      <div className="grid md:grid-cols-3 gap-4">
+        <Card className="border border-indigo-100 bg-linear-to-br from-indigo-50/70 to-white">
+          <div className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Tổng nợ học phí hiện tại</div>
+          <div className="mt-2 text-2xl font-black text-indigo-700">{fmtMoney(totalUnpaidAmount)}</div>
+          <div className="mt-1 text-xs text-slate-500">{unpaidInvoices.length} hóa đơn chưa thanh toán</div>
         </Card>
-        <Card className="border-l-4 border-l-rose-500">
-          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">Còn cần thanh toán</div>
-          <div className="text-2xl font-bold text-rose-600 mt-1">{fmtMoney(totalUnpaid)}</div>
+        <Card>
+          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tổng số hóa đơn</div>
+          <div className="mt-2 text-2xl font-bold text-slate-800">{invoices.length} hóa đơn</div>
+          <div className="mt-1 text-xs text-slate-500">Kỳ học 2024-2026</div>
         </Card>
-        <Card className="border-l-4 border-l-indigo-500">
-          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">Đơn giá tín chỉ hiện tại</div>
-          <div className="text-2xl font-bold text-indigo-600 mt-1">{activeRate ? `${fmtMoney(activeRate.pricePerCredit)} / Tín` : '—'}</div>
+        <Card>
+          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Trạng thái nghĩa vụ tài chính</div>
+          <div className="mt-2 flex items-center gap-2">
+            {unpaidInvoices.length === 0 ? (
+              <Pill color="green">Đã hoàn thành 100%</Pill>
+            ) : (
+              <Pill color="amber">Còn {unpaidInvoices.length} hóa đơn nợ</Pill>
+            )}
+          </div>
         </Card>
       </div>
 
+      {/* Main Content Grid */}
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <Card>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-lg">Danh sách hóa đơn học phí</h3>
-              <Pill intent="neutral">{invoices.length} kỳ học</Pill>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <h3 className="font-bold text-slate-800 text-base">Danh sách hóa đơn học phí của tôi</h3>
+              <button 
+                onClick={() => void fetchData()} 
+                className="text-xs font-medium text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Làm mới
+              </button>
             </div>
 
             {invoices.length === 0 ? (
-              <Empty msg="Hiện tại bạn chưa có hóa đơn học phí nào" />
+              <Empty msg="Bạn chưa có hóa đơn học phí nào" />
             ) : (
               <div className="space-y-4">
                 {invoices.map((i) => {
                   const isPaid = i.status === 'PAID';
                   return (
-                    <div key={i.id} className={`rounded-xl border p-4 transition-all ${isPaid ? 'border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/40' : 'border-amber-200 bg-amber-50/20 dark:border-amber-900/50 dark:bg-amber-950/20'}`}>
-                      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div
+                      key={i.id}
+                      className={`rounded-2xl border p-4 transition-all duration-200 ${
+                        isPaid
+                          ? 'border-slate-200 bg-white hover:border-slate-300'
+                          : 'border-amber-200 bg-amber-50/40 hover:border-amber-300 shadow-2xs'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3 mb-3">
                         <div>
-                          <span className="font-bold text-slate-800 dark:text-slate-100 text-base">{i.semester} · Năm học {i.academicYear}</span>
-                          <div className="text-xs text-slate-500 mt-0.5">Mã hóa đơn: #TUITION-{i.id}</div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-800 text-base">Học kỳ {i.semester}</span>
+                            <span className="text-xs text-slate-500">• Năm học {i.academicYear}</span>
+                          </div>
+                          <div className="text-xs text-slate-400 mt-0.5">Mã hóa đơn: #TUITION-{i.id}</div>
                         </div>
-                        <Pill intent={isPaid ? 'success' : 'warn'}>
-                          {isPaid ? 'ĐÃ THANH TOÁN' : 'CHƯA THANH TOÁN'}
+                        <Pill color={isPaid ? 'green' : 'amber'}>
+                          {isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
                         </Pill>
                       </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm border-t border-b border-slate-200/60 dark:border-slate-800 py-3 my-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs mb-4">
                         <div>
-                          <span className="text-xs text-slate-400 block">Số tín chỉ:</span>
-                          <span className="font-semibold text-slate-700 dark:text-slate-300">{i.totalCredits ?? 0} tín chỉ</span>
+                          <span className="text-slate-400 block">Số tín chỉ:</span>
+                          <span className="font-semibold text-slate-700">{i.totalCredits || 0} tín chỉ</span>
                         </div>
                         <div>
-                          <span className="text-xs text-slate-400 block">Đơn giá / tín:</span>
-                          <span className="font-semibold text-slate-700 dark:text-slate-300">{fmtMoney(i.pricePerCredit)}</span>
+                          <span className="text-slate-400 block">Đơn giá / tín:</span>
+                          <span className="font-semibold text-slate-700">{fmtMoney(i.pricePerCredit)}</span>
                         </div>
                         <div>
-                          <span className="text-xs text-slate-400 block">Hạn thanh toán:</span>
-                          <span className={`font-semibold ${!isPaid ? 'text-rose-600 font-bold' : 'text-slate-700 dark:text-slate-300'}`}>{fmtDate(i.dueDate)}</span>
-                        </div>
-                        <div>
-                          <span className="text-xs text-slate-400 block">{isPaid ? 'Ngày thanh toán:' : 'Trạng thái:'}</span>
-                          <span className="font-semibold text-slate-700 dark:text-slate-300">{isPaid ? fmtDate(i.paidAt) : 'Cần thanh toán'}</span>
+                          <span className="text-slate-400 block">Hạn nộp:</span>
+                          <span className={`font-semibold ${!isPaid ? 'text-rose-600 font-bold' : 'text-slate-700'}`}>
+                            {fmtDate(i.dueDate)}
+                          </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between pt-1 gap-2 flex-wrap">
+                      <div className="flex items-center justify-between pt-2 gap-3 flex-wrap border-t border-slate-100">
                         <div>
-                          <span className="text-xs text-slate-500 block">Tổng tiền học phí:</span>
-                          <span className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">{fmtMoney(i.amount)}</span>
+                          <span className="text-xs text-slate-500 block">Số tiền thanh toán:</span>
+                          <span className="text-xl font-black text-indigo-600">{fmtMoney(i.amount)}</span>
                         </div>
+
                         <div className="flex items-center gap-2">
-                          {/* Print button – always available */}
                           <button
                             onClick={() => printInvoice(i)}
-                            title="In hóa đơn"
-                            className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium px-3 py-2 text-sm shadow-sm transition-colors"
+                            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium px-3 py-1.5 text-xs shadow-2xs transition cursor-pointer"
                           >
-                            <Printer className="w-4 h-4" />
+                            <Printer className="w-3.5 h-3.5" />
                             In hóa đơn
                           </button>
+
                           {!isPaid && (
                             <button
-                              onClick={() => setPayingInvoice(i)}
-                              className="rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 text-sm shadow-sm transition-colors flex items-center gap-1.5"
+                              onClick={() => {
+                                setPayingInvoice(i);
+                                void handleCreatePayOS(i);
+                              }}
+                              disabled={creatingPayOS}
+                              className="rounded-lg bg-linear-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold px-4 py-2 text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                              </svg>
-                              Thanh toán ngay
+                              <QrCode className="w-4 h-4" />
+                              Thanh toán PayOS VietQR
                             </button>
                           )}
                         </div>
@@ -349,18 +402,25 @@ export default function TuitionPage() {
 
         <div>
           <Card>
-            <h3 className="font-semibold mb-4 text-slate-800 dark:text-slate-100">Bảng định mức học phí</h3>
+            <h3 className="font-bold text-slate-800 text-base mb-3">Định mức học phí áp dụng</h3>
             {rates.length === 0 ? (
               <Empty msg="Chưa có định mức" />
             ) : (
               <div className="space-y-3">
                 {rates.map((r) => (
-                  <div key={r.id} className={`rounded-xl border p-3.5 transition ${r.isActive ? 'border-indigo-300 bg-indigo-50/50 dark:border-indigo-900/60 dark:bg-indigo-950/30' : 'border-slate-200 bg-slate-50 dark:border-slate-800'}`}>
+                  <div
+                    key={r.id}
+                    className={`rounded-xl border p-3.5 transition ${
+                      r.isActive ? 'border-indigo-300 bg-indigo-50/50' : 'border-slate-200 bg-slate-50'
+                    }`}
+                  >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm">Năm học {r.academicYear}</span>
-                      {r.isActive && <Pill intent="success">ÁP DỤNG</Pill>}
+                      <span className="font-semibold text-slate-800 text-sm">Năm học {r.academicYear}</span>
+                      {r.isActive && <Pill color="green">ĐANG ÁP DỤNG</Pill>}
                     </div>
-                    <div className="mt-2 text-lg font-bold text-indigo-600 dark:text-indigo-400">{fmtMoney(r.pricePerCredit)} <span className="text-xs font-normal text-slate-500">/ tín chỉ</span></div>
+                    <div className="mt-2 text-lg font-bold text-indigo-600">
+                      {fmtMoney(r.pricePerCredit)} <span className="text-xs font-normal text-slate-500">/ tín chỉ</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -369,76 +429,100 @@ export default function TuitionPage() {
         </div>
       </div>
 
-      {/* Modal Mô phỏng Cổng thanh toán VNPay / VietQR */}
+      {/* PayOS VietQR Payment Modal */}
       {payingInvoice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <div className="h-9 w-9 rounded-lg bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600">
+                  <QrCode className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">Thanh toán VNPay / Chuyển khoản</h3>
-                  <p className="text-xs text-slate-500">Kỳ {payingInvoice.semester} · {payingInvoice.academicYear}</p>
+                  <h3 className="font-bold text-slate-900 text-base">Thanh toán PayOS (VietQR)</h3>
+                  <p className="text-xs text-slate-500">Hóa đơn #{payingInvoice.id} · Kỳ {payingInvoice.semester} ({payingInvoice.academicYear})</p>
                 </div>
               </div>
-              <button onClick={() => setPayingInvoice(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              <button 
+                onClick={() => { setPayingInvoice(null); setPayOSData(null); }} 
+                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                ✕
               </button>
             </div>
 
-            <div className="my-4 space-y-3 text-sm">
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-4 border border-slate-100 dark:border-slate-800 space-y-2">
-                <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                  <span>Tổng số tín chỉ:</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{payingInvoice.totalCredits} tín</span>
-                </div>
-                <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                  <span>Đơn giá / tín chỉ:</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{fmtMoney(payingInvoice.pricePerCredit)}</span>
-                </div>
-                <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                  <span>Hạn thanh toán:</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{fmtDate(payingInvoice.dueDate)}</span>
-                </div>
-                <div className="border-t border-slate-200 dark:border-slate-700 pt-2 mt-2 flex justify-between items-center">
-                  <span className="font-semibold text-slate-900 dark:text-slate-100">Số tiền thanh toán:</span>
-                  <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">{fmtMoney(payingInvoice.amount)}</span>
-                </div>
+            {creatingPayOS ? (
+              <div className="py-12 text-center space-y-3">
+                <Spinner />
+                <p className="text-xs text-slate-600 font-medium">Đang khởi tạo mã VietQR từ Cổng PayOS...</p>
               </div>
+            ) : payOSData ? (
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row items-center gap-4 bg-indigo-50/60 p-4 rounded-xl border border-indigo-100">
+                  {/* VietQR Image */}
+                  <img
+                    src={payOSData.qrCode}
+                    alt="VietQR PayOS"
+                    className="w-40 h-40 object-contain rounded-lg border border-white shadow-xs shrink-0"
+                  />
+                  <div className="space-y-1.5 text-xs text-slate-700 flex-1">
+                    <div>
+                      <span className="text-slate-400 block">Ngân hàng thụ hưởng:</span>
+                      <span className="font-bold text-indigo-900 text-sm">{payOSData.bankName}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block">Số tài khoản:</span>
+                      <span className="font-mono font-bold text-slate-900 text-sm">{payOSData.accountNumber}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block">Tên chủ tài khoản:</span>
+                      <span className="font-semibold text-slate-800 uppercase">{payOSData.accountName}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block">Nội dung chuyển khoản:</span>
+                      <span className="font-mono font-bold text-indigo-700 bg-white px-2 py-0.5 rounded border border-indigo-200 inline-block">
+                        {payOSData.description}
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
-              <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 dark:border-indigo-900/50 dark:bg-indigo-950/30 p-3">
-                <p className="text-xs text-indigo-800 dark:text-indigo-300 font-medium text-center">Hệ thống đang ở chế độ mô phỏng thanh toán trực tuyến.</p>
-                <p className="text-[11px] text-indigo-600 dark:text-indigo-400 mt-0.5 text-center">Sau khi xác nhận, hóa đơn sẽ được in và email xác nhận gửi về địa chỉ email cá nhân.</p>
-              </div>
-            </div>
+                <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <span className="text-xs font-semibold text-slate-600">Số tiền cần chuyển:</span>
+                  <span className="text-2xl font-black text-indigo-600">{fmtMoney(payOSData.amount)}</span>
+                </div>
 
-            <div className="mt-4 flex items-center justify-end gap-3">
-              <button type="button" onClick={() => setPayingInvoice(null)} disabled={isProcessing}
-                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
-                Hủy
-              </button>
-              <button type="button" onClick={() => void handlePay()} disabled={isProcessing}
-                className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-500 shadow-sm transition disabled:opacity-50 flex items-center gap-2">
-                {isProcessing ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Đang xử lý...
-                  </>
-                ) : (
-                  <span className="flex items-center gap-2">
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => window.open(payOSData.checkoutUrl, '_blank')}
+                    className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition cursor-pointer"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Mở trang thanh toán bảo mật PayOS
+                  </button>
+
+                  <button
+                    onClick={handleVerifyPayOS}
+                    disabled={isProcessing}
+                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition cursor-pointer disabled:opacity-50"
+                  >
                     <CheckCircle2 className="w-4 h-4" />
-                    Xác nhận &amp; In hóa đơn
-                  </span>
-                )}
-              </button>
-            </div>
+                    {isProcessing ? 'Đang xác minh...' : 'Tôi đã chuyển khoản - Xác minh ngay'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="py-6 text-center space-y-3">
+                <p className="text-sm text-slate-600">Thanh toán hóa đơn qua ngân hàng hoặc ví điện tử.</p>
+                <button
+                  onClick={handlePay}
+                  disabled={isProcessing}
+                  className="px-6 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700"
+                >
+                  Xác nhận thanh toán trực tiếp
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

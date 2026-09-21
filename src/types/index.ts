@@ -226,6 +226,19 @@ export interface TuitionRate {
   updatedAt: string;
 }
 
+export interface PayOSPaymentResponse {
+  invoiceId: number;
+  orderCode: number;
+  amount: number;
+  checkoutUrl: string;
+  qrCode: string;
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  description: string;
+  status: string;
+}
+
 // ===== Schedule =====
 export interface Schedule {
   id: number;

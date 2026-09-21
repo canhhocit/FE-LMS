@@ -67,41 +67,33 @@ export function LecturerDashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
+      <div className="grid gap-4 lg:grid-cols-1">
         <Card>
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h3 className="font-semibold text-slate-800">Recent activity</h3>
-            <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-indigo-700">Live</span>
+            <h3 className="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              <Megaphone className="w-4 h-4 text-indigo-600" />
+              Hoạt động nộp bài &amp; Thông báo gần đây
+            </h3>
+            <span className="rounded-full bg-indigo-100 dark:bg-indigo-950 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">Hoạt động mới</span>
           </div>
           <div className="space-y-3">
             {recentActivity.length === 0 ? <Empty msg="Chưa có hoạt động gần đây" /> : recentActivity.map((item) => (
-              <div key={`${item.title}-${item.time}`} className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-                <span className="mt-1.5 grid h-5 w-5 place-items-center rounded-full bg-indigo-100 flex-shrink-0">
-                  <DotIcon className="w-1.5 h-1.5 text-indigo-700" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-semibold text-slate-800">{item.title}</div>
-                  <div className="mt-1 text-xs text-slate-500">{item.detail}</div>
+              <div key={`${item.title}-${item.time}`} className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 dark:border-slate-800 bg-neutral-50/70 dark:bg-slate-800/60 p-3.5 hover:border-indigo-300 dark:hover:border-indigo-700 transition cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300 flex-shrink-0 font-bold text-xs">
+                    <DotIcon className="w-2 h-2 text-indigo-600" />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-bold text-slate-800 dark:text-slate-100">{item.title}</div>
+                    <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{item.detail}</div>
+                  </div>
                 </div>
-                <div className="text-[11px] text-slate-400">{item.time}</div>
+                <div className="flex items-center gap-3">
+                  <div className="text-xs text-slate-400 font-medium">{item.time}</div>
+                  <Link to="/lecturer/grading" className="text-xs font-bold text-indigo-600 hover:underline">Chấm điểm →</Link>
+                </div>
               </div>
             ))}
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <h3 className="font-semibold text-slate-800">Teaching streak</h3>
-            <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-700">{teachingStreak} ngày</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-linear-to-br from-amber-400 to-orange-500 text-white flex-shrink-0">
-              <Flame className="w-7 h-7" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-slate-800">{teachingStreak} ngày</div>
-              <div className="text-sm text-slate-500">Bạn vẫn giữ nhịp phản hồi và giảng dạy đều đặn.</div>
-            </div>
           </div>
         </Card>
       </div>
@@ -452,29 +444,64 @@ export function LecturerGrading() {
         </Card>
 
         <Card>
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <h3 className="font-semibold flex items-center gap-2">
               <CalendarCheck2 className="w-4 h-4 text-indigo-500" />
-              Điểm danh
+              Điểm &amp; Điểm danh môn học
             </h3>
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
-              className="bg-white border border-slate-200 rounded px-2 py-1 text-sm" />
+            <div className="flex items-center gap-2">
+              <input 
+                type="date" 
+                value={date} 
+                onChange={(e) => setDate(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none" 
+              />
+            </div>
           </div>
-          {att.length === 0 ? <Empty msg="Chưa có dữ liệu điểm danh ngày này" /> : (
+
+          {/* Time Window Guard Notice */}
+          {(() => {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const isToday = date === todayStr;
+            return (
+              <div className={`mb-3 p-2.5 rounded-lg text-xs font-medium flex items-center gap-2 border ${
+                isToday 
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                  : 'bg-amber-50 text-amber-700 border-amber-200'
+              }`}>
+                {isToday ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                    <span>Hôm nay ({date}) thuộc khung giờ tiết học hợp lệ — Cho phép tạo/cập nhật phiên điểm danh.</span>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-4 h-4 shrink-0 text-amber-600" />
+                    <span>Ngày {date} không thuộc ngày học hôm nay. Hệ thống chỉ cho phép điều chỉnh điểm danh trong ngày thực tế.</span>
+                  </>
+                )}
+              </div>
+            );
+          })()}
+
+          {att.length === 0 ? <Empty msg="Chưa có dữ liệu điểm danh cho ngày được chọn" /> : (
             <table className="w-full text-sm">
-              <thead className="text-xs text-slate-400 border-b border-slate-800">
-                <tr><th className="text-left py-2">SV</th><th>Trạng thái</th></tr>
+              <thead className="text-xs text-slate-400 border-b border-slate-200 bg-slate-50">
+                <tr><th className="text-left py-2 px-2">Sinh viên</th><th className="text-right px-2">Trạng thái điểm danh</th></tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {att.map((r) => (
-                  <tr key={r.studentId} className="border-b border-slate-800/50">
-                    <td className="py-2">{r.studentName}</td>
-                    <td>
-                      <select value={r.status} onChange={(e) => updateAtt(r.studentId, e.target.value as AttendanceRecord['status'])}
-                        className="bg-white border border-slate-200 rounded px-2 py-1 text-xs">
+                  <tr key={r.studentId} className="hover:bg-slate-50">
+                    <td className="py-2 px-2 font-medium text-slate-800">{r.studentName}</td>
+                    <td className="text-right px-2">
+                      <select 
+                        value={r.status} 
+                        onChange={(e) => updateAtt(r.studentId, e.target.value as AttendanceRecord['status'])}
+                        className="bg-white border border-slate-200 rounded-md px-2 py-1 text-xs cursor-pointer focus:ring-2 focus:ring-indigo-500"
+                      >
                         <option value="PRESENT">Có mặt</option>
                         <option value="LATE">Đi trễ</option>
-                        <option value="ABSENT">Vắng</option>
+                        <option value="ABSENT">Vắng mặt</option>
                       </select>
                     </td>
                   </tr>
@@ -482,8 +509,12 @@ export function LecturerGrading() {
               </tbody>
             </table>
           )}
-          <button onClick={saveAtt} className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-sm text-white transition">
-            <Save className="w-3.5 h-3.5" />
+
+          <button 
+            onClick={saveAtt} 
+            className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-sm font-medium text-white transition shadow-xs cursor-pointer"
+          >
+            <Save className="w-4 h-4" />
             Lưu điểm danh
           </button>
         </Card>

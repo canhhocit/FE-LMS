@@ -2,13 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import * as clazzService from "../../services/clazzService";
 import * as contentService from "../../services/contentService";
-// Sprint 1: edit/delete helpers already in contentService
 import * as assessmentService from "../../services/assessmentService";
 import * as registrationService from "../../services/registrationService";
 import * as progressService from "../../services/progressService";
 import { useAuth } from "../../contexts/useAuth";
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from "../../components/Layout";
-import type { Clazz, User, Chapter, Announcement, Assignment, Lesson, EnrollmentProgress } from "../../types";
+import type { Clazz, User, Chapter, Announcement, Assignment, Lesson, EnrollmentProgress, Submission, SubmissionType } from "../../types";
+import { 
+  FileText, Link2, Upload, ArrowUp, ArrowDown, Plus, Pencil, Trash2, 
+  CheckCircle, Clock, Video, File, X, Sparkles, AlertCircle
+} from "lucide-react";
 
 export default function ClassDetail() {
   const { user } = useAuth();
@@ -20,8 +23,11 @@ export default function ClassDetail() {
   const [chapterLessons, setChapterLessons] = useState<Record<number, Lesson[]>>({});
   const [anns, setAnns] = useState<Announcement[]>([]);
   const [assigns, setAssigns] = useState<Assignment[]>([]);
+  const [mySubmissions, setMySubmissions] = useState<Submission[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Chapter & Lesson states
   const [chapterTitle, setChapterTitle] = useState('');
   const [chapterOrder, setChapterOrder] = useState(1);
   const [lessonTitle, setLessonTitle] = useState('');
@@ -30,9 +36,11 @@ export default function ClassDetail() {
   const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementContent, setAnnouncementContent] = useState('');
-  // Sprint 1: edit/delete states
+
+  // Edit states
   const [editChapterId, setEditChapterId] = useState<number | null>(null);
   const [editChapterTitle, setEditChapterTitle] = useState('');
+  const [editChapterOrder, setEditChapterOrder] = useState<number>(1);
   const [editLessonId, setEditLessonId] = useState<number | null>(null);
   const [editLessonTitle, setEditLessonTitle] = useState('');
   const [editLessonContent, setEditLessonContent] = useState('');
@@ -41,12 +49,21 @@ export default function ClassDetail() {
   const [editAnnContent, setEditAnnContent] = useState('');
   const [flash, setFlash] = useState<string | null>(null);
 
-  const loadChapters = async () => {
-    try { const list = await contentService.getChapters(cid); setChapters(list); } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi tải chương'); }
-  };
-  const loadAnns = async () => {
-    try { const list = await contentService.getAnnouncements(cid); setAnns(list); } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi tải thông báo'); }
-  };
+  // Assignment Modal State (Lecturer Create Assignment)
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [assignTargetChapterId, setAssignTargetChapterId] = useState<number | null>(null);
+  const [assignTitle, setAssignTitle] = useState('');
+  const [assignDesc, setAssignDesc] = useState('');
+  const [assignDueDate, setAssignDueDate] = useState('');
+  const [assignMaxScore, setAssignMaxScore] = useState(10);
+
+  // Submission Modal State (Student Submit Assignment)
+  const [activeSubmitAssignment, setActiveSubmitAssignment] = useState<Assignment | null>(null);
+  const [subType, setSubType] = useState<SubmissionType>('FILE');
+  const [subExternalLink, setSubExternalLink] = useState('');
+  const [subSelectedFiles, setSubSelectedFiles] = useState<File[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+
   const [studentProgress, setStudentProgress] = useState<EnrollmentProgress | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingLessonId, setUploadingLessonId] = useState<number | null>(null);
@@ -57,8 +74,35 @@ export default function ClassDetail() {
   const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const attachmentFileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const [uploadingAttachmentLessonId, setUploadingAttachmentLessonId] = useState<number | null>(null);
+
   const isLecturer = user?.role === 'LECTURER';
   const isStudent = user?.role === 'STUDENT';
+
+  const loadChapters = async () => {
+    try { 
+      const list = await contentService.getChapters(cid); 
+      setChapters(list.sort((a, b) => (a.sortOrder ?? 1) - (b.sortOrder ?? 1))); 
+    } catch (e: unknown) { 
+      setErr((e as { message?: string })?.message ?? 'Lỗi tải chương'); 
+    }
+  };
+
+  const loadAnns = async () => {
+    try { const list = await contentService.getAnnouncements(cid); setAnns(list); } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi tải thông báo'); }
+  };
+
+  const loadAssignments = async () => {
+    try { 
+      const list = await assessmentService.getAssignments(cid); 
+      setAssigns(list); 
+      if (isStudent) {
+        const subs = await assessmentService.getMySubmissions();
+        setMySubmissions(subs);
+      }
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Lỗi tải bài tập');
+    }
+  };
 
   const handleLessonAttachmentUpload = async (lessonId: number, file: File) => {
     setUploadingAttachmentLessonId(lessonId);
@@ -67,8 +111,7 @@ export default function ClassDetail() {
       await contentService.uploadLessonAttachment(lessonId, file, (percent) => {
         setAttachmentUploadProgress((prev) => ({ ...prev, [lessonId]: percent }));
       });
-      const fresh = await contentService.getChapters(cid);
-      setChapters(fresh);
+      await loadChapters();
       setFlash('Tài liệu đã được tải lên thành công.');
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Upload tài liệu thất bại');
@@ -89,14 +132,22 @@ export default function ClassDetail() {
           assessmentService.getAssignments(cid),
         ]);
         if (!mounted) return;
-        setClazz(c); setStudents(st); setChapters(ch); setAnns(an); setAssigns(as);
+        setClazz(c); 
+        setStudents(st); 
+        setChapters(ch.sort((a, b) => (a.sortOrder ?? 1) - (b.sortOrder ?? 1))); 
+        setAnns(an); 
+        setAssigns(as);
+        if (isStudent) {
+          const subs = await assessmentService.getMySubmissions().catch(() => []);
+          if (mounted) setMySubmissions(subs);
+        }
       } catch (e: unknown) {
         const err = e as { message?: string };
-        if (mounted) setErr(err?.message ?? "Loi tai du lieu");
+        if (mounted) setErr(err?.message ?? "Lỗi tải dữ liệu lớp học");
       } finally { if (mounted) setLoading(false); }
     })();
     return () => { mounted = false; };
-  }, [cid]);
+  }, [cid, isStudent]);
 
   useEffect(() => {
     if (!chapters.length) return;
@@ -111,18 +162,17 @@ export default function ClassDetail() {
       if (!mounted) return;
       const mapped: Record<number, Lesson[]> = {};
       results.forEach(({ chapterId, lessons }) => {
-        mapped[chapterId] = lessons;
+        mapped[chapterId] = lessons.sort((a, b) => (a.sortOrder ?? 1) - (b.sortOrder ?? 1));
       });
       setChapterLessons(mapped);
     })().catch(() => {
-      if (mounted) setErr('Khong the tai danh sach bai hoc');
+      if (mounted) setErr('Không thể tải danh sách bài học');
     });
     return () => { mounted = false; };
   }, [chapters]);
 
   useEffect(() => {
     if (!isStudent || !cid) return;
-
     let mounted = true;
     (async () => {
       try {
@@ -132,14 +182,12 @@ export default function ClassDetail() {
           if (mounted) setStudentProgress(null);
           return;
         }
-
         const progress = await progressService.getEnrollmentProgress(match.enrollmentId);
         if (mounted) setStudentProgress(progress);
       } catch {
         if (mounted) setStudentProgress(null);
       }
     })();
-
     return () => { mounted = false; };
   }, [cid, isStudent]);
 
@@ -148,15 +196,99 @@ export default function ClassDetail() {
     setSaving(true);
     setFlash(null);
     try {
-      await contentService.createChapter(cid, { title: chapterTitle.trim(), sortOrder: chapterOrder });
+      const nextOrder = chapters.length > 0 ? Math.max(...chapters.map(c => c.sortOrder ?? 1)) + 1 : 1;
+      await contentService.createChapter(cid, { title: chapterTitle.trim(), sortOrder: chapterOrder || nextOrder });
       setChapterTitle('');
-      setChapterOrder(1);
-      const fresh = await contentService.getChapters(cid);
-      setChapters(fresh);
-      setFlash('Đã tạo chương mới');
+      setChapterOrder(nextOrder + 1);
+      await loadChapters();
+      setFlash('Đã tạo chương mới thành công');
     } catch (e) {
       setFlash((e as { message?: string })?.message ?? 'Tạo chương thất bại');
     } finally { setSaving(false); }
+  };
+
+  const handleReorderChapter = async (chapter: Chapter, direction: 'up' | 'down') => {
+    const currentIndex = chapters.findIndex(c => c.id === chapter.id);
+    if (currentIndex < 0) return;
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= chapters.length) return;
+
+    const targetChapter = chapters[targetIndex];
+    const newCurrentOrder = targetChapter.sortOrder ?? (targetIndex + 1);
+    const newTargetOrder = chapter.sortOrder ?? (currentIndex + 1);
+
+    try {
+      await Promise.all([
+        contentService.updateChapter(chapter.id, { sortOrder: newCurrentOrder }),
+        contentService.updateChapter(targetChapter.id, { sortOrder: newTargetOrder }),
+      ]);
+      await loadChapters();
+      setFlash('Đã cập nhật thứ tự chương học.');
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Lỗi đổi thứ tự chương');
+    }
+  };
+
+  const handleCreateAssignment = async () => {
+    if (!isLecturer || !cid || !assignTitle.trim() || !assignDueDate) return;
+    setSaving(true);
+    try {
+      const formattedTitle = assignTargetChapterId 
+        ? `[Chương ${chapters.find(c => c.id === assignTargetChapterId)?.sortOrder ?? ''}] ${assignTitle.trim()}`
+        : assignTitle.trim();
+
+      await assessmentService.createAssignment(cid, {
+        title: formattedTitle,
+        description: assignDesc.trim(),
+        dueDate: new Date(assignDueDate).toISOString(),
+        maxScore: assignMaxScore || 10,
+      });
+      setShowAssignModal(false);
+      setAssignTitle('');
+      setAssignDesc('');
+      setAssignDueDate('');
+      setAssignMaxScore(10);
+      setAssignTargetChapterId(null);
+      await loadAssignments();
+      setFlash('Đã tạo bài tập mới thành công');
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Tạo bài tập thất bại');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleStudentSubmit = async () => {
+    if (!activeSubmitAssignment) return;
+    setSubmitting(true);
+    try {
+      let uploadedUrls: string[] = [];
+      if (subType === 'FILE' && subSelectedFiles.length > 0) {
+        if (subSelectedFiles.length === 1) {
+          const url = await assessmentService.uploadSubmissionFile(activeSubmitAssignment.id, subSelectedFiles[0]);
+          uploadedUrls = [url];
+        } else {
+          uploadedUrls = await assessmentService.uploadSubmissionFiles(activeSubmitAssignment.id, subSelectedFiles);
+        }
+      }
+
+      await assessmentService.submitAssignment(activeSubmitAssignment.id, {
+        submissionType: subType,
+        fileUrl: uploadedUrls[0] || undefined,
+        fileUrls: uploadedUrls.length > 1 ? uploadedUrls : undefined,
+        externalLink: subExternalLink.trim() || undefined,
+      });
+
+      setActiveSubmitAssignment(null);
+      setSubSelectedFiles([]);
+      setSubExternalLink('');
+      await loadAssignments();
+      setFlash('Nộp bài tập thành công!');
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Lỗi khi nộp bài');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const validateLessonVideoFile = (file: File) => {
@@ -166,59 +298,31 @@ export default function ClassDetail() {
     const mimeType = file.type.toLowerCase();
 
     if (!allowedExt.includes(extension) && !allowedMime.includes(mimeType)) {
-      return {
-        valid: false,
-        message: 'Định dạng video không hợp lệ. Chỉ hỗ trợ MP4, WebM, MOV, MKV, AVI.',
-      };
+      return { valid: false, message: 'Định dạng video không hợp lệ. Chỉ hỗ trợ MP4, WebM, MOV, MKV, AVI.' };
     }
-
     if (file.size > 200 * 1024 * 1024) {
-      return {
-        valid: false,
-        message: 'Video vượt quá dung lượng tối đa 200MB.',
-      };
+      return { valid: false, message: 'Video vượt quá dung lượng tối đa 200MB.' };
     }
-
     return { valid: true, message: '' };
   };
 
   const handleLessonVideoUpload = async (lessonId: number, file: File) => {
     const validation = validateLessonVideoFile(file);
     if (!validation.valid) {
-      setUploadStatus((prev) => ({
-        ...prev,
-        [lessonId]: { type: 'error', message: validation.message },
-      }));
+      setUploadStatus((prev) => ({ ...prev, [lessonId]: { type: 'error', message: validation.message } }));
       return;
     }
-
     setUploadingLessonId(lessonId);
     setUploadProgress((prev) => ({ ...prev, [lessonId]: 0 }));
-    setUploadStatus((prev) => ({
-      ...prev,
-      [lessonId]: { type: 'success', message: 'Đang tải video 0%...' },
-    }));
-
     try {
       await contentService.uploadLessonVideo(lessonId, file, (percent) => {
         setUploadProgress((prev) => ({ ...prev, [lessonId]: percent }));
-        setUploadStatus((prev) => ({
-          ...prev,
-          [lessonId]: { type: 'success', message: `Đang tải video ${percent}%...` },
-        }));
       });
-      const fresh = await contentService.getChapters(cid);
-      setChapters(fresh);
-      setUploadStatus((prev) => ({
-        ...prev,
-        [lessonId]: { type: 'success', message: 'Video đã được cập nhật thành công.' },
-      }));
+      await loadChapters();
+      setUploadStatus((prev) => ({ ...prev, [lessonId]: { type: 'success', message: 'Video đã được cập nhật thành công.' } }));
     } catch (e) {
       const message = (e as { message?: string })?.message ?? 'Upload video thất bại';
-      setUploadStatus((prev) => ({
-        ...prev,
-        [lessonId]: { type: 'error', message: `Upload video thất bại: ${message}` },
-      }));
+      setUploadStatus((prev) => ({ ...prev, [lessonId]: { type: 'error', message: `Upload video thất bại: ${message}` } }));
     } finally {
       setUploadingLessonId((current) => (current === lessonId ? null : current));
     }
@@ -228,13 +332,15 @@ export default function ClassDetail() {
     if (!isLecturer || !selectedChapterId || !lessonTitle.trim()) return;
     setSaving(true);
     setFlash(null);
-    if (lessonVideo) {
-      setCreatingLessonProgress(0);
-    }
+    if (lessonVideo) setCreatingLessonProgress(0);
     try {
+      const existingLessons = chapterLessons[selectedChapterId] ?? [];
+      const nextSortOrder = existingLessons.length > 0 ? Math.max(...existingLessons.map(l => l.sortOrder ?? 1)) + 1 : 1;
+
       const lesson = await contentService.createLesson(selectedChapterId, {
         title: lessonTitle.trim(),
         content: lessonContent.trim(),
+        sortOrder: nextSortOrder,
       });
 
       if (lessonVideo && lesson.id) {
@@ -248,15 +354,13 @@ export default function ClassDetail() {
           setFlash(`Đã tạo bài học nhưng upload video thất bại: ${message}`);
         }
       } else {
-        setFlash('Đã tạo bài học mới');
+        setFlash('Đã tạo bài học mới thành công');
       }
 
       setLessonTitle('');
       setLessonContent('');
       setLessonVideo(null);
-      setSelectedChapterId(selectedChapterId);
-      const fresh = await contentService.getChapters(cid);
-      setChapters(fresh);
+      await loadChapters();
     } catch (e) {
       setFlash((e as { message?: string })?.message ?? 'Tạo bài học thất bại');
     } finally {
@@ -276,9 +380,8 @@ export default function ClassDetail() {
       });
       setAnnouncementTitle('');
       setAnnouncementContent('');
-      const fresh = await contentService.getAnnouncements(cid);
-      setAnns(fresh);
-      setFlash('Đã tạo thông báo');
+      await loadAnns();
+      setFlash('Đã tạo thông báo mới thành công');
     } catch (e) {
       setFlash((e as { message?: string })?.message ?? 'Tạo thông báo thất bại');
     } finally { setSaving(false); }
@@ -286,7 +389,6 @@ export default function ClassDetail() {
 
   const getLessonStatus = (lessonId: number) => {
     if (!studentProgress) return { label: 'Chưa học', className: 'bg-slate-100 text-slate-600' };
-
     const match = studentProgress.lessons.find((item) => item.lessonId === lessonId);
     if (match?.isCompleted) return { label: 'Đã học', className: 'bg-emerald-100 text-emerald-700' };
     if (match) return { label: 'Đang học', className: 'bg-amber-100 text-amber-700' };
@@ -300,264 +402,323 @@ export default function ClassDetail() {
     notStarted: Math.max(studentProgress.totalCount - studentProgress.lessons.filter((item) => item.isCompleted).length - studentProgress.lessons.filter((item) => !item.isCompleted).length, 0),
   } : null;
 
-  const getResumeSeconds = (lessonId: number) => {
-    if (!isStudent) return 0;
-    const value = Number(localStorage.getItem(`learninghub:resume:${cid}:${lessonId}`) ?? '0');
-    return Number.isFinite(value) ? value : 0;
-  };
-
   if (loading) return <Spinner />;
   if (err) return <ErrorBox msg={err} />;
-  if (!clazz) return <Empty msg="Khong tim thay lop" />;
+  if (!clazz) return <Empty msg="Không tìm thấy thông tin lớp học phần" />;
 
-
-  // Sprint 1: handlers for edit/delete chapter, lesson, announcement
   const handleDeleteChapter = async (chId: number) => {
-    if (!confirm('Xoá chương này? Các bài học trong chương cũng sẽ bị xoá.')) return;
+    if (!confirm('Xóa chương này? Tất cả bài học thuộc chương cũng sẽ bị xóa.')) return;
     try {
       await contentService.deleteChapter(chId);
-      setFlash('Đã xoá chương.');
-      loadChapters();
-    } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
+      setFlash('Đã xóa chương thành công.');
+      await loadChapters();
+    } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi xóa chương'); }
   };
-  const startEditChapter = (ch: Chapter) => { setEditChapterId(ch.id); setEditChapterTitle(ch.title); };
+
+  const startEditChapter = (ch: Chapter) => { 
+    setEditChapterId(ch.id); 
+    setEditChapterTitle(ch.title); 
+    setEditChapterOrder(ch.sortOrder ?? 1);
+  };
+
   const saveEditChapter = async () => {
     if (!editChapterId || !editChapterTitle.trim()) return;
     try {
-      await contentService.updateChapter(editChapterId, { title: editChapterTitle });
+      await contentService.updateChapter(editChapterId, { title: editChapterTitle, sortOrder: editChapterOrder });
       setEditChapterId(null);
-      setFlash('Đã cập nhật chương.');
-      loadChapters();
-    } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
+      setFlash('Đã cập nhật tên và thứ tự chương.');
+      await loadChapters();
+    } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi cập nhật chương'); }
   };
+
   const handleDeleteLesson = async (lessonId: number) => {
-    if (!confirm('Xoá bài học này?')) return;
+    if (!confirm('Xóa bài học này?')) return;
     try {
       await contentService.deleteLesson(lessonId);
-      setFlash('Đã xoá bài học.');
-      loadChapters();
-    } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
+      setFlash('Đã xóa bài học.');
+      await loadChapters();
+    } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi xóa bài học'); }
   };
-  const startEditLesson = (l: Lesson) => { setEditLessonId(l.id); setEditLessonTitle(l.title); setEditLessonContent(l.content ?? ''); };
+
+  const startEditLesson = (l: Lesson) => { 
+    setEditLessonId(l.id); 
+    setEditLessonTitle(l.title); 
+    setEditLessonContent(l.content ?? ''); 
+  };
+
   const saveEditLesson = async () => {
     if (!editLessonId || !editLessonTitle.trim()) return;
     try {
       await contentService.updateLesson(editLessonId, { title: editLessonTitle, content: editLessonContent });
       setEditLessonId(null);
       setFlash('Đã cập nhật bài học.');
-      loadChapters();
+      await loadChapters();
     } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
   };
+
   const handleDeleteAnnouncement = async (annId: number) => {
-    if (!confirm('Xoá thông báo này?')) return;
+    if (!confirm('Xóa thông báo này?')) return;
     try {
       await contentService.deleteAnnouncement(annId);
-      setFlash('Đã xoá thông báo.');
-      loadAnns();
+      setFlash('Đã xóa thông báo.');
+      await loadAnns();
     } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
   };
+
   const startEditAnn = (a: Announcement) => { setEditAnnId(a.id); setEditAnnTitle(a.title); setEditAnnContent(a.content); };
+
   const saveEditAnn = async () => {
     if (!editAnnId || !editAnnTitle.trim() || !editAnnContent.trim()) return;
     try {
       await contentService.updateAnnouncement(editAnnId, { title: editAnnTitle, content: editAnnContent });
       setEditAnnId(null);
       setFlash('Đã cập nhật thông báo.');
-      loadAnns();
+      await loadAnns();
     } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageTitle>{clazz.classCode} - {clazz.className}</PageTitle>
-      <div className="grid md:grid-cols-3 gap-4 mb-6">
-        <Card><div className="text-xs text-slate-400">Giang vien</div><div className="font-medium">{clazz.lecturerName ?? "-"}</div></Card>
-        <Card><div className="text-xs text-slate-400">Sĩ số tối đa</div><div className="font-medium">{clazz.maxStudents} SV</div></Card>
-        <Card><div className="text-xs text-slate-500">Học kỳ</div><div><Pill color="indigo">{clazz.semester} · {clazz.academicYear}</Pill></div></Card>
+      
+      {/* Overview Metadata Cards */}
+      <div className="grid md:grid-cols-3 gap-4">
+        <Card>
+          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">Giảng viên phụ trách</div>
+          <div className="mt-1 text-base font-semibold text-slate-800">{clazz.lecturerName ?? "Chưa phân công"}</div>
+        </Card>
+        <Card>
+          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">Sĩ số tối đa</div>
+          <div className="mt-1 text-base font-semibold text-slate-800">{clazz.maxStudents} sinh viên</div>
+        </Card>
+        <Card>
+          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">Học kỳ / Năm học</div>
+          <div className="mt-1"><Pill color="indigo">{clazz.semester} · Năm học {clazz.academicYear}</Pill></div>
+        </Card>
       </div>
+
+      {/* Student Progress Summary */}
       {isStudent && studentSummary && (
-        <Card className="mb-4 border border-indigo-100 bg-linear-to-r from-indigo-50 via-white to-blue-50">
+        <Card className="border border-indigo-100 bg-linear-to-r from-indigo-50/80 via-white to-blue-50/80">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-indigo-500">Tiến độ học tập</div>
+              <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-indigo-600">Tiến độ học tập môn học</div>
               <div className="mt-1 text-2xl font-bold text-slate-800">{studentProgress?.percentage ?? 0}%</div>
             </div>
             <div className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
-              {studentSummary.completed}/{studentSummary.total} bài đã hoàn thành
+              {studentSummary.completed}/{studentSummary.total} bài học đã hoàn thành
             </div>
           </div>
           <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-slate-200">
-            <div className="h-full rounded-full bg-linear-to-r from-indigo-500 to-blue-500" style={{ width: `${Math.min(100, studentProgress?.percentage ?? 0)}%` }} />
-          </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
-            {[
-              { label: 'Đã học', value: studentSummary.completed, tone: 'bg-emerald-50 text-emerald-700' },
-              { label: 'Đang học', value: studentSummary.inProgress, tone: 'bg-amber-50 text-amber-700' },
-              { label: 'Chưa học', value: studentSummary.notStarted, tone: 'bg-slate-100 text-slate-600' },
-            ].map((item) => (
-              <div key={item.label} className={`rounded-xl border border-white p-3 ${item.tone}`}>
-                <div className="text-[11px] font-medium uppercase tracking-widest opacity-80">{item.label}</div>
-                <div className="mt-1 text-xl font-bold">{item.value}</div>
-              </div>
-            ))}
+            <div className="h-full rounded-full bg-linear-to-r from-indigo-500 to-blue-500 transition-all duration-300" style={{ width: `${Math.min(100, studentProgress?.percentage ?? 0)}%` }} />
           </div>
         </Card>
       )}
 
-      <div className="grid lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2">
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <h3 className="font-semibold">Chuong trinh hoc</h3>
+      {/* Main Grid Content */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Left Column: Chapters & Curriculum (2 cols) */}
+        <Card className="lg:col-span-2 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="text-lg font-bold text-slate-800">Chương trình bài giảng</h3>
+              <p className="text-xs text-slate-500">Quản lý bài học, thứ tự chương và bài tập học phần</p>
+            </div>
             {isLecturer && (
               <div className="flex items-center gap-2">
-                <input value={chapterTitle} onChange={(e) => setChapterTitle(e.target.value)} placeholder="Tên chương" className="w-40 px-2 py-1 rounded border border-slate-200 bg-white text-sm" />
-                <input type="number" value={chapterOrder} min={1} onChange={(e) => setChapterOrder(Number(e.target.value) || 1)} className="w-16 px-2 py-1 rounded border border-slate-200 bg-white text-sm" />
-                <button onClick={handleCreateChapter} disabled={saving || !chapterTitle.trim()} className="px-3 py-1.5 text-sm rounded bg-indigo-600 text-white disabled:opacity-50">+ Chương</button>
+                <input 
+                  value={chapterTitle} 
+                  onChange={(e) => setChapterTitle(e.target.value)} 
+                  placeholder="Tên chương mới..." 
+                  className="w-44 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                />
+                <input 
+                  type="number" 
+                  value={chapterOrder} 
+                  min={1} 
+                  onChange={(e) => setChapterOrder(Number(e.target.value) || 1)} 
+                  className="w-16 px-2 py-1.5 rounded-lg border border-slate-200 bg-white text-sm text-center" 
+                  title="Số thứ tự chương (# STT)"
+                />
+                <button 
+                  onClick={handleCreateChapter} 
+                  disabled={saving || !chapterTitle.trim()} 
+                  className="px-3.5 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition cursor-pointer flex items-center gap-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  Chương
+                </button>
               </div>
             )}
           </div>
-          {chapters.length === 0 ? <Empty msg="Chua co chuong nao" /> : (
-            <ol className="space-y-3">
-              {chapters.map((c: Chapter) => (
-                <li key={c.id} className="border border-slate-200 rounded-lg p-3 bg-white">
-                  <div className="flex items-center justify-between gap-2">
-                    {editChapterId === c.id ? (
-                      <div className="flex items-center gap-2 flex-1">
-                        <input
-                          value={editChapterTitle}
-                          onChange={(e) => setEditChapterTitle(e.target.value)}
-                          className="px-2 py-1 text-sm border rounded border-slate-300 flex-1"
-                        />
-                        <button onClick={saveEditChapter} className="px-2 py-1 text-xs rounded bg-indigo-600 text-white">Lưu</button>
-                        <button onClick={() => setEditChapterId(null)} className="px-2 py-1 text-xs rounded bg-slate-200 text-slate-700">Hủy</button>
-                      </div>
-                    ) : (
-                      <>
-                        <div>
-                          <div className="font-semibold text-slate-800">{c.title}</div>
-                          <div className="text-xs text-slate-500">Chương #{c.sortOrder ?? 1}</div>
+
+          {chapters.length === 0 ? (
+            <Empty msg="Chưa có chương học nào được tạo" />
+          ) : (
+            <ol className="space-y-4">
+              {chapters.map((c: Chapter, idx: number) => {
+                const chapterAssigns = assigns.filter(a => a.title.includes(`[Chương ${c.sortOrder ?? idx + 1}]`));
+                return (
+                  <li key={c.id} className="border border-slate-200 rounded-xl p-4 bg-white shadow-2xs hover:border-indigo-200 transition">
+                    <div className="flex items-center justify-between gap-3">
+                      {editChapterId === c.id ? (
+                        <div className="flex items-center gap-2 flex-1">
+                          <span className="text-xs font-semibold text-indigo-600"># STT:</span>
+                          <input
+                            type="number"
+                            value={editChapterOrder}
+                            onChange={(e) => setEditChapterOrder(Number(e.target.value) || 1)}
+                            className="w-16 px-2 py-1 text-sm border rounded-md border-slate-300 text-center"
+                          />
+                          <input
+                            value={editChapterTitle}
+                            onChange={(e) => setEditChapterTitle(e.target.value)}
+                            className="px-3 py-1 text-sm border rounded-md border-slate-300 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                          <button onClick={saveEditChapter} className="px-3 py-1 text-xs font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Lưu</button>
+                          <button onClick={() => setEditChapterId(null)} className="px-3 py-1 text-xs font-medium rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300">Hủy</button>
                         </div>
-                        {isLecturer && (
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => startEditChapter(c)}
-                              className="px-2 py-1 text-xs rounded border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center gap-1"
-                              title="Sửa tên chương"
-                            >
-                              <svg className="h-3.5 w-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                              <span>Sửa</span>
-                            </button>
-                            <button
-                              onClick={() => handleDeleteChapter(c.id)}
-                              className="px-2 py-1 text-xs rounded border border-rose-200 text-rose-600 hover:bg-rose-50 flex items-center gap-1"
-                              title="Xóa chương"
-                            >
-                              <svg className="h-3.5 w-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                              <span>Xóa</span>
-                            </button>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-3">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700 font-mono font-bold text-xs border border-indigo-100">
+                              #{c.sortOrder ?? idx + 1}
+                            </span>
+                            <div>
+                              <div className="font-semibold text-slate-800 text-base">{c.title}</div>
+                              <div className="text-xs text-slate-500">{(chapterLessons[c.id]?.length ?? 0)} bài học</div>
+                            </div>
                           </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                  {(chapterLessons[c.id]?.length ?? 0) > 0 && (
-                    <ul className="mt-2 space-y-1.5 pl-2 text-sm text-slate-600">
-                      {chapterLessons[c.id]?.map((lesson: Lesson) => {
-                        const status = isStudent ? getLessonStatus(lesson.id) : null;
-                        const lessonProgress = studentProgress?.lessons.find((item) => item.lessonId === lesson.id);
-                        const resumeSeconds = getResumeSeconds(lesson.id);
-                        const isResumeActive = isStudent && !!lessonProgress && !lessonProgress.isCompleted && resumeSeconds > 10;
+                          {isLecturer && (
+                            <div className="flex items-center gap-1">
+                              {/* Reorder Buttons */}
+                              <button
+                                onClick={() => handleReorderChapter(c, 'up')}
+                                disabled={idx === 0}
+                                className="p-1.5 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
+                                title="Đẩy chương lên trên"
+                              >
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleReorderChapter(c, 'down')}
+                                disabled={idx === chapters.length - 1}
+                                className="p-1.5 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
+                                title="Đẩy chương xuống dưới"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </button>
 
-                        return (
-                          <li key={lesson.id} className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2.5 sm:flex-row sm:items-center sm:justify-between">
-                            <div className="min-w-0 flex-1">
-                              {editLessonId === lesson.id ? (
-                                <div className="space-y-1.5 my-1">
-                                  <input
-                                    value={editLessonTitle}
-                                    onChange={(e) => setEditLessonTitle(e.target.value)}
-                                    placeholder="Tên bài học"
-                                    className="w-full px-2 py-1 text-sm border rounded border-slate-300"
-                                  />
-                                  <textarea
-                                    value={editLessonContent}
-                                    onChange={(e) => setEditLessonContent(e.target.value)}
-                                    placeholder="Nội dung/mô tả bài học"
-                                    rows={2}
-                                    className="w-full px-2 py-1 text-xs border rounded border-slate-300"
-                                  />
-                                  <div className="flex gap-1.5">
-                                    <button onClick={saveEditLesson} className="px-2 py-1 text-xs rounded bg-indigo-600 text-white">Lưu</button>
-                                    <button onClick={() => setEditLessonId(null)} className="px-2 py-1 text-xs rounded bg-slate-200 text-slate-700">Hủy</button>
+                              {/* Create Assignment Button for this Chapter */}
+                              <button
+                                onClick={() => {
+                                  setAssignTargetChapterId(c.id);
+                                  setShowAssignModal(true);
+                                }}
+                                className="px-2.5 py-1 text-xs font-medium rounded-md border border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100 flex items-center gap-1 cursor-pointer"
+                                title="Tạo bài tập cho chương này"
+                              >
+                                <FileText className="w-3.5 h-3.5" />
+                                <span>+ Bài tập</span>
+                              </button>
+
+                              <button
+                                onClick={() => startEditChapter(c)}
+                                className="p-1.5 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer"
+                                title="Sửa tên & số STT chương"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteChapter(c.id)}
+                                className="p-1.5 rounded-md border border-rose-200 text-rose-600 hover:bg-rose-50 cursor-pointer"
+                                title="Xóa chương"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    {/* Lessons list */}
+                    {(chapterLessons[c.id]?.length ?? 0) > 0 && (
+                      <ul className="mt-3 space-y-2 border-t border-slate-100 pt-3">
+                        {chapterLessons[c.id]?.map((lesson: Lesson, lIdx: number) => {
+                          const status = isStudent ? getLessonStatus(lesson.id) : null;
+                          const lessonProgress = studentProgress?.lessons.find((item) => item.lessonId === lesson.id);
+
+                          return (
+                            <li key={lesson.id} className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50/50 p-3 sm:flex-row sm:items-center sm:justify-between hover:bg-white transition">
+                              <div className="min-w-0 flex-1">
+                                {editLessonId === lesson.id ? (
+                                  <div className="space-y-2 my-1">
+                                    <input
+                                      value={editLessonTitle}
+                                      onChange={(e) => setEditLessonTitle(e.target.value)}
+                                      placeholder="Tên bài học"
+                                      className="w-full px-3 py-1.5 text-sm border rounded-md border-slate-300"
+                                    />
+                                    <textarea
+                                      value={editLessonContent}
+                                      onChange={(e) => setEditLessonContent(e.target.value)}
+                                      placeholder="Nội dung/mô tả bài học"
+                                      rows={2}
+                                      className="w-full px-3 py-1.5 text-xs border rounded-md border-slate-300"
+                                    />
+                                    <div className="flex gap-2">
+                                      <button onClick={saveEditLesson} className="px-3 py-1 text-xs font-medium rounded bg-indigo-600 text-white">Lưu</button>
+                                      <button onClick={() => setEditLessonId(null)} className="px-3 py-1 text-xs font-medium rounded bg-slate-200 text-slate-700">Hủy</button>
+                                    </div>
                                   </div>
-                                </div>
-                              ) : (
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    {user?.role === 'STUDENT' ? (
-                                      <Link to={`/student/classes/${cid}/lessons/${lesson.id}`} className="font-semibold text-slate-800 hover:text-indigo-600 hover:underline">{lesson.title}</Link>
-                                    ) : (
-                                      <span className="font-semibold text-slate-800">{lesson.title}</span>
-                                    )}
+                                ) : (
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs text-slate-400 font-mono">#{lIdx + 1}</span>
+                                      {isStudent ? (
+                                        <Link to={`/student/classes/${cid}/lessons/${lesson.id}`} className="font-semibold text-slate-800 hover:text-indigo-600 hover:underline">{lesson.title}</Link>
+                                      ) : (
+                                        <span className="font-semibold text-slate-800">{lesson.title}</span>
+                                      )}
+                                      {isLecturer && (
+                                        <div className="inline-flex items-center gap-1">
+                                          <button onClick={() => startEditLesson(lesson)} className="text-slate-400 hover:text-indigo-600 p-1 rounded" title="Sửa bài học">
+                                            <Pencil className="w-3.5 h-3.5" />
+                                          </button>
+                                          <button onClick={() => handleDeleteLesson(lesson.id)} className="text-slate-400 hover:text-rose-600 p-1 rounded" title="Xóa bài học">
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    <div className="mt-1 flex flex-wrap items-center gap-3 text-xs">
+                                      {lesson.videoUrl && (
+                                        <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-indigo-600 font-medium hover:underline">
+                                          <Video className="w-3.5 h-3.5" />
+                                          <span>Video bài giảng</span>
+                                        </a>
+                                      )}
+                                      {lesson.attachmentUrl && (
+                                        <a href={lesson.attachmentUrl} target="_blank" rel="noreferrer" download className="inline-flex items-center gap-1 text-emerald-600 font-medium hover:underline">
+                                          <File className="w-3.5 h-3.5" />
+                                          <span>{lesson.attachmentName || 'Tài liệu đính kèm'}</span>
+                                        </a>
+                                      )}
+                                    </div>
+
+                                    {/* Upload Controls for Lecturer */}
                                     {isLecturer && (
-                                      <div className="inline-flex items-center gap-1">
-                                        <button
-                                          onClick={() => startEditLesson(lesson)}
-                                          className="text-slate-400 hover:text-indigo-600 p-1 rounded transition"
-                                          title="Sửa bài học"
-                                        >
-                                          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                        </button>
-                                        <button
-                                          onClick={() => handleDeleteLesson(lesson.id)}
-                                          className="text-slate-400 hover:text-rose-600 p-1 rounded transition"
-                                          title="Xóa bài học"
-                                        >
-                                          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                        </button>
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-                                    {lesson.videoUrl && (
-                                      <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-indigo-600 font-medium hover:underline">
-                                        <svg className="h-3.5 w-3.5 shrink-0 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                                        <span>Video</span>
-                                      </a>
-                                    )}
-                                    {lesson.attachmentUrl && (
-                                      <a href={lesson.attachmentUrl} target="_blank" rel="noreferrer" download className="inline-flex items-center gap-1 text-emerald-600 font-medium hover:underline">
-                                        <svg className="h-3.5 w-3.5 shrink-0 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
-                                        <span>{lesson.attachmentName || 'Tài liệu'}</span>
-                                      </a>
-                                    )}
-                                  </div>
-
-                                  {isLecturer && (
-                                    <div className="mt-2 space-y-2">
-                                      <div className="flex flex-wrap items-center gap-2">
+                                      <div className="mt-2 flex flex-wrap items-center gap-2">
                                         <button
                                           type="button"
                                           onClick={() => fileInputRefs.current[lesson.id]?.click()}
                                           disabled={saving || uploadingLessonId === lesson.id}
-                                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-60 transition shadow-2xs"
+                                          className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition cursor-pointer"
                                         >
-                                          {uploadingLessonId === lesson.id ? (
-                                            <svg className="animate-spin h-3.5 w-3.5 text-indigo-600 shrink-0" viewBox="0 0 24 24" fill="none">
-                                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                          ) : (
-                                            <svg className="h-3.5 w-3.5 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                                          )}
-                                          <span>
-                                            {uploadingLessonId === lesson.id
-                                              ? `Đang tải video ${uploadProgress[lesson.id] ?? 0}%...`
-                                              : lesson.videoUrl
-                                              ? 'Thay video'
-                                              : 'Thêm video'}
-                                          </span>
+                                          <Video className="w-3 h-3 text-indigo-500" />
+                                          <span>{lesson.videoUrl ? 'Thay video' : '+ Tải video'}</span>
                                         </button>
                                         <input
                                           ref={(el) => { fileInputRefs.current[lesson.id] = el; }}
@@ -576,23 +737,10 @@ export default function ClassDetail() {
                                           type="button"
                                           onClick={() => attachmentFileInputRefs.current[lesson.id]?.click()}
                                           disabled={saving || uploadingAttachmentLessonId === lesson.id}
-                                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-emerald-300 hover:text-emerald-600 disabled:opacity-60 transition shadow-2xs"
+                                          className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-emerald-300 hover:text-emerald-600 transition cursor-pointer"
                                         >
-                                          {uploadingAttachmentLessonId === lesson.id ? (
-                                            <svg className="animate-spin h-3.5 w-3.5 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="none">
-                                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                          ) : (
-                                            <svg className="h-3.5 w-3.5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
-                                          )}
-                                          <span>
-                                            {uploadingAttachmentLessonId === lesson.id
-                                              ? `Đang tải tài liệu ${attachmentUploadProgress[lesson.id] ?? 0}%...`
-                                              : lesson.attachmentUrl
-                                              ? 'Thay tài liệu'
-                                              : 'Thêm tài liệu'}
-                                          </span>
+                                          <File className="w-3 h-3 text-emerald-500" />
+                                          <span>{lesson.attachmentUrl ? 'Thay tài liệu' : '+ Tải tài liệu'}</span>
                                         </button>
                                         <input
                                           ref={(el) => { attachmentFileInputRefs.current[lesson.id] = el; }}
@@ -606,227 +754,138 @@ export default function ClassDetail() {
                                             e.target.value = '';
                                           }}
                                         />
+                                      </div>
+                                    )}
 
-                                        {uploadStatus[lesson.id] && uploadingLessonId !== lesson.id && (
-                                          <span className={`text-[11px] ${uploadStatus[lesson.id].type === 'error' ? 'text-red-600 font-medium' : 'text-emerald-600 font-medium'}`}>
-                                            {uploadStatus[lesson.id].message}
+                                    {isStudent && (
+                                      <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                                        {status && (
+                                          <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${status.className}`}>
+                                            {status.label}
                                           </span>
                                         )}
                                       </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
 
-                                      {uploadingLessonId === lesson.id && (
-                                        <div className="w-full max-w-sm space-y-1 bg-indigo-50/70 p-2 rounded-lg border border-indigo-100">
-                                          <div className="flex items-center justify-between text-[11px] font-semibold text-indigo-700">
-                                            <span className="flex items-center gap-1.5">
-                                              <svg className="animate-spin h-3.5 w-3.5 text-indigo-600 shrink-0" viewBox="0 0 24 24" fill="none">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                              </svg>
-                                              Đang tải video bài học lên hệ thống...
-                                            </span>
-                                            <span>{uploadProgress[lesson.id] ?? 0}%</span>
-                                          </div>
-                                          <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                                            <div
-                                              className="bg-indigo-600 h-full rounded-full transition-all duration-200 ease-out"
-                                              style={{ width: `${uploadProgress[lesson.id] ?? 0}%` }}
-                                            />
-                                          </div>
-                                        </div>
-                                      )}
-
-                                      {uploadingAttachmentLessonId === lesson.id && (
-                                        <div className="w-full max-w-sm space-y-1 bg-emerald-50/70 p-2 rounded-lg border border-emerald-100">
-                                          <div className="flex items-center justify-between text-[11px] font-semibold text-emerald-700">
-                                            <span className="flex items-center gap-1.5">
-                                              <svg className="animate-spin h-3.5 w-3.5 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="none">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                              </svg>
-                                              Đang tải tài liệu lên hệ thống...
-                                            </span>
-                                            <span>{attachmentUploadProgress[lesson.id] ?? 0}%</span>
-                                          </div>
-                                          <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                                            <div
-                                              className="bg-emerald-600 h-full rounded-full transition-all duration-200 ease-out"
-                                              style={{ width: `${attachmentUploadProgress[lesson.id] ?? 0}%` }}
-                                            />
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-
-                                  {isStudent && (
-                                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                                      {status && (
-                                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${status.className}`}>
-                                          {status.label}
-                                        </span>
-                                      )}
-                                      {isResumeActive && (
-                                        <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
-                                          Học tiếp · {Math.floor(resumeSeconds / 60)}:{String(Math.floor(resumeSeconds % 60)).padStart(2, '0')}
-                                        </span>
-                                      )}
-                                      {!status || status.label === 'Chưa học' ? (
-                                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                                          Chưa bắt đầu
-                                        </span>
-                                      ) : null}
-                                    </div>
-                                  )}
-                                </div>
+                              {isStudent && (
+                                <Link
+                                  to={`/student/classes/${cid}/lessons/${lesson.id}`}
+                                  className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${lessonProgress?.isCompleted ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                                >
+                                  {lessonProgress?.isCompleted ? 'Ôn tập' : 'Vào học'}
+                                </Link>
                               )}
-                            </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
 
-                            {isStudent ? (
-                              <Link
-                                to={`/student/classes/${cid}/lessons/${lesson.id}`}
-                                className={`shrink-0 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition ${lessonProgress?.isCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'}`}
-                              >
-                                {lessonProgress?.isCompleted ? 'Ôn tập' : 'Vào học'}
-                              </Link>
-                            ) : null}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                  {isLecturer && (
-                    <div className="mt-3 border-t border-slate-100 pt-3 space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
+                    {/* Add Lesson Form */}
+                    {isLecturer && (
+                      <div className="mt-3 border-t border-slate-100 pt-3 flex flex-wrap items-center gap-2">
                         <input
                           value={selectedChapterId === c.id ? lessonTitle : ''}
                           onChange={(e) => { setSelectedChapterId(c.id); setLessonTitle(e.target.value); }}
-                          placeholder="Tên bài học"
-                          className="w-40 px-2 py-1 rounded border border-slate-200 bg-white text-sm"
+                          placeholder="Tên bài học mới..."
+                          className="w-44 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                         <input
                           value={selectedChapterId === c.id ? lessonContent : ''}
                           onChange={(e) => { setSelectedChapterId(c.id); setLessonContent(e.target.value); }}
-                          placeholder="Mô tả bài học"
-                          className="w-48 px-2 py-1 rounded border border-slate-200 bg-white text-sm"
-                        />
-                        <input
-                          type="file"
-                          accept="video/*"
-                          onChange={(e) => { setSelectedChapterId(c.id); setLessonVideo(e.target.files?.[0] ?? null); }}
-                          className="text-xs"
+                          placeholder="Mô tả ngắn..."
+                          className="w-48 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                         <button
                           onClick={handleCreateLesson}
                           disabled={saving || !lessonTitle.trim() || selectedChapterId !== c.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition shadow-xs"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition cursor-pointer"
                         >
-                          {saving && selectedChapterId === c.id ? (
-                            <>
-                              <svg className="animate-spin h-3.5 w-3.5 text-white shrink-0" viewBox="0 0 24 24" fill="none">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                              <span>
-                                {creatingLessonProgress !== null
-                                  ? `Đang tải video ${creatingLessonProgress}%...`
-                                  : 'Đang tạo...'}
-                              </span>
-                            </>
-                          ) : (
-                            <span>+ Bài học</span>
-                          )}
+                          <Plus className="w-3.5 h-3.5" />
+                          Tạo bài học
                         </button>
                       </div>
-
-                      {selectedChapterId === c.id && creatingLessonProgress !== null && (
-                        <div className="w-full bg-indigo-50/80 p-2.5 rounded-lg border border-indigo-100 space-y-1">
-                          <div className="flex items-center justify-between text-xs font-semibold text-indigo-700">
-                            <span className="flex items-center gap-1.5">
-                              <svg className="animate-spin h-3.5 w-3.5 text-indigo-600 shrink-0" viewBox="0 0 24 24" fill="none">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                              Đang tải video cho bài học mới lên máy chủ...
-                            </span>
-                            <span>{creatingLessonProgress}%</span>
-                          </div>
-                          <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                            <div
-                              className="bg-indigo-600 h-full rounded-full transition-all duration-200 ease-out"
-                              style={{ width: `${creatingLessonProgress}%` }}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </li>
-              ))}
+                    )}
+                  </li>
+                );
+              })}
             </ol>
           )}
         </Card>
-        <div className="space-y-4">
+
+        {/* Right Column: Announcements & Assignments (1 col) */}
+        <div className="space-y-6">
+          {/* Announcements Card */}
           <Card>
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <h3 className="font-semibold">Thong bao</h3>
+            <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3 mb-3">
+              <h3 className="font-bold text-slate-800 text-base">Thông báo lớp học</h3>
               {isLecturer && (
-                <button onClick={handleCreateAnnouncement} disabled={saving || !announcementTitle.trim() || !announcementContent.trim()} className="px-3 py-1.5 text-sm rounded bg-indigo-600 text-white disabled:opacity-50">+ Thông báo</button>
+                <button 
+                  onClick={handleCreateAnnouncement} 
+                  disabled={saving || !announcementTitle.trim() || !announcementContent.trim()} 
+                  className="px-3 py-1 text-xs font-semibold rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition cursor-pointer flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Thông báo
+                </button>
               )}
             </div>
+
             {isLecturer && (
-              <div className="mb-3 space-y-2">
-                <input value={announcementTitle} onChange={(e) => setAnnouncementTitle(e.target.value)} placeholder="Tiêu đề" className="w-full px-2 py-1.5 rounded border border-slate-200 bg-white text-sm" />
-                <textarea value={announcementContent} onChange={(e) => setAnnouncementContent(e.target.value)} placeholder="Nội dung thông báo" rows={3} className="w-full px-2 py-1.5 rounded border border-slate-200 bg-white text-sm" />
+              <div className="mb-4 space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <input 
+                  value={announcementTitle} 
+                  onChange={(e) => setAnnouncementTitle(e.target.value)} 
+                  placeholder="Tiêu đề thông báo..." 
+                  className="w-full px-3 py-1.5 rounded-md border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                />
+                <textarea 
+                  value={announcementContent} 
+                  onChange={(e) => setAnnouncementContent(e.target.value)} 
+                  placeholder="Nội dung thông báo chi tiết..." 
+                  rows={2} 
+                  className="w-full px-3 py-1.5 rounded-md border border-slate-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                />
               </div>
             )}
-            {anns.length === 0 ? <Empty msg="Chua co thong bao" /> : (
-              <ul className="space-y-2 text-sm">
+
+            {anns.length === 0 ? <Empty msg="Chưa có thông báo nào" /> : (
+              <ul className="space-y-3">
                 {anns.map((a: Announcement) => (
-                  <li key={a.id} className="border-l-2 border-indigo-500 pl-2">
+                  <li key={a.id} className="border-l-3 border-indigo-500 pl-3 py-1">
                     {editAnnId === a.id ? (
-                      <div className="space-y-1.5 my-1">
+                      <div className="space-y-2">
                         <input
                           value={editAnnTitle}
                           onChange={(e) => setEditAnnTitle(e.target.value)}
-                          placeholder="Tiêu đề thông báo"
-                          className="w-full px-2 py-1 text-xs border rounded border-slate-300"
+                          className="w-full px-2 py-1 text-xs border rounded border-slate-300 font-medium"
                         />
                         <textarea
                           value={editAnnContent}
                           onChange={(e) => setEditAnnContent(e.target.value)}
-                          placeholder="Nội dung thông báo"
                           rows={2}
                           className="w-full px-2 py-1 text-xs border rounded border-slate-300"
                         />
-                        <div className="flex gap-1.5">
-                          <button onClick={saveEditAnn} className="px-2 py-0.5 text-xs rounded bg-indigo-600 text-white">Lưu</button>
-                          <button onClick={() => setEditAnnId(null)} className="px-2 py-0.5 text-xs rounded bg-slate-200 text-slate-700">Hủy</button>
+                        <div className="flex gap-2">
+                          <button onClick={saveEditAnn} className="px-2.5 py-0.5 text-xs rounded bg-indigo-600 text-white">Lưu</button>
+                          <button onClick={() => setEditAnnId(null)} className="px-2.5 py-0.5 text-xs rounded bg-slate-200 text-slate-700">Hủy</button>
                         </div>
                       </div>
                     ) : (
                       <div>
-                        <div className="flex items-center justify-between gap-1">
-                          <div className="font-medium text-slate-800">{a.title}</div>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="font-semibold text-slate-800 text-sm">{a.title}</div>
                           {isLecturer && (
-                            <div className="inline-flex items-center gap-1 shrink-0">
-                              <button
-                                onClick={() => startEditAnn(a)}
-                                className="text-slate-400 hover:text-indigo-600 p-0.5 rounded transition"
-                                title="Sửa thông báo"
-                              >
-                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                              </button>
-                              <button
-                                onClick={() => handleDeleteAnnouncement(a.id)}
-                                className="text-slate-400 hover:text-rose-600 p-0.5 rounded transition"
-                                title="Xóa thông báo"
-                              >
-                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                              </button>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button onClick={() => startEditAnn(a)} className="text-slate-400 hover:text-indigo-600 p-0.5"><Pencil className="w-3 h-3" /></button>
+                              <button onClick={() => handleDeleteAnnouncement(a.id)} className="text-slate-400 hover:text-rose-600 p-0.5"><Trash2 className="w-3 h-3" /></button>
                             </div>
                           )}
                         </div>
-                        <div className="text-xs text-slate-400 line-clamp-2">{a.content}</div>
+                        <div className="mt-1 text-xs text-slate-600 leading-relaxed whitespace-pre-line">{a.content}</div>
                       </div>
                     )}
                   </li>
@@ -834,40 +893,263 @@ export default function ClassDetail() {
               </ul>
             )}
           </Card>
+
+          {/* Assignments Card */}
           <Card>
-            <h3 className="font-semibold mb-3">Bai tap</h3>
-            {assigns.length === 0 ? <Empty msg="Chua co bai tap" /> : (
-              <ul className="space-y-2 text-sm">
-                {assigns.map((a: Assignment) => (
-                  <li key={a.id} className="flex justify-between border-b border-slate-800 pb-1">
-                    <Link to="assignments" className="hover:underline">{a.title}</Link>
-                    <span className="text-xs text-slate-400">{a.maxScore}d</span>
-                  </li>
-                ))}
+            <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3 mb-3">
+              <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
+                <FileText className="w-4 h-4 text-amber-500" />
+                Bài tập & Đánh giá
+              </h3>
+              {isLecturer && (
+                <button
+                  onClick={() => {
+                    setAssignTargetChapterId(null);
+                    setShowAssignModal(true);
+                  }}
+                  className="px-3 py-1 text-xs font-semibold rounded-md bg-amber-600 text-white hover:bg-amber-700 transition cursor-pointer flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Bài tập
+                </button>
+              )}
+            </div>
+
+            {assigns.length === 0 ? <Empty msg="Chưa có bài tập nào" /> : (
+              <ul className="space-y-3">
+                {assigns.map((a: Assignment) => {
+                  const studentSub = mySubmissions.find(s => s.assignmentId === a.id);
+                  return (
+                    <li key={a.id} className="border border-slate-200 rounded-xl p-3 bg-slate-50/60 hover:bg-white transition space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="font-semibold text-slate-800 text-sm">{a.title}</div>
+                          <div className="text-xs text-slate-500 line-clamp-2 mt-0.5">{a.description}</div>
+                        </div>
+                        <span className="shrink-0 font-semibold text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                          {a.maxScore} điểm
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100">
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          Hạn: {new Date(a.dueDate).toLocaleDateString('vi-VN')}
+                        </span>
+                        
+                        {isStudent && (
+                          studentSub ? (
+                            <span className="inline-flex items-center gap-1 font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-[11px]">
+                              <CheckCircle className="w-3 h-3" />
+                              {studentSub.score != null ? `Đã chấm (${studentSub.score}/${a.maxScore})` : 'Đã nộp bài'}
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => setActiveSubmitAssignment(a)}
+                              className="px-2.5 py-1 font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer text-[11px]"
+                            >
+                              Nộp bài
+                            </button>
+                          )
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </Card>
         </div>
       </div>
-      {flash && <div className="mt-4 rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{flash}</div>}
-      <h3 className="font-semibold mt-6 mb-2">Sinh vien ({students.length})</h3>
-      {students.length === 0 ? <Empty msg="Lop chua co sinh vien" /> : (
-        <Card>
-          <table className="w-full min-w-130 text-sm">
-            <thead className="text-xs text-slate-400 border-b border-slate-800">
-              <tr><th className="text-left py-2">#</th><th className="text-left">Ho ten</th><th className="text-left">Email</th></tr>
-            </thead>
-            <tbody>
-              {students.map((s: User, i: number) => (
-                <tr key={s.id} className="border-b border-slate-800/50">
-                  <td className="py-2 text-slate-500">{i + 1}</td>
-                  <td>{s.fullName}</td>
-                  <td className="text-slate-400">{s.email}</td>
+
+      {/* Student Roster Table */}
+      <Card className="mt-6">
+        <h3 className="font-bold text-slate-800 text-base mb-3">Danh sách sinh viên lớp học phần ({students.length})</h3>
+        {students.length === 0 ? <Empty msg="Lớp chưa có sinh viên nào đăng ký" /> : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-xs text-slate-400 uppercase tracking-wider border-b border-slate-200 bg-slate-50">
+                <tr>
+                  <th className="py-2.5 px-3 text-left"># STT</th>
+                  <th className="py-2.5 px-3 text-left">Mã sinh viên</th>
+                  <th className="py-2.5 px-3 text-left">Họ và tên</th>
+                  <th className="py-2.5 px-3 text-left">Email sinh viên</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {students.map((s: User, i: number) => (
+                  <tr key={s.id} className="hover:bg-slate-50/70 transition">
+                    <td className="py-2.5 px-3 text-slate-500 font-mono text-xs">{i + 1}</td>
+                    <td className="py-2.5 px-3 font-mono font-semibold text-indigo-700">{s.studentCode || `SV${s.id}`}</td>
+                    <td className="py-2.5 px-3 font-medium text-slate-800">{s.fullName}</td>
+                    <td className="py-2.5 px-3 text-slate-500">{s.email}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      {/* Modal Lecturer Create Assignment */}
+      {showAssignModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-indigo-600" />
+                Tạo bài tập mới cho lớp
+              </h3>
+              <button onClick={() => setShowAssignModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Tên bài tập</label>
+                <input
+                  value={assignTitle}
+                  onChange={(e) => setAssignTitle(e.target.value)}
+                  placeholder="Nhập tiêu đề bài tập..."
+                  className="w-full px-3 py-2 text-sm border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Mô tả bài tập & yêu cầu nộp</label>
+                <textarea
+                  value={assignDesc}
+                  onChange={(e) => setAssignDesc(e.target.value)}
+                  placeholder="Yêu cầu đề bài, định dạng nộp bài (file, link github, google drive...)"
+                  rows={3}
+                  className="w-full px-3 py-2 text-sm border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Hạn nộp bài</label>
+                  <input
+                    type="datetime-local"
+                    value={assignDueDate}
+                    onChange={(e) => setAssignDueDate(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Thang điểm tối đa</label>
+                  <input
+                    type="number"
+                    value={assignMaxScore}
+                    onChange={(e) => setAssignMaxScore(Number(e.target.value) || 10)}
+                    className="w-full px-3 py-2 text-sm border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-slate-100 pt-3">
+              <button
+                onClick={() => setShowAssignModal(false)}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleCreateAssignment}
+                disabled={saving || !assignTitle.trim() || !assignDueDate}
+                className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 cursor-pointer"
+              >
+                {saving ? 'Đang tạo...' : 'Tạo bài tập'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Student Submit Assignment */}
+      {activeSubmitAssignment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Nộp bài tập: {activeSubmitAssignment.title}</h3>
+                <p className="text-xs text-slate-500">Hạn nộp: {new Date(activeSubmitAssignment.dueDate).toLocaleString('vi-VN')}</p>
+              </div>
+              <button onClick={() => setActiveSubmitAssignment(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Hình thức nộp bài</label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSubType('FILE')}
+                    className={`flex-1 py-2 px-3 text-xs font-medium rounded-lg border transition flex items-center justify-center gap-1.5 cursor-pointer ${subType === 'FILE' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600'}`}
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    Upload File (Multi-file)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSubType('GITHUB_LINK')}
+                    className={`flex-1 py-2 px-3 text-xs font-medium rounded-lg border transition flex items-center justify-center gap-1.5 cursor-pointer ${subType !== 'FILE' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600'}`}
+                  >
+                    <Link2 className="w-3.5 h-3.5" />
+                    Đường link (Drive / Git)
+                  </button>
+                </div>
+              </div>
+
+              {subType === 'FILE' ? (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Chọn file bài làm</label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => setSubSelectedFiles(Array.from(e.target.files || []))}
+                    className="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                  />
+                  {subSelectedFiles.length > 0 && (
+                    <div className="mt-2 text-xs text-emerald-600 font-medium">
+                      Đã chọn {subSelectedFiles.length} file: {subSelectedFiles.map(f => f.name).join(', ')}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Nhập đường link nộp bài (URL)</label>
+                  <input
+                    value={subExternalLink}
+                    onChange={(e) => setSubExternalLink(e.target.value)}
+                    placeholder="https://github.com/... hoặc https://drive.google.com/..."
+                    className="w-full px-3 py-2 text-sm border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-slate-100 pt-3">
+              <button
+                onClick={() => setActiveSubmitAssignment(null)}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleStudentSubmit}
+                disabled={submitting || (subType === 'FILE' ? subSelectedFiles.length === 0 : !subExternalLink.trim())}
+                className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 cursor-pointer"
+              >
+                {submitting ? 'Đang nộp...' : 'Xác nhận nộp bài'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Eye, Pencil, Trash2, X, Plus, Users, GraduationCap, Building2, BookOpen } from 'lucide-react';
 import * as acService from '../../services/adminClassService';
 import { listLecturers } from '../../services/adminService';
 import { getDepartments, type DepartmentResponse } from '../../services/departmentService';
@@ -24,8 +25,12 @@ export default function AdminAdministrativeClasses() {
   const [academicYear, setAcademicYear] = useState('');
   const [saving, setSaving] = useState(false);
 
+  // Student Drawer Modal State
+  const [showStudentDrawer, setShowStudentDrawer] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState<User[]>([]);
-  const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
+  const [selectedClassObj, setSelectedClassObj] = useState<AdminClassResponse | null>(null);
+  const [studentSearchKw, setStudentSearchKw] = useState('');
+  const [loadingStudents, setLoadingStudents] = useState(false);
 
   const load = async () => {
     try {
@@ -128,47 +133,73 @@ export default function AdminAdministrativeClasses() {
     }
   };
 
-  const viewStudents = async (id: number) => {
+  const openStudentDrawer = async (c: AdminClassResponse) => {
+    setSelectedClassObj(c);
+    setShowStudentDrawer(true);
+    setLoadingStudents(true);
+    setStudentSearchKw('');
     try {
-      const students = await acService.getStudentsByAdminClass(id);
+      const students = await acService.getStudentsByAdminClass(c.id);
       setSelectedStudents(students);
-      setSelectedClassId(id);
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Không tải được sinh viên');
+    } finally {
+      setLoadingStudents(false);
     }
   };
+
+  const filteredStudents = selectedStudents.filter((s) => {
+    if (!studentSearchKw.trim()) return true;
+    const kw = studentSearchKw.toLowerCase();
+    return (
+      (s.fullName && s.fullName.toLowerCase().includes(kw)) ||
+      (s.email && s.email.toLowerCase().includes(kw)) ||
+      (s.studentCode && s.studentCode.toLowerCase().includes(kw))
+    );
+  });
 
   if (loading) return <Spinner />;
   if (err && !classes.length) return <ErrorBox msg={err} />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       <div className="flex items-center justify-between">
         <PageTitle>Quản lý Lớp hành chính</PageTitle>
-        <button aria-label="button" onClick={openCreate} className="px-4 py-2 rounded-lg text-sm font-semibold bg-violet-600 text-white hover:bg-violet-500 transition shadow-sm">+ Tạo lớp</button>
+        <button
+          type="button"
+          onClick={openCreate}
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          Tạo lớp mới
+        </button>
       </div>
 
-      {err && <div className="p-3 rounded-lg text-sm bg-rose-50 border border-rose-200 text-rose-700">{err}</div>}
+      {err && <div className="p-3 rounded-xl text-sm bg-rose-50 border border-rose-200 text-rose-700 font-medium">{err}</div>}
 
+      {/* Form Tạo / Sửa Lớp */}
       {showForm && (
-        <Card>
-          <h3 className="font-bold text-slate-800 mb-4">{editId ? 'Sửa lớp hành chính' : 'Tạo lớp hành chính mới'}</h3>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+        <Card className="border border-indigo-100 bg-indigo-50/30">
+          <h3 className="font-bold text-slate-800 text-base mb-4 flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-indigo-600" />
+            {editId ? 'Sửa lớp hành chính' : 'Tạo lớp hành chính mới'}
+          </h3>
+          <div className="grid md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1">Tên lớp <span className="text-rose-500">*</span></label>
-              <input value={className} onChange={e => setClassName(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-violet-500 focus:border-violet-500" placeholder="VD: 62PM1" />
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Tên lớp <span className="text-rose-500">*</span></label>
+              <input value={className} onChange={e => setClassName(e.target.value)} className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="VD: 62PM1" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1">Khóa / Năm học</label>
-              <input value={academicYear} onChange={e => setAcademicYear(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-violet-500 focus:border-violet-500" placeholder="VD: 2024-2028" />
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Khóa / Năm học</label>
+              <input value={academicYear} onChange={e => setAcademicYear(e.target.value)} className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="VD: 2024-2028" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1">Khoa / Bộ môn</label>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Khoa / Bộ môn</label>
               {departments.length > 0 ? (
                 <select
                   value={faculty}
                   onChange={(e) => setFaculty(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 >
                   <option value="">-- Chọn Khoa / Bộ môn --</option>
                   {departments.map((dep) => (
@@ -178,15 +209,15 @@ export default function AdminAdministrativeClasses() {
                   ))}
                 </select>
               ) : (
-                <input value={faculty} onChange={e => setFaculty(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-violet-500 focus:border-violet-500" placeholder="VD: Công nghệ thông tin" />
+                <input value={faculty} onChange={e => setFaculty(e.target.value)} className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="VD: Công nghệ thông tin" />
               )}
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1">Chương trình đào tạo (CTĐT)</label>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Chương trình đào tạo (CTĐT)</label>
               <select
                 value={curriculumId}
                 onChange={(e) => setCurriculumId(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-violet-500 focus:border-violet-500"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               >
                 <option value="">-- Chọn Chương trình đào tạo --</option>
                 {curricula.map((c) => (
@@ -196,98 +227,195 @@ export default function AdminAdministrativeClasses() {
                 ))}
               </select>
             </div>
-            <div className="col-span-2">
-              <label className="block text-xs font-semibold text-slate-500 mb-1">Giảng viên chủ nhiệm (GVCN)</label>
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Giảng viên chủ nhiệm (GVCN)</label>
               <select
                 value={homeroomTeacherId}
                 onChange={(e) => setHomeroomTeacherId(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-violet-500 focus:border-violet-500 font-medium text-slate-800"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium text-slate-800"
               >
                 <option value="">-- Chưa gán Giảng viên chủ nhiệm --</option>
                 {lecturers.map((lec) => (
                   <option key={lec.id} value={lec.id}>
-                    👨‍🏫 {lec.fullName || lec.email} {lec.lecturerCode ? `(${lec.lecturerCode})` : ''}
+                    {lec.fullName || lec.email} {lec.lecturerCode ? `(${lec.lecturerCode})` : ''}
                   </option>
                 ))}
               </select>
             </div>
           </div>
           <div className="flex gap-2 justify-end">
-            <button aria-label="button" onClick={cancel} className="px-4 py-2 rounded-lg text-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Huỷ</button>
-            <button aria-label="button" onClick={handleSave} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-semibold bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-50 transition">{saving ? 'Đang lưu...' : 'Lưu'}</button>
+            <button type="button" onClick={cancel} className="px-4 py-2 rounded-lg text-sm border border-neutral-300 text-slate-600 hover:bg-neutral-100 transition cursor-pointer">Huỷ</button>
+            <button type="button" onClick={handleSave} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition cursor-pointer">{saving ? 'Đang lưu...' : 'Lưu'}</button>
           </div>
         </Card>
       )}
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card>
-            {classes.length === 0 ? <Empty msg="Chưa có lớp hành chính" /> : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="text-xs text-slate-500 border-b border-slate-200 bg-slate-50">
-                    <tr>
-                      <th className="text-left p-3">Tên lớp</th>
-                      <th className="text-left p-3">Khoa</th>
-                      <th className="text-left p-3">GVCN</th>
-                      <th className="text-left p-3">Chương trình đào tạo</th>
-                      <th className="text-center p-3">Khóa</th>
-                      <th className="text-center p-3">SV</th>
-                      <th className="text-center p-3">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {classes.map(c => (
-                      <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition">
-                        <td className="p-3 font-semibold text-violet-700">{c.className}</td>
-                        <td className="p-3 text-slate-600 font-medium">{c.faculty || c.facultyName || '-'}</td>
-                        <td className="p-3 font-semibold text-slate-800">
-                          {c.homeroomTeacherName || c.advisorName ? (
-                            <span className="flex items-center gap-1.5 text-slate-800 font-semibold">
-                              <span className="text-xs">👨‍🏫</span> {c.homeroomTeacherName || c.advisorName}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-slate-400 italic">Chưa gán</span>
-                          )}
-                        </td>
-                        <td className="p-3 text-slate-600">
-                          {c.curriculumName ? <Pill color="indigo">{c.curriculumName}</Pill> : '-'}
-                        </td>
-                        <td className="p-3 text-center text-slate-500">{c.academicYear || '-'}</td>
-                        <td className="p-3 text-center"><Pill color="indigo">{c.studentCount ?? 0}</Pill></td>
-                        <td className="p-3 text-center space-x-1">
-                          <button aria-label="button" onClick={() => viewStudents(c.id)} className="px-2 py-1 rounded text-xs bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition">SV</button>
-                          <button aria-label="button" onClick={() => openEdit(c)} className="px-2 py-1 rounded text-xs bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition">Sửa</button>
-                          <button aria-label="button" onClick={() => handleDelete(c.id)} className="px-2 py-1 rounded text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition">Xoá</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Card>
-        </div>
-
-        <div className="lg:col-span-1">
-          <Card>
-            <h3 className="font-bold text-slate-800 mb-3">{"Sinh viên " + (selectedClassId ? "(Lớp #" + selectedClassId + ")" : "")}</h3>
-            {selectedStudents.length === 0 ? <Empty msg="Chọn lớp để xem SV" /> : (
-              <ul className="space-y-2 max-h-96 overflow-y-auto">
-                {selectedStudents.map((s, i) => (
-                  <li key={i} className="flex items-center gap-3 p-2 rounded-lg bg-slate-50 border border-slate-100">
-                    <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-700">{(s.fullName || s.email || '?').charAt(0).toUpperCase()}</div>
-                    <div>
-                      <div className="text-sm font-medium text-slate-800">{s.fullName || s.email}</div>
-                      <div className="text-xs text-slate-400">{s.email || s.studentCode || ''}</div>
-                    </div>
-                  </li>
+      {/* Main Table */}
+      <Card>
+        {classes.length === 0 ? <Empty msg="Chưa có lớp hành chính" /> : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-xs text-slate-500 border-b border-neutral-200 bg-neutral-50">
+                <tr>
+                  <th className="text-left p-3.5">Tên lớp</th>
+                  <th className="text-left p-3.5">Khoa / Bộ môn</th>
+                  <th className="text-left p-3.5">GVCN</th>
+                  <th className="text-left p-3.5">Chương trình đào tạo</th>
+                  <th className="text-center p-3.5">Khóa</th>
+                  <th className="text-center p-3.5">Sĩ số</th>
+                  <th className="text-center p-3.5">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {classes.map(c => (
+                  <tr key={c.id} className="border-b border-neutral-100 hover:bg-neutral-50/70 transition">
+                    <td className="p-3.5 font-bold text-indigo-700 flex items-center gap-2">
+                      <GraduationCap className="w-4 h-4 text-indigo-500" />
+                      {c.className}
+                    </td>
+                    <td className="p-3.5 text-slate-600 font-medium">{c.faculty || c.facultyName || '-'}</td>
+                    <td className="p-3.5 font-semibold text-slate-800">
+                      {c.homeroomTeacherName || c.advisorName ? (
+                        <span className="inline-flex items-center gap-1.5 text-slate-800 font-semibold text-xs">
+                          <Pill color="purple">GVCN: {c.homeroomTeacherName || c.advisorName}</Pill>
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400 italic">Chưa gán</span>
+                      )}
+                    </td>
+                    <td className="p-3.5 text-slate-600">
+                      {c.curriculumName ? <Pill color="indigo">{c.curriculumName}</Pill> : '-'}
+                    </td>
+                    <td className="p-3.5 text-center text-slate-500 font-medium">{c.academicYear || '-'}</td>
+                    <td className="p-3.5 text-center">
+                      <Pill color="indigo">{c.studentCount ?? 0} SV</Pill>
+                    </td>
+                    <td className="p-3.5 text-center">
+                      <div className="inline-flex items-center justify-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => openStudentDrawer(c)}
+                          title="Xem danh sách sinh viên"
+                          className="p-1.5 rounded-lg text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition cursor-pointer"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openEdit(c)}
+                          title="Chỉnh sửa lớp"
+                          className="p-1.5 rounded-lg text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition cursor-pointer"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(c.id)}
+                          title="Xóa lớp"
+                          className="p-1.5 rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 ))}
-              </ul>
-            )}
-          </Card>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      {/* Slide-over Student List Drawer / Modal */}
+      {showStudentDrawer && (
+        <div className="fixed inset-0 z-50 overflow-hidden bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200">
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-md bg-white dark:bg-slate-900 shadow-2xl border-l border-neutral-200 dark:border-slate-800 flex flex-col transition-transform transform duration-300 ease-in-out">
+              
+              {/* Drawer Header */}
+              <div className="p-5 border-b border-neutral-200 dark:border-slate-800 flex items-center justify-between bg-neutral-50/80 dark:bg-slate-800/80">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                      Danh sách sinh viên
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                    Lớp: <span className="font-bold text-indigo-600 dark:text-indigo-400">{selectedClassObj?.className}</span> • Tổng số: <span className="font-bold">{selectedStudents.length}</span> SV
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowStudentDrawer(false)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Drawer Search */}
+              <div className="p-4 border-b border-neutral-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+                <input
+                  type="text"
+                  value={studentSearchKw}
+                  onChange={(e) => setStudentSearchKw(e.target.value)}
+                  placeholder="Tìm sinh viên theo Tên, Email hoặc MSV..."
+                  className="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-xl text-xs bg-neutral-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              {/* Drawer Content */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
+                {loadingStudents ? (
+                  <div className="py-12 text-center"><Spinner /></div>
+                ) : filteredStudents.length === 0 ? (
+                  <div className="py-12 text-center text-slate-400 text-xs font-medium">
+                    {studentSearchKw ? 'Không tìm thấy sinh viên phù hợp' : 'Lớp chưa có sinh viên nào'}
+                  </div>
+                ) : (
+                  filteredStudents.map((s, i) => (
+                    <div
+                      key={s.id || i}
+                      className="flex items-center justify-between p-3 rounded-xl border border-neutral-100 dark:border-slate-800 bg-neutral-50/60 dark:bg-slate-800/60 hover:border-indigo-200 dark:hover:border-indigo-800 transition"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center border border-indigo-200 dark:border-indigo-800">
+                          {(s.fullName || s.email || '?').charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                            {s.fullName || 'Chưa cập nhật tên'}
+                          </div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                            {s.email}
+                          </div>
+                        </div>
+                      </div>
+                      {s.studentCode && (
+                        <span className="font-mono text-[11px] font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900">
+                          {s.studentCode}
+                        </span>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Drawer Footer */}
+              <div className="p-4 border-t border-neutral-200 dark:border-slate-800 bg-neutral-50 dark:bg-slate-800 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowStudentDrawer(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

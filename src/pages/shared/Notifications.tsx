@@ -17,8 +17,10 @@ const getNotificationTarget = (type: Notification['type']) => {
       return '/student/grades';
     case 'NEW_ANNOUNCEMENT':
       return '/student/notifications';
+    case 'REGISTRATION_OPEN' as Notification['type']:
+      return '/student/registration';
     default:
-      return '/student';
+      return null;
   }
 };
 
@@ -109,22 +111,24 @@ export default function NotificationsPage() {
                     <div className="mt-2 text-xs text-slate-500">{fmt(n.createdAt)}</div>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-2">
-                    <Link
-                      to={target}
-                      onClick={() => {
-                        if (!n.isRead) void onMarkRead(n.id);
-                      }}
-                      className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-500"
-                    >
-                      Xem
-                    </Link>
+                    {target && (
+                      <Link
+                        to={target}
+                        onClick={() => {
+                          if (!n.isRead) void onMarkRead(n.id);
+                        }}
+                        className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-500 cursor-pointer"
+                      >
+                        Xem chi tiết
+                      </Link>
+                    )}
                     {!n.isRead && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           void onMarkRead(n.id);
                         }}
-                        className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                        className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 cursor-pointer"
                       >
                         Đánh dấu đọc
                       </button>

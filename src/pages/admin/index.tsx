@@ -12,30 +12,81 @@ import type { Clazz, User, DashboardStats } from '../../types';
 export function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     let m = true;
     adminService.getDashboardStats().then((s) => m && setStats(s)).finally(() => m && setLoading(false));
     return () => { m = false; };
   }, []);
+
   if (loading) return <Spinner />;
   if (!stats) return null;
-  const items: { label: string; val: number; color: string }[] = [
-    { label: 'Người dùng',     val: stats.totalUsers,       color: 'text-indigo-600 dark:text-indigo-400' },
-    { label: 'Lớp học',        val: stats.totalClasses,     color: 'text-emerald-600 dark:text-emerald-400' },
-    { label: 'Đăng ký học',    val: stats.totalEnrollments, color: 'text-amber-600 dark:text-amber-400' },
-    { label: 'Bài tập',        val: stats.totalAssignments, color: 'text-rose-600 dark:text-rose-400' },
-    { label: 'Bài đã nộp',     val: stats.totalSubmissions, color: 'text-cyan-600 dark:text-cyan-400' },
+
+  const metricCards = [
+    { label: 'Tổng người dùng', val: stats.totalUsers, icon: '👥', color: 'border-l-4 border-indigo-500 text-indigo-600 dark:text-indigo-400' },
+    { label: 'Lớp môn học', val: stats.totalClasses, icon: '📚', color: 'border-l-4 border-emerald-500 text-emerald-600 dark:text-emerald-400' },
+    { label: 'Lượt đăng ký học', val: stats.totalEnrollments, icon: '📋', color: 'border-l-4 border-amber-500 text-amber-600 dark:text-amber-400' },
+    { label: 'Bài tập học phần', val: stats.totalAssignments, icon: '📝', color: 'border-l-4 border-rose-500 text-rose-600 dark:text-rose-400' },
+    { label: 'Bài làm nộp', val: stats.totalSubmissions, icon: '✅', color: 'border-l-4 border-cyan-500 text-cyan-600 dark:text-cyan-400' },
   ];
+
+  const quickActions = [
+    { title: 'Xếp lịch giảng dạy', desc: 'Phân ca, phòng học & lịch học phần', link: '/admin/schedule', icon: '📅', badge: 'Admin/Manager' },
+    { title: 'Phân quyền Manager & PBAC', desc: 'Duyệt quyền quản trị viên & cấp quyền', link: '/admin/pbac-approval', icon: '🔑', badge: 'Super Admin' },
+    { title: 'Quản lý Lớp hành chính', desc: 'Gán GVCN, quản lý danh sách sinh viên', link: '/admin/classes', icon: '🏛️', badge: 'Quản lý' },
+    { title: 'Đợt Đăng ký Học tập', desc: 'Mở/khóa đợt đăng ký môn học phần', link: '/admin/registrations', icon: '📝', badge: 'Đợt mới' },
+    { title: 'Người dùng & Tài khoản', desc: 'Tạo tài khoản, import Excel, reset MK', link: '/admin/users', icon: '👥', badge: 'Tài khoản' },
+  ];
+
   return (
-    <div>
-      <PageTitle>Dashboard quản trị</PageTitle>
-      <div className="grid md:grid-cols-5 gap-4">
-        {items.map((i) => (
-          <Card key={i.label}>
-            <div className="text-xs text-slate-400">{i.label}</div>
-            <div className={`text-3xl font-bold ${i.color}`}>{i.val}</div>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <PageTitle>Dashboard Quản Trị Hệ Thống</PageTitle>
+          <p className="text-xs text-slate-500 dark:text-slate-400 -mt-2">
+            Học kỳ hiện tại: <span className="font-bold text-indigo-600 dark:text-indigo-400">HK1 (2026-2027)</span> • Hệ thống LMS LearningHub
+          </p>
+        </div>
+      </div>
+
+      {/* Main Metric Overview Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {metricCards.map((i) => (
+          <Card key={i.label} className={`p-4 transition hover:shadow-md ${i.color}`}>
+            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+              <span>{i.label}</span>
+              <span className="text-lg">{i.icon}</span>
+            </div>
+            <div className="text-2xl font-black mt-2">{i.val.toLocaleString()}</div>
           </Card>
         ))}
+      </div>
+
+      {/* Quick Access Management Actions */}
+      <div>
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+          <span>⚡</span> Phím Tắt & Tác Vụ Quản Trị Nhanh
+        </h3>
+        <div className="grid md:grid-cols-3 gap-4">
+          {quickActions.map((act) => (
+            <Link key={act.title} to={act.link}>
+              <Card className="h-full hover:border-indigo-300 dark:hover:border-indigo-700 transition cursor-pointer group p-4">
+                <div className="flex items-start justify-between">
+                  <div className="text-2xl p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 group-hover:scale-110 transition">
+                    {act.icon}
+                  </div>
+                  <Pill color="indigo">{act.badge}</Pill>
+                </div>
+                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm mt-3 group-hover:text-indigo-600 transition">
+                  {act.title}
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  {act.desc}
+                </p>
+              </Card>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -336,6 +387,7 @@ export function AdminUsers() {
                     <th className="text-left p-3">Họ tên</th>
                     <th className="text-left p-3">Email</th>
                     <th className="text-left p-3">{tab === 'STUDENT' ? 'Lớp hành chính' : 'Khoa / Bộ môn'}</th>
+                    {tab === 'LECTURER' && <th className="text-left p-3">Chức vụ / GVCN</th>}
                     <th className="text-center p-3">Trạng thái</th>
                     <th className="text-center p-3">Thao tác</th>
                   </tr>
@@ -354,6 +406,15 @@ export function AdminUsers() {
                           u.faculty || '-'
                         )}
                       </td>
+                      {tab === 'LECTURER' && (
+                        <td className="p-3 text-slate-600 font-medium">
+                          {u.adminClassName ? (
+                            <Pill color="purple">GVCN: {u.adminClassName}</Pill>
+                          ) : (
+                            <span className="text-xs text-slate-400 font-semibold">GVBM</span>
+                          )}
+                        </td>
+                      )}
                       <td className="p-3 text-center"><Pill color={u.active !== false ? 'green' : 'red'}>{u.active !== false ? 'Active' : 'Inactive'}</Pill></td>
                       <td className="p-3 text-center">
                         <div className="inline-flex items-center gap-1.5">
@@ -700,6 +761,25 @@ export function AdminClasses() {
     academicYear: '2026-2027',
   });
 
+  // Search, Filter & Pagination State
+  const [searchKw, setSearchKw] = useState('');
+  const [selectedCourseFilter, setSelectedCourseFilter] = useState('');
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+
+  const filteredClasses = classes.filter((c) => {
+    const matchesSearch = !searchKw.trim() ||
+      c.classCode.toLowerCase().includes(searchKw.toLowerCase()) ||
+      c.className.toLowerCase().includes(searchKw.toLowerCase()) ||
+      (c.courseTitle && c.courseTitle.toLowerCase().includes(searchKw.toLowerCase())) ||
+      (c.lecturerName && c.lecturerName.toLowerCase().includes(searchKw.toLowerCase()));
+    const matchesCourse = !selectedCourseFilter || String(c.courseId) === selectedCourseFilter;
+    return matchesSearch && matchesCourse;
+  });
+
+  const totalPages = Math.ceil(filteredClasses.length / pageSize) || 1;
+  const paginatedClasses = filteredClasses.slice(page * pageSize, (page + 1) * pageSize);
+
   const loadData = useCallback(() => {
     let mounted = true;
     Promise.all([
@@ -831,24 +911,53 @@ export function AdminClasses() {
   if (loading) return <Spinner />;
 
   return (
-    <div>
+    <div className="space-y-4">
       <PageTitle>Quản lý Lớp học phần</PageTitle>
       
       {err && (
         <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700 flex justify-between items-center">
           <span>{err}</span>
-          <button onClick={() => setErr(null)} className="text-xs font-semibold">Đóng</button>
+          <button onClick={() => setErr(null)} className="text-xs font-semibold cursor-pointer">Đóng</button>
         </div>
       )}
 
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div className="text-sm text-slate-500">Tạo và phân công giảng viên, đặt sĩ số giới hạn cho các Lớp học phần</div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="text-xs text-slate-500 font-medium">Tạo và phân công giảng viên, đặt sĩ số giới hạn cho các Lớp học phần</div>
         <button
+          type="button"
           onClick={() => setShowForm(!showForm)}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 transition"
+          className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 transition shadow-sm cursor-pointer"
         >
-          {showForm ? 'Hủy' : '+ Tạo Lớp học phần mới'}
+          {showForm ? 'Hủy bỏ' : '+ Tạo Lớp học phần mới'}
         </button>
+      </div>
+
+      {/* Filter and Search Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-800 p-3 rounded-2xl border border-neutral-200 dark:border-slate-700">
+        <div className="flex items-center gap-2 flex-1 min-w-[240px]">
+          <input
+            type="text"
+            value={searchKw}
+            onChange={(e) => { setSearchKw(e.target.value); setPage(0); }}
+            placeholder="Tìm theo Mã lớp, Tên lớp, Giảng viên, Môn học..."
+            className="w-full px-3.5 py-1.5 bg-neutral-50 dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <select
+            value={selectedCourseFilter}
+            onChange={(e) => { setSelectedCourseFilter(e.target.value); setPage(0); }}
+            className="px-3 py-1.5 bg-neutral-50 dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-xl text-xs text-slate-700 dark:text-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+          >
+            <option value="">-- Tất cả môn học --</option>
+            {courses.map((c) => (
+              <option key={c.id} value={c.id}>
+                [{c.code}] {c.title}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {editingClazz && (
@@ -857,7 +966,7 @@ export function AdminClasses() {
             <h3 className="font-bold text-indigo-900 dark:text-indigo-200">
               Chỉnh sửa & Phân công Giảng viên cho lớp: <span className="font-mono text-indigo-700 dark:text-indigo-300">{editingClazz.classCode}</span>
             </h3>
-            <button onClick={() => setEditingClazz(null)} className="text-xs font-semibold text-slate-500 hover:text-slate-700">Hủy</button>
+            <button onClick={() => setEditingClazz(null)} className="text-xs font-semibold text-slate-500 hover:text-slate-700 cursor-pointer">Hủy</button>
           </div>
           <div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
             <div>
@@ -865,7 +974,7 @@ export function AdminClasses() {
               <input
                 value={editForm.classCode}
                 onChange={(e) => setEditForm({ ...editForm, classCode: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700 text-xs"
               />
             </div>
             <div>
@@ -873,7 +982,7 @@ export function AdminClasses() {
               <input
                 value={editForm.className}
                 onChange={(e) => setEditForm({ ...editForm, className: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700 text-xs"
               />
             </div>
             <div>
@@ -881,7 +990,7 @@ export function AdminClasses() {
               <select
                 value={editForm.courseId}
                 onChange={(e) => setEditForm({ ...editForm, courseId: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700 text-xs"
               >
                 <option value="">-- Chọn môn học --</option>
                 {courses.map((c) => (
@@ -892,15 +1001,13 @@ export function AdminClasses() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-1 font-bold">
-                Giảng viên phụ trách (Gán lại)
-              </label>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Giảng viên phụ trách</label>
               <select
                 value={editForm.lecturerId}
                 onChange={(e) => setEditForm({ ...editForm, lecturerId: e.target.value })}
-                className="w-full rounded-lg border-2 border-indigo-300 bg-white px-3 py-2 font-semibold text-indigo-900 shadow-sm focus:border-indigo-500 focus:outline-none dark:bg-slate-800 dark:border-indigo-600 dark:text-indigo-200"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700 text-xs"
               >
-                <option value="">-- Chưa gán giảng viên --</option>
+                <option value="">-- Chưa phân công --</option>
                 {lecturers.map((l) => (
                   <option key={l.id} value={l.id}>
                     {l.fullName} ({l.email})
@@ -915,7 +1022,7 @@ export function AdminClasses() {
                 min="1"
                 value={editForm.maxStudents}
                 onChange={(e) => setEditForm({ ...editForm, maxStudents: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 font-bold text-indigo-600 dark:bg-slate-800 dark:border-slate-700"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-indigo-600"
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -924,7 +1031,7 @@ export function AdminClasses() {
                 <input
                   value={editForm.semester}
                   onChange={(e) => setEditForm({ ...editForm, semester: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
                 />
               </div>
               <div>
@@ -932,24 +1039,15 @@ export function AdminClasses() {
                 <input
                   value={editForm.academicYear}
                   onChange={(e) => setEditForm({ ...editForm, academicYear: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
                 />
               </div>
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-2">
-            <button
-              onClick={() => void handleUpdate()}
-              disabled={submitting}
-              className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 transition"
-            >
+          <div className="mt-4 flex justify-end gap-2">
+            <button onClick={() => setEditingClazz(null)} className="rounded-lg border border-slate-200 px-4 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer">Hủy</button>
+            <button onClick={() => void handleUpdate()} disabled={submitting} className="rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 cursor-pointer">
               {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
-            </button>
-            <button
-              onClick={() => setEditingClazz(null)}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-            >
-              Hủy
             </button>
           </div>
         </Card>
@@ -957,7 +1055,7 @@ export function AdminClasses() {
 
       {showForm && (
         <Card className="mb-6 border-2 border-indigo-100">
-          <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-3">Tạo Lớp học phần cho sinh viên đăng ký</h3>
+          <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-3 text-sm">Tạo Lớp học phần mới cho sinh viên đăng ký</h3>
           <div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Mã lớp học phần *</label>
@@ -965,7 +1063,7 @@ export function AdminClasses() {
                 placeholder="VD: INT3306_01"
                 value={form.classCode}
                 onChange={(e) => setForm({ ...form, classCode: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
               />
             </div>
             <div>
@@ -974,7 +1072,7 @@ export function AdminClasses() {
                 placeholder="VD: Lập trình Mạng - Nhóm 1"
                 value={form.className}
                 onChange={(e) => setForm({ ...form, className: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
               />
             </div>
             <div>
@@ -982,7 +1080,7 @@ export function AdminClasses() {
               <select
                 value={form.courseId}
                 onChange={(e) => setForm({ ...form, courseId: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
               >
                 <option value="">-- Chọn môn học --</option>
                 {courses.map((c) => (
@@ -997,7 +1095,7 @@ export function AdminClasses() {
               <select
                 value={form.lecturerId}
                 onChange={(e) => setForm({ ...form, lecturerId: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
               >
                 <option value="">-- Chọn giảng viên --</option>
                 {lecturers.map((l) => (
@@ -1015,7 +1113,7 @@ export function AdminClasses() {
                 placeholder="VD: 50"
                 value={form.maxStudents}
                 onChange={(e) => setForm({ ...form, maxStudents: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 font-bold text-indigo-600"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 font-bold text-indigo-600 text-xs"
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -1025,7 +1123,7 @@ export function AdminClasses() {
                   placeholder="HK1"
                   value={form.semester}
                   onChange={(e) => setForm({ ...form, semester: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
                 />
               </div>
               <div>
@@ -1034,7 +1132,7 @@ export function AdminClasses() {
                   placeholder="2026-2027"
                   value={form.academicYear}
                   onChange={(e) => setForm({ ...form, academicYear: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs"
                 />
               </div>
             </div>
@@ -1042,7 +1140,7 @@ export function AdminClasses() {
           <button
             onClick={() => void handleCreate()}
             disabled={submitting}
-            className="mt-4 rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+            className="mt-4 rounded-lg bg-emerald-600 px-5 py-2 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 cursor-pointer"
           >
             {submitting ? 'Đang tạo...' : 'Tạo Lớp học phần'}
           </button>
@@ -1050,57 +1148,102 @@ export function AdminClasses() {
       )}
 
       <Card>
-        {classes.length === 0 ? <Empty msg="Chưa có lớp học phần nào" /> : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left border-collapse">
-              <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-600 border-b border-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Mã lớp HP</th>
-                  <th className="py-3 px-4">Tên lớp HP</th>
-                  <th className="py-3 px-4">Tên Môn học</th>
-                  <th className="py-3 px-4">Giảng viên</th>
-                  <th className="py-3 px-4 text-center">Sĩ số tối đa</th>
-                  <th className="py-3 px-4 text-center">Học kỳ</th>
-                  <th className="py-3 px-4 text-right">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
-                {classes.map((c) => (
-                  <tr key={c.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">{c.classCode}</td>
-                    <td className="py-3.5 px-4 font-medium text-slate-800 dark:text-slate-100">
-                      <Link to={`/admin/classes/${c.id}`} className="hover:underline text-indigo-600 dark:text-indigo-400">{c.className}</Link>
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">{c.courseTitle || '-'}</td>
-                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">
-                      {c.lecturerName ? (
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">{c.lecturerName}</span>
-                      ) : (
-                        <span className="italic text-amber-600 dark:text-amber-400">Chưa phân công</span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-center font-bold text-slate-800 dark:text-slate-200">
-                      <span className="rounded bg-indigo-50 px-2 py-1 text-xs text-indigo-700 font-extrabold">{c.maxStudents ?? 'Không giới hạn'}</span>
-                    </td>
-                    <td className="py-3.5 px-4 text-center"><Pill intent="success">{c.semester} · {c.academicYear}</Pill></td>
-                    <td className="py-3.5 px-4 text-right space-x-1.5">
-                      <button
-                        onClick={() => openEdit(c)}
-                        className="rounded px-2.5 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900 transition"
-                      >
-                        Sửa / Gán GV
-                      </button>
-                      <button
-                        onClick={() => void handleDelete(c.id)}
-                        className="rounded px-2.5 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
-                      >
-                        Xóa
-                      </button>
-                    </td>
+        {filteredClasses.length === 0 ? <Empty msg="Không tìm thấy lớp học phần nào" /> : (
+          <div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left border-collapse">
+                <thead className="bg-neutral-50 text-xs font-bold uppercase tracking-wider text-slate-600 border-b border-neutral-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-800">
+                  <tr>
+                    <th className="py-3.5 px-4">Mã lớp HP</th>
+                    <th className="py-3.5 px-4">Tên lớp HP</th>
+                    <th className="py-3.5 px-4">Tên Môn học</th>
+                    <th className="py-3.5 px-4">Giảng viên</th>
+                    <th className="py-3.5 px-4 text-center">Sĩ số tối đa</th>
+                    <th className="py-3.5 px-4 text-center">Học kỳ</th>
+                    <th className="py-3.5 px-4 text-right">Thao tác</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 dark:divide-slate-800/80">
+                  {paginatedClasses.map((c) => (
+                    <tr key={c.id} className="hover:bg-neutral-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3.5 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">{c.classCode}</td>
+                      <td className="py-3.5 px-4 font-medium text-slate-800 dark:text-slate-100">
+                        <Link to={`/admin/classes/${c.id}`} className="hover:underline text-indigo-600 dark:text-indigo-400">{c.className}</Link>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">{c.courseTitle || '-'}</td>
+                      <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">
+                        {c.lecturerName ? (
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{c.lecturerName}</span>
+                        ) : (
+                          <span className="italic text-amber-600 dark:text-amber-400">Chưa phân công</span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-bold text-slate-800 dark:text-slate-200">
+                        <span className="rounded bg-indigo-50 px-2 py-1 text-xs text-indigo-700 font-extrabold">{c.maxStudents ?? 'Không giới hạn'}</span>
+                      </td>
+                      <td className="py-3.5 px-4 text-center"><Pill intent="success">{c.semester} · {c.academicYear}</Pill></td>
+                      <td className="py-3.5 px-4 text-right space-x-1.5">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(c)}
+                          className="rounded px-2.5 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900 transition cursor-pointer"
+                        >
+                          Sửa / Gán GV
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void handleDelete(c.id)}
+                          className="rounded px-2.5 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
+                        >
+                          Xóa
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 dark:border-slate-800 pt-3 mt-3 px-2">
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                Hiển thị <span className="font-bold text-slate-800 dark:text-slate-200">{filteredClasses.length > 0 ? page * pageSize + 1 : 0}</span> - <span className="font-bold text-slate-800 dark:text-slate-200">{Math.min((page + 1) * pageSize, filteredClasses.length)}</span> trên tổng số <span className="font-bold text-slate-800 dark:text-slate-200">{filteredClasses.length}</span> lớp học phần
+              </div>
+
+              <div className="flex items-center gap-2">
+                <select
+                  value={pageSize}
+                  onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
+                  className="px-2.5 py-1 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
+                >
+                  <option value={10}>10 dòng / trang</option>
+                  <option value={20}>20 dòng / trang</option>
+                  <option value={50}>50 dòng / trang</option>
+                </select>
+
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="px-3 py-1 text-xs font-semibold rounded-lg border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 disabled:opacity-40 transition cursor-pointer"
+                >
+                  &laquo; Trước
+                </button>
+
+                <span className="text-xs text-slate-600 dark:text-slate-400 font-medium px-1">
+                  Trang {page + 1} / {totalPages}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="px-3 py-1 text-xs font-semibold rounded-lg border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 disabled:opacity-40 transition cursor-pointer"
+                >
+                  Sau &raquo;
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </Card>

@@ -1,5 +1,6 @@
 import { apiClient, unwrap } from './api/client';
-import type { TuitionInvoice, TuitionRate } from '../types';
+import type { TuitionInvoice, TuitionRate, PayOSPaymentResponse } from '../types';
+
 export const getMyTuition = async (): Promise<TuitionInvoice[]> => unwrap(apiClient.get('/me/tuition'));
 export const getTuitionRates = async (): Promise<TuitionRate[]> => unwrap(apiClient.get('/admin/tuition/rates'));
 export const createTuitionRate = async (data: { academicYear: string; pricePerCredit: number; isActive: boolean }): Promise<TuitionRate> => unwrap(apiClient.post('/admin/tuition/rates', data));
@@ -15,3 +16,9 @@ export const deleteTuitionRate = async (id: number): Promise<void> => {
 
 export const payMyInvoice = async (invoiceId: number): Promise<TuitionInvoice> =>
   unwrap(apiClient.post(`/me/tuition/${invoiceId}/pay`));
+
+export const createPayOSPayment = async (invoiceId: number): Promise<PayOSPaymentResponse> =>
+  unwrap(apiClient.post(`/me/tuition/${invoiceId}/payos-create-payment`));
+
+export const verifyPayOSPayment = async (invoiceId: number): Promise<TuitionInvoice> =>
+  unwrap(apiClient.post(`/me/tuition/${invoiceId}/payos-verify`));
