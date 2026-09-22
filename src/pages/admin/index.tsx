@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { Users, BookOpen, ClipboardList, FileText, CheckCircle, Calendar, Key, Building2, Zap } from 'lucide-react';
 import * as clazzService from '../../services/clazzService';
 import * as adminService from '../../services/adminService';
 import { PageTitle, Card, Spinner, Empty, Pill } from '../../components/Layout';
@@ -23,19 +24,19 @@ export function AdminDashboard() {
   if (!stats) return null;
 
   const metricCards = [
-    { label: 'Tổng người dùng', val: stats.totalUsers, icon: '👥', color: 'border-l-4 border-indigo-500 text-indigo-600 dark:text-indigo-400' },
-    { label: 'Lớp môn học', val: stats.totalClasses, icon: '📚', color: 'border-l-4 border-emerald-500 text-emerald-600 dark:text-emerald-400' },
-    { label: 'Lượt đăng ký học', val: stats.totalEnrollments, icon: '📋', color: 'border-l-4 border-amber-500 text-amber-600 dark:text-amber-400' },
-    { label: 'Bài tập học phần', val: stats.totalAssignments, icon: '📝', color: 'border-l-4 border-rose-500 text-rose-600 dark:text-rose-400' },
-    { label: 'Bài làm nộp', val: stats.totalSubmissions, icon: '✅', color: 'border-l-4 border-cyan-500 text-cyan-600 dark:text-cyan-400' },
+    { label: 'Tổng người dùng', val: stats.totalUsers, Icon: Users, color: 'border-l-4 border-indigo-500 text-indigo-600 dark:text-indigo-400' },
+    { label: 'Lớp môn học', val: stats.totalClasses, Icon: BookOpen, color: 'border-l-4 border-emerald-500 text-emerald-600 dark:text-emerald-400' },
+    { label: 'Lượt đăng ký học', val: stats.totalEnrollments, Icon: ClipboardList, color: 'border-l-4 border-amber-500 text-amber-600 dark:text-amber-400' },
+    { label: 'Bài tập học phần', val: stats.totalAssignments, Icon: FileText, color: 'border-l-4 border-rose-500 text-rose-600 dark:text-rose-400' },
+    { label: 'Bài làm nộp', val: stats.totalSubmissions, Icon: CheckCircle, color: 'border-l-4 border-cyan-500 text-cyan-600 dark:text-cyan-400' },
   ];
 
   const quickActions = [
-    { title: 'Xếp lịch giảng dạy', desc: 'Phân ca, phòng học & lịch học phần', link: '/admin/schedule', icon: '📅', badge: 'Admin/Manager' },
-    { title: 'Phân quyền Manager & PBAC', desc: 'Duyệt quyền quản trị viên & cấp quyền', link: '/admin/pbac-approval', icon: '🔑', badge: 'Super Admin' },
-    { title: 'Quản lý Lớp hành chính', desc: 'Gán GVCN, quản lý danh sách sinh viên', link: '/admin/classes', icon: '🏛️', badge: 'Quản lý' },
-    { title: 'Đợt Đăng ký Học tập', desc: 'Mở/khóa đợt đăng ký môn học phần', link: '/admin/registrations', icon: '📝', badge: 'Đợt mới' },
-    { title: 'Người dùng & Tài khoản', desc: 'Tạo tài khoản, import Excel, reset MK', link: '/admin/users', icon: '👥', badge: 'Tài khoản' },
+    { title: 'Xếp lịch giảng dạy', desc: 'Phân ca, phòng học & lịch học phần', link: '/admin/classes', Icon: Calendar, badge: 'Admin/Manager' },
+    { title: 'Phân quyền Manager & PBAC', desc: 'Duyệt quyền quản trị viên & cấp quyền', link: '/admin/pbac-approvals', Icon: Key, badge: 'Super Admin' },
+    { title: 'Quản lý Lớp hành chính', desc: 'Gán GVCN, quản lý danh sách sinh viên', link: '/admin/administrative-classes', Icon: Building2, badge: 'Quản lý' },
+    { title: 'Đợt Đăng ký Học tập', desc: 'Mở/khóa đợt đăng ký môn học phần', link: '/admin/registration', Icon: ClipboardList, badge: 'Đợt mới' },
+    { title: 'Người dùng & Tài khoản', desc: 'Tạo tài khoản, import Excel, reset MK', link: '/admin/users', Icon: Users, badge: 'Tài khoản' },
   ];
 
   return (
@@ -51,41 +52,48 @@ export function AdminDashboard() {
 
       {/* Main Metric Overview Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        {metricCards.map((i) => (
-          <Card key={i.label} className={`p-4 transition hover:shadow-md ${i.color}`}>
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-              <span>{i.label}</span>
-              <span className="text-lg">{i.icon}</span>
-            </div>
-            <div className="text-2xl font-black mt-2">{i.val.toLocaleString()}</div>
-          </Card>
-        ))}
+        {metricCards.map((i) => {
+          const IconComp = i.Icon;
+          return (
+            <Card key={i.label} className={`p-4 transition hover:shadow-md ${i.color}`}>
+              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                <span>{i.label}</span>
+                <IconComp className="w-5 h-5 opacity-80" />
+              </div>
+              <div className="text-2xl font-black mt-2">{i.val.toLocaleString()}</div>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Quick Access Management Actions */}
       <div>
         <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
-          <span>⚡</span> Phím Tắt & Tác Vụ Quản Trị Nhanh
+          <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+          Phím Tắt & Tác Vụ Quản Trị Nhanh
         </h3>
         <div className="grid md:grid-cols-3 gap-4">
-          {quickActions.map((act) => (
-            <Link key={act.title} to={act.link}>
-              <Card className="h-full hover:border-indigo-300 dark:hover:border-indigo-700 transition cursor-pointer group p-4">
-                <div className="flex items-start justify-between">
-                  <div className="text-2xl p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 group-hover:scale-110 transition">
-                    {act.icon}
+          {quickActions.map((act) => {
+            const IconComp = act.Icon;
+            return (
+              <Link key={act.title} to={act.link}>
+                <Card className="h-full hover:border-indigo-300 dark:hover:border-indigo-700 transition cursor-pointer group p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 group-hover:scale-110 transition">
+                      <IconComp className="w-6 h-6" />
+                    </div>
+                    <Pill color="indigo">{act.badge}</Pill>
                   </div>
-                  <Pill color="indigo">{act.badge}</Pill>
-                </div>
-                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm mt-3 group-hover:text-indigo-600 transition">
-                  {act.title}
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  {act.desc}
-                </p>
-              </Card>
-            </Link>
-          ))}
+                  <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm mt-3 group-hover:text-indigo-600 transition">
+                    {act.title}
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    {act.desc}
+                  </p>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>

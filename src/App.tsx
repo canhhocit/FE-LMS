@@ -130,15 +130,19 @@ export default function App() {
             <Route path="/admin/classes/:id" element={<ClassDetail />} />
             <Route path="/admin/curricula" element={<AdminCurricula />} />
             <Route path="/admin/registration" element={<RegistrationPeriods />} />
+            <Route path="/admin/registrations" element={<Navigate to="/admin/registration" replace />} />
             <Route path="/admin/tuition" element={<AdminTuitionManagement />} />
             <Route path="/admin/reports" element={<AdminReports />} />
             <Route path="/admin/pbac-approvals" element={<AdminPbacApproval />} />
+            <Route path="/admin/pbac-approval" element={<Navigate to="/admin/pbac-approvals" replace />} />
             <Route path="/admin/documents" element={<DocumentHubPage />} />
             <Route path="/admin/permissions" element={<AdminPermissions />} />
             <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
             <Route path="/admin/clazz-permissions" element={<ClazzPermissions />} />
+            <Route path="/admin/class-permissions" element={<Navigate to="/admin/clazz-permissions" replace />} />
             <Route path="/admin/departments" element={<AdminDepartments />} />
             <Route path="/admin/administrative-classes" element={<AdminAdministrativeClasses />} />
+            <Route path="/admin/schedule" element={<Navigate to="/admin/classes" replace />} />
             <Route path="/admin/notifications" element={<NotificationsPage />} />
           </Route>
 
