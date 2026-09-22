@@ -8,7 +8,33 @@ import { importUsersByRole, exportUsersByRole, resetPassword, createUser, update
 import * as adminClassService from '../../services/adminClassService';
 import type { AdminClassResponse } from '../../services/adminClassService';
 import { getDepartments, type DepartmentResponse } from '../../services/departmentService';
-import type { Clazz, User, DashboardStats } from '../../types';
+import * as scheduleService from '../../services/scheduleService';
+import type { Clazz, User, DashboardStats, Schedule } from '../../types';
+
+const DAY_NAMES: Record<number, string> = {
+  1: 'Thứ 2',
+  2: 'Thứ 3',
+  3: 'Thứ 4',
+  4: 'Thứ 5',
+  5: 'Thứ 6',
+  6: 'Thứ 7',
+  7: 'Chủ nhật',
+};
+
+const PERIOD_TIMES: Record<number, { start: string; end: string }> = {
+  1: { start: '06:45', end: '07:30' },
+  2: { start: '07:40', end: '08:25' },
+  3: { start: '08:35', end: '09:25' },
+  4: { start: '09:30', end: '10:15' },
+  5: { start: '10:25', end: '11:10' },
+  6: { start: '11:20', end: '12:10' },
+  7: { start: '12:30', end: '13:15' },
+  8: { start: '13:25', end: '14:10' },
+  9: { start: '14:20', end: '15:10' },
+  10: { start: '15:15', end: '16:00' },
+  11: { start: '16:10', end: '16:55' },
+  12: { start: '17:05', end: '17:55' },
+};
 
 export function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -767,6 +793,19 @@ export function AdminClasses() {
     academicYear: '2026-2027',
   });
 
+  // Schedule Modal State
+  const [scheduleClazz, setScheduleClazz] = useState<Clazz | null>(null);
+  const [classSchedules, setClassSchedules] = useState<Schedule[]>([]);
+  const [loadingSchedules, setLoadingSchedules] = useState(false);
+  const [scheduleForm, setScheduleForm] = useState({
+    dayOfWeek: 1,
+    startPeriod: 1,
+    endPeriod: 3,
+    room: '',
+  });
+  const [scheduleErr, setScheduleErr] = useState<string | null>(null);
+  const [savingSchedule, setSavingSchedule] = useState(false);
+
   // Search, Filter & Pagination State
   const [searchKw, setSearchKw] = useState('');
   const [selectedCourseFilter, setSelectedCourseFilter] = useState('');
@@ -911,6 +950,56 @@ export function AdminClasses() {
       setClasses((prev) => prev.filter((c) => c.id !== id));
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Không thể xóa lớp (có thể đã có SV đăng ký)');
+    }
+  };
+
+  const openScheduleModal = async (c: Clazz) => {
+    setScheduleClazz(c);
+    setScheduleErr(null);
+    setLoadingSchedules(true);
+    try {
+      const list = await scheduleService.getClazzSchedule(c.id);
+      setClassSchedules(list);
+    } catch (e: unknown) {
+      setScheduleErr((e as { message?: string })?.message ?? 'Không thể tải lịch học');
+    } finally {
+      setLoadingSchedules(false);
+    }
+  };
+
+  const handleAddSchedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!scheduleClazz) return;
+    if (scheduleForm.startPeriod > scheduleForm.endPeriod) {
+      setScheduleErr('Tiết bắt đầu phải nhỏ hơn hoặc bằng tiết kết thúc');
+      return;
+    }
+    setSavingSchedule(true);
+    setScheduleErr(null);
+    try {
+      await scheduleService.createSchedule(scheduleClazz.id, {
+        dayOfWeek: Number(scheduleForm.dayOfWeek),
+        startPeriod: Number(scheduleForm.startPeriod),
+        endPeriod: Number(scheduleForm.endPeriod),
+        room: scheduleForm.room.trim() || undefined,
+      });
+      const list = await scheduleService.getClazzSchedule(scheduleClazz.id);
+      setClassSchedules(list);
+      setScheduleForm({ dayOfWeek: 1, startPeriod: 1, endPeriod: 3, room: '' });
+    } catch (e: unknown) {
+      setScheduleErr((e as { message?: string })?.message ?? 'Thêm lịch học thất bại (xung đột phòng học hoặc thời gian)');
+    } finally {
+      setSavingSchedule(false);
+    }
+  };
+
+  const handleDeleteSchedule = async (scheduleId: number) => {
+    if (!scheduleClazz) return;
+    try {
+      await scheduleService.deleteSchedule(scheduleId);
+      setClassSchedules((prev) => prev.filter((s) => s.id !== scheduleId));
+    } catch (e: unknown) {
+      setScheduleErr((e as { message?: string })?.message ?? 'Xóa lịch học thất bại');
     }
   };
 
@@ -1198,6 +1287,13 @@ export function AdminClasses() {
                         </button>
                         <button
                           type="button"
+                          onClick={() => void openScheduleModal(c)}
+                          className="rounded px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900 transition cursor-pointer"
+                        >
+                          📅 Xếp lịch học
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => void handleDelete(c.id)}
                           className="rounded px-2.5 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
                         >
@@ -1253,6 +1349,155 @@ export function AdminClasses() {
           </div>
         )}
       </Card>
+
+      {/* Modal Xếp lịch giảng dạy & Phòng học */}
+      {scheduleClazz && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-800 border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-700">
+              <div>
+                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
+                  Xếp lịch giảng dạy & Phòng học
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Lớp: <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{scheduleClazz.classCode}</span> — {scheduleClazz.className}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setScheduleClazz(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl font-bold cursor-pointer"
+              >
+                &times;
+              </button>
+            </div>
+
+            {scheduleErr && (
+              <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+                {scheduleErr}
+              </div>
+            )}
+
+            {/* List of current schedule items */}
+            <div className="mt-4">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wider">
+                Danh sách ca học đã xếp ({classSchedules.length})
+              </h4>
+              {loadingSchedules ? (
+                <Spinner />
+              ) : classSchedules.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-slate-200 p-4 text-center text-xs text-slate-400 dark:border-slate-700">
+                  Lớp học phần này chưa có lịch giảng dạy nào. Vui lòng thêm bên dưới.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {classSchedules.map((s) => {
+                    const dayLabel = DAY_NAMES[s.dayOfWeek ?? 1] || `Thứ ${s.dayOfWeek}`;
+                    const startInfo = PERIOD_TIMES[s.startPeriod ?? 1]?.start || '06:45';
+                    const endInfo = PERIOD_TIMES[s.endPeriod ?? 3]?.end || '09:25';
+                    return (
+                      <div
+                        key={s.id}
+                        className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-900/50"
+                      >
+                        <div className="flex flex-wrap items-center gap-3 text-xs">
+                          <span className="rounded-lg bg-indigo-600 px-2.5 py-1 font-bold text-white">
+                            {dayLabel}
+                          </span>
+                          <span className="font-semibold text-slate-700 dark:text-slate-200">
+                            Tiết {s.startPeriod} - {s.endPeriod} ({startInfo} - {endInfo})
+                          </span>
+                          <span className="rounded-md bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 font-mono font-bold text-amber-800 dark:text-amber-300">
+                            🏢 Phòng: {s.room || 'Chưa xếp'}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void handleDeleteSchedule(s.id)}
+                          className="rounded px-2 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition cursor-pointer"
+                        >
+                          Xóa
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Form to add a new schedule slot */}
+            <form onSubmit={handleAddSchedule} className="mt-5 border-t border-slate-100 dark:border-slate-700 pt-4 space-y-3">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                + Thêm lịch / ca học mới
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                <div>
+                  <label className="block font-semibold text-slate-600 dark:text-slate-400 mb-1">Thứ trong tuần</label>
+                  <select
+                    value={scheduleForm.dayOfWeek}
+                    onChange={(e) => setScheduleForm({ ...scheduleForm, dayOfWeek: Number(e.target.value) })}
+                    className="w-full rounded-lg border border-slate-300 px-2.5 py-2 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100"
+                  >
+                    {Object.entries(DAY_NAMES).map(([val, name]) => (
+                      <option key={val} value={val}>{name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-600 dark:text-slate-400 mb-1">Tiết bắt đầu</label>
+                  <select
+                    value={scheduleForm.startPeriod}
+                    onChange={(e) => setScheduleForm({ ...scheduleForm, startPeriod: Number(e.target.value) })}
+                    className="w-full rounded-lg border border-slate-300 px-2.5 py-2 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((p) => (
+                      <option key={p} value={p}>Tiết {p} ({PERIOD_TIMES[p]?.start})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-600 dark:text-slate-400 mb-1">Tiết kết thúc</label>
+                  <select
+                    value={scheduleForm.endPeriod}
+                    onChange={(e) => setScheduleForm({ ...scheduleForm, endPeriod: Number(e.target.value) })}
+                    className="w-full rounded-lg border border-slate-300 px-2.5 py-2 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((p) => (
+                      <option key={p} value={p}>Tiết {p} ({PERIOD_TIMES[p]?.end})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-600 dark:text-slate-400 mb-1">Phòng học</label>
+                  <input
+                    type="text"
+                    placeholder="VD: A2-301, B1-102"
+                    value={scheduleForm.room}
+                    onChange={(e) => setScheduleForm({ ...scheduleForm, room: e.target.value })}
+                    className="w-full rounded-lg border border-slate-300 px-2.5 py-2 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setScheduleClazz(null)}
+                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 cursor-pointer"
+                >
+                  Đóng
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingSchedule}
+                  className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 cursor-pointer"
+                >
+                  {savingSchedule ? 'Đang lưu...' : '+ Thêm ca học'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
