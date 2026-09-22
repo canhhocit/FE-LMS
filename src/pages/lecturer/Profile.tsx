@@ -1,5 +1,6 @@
 // Lecturer Profile page
 import { useEffect, useState, useCallback } from 'react';
+import { Bot } from 'lucide-react';
 import * as profileService from '../../services/profileService';
 import { PageTitle, Card, Spinner, ErrorBox, Pill } from '../../components/Layout';
 import type { UpdateProfileRequest, UserProfile } from '../../types';
@@ -193,7 +194,7 @@ function AiSettingsCard() {
     const config = { aiName, toneStyle, customPrompt, targetGoal };
     localStorage.setItem(configKey, JSON.stringify(config));
     window.dispatchEvent(new Event('lms_update_ai_config'));
-    setMsg('✅ Đã lưu cấu hình cá nhân hóa ChatGPT cho Trợ lý AI thành công!');
+    setMsg('Đã lưu cấu hình cá nhân hóa cho Trợ lý AI thành công!');
     setTimeout(() => setMsg(null), 3500);
   };
 
@@ -220,7 +221,7 @@ function AiSettingsCard() {
     if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử trò chuyện với Trợ lý AI không?')) {
       localStorage.removeItem(historyKey);
       window.dispatchEvent(new Event('lms_clear_ai_chat'));
-      setMsg('🧹 Đã xóa sạch toàn bộ lịch sử chat với Trợ lý AI thành công!');
+      setMsg('Đã xóa toàn bộ lịch sử trò chuyện với Trợ lý AI thành công!');
       setTimeout(() => setMsg(null), 4000);
     }
   };
@@ -230,7 +231,8 @@ function AiSettingsCard() {
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-base">
-            🤖 Cá nhân hóa Trợ lý AI (ChatGPT-Style Custom Instructions)
+            <Bot className="w-5 h-5 text-indigo-600 shrink-0" />
+            Cá nhân hóa Trợ lý AI (Custom Instructions)
           </h3>
           <span className="text-xs px-2.5 py-1 bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-semibold rounded-full border border-purple-200 dark:border-purple-800">
             Live AI Persona
@@ -265,10 +267,10 @@ function AiSettingsCard() {
               onChange={(e) => setToneStyle(e.target.value)}
               className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white"
             >
-              <option value="FRIENDLY">😊 Thân thiện, khích lệ & Gần gũi</option>
-              <option value="FORMAL">👔 Trang trọng, Chuẩn mực Sư phạm</option>
-              <option value="CONCISE">⚡ Ngắn gọn, Trực diện & Tập trung</option>
-              <option value="TUTOR">📚 Hỗ trợ Giảng dạy & Giải thích Chi tiết</option>
+              <option value="FRIENDLY">Thân thiện, khích lệ & Gần gũi</option>
+              <option value="FORMAL">Trang trọng, Chuẩn mực Sư phạm</option>
+              <option value="CONCISE">Ngắn gọn, Trực diện & Tập trung</option>
+              <option value="TUTOR">Hỗ trợ Giảng dạy & Giải thích Chi tiết</option>
             </select>
           </div>
 
@@ -301,9 +303,9 @@ function AiSettingsCard() {
           <div className="flex items-end">
             <button
               onClick={handleSaveConfig}
-              className="w-full px-4 py-2 rounded-xl bg-linear-to-r from-purple-600 to-indigo-600 hover:brightness-110 text-white font-bold text-xs shadow transition cursor-pointer"
+              className="w-full px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-2xs transition cursor-pointer"
             >
-              💾 Lưu Cấu hình Cá nhân hóa AI
+              Lưu Cấu hình Cá nhân hóa AI
             </button>
           </div>
         </div>
@@ -316,13 +318,13 @@ function AiSettingsCard() {
               onClick={handleExportChat}
               className="px-3.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-300 font-semibold text-xs border border-indigo-200 dark:border-indigo-800 transition cursor-pointer"
             >
-              📥 Xuất Lịch sử (.json)
+              Xuất Lịch sử (.json)
             </button>
             <button
               onClick={handleClear}
               className="px-3.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 font-semibold text-xs border border-rose-200 dark:border-rose-900 transition cursor-pointer"
             >
-              🗑️ Xóa Lịch sử Chat AI
+              Xóa Lịch sử Chat AI
             </button>
           </div>
         </div>

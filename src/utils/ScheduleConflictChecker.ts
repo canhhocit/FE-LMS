@@ -24,7 +24,7 @@ export const checkScheduleConflict = (
       ) {
         return {
           hasConflict: true,
-          conflictDetails: `🤖 AI Warning: Xung đột lịch học! Học phần [${targetCourse.courseName}] trùng lịch Thứ ${targetCourse.dayOfWeek} (Tiết ${targetCourse.startPeriod}-${targetCourse.endPeriod}) với học phần [${course.courseName}] (Tiết ${course.startPeriod}-${course.endPeriod}).`,
+          conflictDetails: `Cảnh báo xung đột lịch học: Học phần [${targetCourse.courseName}] trùng lịch Thứ ${targetCourse.dayOfWeek} (Tiết ${targetCourse.startPeriod}-${targetCourse.endPeriod}) với học phần [${course.courseName}] (Tiết ${course.startPeriod}-${course.endPeriod}).`,
         };
       }
     }

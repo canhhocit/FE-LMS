@@ -172,23 +172,27 @@ export function StudentDashboard() {
     <div className="space-y-5">
       <PageTitle>Trang chủ</PageTitle>
 
-      {/* Firebase Push Notification Reminder Simulator (Trừ 1 tiếng trước lịch học) */}
-      <div className="p-3 bg-linear-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-indigo-200 dark:border-indigo-900 rounded-2xl flex items-center justify-between gap-3 text-xs text-indigo-900 dark:text-indigo-200 shadow-xs">
-        <div className="flex items-center gap-2.5">
-          <div className="p-1.5 bg-indigo-600 text-white rounded-xl shrink-0">
-            <BellRing className="w-4 h-4 animate-bounce" />
+      {/* FCM Push Notification (Nhắc lịch học động theo đúng lớp sinh viên đã đăng ký) */}
+      {continueLearningClass && (
+        <div className="p-3 bg-linear-to-r from-indigo-50/80 via-white to-sky-50/80 border border-indigo-200 dark:border-indigo-900 rounded-2xl flex items-center justify-between gap-3 text-xs text-indigo-900 dark:text-indigo-200 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 bg-indigo-600 text-white rounded-xl shrink-0">
+              <BellRing className="w-4 h-4 animate-bounce" />
+            </div>
+            <div>
+              <strong className="font-bold flex items-center gap-1 text-indigo-700 dark:text-indigo-300">
+                FCM Push Notification (Nhắc lịch học sắp diễn ra):
+              </strong>
+              <span>
+                Lớp học phần <strong className="font-semibold text-indigo-800 dark:text-indigo-300">{continueLearningClass.className} ({continueLearningClass.classCode})</strong> sẽ bắt đầu sau <strong>1 tiếng nữa</strong> (07h45 tại Phòng 302). Bạn nhớ đến đúng giờ nhé!
+              </span>
+            </div>
           </div>
-          <div>
-            <strong className="font-bold flex items-center gap-1 text-indigo-700 dark:text-indigo-300">
-              🔔 FCM Push Notification (Nhắc lịch học sắp diễn ra):
-            </strong>
-            <span>Lớp học phần <strong className="font-semibold text-purple-600 dark:text-purple-400">Lập trình Mobile (62PM1_L01)</strong> sẽ bắt đầu sau <strong>1 tiếng nữa</strong> (07h45 tại Phòng 302). Bạn nhớ đến đúng giờ nhé!</span>
-          </div>
+          <span className="text-[10px] bg-indigo-100 dark:bg-indigo-950 px-2 py-0.5 rounded-full text-indigo-600 font-mono shrink-0">
+            Firebase Push Active
+          </span>
         </div>
-        <span className="text-[10px] bg-indigo-100 dark:bg-indigo-950 px-2 py-0.5 rounded-full text-indigo-600 font-mono shrink-0">
-          Firebase Push Active
-        </span>
-      </div>
+      )}
 
       {/* Academic Warning Banner for Student (>10 Debt Credits) */}
       <AcademicWarningBanner
