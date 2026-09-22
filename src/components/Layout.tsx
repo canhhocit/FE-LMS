@@ -985,7 +985,7 @@ export default function Layout() {
           to={`/${roleLower}`}
           className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800/80 px-2 pb-5 pt-2"
         >
-          <span className="grid h-10 w-10 place-items-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-500/20">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#00376f] text-white shadow-md shadow-[#00376f]/20">
             <GraduationCapIcon className="h-6 w-6 text-white" />
           </span>
           <div>
@@ -1033,9 +1033,9 @@ export default function Layout() {
                           end={it.to === `/${roleLower}`}
                           onClick={() => setSidebarOpen(false)}
                           className={({ isActive }) =>
-                            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 relative ${
+                            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 relative ${
                               isActive
-                                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25 font-semibold"
+                                ? "bg-[#00376f] text-white shadow-sm font-semibold"
                                 : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white"
                             }`
                           }

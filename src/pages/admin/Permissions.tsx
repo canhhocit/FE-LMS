@@ -185,7 +185,7 @@ export default function Permissions() {
             setCreateErr(null);
             setShowCreateModal(true);
           }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm transition cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00376f] hover:bg-[#002b57] text-white font-semibold text-xs shadow-sm transition cursor-pointer"
         >
           <UserPlus className="w-4 h-4" />
           <span>+ Tạo tài khoản Manager / Admin mới</span>
@@ -209,7 +209,7 @@ export default function Permissions() {
           <Card>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                <Shield className="w-4 h-4 text-indigo-500" />
+                <Shield className="w-4 h-4 text-[#00376f] dark:text-[#63a1ff]" />
                 Danh sách Quản trị viên ({admins.length})
               </h3>
             </div>
@@ -222,7 +222,7 @@ export default function Permissions() {
                 value={searchKw}
                 onChange={(e) => setSearchKw(e.target.value)}
                 placeholder="Tìm tên hoặc email admin..."
-                className="w-full pl-8 pr-3 py-1.5 bg-neutral-50 dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-8 pr-3 py-1.5 bg-neutral-50 dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00376f]"
               />
             </div>
 
@@ -240,15 +240,15 @@ export default function Permissions() {
                         setSelectedAdmin(adm);
                         setMsg(null);
                       }}
-                      className={`w-full text-left p-3 rounded-xl text-sm transition cursor-pointer flex flex-col gap-1 ${
+                      className={`w-full text-left p-3 rounded-lg text-sm transition cursor-pointer flex flex-col gap-1 ${
                         isSelected
-                          ? 'bg-indigo-50/90 text-indigo-900 border border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-200 dark:border-indigo-800 font-semibold shadow-xs'
+                          ? 'bg-blue-50 text-[#00376f] border border-blue-200 dark:bg-slate-800 dark:text-[#63a1ff] dark:border-slate-700 font-semibold shadow-xs'
                           : 'hover:bg-neutral-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-slate-900 dark:text-slate-100">{adm.fullName}</span>
-                        {isSelected && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
+                        {isSelected && <Check className="w-4 h-4 text-[#00376f] dark:text-[#63a1ff]" />}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{adm.email}</div>
                     </button>
@@ -283,9 +283,9 @@ export default function Permissions() {
                   return (
                     <label
                       key={perm.code}
-                      className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition ${
+                      className={`flex items-start gap-3 p-3.5 rounded-lg border cursor-pointer transition ${
                         isChecked
-                          ? 'bg-indigo-50/50 border-indigo-200 dark:bg-indigo-950/40 dark:border-indigo-800/70'
+                          ? 'bg-blue-50/50 border-blue-200 dark:bg-slate-800/80 dark:border-slate-700'
                           : 'bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-800/60'
                       }`}
                     >
@@ -293,10 +293,10 @@ export default function Permissions() {
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => handleTogglePermission(perm.code)}
-                        className="mt-1 h-4 w-4 rounded border-neutral-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                        className="mt-1 h-4 w-4 rounded border-neutral-300 text-[#00376f] focus:ring-[#00376f] cursor-pointer"
                       />
                       <div className="flex-1">
-                        <div className="text-xs font-bold text-indigo-700 dark:text-indigo-400 tracking-wide">{perm.code}</div>
+                        <div className="text-xs font-bold text-[#00376f] dark:text-[#63a1ff] tracking-wide">{perm.code}</div>
                         <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mt-0.5">{perm.description}</div>
                       </div>
                     </label>
@@ -309,7 +309,7 @@ export default function Permissions() {
                   type="button"
                   onClick={handleSavePermissions}
                   disabled={saving}
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50 transition shadow-sm cursor-pointer inline-flex items-center gap-2"
+                  className="px-5 py-2 rounded-lg text-xs font-bold bg-[#00376f] hover:bg-[#002b57] text-white disabled:opacity-50 transition shadow-sm cursor-pointer inline-flex items-center gap-2"
                 >
                   <Key className="w-3.5 h-3.5" />
                   <span>{saving ? 'Đang lưu...' : 'Lưu thay đổi phân quyền'}</span>
@@ -330,7 +330,7 @@ export default function Permissions() {
           <div className="w-full max-w-xl rounded-2xl bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-neutral-200 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                <div className="p-2 rounded-lg bg-blue-50 text-[#00376f] dark:bg-slate-800 dark:text-[#63a1ff]">
                   <UserPlus className="w-5 h-5" />
                 </div>
                 <div>
@@ -341,14 +341,14 @@ export default function Permissions() {
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-800 transition"
+                className="p-1 rounded-lg text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {createErr && (
-              <div className="p-3 rounded-xl text-xs bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-950/50 dark:border-rose-900 dark:text-rose-300">
+              <div className="p-3 rounded-lg text-xs bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-950/50 dark:border-rose-900 dark:text-rose-300">
                 {createErr}
               </div>
             )}
@@ -365,7 +365,7 @@ export default function Permissions() {
                     value={newFullName}
                     onChange={(e) => setNewFullName(e.target.value)}
                     placeholder="VD: Nguyễn Văn Quản Lý"
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-[#00376f] focus:outline-none"
                   />
                 </div>
 
@@ -379,7 +379,7 @@ export default function Permissions() {
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
                     placeholder="VD: manager.daotao@learninghub.edu.vn"
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-[#00376f] focus:outline-none"
                   />
                 </div>
               </div>
@@ -393,7 +393,7 @@ export default function Permissions() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="123456@"
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-[#00376f] focus:outline-none font-mono"
                 />
               </div>
 
@@ -408,9 +408,9 @@ export default function Permissions() {
                       key={tmpl.name}
                       type="button"
                       onClick={() => applyTemplate(tmpl.perms)}
-                      className="text-left p-2.5 rounded-xl border border-neutral-200 dark:border-slate-800 hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/40 transition cursor-pointer group"
+                      className="text-left p-2.5 rounded-lg border border-neutral-200 dark:border-slate-800 hover:border-[#00376f] hover:bg-blue-50/50 dark:hover:bg-slate-800 transition cursor-pointer group"
                     >
-                      <div className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                      <div className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-[#00376f] dark:group-hover:text-[#63a1ff]">
                         {tmpl.name}
                       </div>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
@@ -434,7 +434,7 @@ export default function Permissions() {
                         key={perm.code}
                         className={`flex items-start gap-2.5 p-2 rounded-lg border cursor-pointer transition ${
                           isChecked
-                            ? 'bg-indigo-50/50 border-indigo-200 dark:bg-indigo-950/40 dark:border-indigo-800'
+                            ? 'bg-blue-50/50 border-blue-200 dark:bg-slate-800/80 dark:border-slate-700'
                             : 'bg-white dark:bg-slate-800 border-neutral-200 dark:border-slate-700'
                         }`}
                       >
@@ -442,10 +442,10 @@ export default function Permissions() {
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => handleToggleNewPerm(perm.code)}
-                          className="mt-0.5 h-3.5 w-3.5 rounded border-neutral-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                          className="mt-0.5 h-3.5 w-3.5 rounded border-neutral-300 text-[#00376f] focus:ring-[#00376f] cursor-pointer"
                         />
                         <div>
-                          <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{perm.code}</span>
+                          <span className="text-xs font-bold text-[#00376f] dark:text-[#63a1ff]">{perm.code}</span>
                           <span className="text-xs text-slate-600 dark:text-slate-400 ml-2">{perm.description}</span>
                         </div>
                       </label>
@@ -458,14 +458,14 @@ export default function Permissions() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-1.5 rounded-xl text-xs font-semibold border border-neutral-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                  className="px-4 py-1.5 rounded-lg text-xs font-semibold border border-neutral-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-slate-800 transition cursor-pointer"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="px-5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50 transition cursor-pointer inline-flex items-center gap-1.5"
+                  className="px-5 py-1.5 rounded-lg text-xs font-bold bg-[#00376f] hover:bg-[#002b57] text-white disabled:opacity-50 transition cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>{creating ? 'Đang tạo...' : 'Tạo tài khoản & Phân quyền'}</span>
