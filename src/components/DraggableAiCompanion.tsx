@@ -81,10 +81,10 @@ export const DraggableAiCompanion: React.FC = () => {
     }
 
     const welcomeText = isLecturer
-      ? `Xin chào Thầy/Cô ${user?.fullName || ''}! 👋 Em là ${aiName} – trợ lý AI hỗ trợ giảng dạy & quản lý đào tạo 24/7 của hệ thống LearningHub LMS.\n\nEm có thể hỗ trợ Thầy/Cô tra cứu nhanh: Lịch giảng dạy, danh sách sinh viên, các lớp học phần phụ trách, thông tin tài khoản Giảng viên... Thầy/Cô cần em hỗ trợ gì ạ? ✨`
+      ? `Xin chào Thầy/Cô ${user?.fullName || ''}! Em là ${aiName} – trợ lý hỗ trợ giảng dạy & quản lý đào tạo 24/7 của hệ thống LearningHub LMS.\n\nEm có thể hỗ trợ Thầy/Cô tra cứu nhanh: Lịch giảng dạy, danh sách sinh viên, các lớp học phần phụ trách, thông tin tài khoản Giảng viên... Thầy/Cô cần em hỗ trợ gì ạ?`
       : isAdmin
-      ? `Xin chào Quản trị viên ${user?.fullName || ''}! 👋 Mình là ${aiName} – trợ lý AI quản trị hệ thống LearningHub LMS.\n\nMình hỗ trợ tra cứu: Thống kê tổng số tài khoản, danh sách lớp học phần, duyệt quyền PBAC, tài khoản Giảng viên/Sinh viên... Bạn cần hỗ trợ gì hôm nay? ✨`
-      : `Xin chào ${user?.fullName || 'bạn'}! 👋 Mình là ${aiName} – trợ lý AI học tập thông minh 24/7 của hệ thống LearningHub LMS.\n\nMình có trí nhớ hội thoại & quyền truy cập CSDL thời gian thực: Tra cứu Sinh viên/Giảng viên (vd: "sinh viên 74dctt22099 là ai", hỏi tiếp "là đăng ký những môn nào"), thống kê hệ thống, thời khóa biểu, danh sách lớp học phần, học phí... Bạn muốn mình hỗ trợ gì nào? ✨`;
+      ? `Xin chào Quản trị viên ${user?.fullName || ''}! Mình là ${aiName} – trợ lý quản trị hệ thống LearningHub LMS.\n\nMình hỗ trợ tra cứu: Thống kê tổng số tài khoản, danh sách lớp học phần, duyệt quyền PBAC, tài khoản Giảng viên/Sinh viên... Bạn cần hỗ trợ gì hôm nay?`
+      : `Xin chào ${user?.fullName || 'bạn'}! Mình là ${aiName} – trợ lý học tập 24/7 của hệ thống LearningHub LMS.\n\nMình có trí nhớ hội thoại & quyền truy cập CSDL thời gian thực: Tra cứu Sinh viên/Giảng viên (vd: "sinh viên 74dctt22099 là ai", hỏi tiếp "là đăng ký những môn nào"), thống kê hệ thống, thời khóa biểu, danh sách lớp học phần, học phí... Bạn muốn mình hỗ trợ gì hôm nay?`;
 
     return [
       {
@@ -856,8 +856,8 @@ export const DraggableAiCompanion: React.FC = () => {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Bạn cần cái chó gì?"
-              className="flex-1 bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-purple-500 rounded-xl px-3.5 py-2 text-xs text-gray-900 dark:text-white outline-none transition select-text"
+              placeholder="Nhập câu hỏi tra cứu thông tin học tập, thời khóa biểu, sinh viên..."
+              className="flex-1 bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-indigo-500 rounded-xl px-3.5 py-2 text-xs text-gray-900 dark:text-white outline-none transition select-text"
             />
             <button
               type="submit"

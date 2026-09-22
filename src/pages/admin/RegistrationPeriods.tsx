@@ -144,8 +144,8 @@ export default function RegistrationPeriods() {
             className="px-3 py-1.5 bg-neutral-50 dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-xl text-xs text-slate-700 dark:text-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
           >
             <option value="ALL">Tất cả trạng thái</option>
-            <option value="ACTIVE">🟢 Đang mở đăng ký</option>
-            <option value="INACTIVE">🔴 Đã đóng đợt</option>
+            <option value="ACTIVE">Đang mở đăng ký</option>
+            <option value="INACTIVE">Đã đóng đợt</option>
           </select>
         </div>
       </div>
@@ -235,7 +235,7 @@ export default function RegistrationPeriods() {
                       <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-medium">{fmt(p.closeAt)}</td>
                       <td className="py-3.5 px-4 text-center font-bold text-slate-700 dark:text-slate-200">{p.maxCredits ?? 24} Tín chỉ</td>
                       <td className="py-3.5 px-4 text-center">
-                        <Pill intent={p.isActive ? 'success' : 'neutral'}>{p.isActive ? '🟢 Đang mở' : '🔴 Đã đóng'}</Pill>
+                        <Pill intent={p.isActive ? 'success' : 'neutral'}>{p.isActive ? 'Đang mở' : 'Đã đóng'}</Pill>
                       </td>
                     </tr>
                   ))}

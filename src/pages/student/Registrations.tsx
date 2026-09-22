@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Search, ListChecks } from 'lucide-react';
+import { Search, ListChecks, Clock, Hourglass, AlertCircle } from 'lucide-react';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import * as registrationService from '../../services/registrationService';
 import type { Registration, RegistrationPeriod, Clazz } from '../../types';
@@ -118,17 +118,19 @@ export default function StudentRegistrations() {
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-indigo-100 dark:border-slate-800 flex flex-wrap gap-4 text-xs text-slate-600 dark:text-slate-400">
-            <div>⏰ <span className="font-medium">Thời gian mở:</span> {fmtDate(activePeriod.openAt)}</div>
-            <div>⏳ <span className="font-medium">Thời gian đóng:</span> {fmtDate(activePeriod.closeAt)}</div>
+            <div className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-indigo-500" /> <span className="font-medium">Thời gian mở:</span> {fmtDate(activePeriod.openAt)}</div>
+            <div className="flex items-center gap-1.5"><Hourglass className="w-3.5 h-3.5 text-indigo-500" /> <span className="font-medium">Thời gian đóng:</span> {fmtDate(activePeriod.closeAt)}</div>
           </div>
           {isPeriodExpired && (
             <div className="mt-3 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2">
-              ⚠️ Đợt đăng ký này đã chính thức hết hạn vào lúc {fmtDate(activePeriod.closeAt)}. Hiện tại hệ thống không nhận thêm lượt đăng ký mới.
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>Đợt đăng ký này đã chính thức hết hạn vào lúc {fmtDate(activePeriod.closeAt)}. Hiện tại hệ thống không nhận thêm lượt đăng ký mới.</span>
             </div>
           )}
           {isPeriodUpcoming && (
             <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium flex items-center gap-2">
-              ⏳ Đợt đăng ký chưa bắt đầu. Đợt đăng ký sẽ tự động mở vào lúc {fmtDate(activePeriod.openAt)}.
+              <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>Đợt đăng ký chưa bắt đầu. Đợt đăng ký sẽ tự động mở vào lúc {fmtDate(activePeriod.openAt)}.</span>
             </div>
           )}
         </div>
