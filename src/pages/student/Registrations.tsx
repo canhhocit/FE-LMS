@@ -4,7 +4,40 @@ import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../component
 import * as registrationService from '../../services/registrationService';
 import type { Registration, RegistrationPeriod, Clazz } from '../../types';
 
-const fmtDate = (s?: string) => s ? new Date(s).toLocaleString('vi-VN') : '—';
+const parseDate = (val: unknown): Date | null => {
+  if (!val) return null;
+  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+  if (Array.isArray(val)) {
+    const [y, m, d, h = 0, min = 0, s = 0] = val;
+    return new Date(y, m - 1, d, h, min, s);
+  }
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (!trimmed) return null;
+    let d = new Date(trimmed);
+    if (!isNaN(d.getTime())) return d;
+
+    d = new Date(trimmed.replace(' ', 'T'));
+    if (!isNaN(d.getTime())) return d;
+
+    const timeFirstMatch = trimmed.match(/^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?\s+(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (timeFirstMatch) {
+      const [, h, min, s = '0', day, mon, yr] = timeFirstMatch;
+      return new Date(Number(yr), Number(mon) - 1, Number(day), Number(h), Number(min), Number(s));
+    }
+    const dateFirstMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/);
+    if (dateFirstMatch) {
+      const [, day, mon, yr, h = '0', min = '0', s = '0'] = dateFirstMatch;
+      return new Date(Number(yr), Number(mon) - 1, Number(day), Number(h), Number(min), Number(s));
+    }
+  }
+  return null;
+};
+
+const fmtDate = (s?: unknown) => {
+  const d = parseDate(s);
+  return d ? d.toLocaleString('vi-VN') : '—';
+};
 
 export default function StudentRegistrations() {
   const [tab, setTab] = useState<'REGISTER' | 'MY_REGISTRATIONS'>('REGISTER');
@@ -62,14 +95,13 @@ export default function StudentRegistrations() {
   };
 
   const handleUnregister = async (clazzId: number, classCode?: string) => {
-    if (!window.confirm(`Bạn có chắc chắn muốn hủy đăng ký lớp học phần ${classCode ?? ''}?`)) return;
+    if (classCode && !window.confirm(`Bạn có chắc chắn muốn hủy đăng ký lớp ${classCode}?`)) return;
     setUnregisteringId(clazzId);
     setErr(null);
     setSuccessMsg(null);
     try {
       await registrationService.unregisterClass(clazzId);
-      setSuccessMsg('Đã hủy đăng ký lớp học phần thành công.');
-      setMyRegistrations((prev) => prev.filter((item) => item.clazzId !== clazzId));
+      setSuccessMsg('Đã hủy đăng ký thành công');
       loadData();
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Không thể hủy đăng ký');
@@ -83,8 +115,8 @@ export default function StudentRegistrations() {
   const totalRegisteredCredits = myRegistrations.reduce((sum, r) => sum + (r.credits ?? 0), 0);
 
   const now = new Date();
-  const openAt = activePeriod?.openAt ? new Date(activePeriod.openAt) : null;
-  const closeAt = activePeriod?.closeAt ? new Date(activePeriod.closeAt) : null;
+  const openAt = parseDate(activePeriod?.openAt);
+  const closeAt = parseDate(activePeriod?.closeAt);
 
   const isPeriodOpen = !!(openAt && closeAt && now >= openAt && now <= closeAt);
   const isPeriodExpired = !!(closeAt && now > closeAt);

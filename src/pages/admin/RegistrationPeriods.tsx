@@ -5,7 +5,40 @@ import * as registrationService from '../../services/registrationService';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import type { RegistrationPeriod } from '../../types';
 
-const fmt = (s?: string) => s ? new Date(s).toLocaleString('vi-VN') : '—';
+const parseDate = (val: unknown): Date | null => {
+  if (!val) return null;
+  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+  if (Array.isArray(val)) {
+    const [y, m, d, h = 0, min = 0, s = 0] = val;
+    return new Date(y, m - 1, d, h, min, s);
+  }
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (!trimmed) return null;
+    let d = new Date(trimmed);
+    if (!isNaN(d.getTime())) return d;
+
+    d = new Date(trimmed.replace(' ', 'T'));
+    if (!isNaN(d.getTime())) return d;
+
+    const timeFirstMatch = trimmed.match(/^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?\s+(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (timeFirstMatch) {
+      const [, h, min, s = '0', day, mon, yr] = timeFirstMatch;
+      return new Date(Number(yr), Number(mon) - 1, Number(day), Number(h), Number(min), Number(s));
+    }
+    const dateFirstMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/);
+    if (dateFirstMatch) {
+      const [, day, mon, yr, h = '0', min = '0', s = '0'] = dateFirstMatch;
+      return new Date(Number(yr), Number(mon) - 1, Number(day), Number(h), Number(min), Number(s));
+    }
+  }
+  return null;
+};
+
+const fmt = (s?: unknown) => {
+  const d = parseDate(s);
+  return d ? d.toLocaleString('vi-VN') : '—';
+};
 
 export default function RegistrationPeriods() {
   const [periods, setPeriods] = useState<RegistrationPeriod[]>([]);
@@ -95,10 +128,27 @@ export default function RegistrationPeriods() {
     }
   };
 
+  const getPeriodStatus = (p: RegistrationPeriod) => {
+    if (!p.isActive) return { label: 'Đã đóng', intent: 'neutral' as const };
+    const now = new Date();
+    const openAt = parseDate(p.openAt);
+    const closeAt = parseDate(p.closeAt);
+
+    if (closeAt && now > closeAt) {
+      return { label: 'Đã đóng', intent: 'neutral' as const };
+    }
+    if (openAt && now < openAt) {
+      return { label: 'Sắp mở', intent: 'warn' as const };
+    }
+    return { label: 'Đang mở', intent: 'success' as const };
+  };
+
   // Filtered and Paginated Periods
   const filteredPeriods = periods.filter((p) => {
     const matchesSearch = !searchKw.trim() || p.name.toLowerCase().includes(searchKw.toLowerCase()) || (p.academicYear && p.academicYear.toLowerCase().includes(searchKw.toLowerCase()));
-    const matchesStatus = statusFilter === 'ALL' || (statusFilter === 'ACTIVE' ? p.isActive : !p.isActive);
+    const statusInfo = getPeriodStatus(p);
+    const isOpen = statusInfo.label === 'Đang mở';
+    const matchesStatus = statusFilter === 'ALL' || (statusFilter === 'ACTIVE' ? isOpen : !isOpen);
     return matchesSearch && matchesStatus;
   });
 
@@ -228,17 +278,20 @@ export default function RegistrationPeriods() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100 dark:divide-slate-800/80">
-                  {paginatedPeriods.map((p) => (
-                    <tr key={p.id} className="hover:bg-neutral-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-indigo-700 dark:text-indigo-400">{p.name}</td>
-                      <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-medium">{fmt(p.openAt)}</td>
-                      <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-medium">{fmt(p.closeAt)}</td>
-                      <td className="py-3.5 px-4 text-center font-bold text-slate-700 dark:text-slate-200">{p.maxCredits ?? 24} Tín chỉ</td>
-                      <td className="py-3.5 px-4 text-center">
-                        <Pill intent={p.isActive ? 'success' : 'neutral'}>{p.isActive ? 'Đang mở' : 'Đã đóng'}</Pill>
-                      </td>
-                    </tr>
-                  ))}
+                  {paginatedPeriods.map((p) => {
+                    const statusInfo = getPeriodStatus(p);
+                    return (
+                      <tr key={p.id} className="hover:bg-neutral-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-indigo-700 dark:text-indigo-400">{p.name}</td>
+                        <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-medium">{fmt(p.openAt)}</td>
+                        <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-medium">{fmt(p.closeAt)}</td>
+                        <td className="py-3.5 px-4 text-center font-bold text-slate-700 dark:text-slate-200">{p.maxCredits ?? 24} Tín chỉ</td>
+                        <td className="py-3.5 px-4 text-center">
+                          <Pill intent={statusInfo.intent}>{statusInfo.label}</Pill>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
