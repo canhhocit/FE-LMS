@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, BookOpen, ClipboardList, FileText, CheckCircle, Calendar, Key, Building2, Zap } from 'lucide-react';
+import { Users, BookOpen, ClipboardList, Calendar, Key, Building2, Zap } from 'lucide-react';
 import * as clazzService from '../../services/clazzService';
 import * as adminService from '../../services/adminService';
 import { PageTitle, Card, Spinner, Empty, Pill } from '../../components/Layout';
@@ -27,8 +27,6 @@ export function AdminDashboard() {
     { label: 'Tổng người dùng', val: stats.totalUsers, Icon: Users, color: 'border-l-4 border-indigo-500 text-indigo-600 dark:text-indigo-400' },
     { label: 'Lớp môn học', val: stats.totalClasses, Icon: BookOpen, color: 'border-l-4 border-emerald-500 text-emerald-600 dark:text-emerald-400' },
     { label: 'Lượt đăng ký học', val: stats.totalEnrollments, Icon: ClipboardList, color: 'border-l-4 border-amber-500 text-amber-600 dark:text-amber-400' },
-    { label: 'Bài tập học phần', val: stats.totalAssignments, Icon: FileText, color: 'border-l-4 border-rose-500 text-rose-600 dark:text-rose-400' },
-    { label: 'Bài làm nộp', val: stats.totalSubmissions, Icon: CheckCircle, color: 'border-l-4 border-cyan-500 text-cyan-600 dark:text-cyan-400' },
   ];
 
   const quickActions = [
@@ -51,7 +49,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Main Metric Overview Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {metricCards.map((i) => {
           const IconComp = i.Icon;
           return (
