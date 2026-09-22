@@ -200,23 +200,23 @@ export const AdminPbacApproval: React.FC = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
-      {/* Header Banner */}
-      <div className="bg-linear-to-r from-blue-700 via-indigo-700 to-purple-800 rounded-2xl p-6 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header & Main Action */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <ShieldCheck className="w-7 h-7 text-emerald-400" />
-            Phê duyệt & Chủ động Cấp quyền PBAC
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <ShieldCheck className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+            Phê duyệt & Cấp quyền PBAC
           </h1>
-          <p className="text-blue-100 text-sm mt-1">
-            Cấp quyền sửa điểm tạm thời cho Giảng viên (Phê duyệt từ yêu cầu HOẶC Chủ động gán trực tiếp qua Combobox)
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Quản lý phê duyệt từ yêu cầu và chủ động cấp quyền sửa điểm tạm thời cho Giảng viên
           </p>
         </div>
         <button
           onClick={() => setShowDirectModal(true)}
-          className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-4 py-2.5 rounded-xl shadow-lg transition active:scale-95 cursor-pointer text-sm"
+          className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-xl shadow-xs transition active:scale-95 cursor-pointer text-sm"
         >
-          <PlusCircle className="w-5 h-5" />
-          Chủ động Cấp quyền Trực tiếp
+          <PlusCircle className="w-4.5 h-4.5" />
+          Cấp quyền
         </button>
       </div>
 
