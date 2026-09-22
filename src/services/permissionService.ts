@@ -17,3 +17,23 @@ export const updateUserPermissions = async (userId: number, permissions: string[
 
 export const getAdmins = async (): Promise<User[]> =>
   unwrap(apiClient.get('/admin/users/admins'));
+
+export const createAdminUser = async (data: {
+  fullName: string;
+  email: string;
+  password?: string;
+  permissions?: string[];
+}): Promise<User> => {
+  const newUser = await unwrap<User>(
+    apiClient.post('/admin/users', {
+      fullName: data.fullName,
+      email: data.email,
+      password: data.password || '123456@',
+      role: 'ADMIN',
+    }),
+  );
+  if (data.permissions && data.permissions.length > 0 && newUser?.id) {
+    await updateUserPermissions(newUser.id, data.permissions);
+  }
+  return newUser;
+};
