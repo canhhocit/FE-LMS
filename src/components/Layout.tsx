@@ -46,7 +46,7 @@ const MoonIcon = ({ className = "h-4.5 w-4.5" }: { className?: string }) => (
 );
 
 const PageHeader = ({ children }: { children: ReactNode }) => (
-  <h1 className="text-xl font-bold text-slate-900 dark:text-[#63a1ff] mb-4">
+  <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white mb-4">
     {children}
   </h1>
 );
@@ -62,26 +62,26 @@ const UiCard = ({
 }) => (
   <div
     onClick={onClick}
-    className={`rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs transition dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 ${className}`}
+    className={`rounded-xl border border-slate-200/70 bg-white p-5 shadow-xs transition hover:border-slate-300 dark:border-slate-800/80 dark:bg-slate-900 dark:text-slate-100 ${className}`}
   >
     {children}
   </div>
 );
 
 const LoadingState = () => (
-  <div className="flex h-32 items-center justify-center text-[#00376f] dark:text-[#63a1ff]">
+  <div className="flex h-32 items-center justify-center text-indigo-600 dark:text-indigo-400">
     <div className="h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
   </div>
 );
 
 const EmptyState = ({ message = "Không có dữ liệu" }: { message?: string }) => (
-  <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+  <div className="rounded-xl border border-slate-200/70 bg-white p-8 text-center text-sm font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
     {message}
   </div>
 );
 
 const ErrorState = ({ message }: { message: string }) => (
-  <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
+  <div className="rounded-xl border border-red-200/80 bg-red-50/70 p-4 text-sm font-medium text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
     {message}
   </div>
 );
@@ -94,16 +94,16 @@ const StatusBadge = (props: {
   const { children, intent = "neutral" } = props;
   const styles = {
     success:
-      "bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60",
-    warn: "bg-amber-50 text-amber-700 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60",
+      "bg-emerald-50 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/50",
+    warn: "bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/50",
     error:
-      "bg-rose-50 text-rose-700 border border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60",
+      "bg-rose-50 text-rose-700 border border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/50",
     neutral:
-      "bg-slate-100 text-slate-700 border border-slate-200/80 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700/60",
+      "bg-slate-100 text-slate-700 border border-slate-200/60 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700/50",
   }[intent];
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-tight ${styles}`}
     >
       {children}
     </span>

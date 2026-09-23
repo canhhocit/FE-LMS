@@ -52,32 +52,22 @@ export default function StudentAiAdvisor() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-linear-to-r from-purple-900/90 via-indigo-900/90 to-slate-900 p-5 rounded-2xl border border-indigo-500/30 text-white shadow-lg relative overflow-hidden">
-        <div className="absolute -right-10 -top-10 w-40 h-40 bg-purple-500/20 rounded-full blur-2xl pointer-events-none"></div>
-        <div className="flex items-center gap-4 relative z-10">
-          <div className="relative group shrink-0">
-            <img
-              src="/assets/anime_ai_avatar.jpg"
-              alt="Hikari AI Mascot"
-              className="w-16 h-16 rounded-2xl object-cover ring-2 ring-purple-400/80 shadow-md shadow-purple-500/30 group-hover:scale-105 transition-transform duration-300"
-            />
-            <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-slate-900 rounded-full animate-pulse"></span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+            <Sparkles className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-extrabold tracking-wide text-white mb-0">Trợ lý & Cố vấn Học tập AI Hikari</h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-linear-to-r from-pink-500 to-purple-500 text-white uppercase tracking-wider shadow-xs flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> Anime AI Companion
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white">Trợ lý & Cố vấn Học tập AI</h1>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200/60">
+                AI Companion Active
               </span>
             </div>
-            <p className="text-xs text-indigo-200 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Phân tích phong cách học tập cá nhân hóa, điểm mạnh/điểm yếu và lộ trình nâng cao điểm số
             </p>
           </div>
-        </div>
-        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/15 text-xs font-semibold shrink-0">
-          <img src="/assets/anime_chibi_bot.jpg" alt="Bot" className="w-6 h-6 rounded-full object-cover ring-1 ring-purple-300" />
-          <span className="text-indigo-200">Gemini 2.0 AI Companion Online</span>
         </div>
       </div>
 
@@ -86,53 +76,47 @@ export default function StudentAiAdvisor() {
       {data && (
         <>
           {/* Header Overview Card */}
-          <div className="bg-linear-to-r from-indigo-950 via-indigo-900 to-purple-950 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden border border-indigo-500/20">
-            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl p-6 shadow-xs border border-slate-200/80 dark:border-slate-800">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div className="flex items-center gap-4">
-                <img
-                  src="/assets/anime_ai_avatar.jpg"
-                  alt="Student AI Profile"
-                  className="w-14 h-14 rounded-2xl object-cover ring-2 ring-indigo-400/60 shadow-lg shrink-0"
-                />
-                <div className="space-y-1.5">
+                <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-200 font-bold text-lg border border-slate-200 dark:border-slate-700 shrink-0">
+                  {data.studentName?.charAt(0) || 'S'}
+                </div>
+                <div className="space-y-1">
                   <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-bold">{data.studentName}</h2>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">{data.studentName}</h2>
                     {getStatusBadge(data.academicStatus)}
                   </div>
-                  <p className="text-indigo-200 text-sm flex items-center gap-2">
-                    <span className="font-semibold text-purple-300">Phong cách học tập:</span>
-                    <span className="bg-white/15 px-2.5 py-0.5 rounded-lg text-white font-medium text-xs">{data.learningStyle}</span>
+                  <p className="text-slate-600 dark:text-slate-400 text-xs flex items-center gap-2">
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">Phong cách học tập:</span>
+                    <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-800 dark:text-slate-200 font-medium">{data.learningStyle}</span>
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 bg-white/10 backdrop-blur-md px-6 py-4 rounded-xl border border-white/15 shrink-0">
+              <div className="flex items-center gap-6 bg-slate-50 dark:bg-slate-800/60 px-5 py-3 rounded-xl border border-slate-200/60 dark:border-slate-700/60 shrink-0">
                 <div className="text-center">
-                  <div className="text-xs font-medium text-indigo-200">Điểm GPA Tích lũy</div>
-                  <div className="text-3xl font-extrabold text-amber-300">{data.gpa} <span className="text-xs text-indigo-200">/ 10</span></div>
+                  <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">GPA Tích lũy</div>
+                  <div className="text-2xl font-bold text-slate-900 dark:text-white">{data.gpa} <span className="text-xs text-slate-500 font-normal">/ 10</span></div>
                 </div>
-                <div className="w-px h-10 bg-white/20"></div>
+                <div className="w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
                 <div className="text-center">
-                  <div className="text-xs font-medium text-indigo-200">Kế hoạch Hành động</div>
-                  <div className="text-2xl font-bold text-white">{data.studyPlan?.length ?? 0} <span className="text-xs">bước</span></div>
+                  <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Hành động đề xuất</div>
+                  <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{data.studyPlan?.length ?? 0} <span className="text-xs text-slate-500 font-normal">bước</span></div>
                 </div>
               </div>
             </div>
 
             {/* AI Advisor Summary */}
-            <div className="mt-6 pt-5 border-t border-white/15 bg-white/5 p-4 rounded-xl flex items-start gap-3">
-              <img
-                src="/assets/anime_chibi_bot.jpg"
-                alt="Chibi Bot"
-                className="w-10 h-10 rounded-full object-cover ring-2 ring-amber-300/80 shrink-0 shadow-md"
-              />
+            <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 bg-indigo-50/50 dark:bg-indigo-950/30 p-4 rounded-xl flex items-start gap-3 border border-indigo-100/80 dark:border-indigo-900/40">
+              <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4" />
+              </div>
               <div className="flex-1">
-                <div className="text-xs uppercase tracking-wider text-amber-300 font-bold mb-1 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                  <span>Lời khuyên tổng quan từ Cố vấn AI Hikari</span>
+                <div className="text-xs uppercase tracking-wider text-indigo-700 dark:text-indigo-300 font-bold mb-1 flex items-center gap-1.5">
+                  <span>Lời khuyên tổng quan từ Cố vấn AI</span>
                 </div>
-                <p className="text-sm text-indigo-100 leading-relaxed">
+                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
                   {data.aiAdviceSummary}
                 </p>
               </div>
@@ -210,17 +194,14 @@ export default function StudentAiAdvisor() {
           {/* Interactive Chat Box */}
           <Card>
             <div className="flex items-center gap-3 mb-3">
-              <img
-                src="/assets/anime_ai_avatar.jpg"
-                alt="Hikari Chat Mascot"
-                className="w-10 h-10 rounded-full object-cover ring-2 ring-purple-400 shadow-md shrink-0"
-              />
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                <MessageSquare className="w-5 h-5" />
+              </div>
               <div>
-                <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-purple-600 shrink-0" />
-                  <span>Trò chuyện trực tiếp với Anime AI Advisor Hikari</span>
+                <h3 className="font-bold text-slate-800 dark:text-white text-base flex items-center gap-2">
+                  <span>Trò chuyện trực tiếp với Cố vấn AI</span>
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Nhập câu hỏi hoặc băn khoăn về bài học, môn học để nhận định hướng giải đáp từ Cố vấn AI
                 </p>
               </div>
@@ -231,15 +212,15 @@ export default function StudentAiAdvisor() {
                 placeholder="Ví dụ: Làm sao để cải thiện kỹ năng làm bài thi trắc nghiệm giữa kỳ?"
                 value={queryInput}
                 onChange={(e) => setQueryInput(e.target.value)}
-                className="flex-1 px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="flex-1 px-4 py-2.5 text-sm border border-slate-200/80 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
               />
               <button
                 type="submit"
                 disabled={asking || !queryInput.trim()}
-                className="px-5 py-2.5 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-semibold rounded-xl transition shadow-md disabled:opacity-50 shrink-0 flex items-center gap-2 cursor-pointer"
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition shadow-xs disabled:opacity-50 shrink-0 flex items-center gap-2 cursor-pointer"
               >
                 {asking ? (
-                  'Hikari đang phân tích…'
+                  'Đang phân tích…'
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" /> Gửi câu hỏi

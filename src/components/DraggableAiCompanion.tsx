@@ -605,270 +605,197 @@ export const DraggableAiCompanion: React.FC = () => {
 
   return (
     <>
-      {/* Floating Mascot Button */}
-      <div
-        ref={containerRef}
-        style={{ left: `${position.x}px`, top: `${position.y}px` }}
-        className="fixed z-40"
-      >
-        <div
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => !isOpenInput && setIsHovered(false)}
-          onMouseDown={handleMouseDown}
-          onClick={handleMascotClick}
-          className="relative group cursor-grab active:cursor-grabbing select-none"
-        >
-          <div className="w-16 h-16 rounded-full bg-linear-to-tr from-indigo-600 via-purple-600 to-pink-500 p-1 shadow-2xl hover:scale-110 transition duration-300 flex items-center justify-center">
-            <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white relative overflow-hidden">
-              <Bot className="w-9 h-9 text-pink-400 animate-pulse" />
-              <span className="absolute bottom-1 right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-slate-900" />
+      {/* Floating Action Button (FAB) at bottom-right corner */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-auto">
+        {!isOpenInput && (
+          <button
+            type="button"
+            onClick={() => setIsOpenInput(true)}
+            className="flex items-center gap-2.5 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg hover:shadow-indigo-500/25 transition duration-200 cursor-pointer active:scale-95 group border border-indigo-500/30"
+          >
+            <div className="relative">
+              <Bot className="w-5 h-5" />
+              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-indigo-600" />
             </div>
-          </div>
-          <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow animate-bounce">
-            AI Mascot
-          </span>
-        </div>
+            <span className="text-xs font-semibold">{aiName}</span>
+            <Sparkles className="w-3.5 h-3.5 text-indigo-200 group-hover:rotate-12 transition" />
+          </button>
+        )}
 
-        {/* Hover Quick Popup Menu */}
-        {isHovered && !isOpenInput && (
-          <div className="absolute bottom-20 right-0 w-64 bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-2xl border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-bottom-2 select-none">
-            <p className="text-xs font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-pink-500" /> {aiName} - Truy vấn nhanh ({userRole}):
-            </p>
-            <div className="space-y-1">
-              {isLecturer ? (
-                <>
-                  <button
-                    onClick={() => handleQuickAsk('lịch giảng dạy của tôi')}
-                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
+        {/* AI Chat Window */}
+        {isOpenInput && (
+          <div
+            style={
+              isExpanded
+                ? { width: `${expandedSize.width}px`, height: `${expandedSize.height}px`, maxWidth: 'calc(100vw - 32px)', maxHeight: 'calc(100vh - 32px)' }
+                : undefined
+            }
+            className={`bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-800 overflow-hidden flex flex-col transition-all duration-200 ${
+              isExpanded
+                ? 'min-w-[340px] min-h-80'
+                : 'w-[calc(100vw-32px)] sm:w-[400px] h-[520px] max-h-[calc(100vh-48px)]'
+            }`}
+          >
+            {/* Resize Handle at Top-Left corner when in Expanded Mode */}
+            {isExpanded && (
+              <div
+                onMouseDown={handleResizeStart}
+                title="Kéo thả góc này để thay đổi Kích thước cửa sổ Chat"
+                className="absolute top-2 left-2 z-30 w-5 h-5 cursor-nwse-resize flex items-center justify-center bg-slate-800/60 hover:bg-slate-800 rounded-md transition"
+              >
+                <Move className="w-3.5 h-3.5 text-white" />
+              </div>
+            )}
+
+            {/* Header */}
+            <div className="bg-slate-900 dark:bg-slate-950 p-3.5 text-white flex items-center justify-between shrink-0 select-none border-b border-slate-800">
+              <div className="flex items-center gap-2.5 pl-2">
+                <div className="relative">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-600/30 border border-indigo-400/40 flex items-center justify-center">
+                    <Bot className="w-4.5 h-4.5 text-indigo-400" />
+                  </div>
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-400 rounded-full" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-white leading-tight">{aiName}</h3>
+                  <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                    <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" /> Trợ lý LMS 24/7
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  title="Xuất file lịch sử trò chuyện (.json)"
+                  onClick={handleExportHistory}
+                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  title={isExpanded ? 'Thu nhỏ cửa sổ' : 'Mở rộng hiển thị'}
+                  onClick={() => setIsExpanded((prev) => !prev)}
+                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
+                >
+                  {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                </button>
+                <button
+                  type="button"
+                  title="Xóa lịch sử trò chuyện"
+                  onClick={handleClearHistory}
+                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsOpenInput(false)}
+                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
+                >
+                  <X className="w-4.5 h-4.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Conversation Stream */}
+            <div
+              ref={chatScrollRef}
+              className="flex-1 min-h-0 p-4 space-y-3.5 overflow-y-auto bg-slate-50/60 dark:bg-slate-950/50 select-text cursor-text"
+            >
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'} space-y-1`}
+                >
+                  <div
+                    className={`${isExpanded ? 'max-w-[90%]' : 'max-w-[88%]'} px-3.5 py-2.5 rounded-2xl text-xs leading-relaxed shadow-xs select-text ${
+                      msg.sender === 'user'
+                        ? 'bg-indigo-600 text-white rounded-br-xs'
+                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200/80 dark:border-slate-700/80 rounded-bl-xs'
+                    }`}
                   >
-                    <Calendar className="w-3.5 h-3.5 text-purple-500" /> Tra cứu Lịch giảng dạy Thầy/Cô
-                  </button>
-                  <button
-                    onClick={() => handleQuickAsk('danh sách lớp học phần tôi dạy')}
-                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
-                  >
-                    <BookOpen className="w-3.5 h-3.5 text-pink-500" /> Lớp học phần đang phụ trách
-                  </button>
-                  <button
-                    onClick={() => handleQuickAsk('thông tin cá nhân của tôi')}
-                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
-                  >
-                    <User className="w-3.5 h-3.5 text-indigo-500" /> Hồ sơ & Mã Giảng viên
-                  </button>
-                </>
-              ) : isAdmin ? (
-                <>
-                  <button
-                    onClick={() => handleQuickAsk('thống kê hệ thống')}
-                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
-                  >
-                    <Database className="w-3.5 h-3.5 text-indigo-500" /> Thống kê Người dùng toàn hệ thống
-                  </button>
-                  <button
-                    onClick={() => handleQuickAsk('danh sách lớp học phần')}
-                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
-                  >
-                    <BookOpen className="w-3.5 h-3.5 text-pink-500" /> Thống kê Lớp học phần LMS
-                  </button>
-                  <button
-                    onClick={() => handleQuickAsk('thông tin cá nhân')}
-                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Quyền hạn Admin Hệ thống
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => handleQuickAsk('thời khóa biểu của tôi')}
-                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
-                  >
-                    <Calendar className="w-3.5 h-3.5 text-purple-500" /> Tra cứu Lịch học thời gian thực
-                  </button>
-                  <button
-                    onClick={() => handleQuickAsk('danh sách lớp học phần của tôi')}
-                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
-                  >
-                    <BookOpen className="w-3.5 h-3.5 text-pink-500" /> Tra cứu Lớp học phần của tôi
-                  </button>
-                  <button
-                    onClick={() => handleQuickAsk('học phí của tôi')}
-                    className="w-full text-left px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg flex items-center gap-2 transition cursor-pointer"
-                  >
-                    <CreditCard className="w-3.5 h-3.5 text-indigo-500" /> Tra cứu Học phí & Hóa đơn
-                  </button>
-                </>
+                    {msg.sender === 'ai' && (
+                      <div className="flex items-center justify-between font-bold text-indigo-600 dark:text-indigo-400 text-[11px] mb-1 select-none">
+                        <span className="flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> {aiName}</span>
+                        <button
+                          type="button"
+                          title="Sao chép nội dung"
+                          onClick={() => handleCopyMessage(msg.id, msg.text)}
+                          className="p-0.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-400 hover:text-slate-600 transition cursor-pointer flex items-center gap-1 text-[10px]"
+                        >
+                          {copiedId === msg.id ? (
+                            <span className="text-emerald-500 flex items-center gap-1 font-semibold"><Check className="w-3 h-3" /> Đã chép</span>
+                          ) : (
+                            <span className="flex items-center gap-1"><Copy className="w-3 h-3" /> Chép</span>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                    <p className="whitespace-pre-wrap select-text">
+                      {msg.text}
+                    </p>
+                  </div>
+                  <span className="text-[10px] text-slate-400 px-1 font-mono select-none">{msg.timestamp}</span>
+                </div>
+              ))}
+
+              {/* Thinking Indicator */}
+              {loading && (
+                <div className="flex flex-col items-start space-y-1 select-none">
+                  <div className="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl rounded-bl-xs px-3.5 py-2.5 text-xs text-slate-500 flex items-center gap-2 shadow-xs">
+                    <Loader2 className="w-3.5 h-3.5 text-indigo-600 animate-spin" />
+                    <span className="italic font-medium text-indigo-600 dark:text-indigo-400 text-[11px]">Đang phân tích dữ liệu...</span>
+                  </div>
+                </div>
               )}
             </div>
+
+            {/* Quick Action Buttons */}
+            <div className="px-3 py-1.5 bg-slate-100/80 dark:bg-slate-900 border-t border-slate-200/60 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto text-[11px] select-none scrollbar-none">
+              <button
+                onClick={() => handleQuickAsk('thời khóa biểu của tôi')}
+                className="px-2.5 py-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 shrink-0 cursor-pointer flex items-center gap-1"
+              >
+                <Calendar className="w-3 h-3 text-indigo-500" /> Thời khóa biểu
+              </button>
+              <button
+                onClick={() => handleQuickAsk('danh sách lớp học phần của tôi')}
+                className="px-2.5 py-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 shrink-0 cursor-pointer flex items-center gap-1"
+              >
+                <BookOpen className="w-3 h-3 text-purple-500" /> Lớp học phần
+              </button>
+              <button
+                onClick={() => handleQuickAsk('học phí của tôi')}
+                className="px-2.5 py-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 shrink-0 cursor-pointer flex items-center gap-1"
+              >
+                <CreditCard className="w-3 h-3 text-emerald-500" /> Học phí
+              </button>
+            </div>
+
+            {/* Footer Input Area */}
+            <form
+              onSubmit={handleSearchSubmit}
+              className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-800 flex items-center gap-2 shrink-0 select-none"
+            >
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Tra cứu thời khóa biểu, sinh viên, lớp học..."
+                className="flex-1 bg-slate-100 dark:bg-slate-800/80 border border-transparent focus:border-indigo-500 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white outline-none transition select-text"
+              />
+              <button
+                type="submit"
+                disabled={loading || !query.trim()}
+                className="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition shadow-xs cursor-pointer disabled:opacity-40"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
           </div>
         )}
       </div>
-
-      {/* Render AI Chat Window in fixed viewport position so it NEVER goes off screen */}
-      {isOpenInput && (
-        <div
-          style={
-            isExpanded
-              ? { width: `${expandedSize.width}px`, height: `${expandedSize.height}px`, maxWidth: 'calc(100vw - 32px)', maxHeight: 'calc(100vh - 32px)' }
-              : undefined
-          }
-          className={`fixed z-50 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col ${
-            isExpanded
-              ? 'bottom-4 right-4 min-w-[320px] min-h-75'
-              : 'bottom-4 right-4 w-[calc(100vw-32px)] sm:w-96 h-125 max-h-[calc(100vh-32px)]'
-          }`}
-        >
-          {/* Resize Handle at Top-Left corner when in Expanded Mode */}
-          {isExpanded && (
-            <div
-              onMouseDown={handleResizeStart}
-              title="Kéo thả góc này để thay đổi Kích thước cửa sổ Chat (Rộng / Cao)"
-              className="absolute top-2 left-2 z-30 w-5 h-5 cursor-nwse-resize flex items-center justify-center bg-white/20 hover:bg-white/40 rounded-md transition"
-            >
-              <Move className="w-3.5 h-3.5 text-white" />
-            </div>
-          )}
-
-          {/* Header */}
-          <div className="bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 p-3.5 text-white flex items-center justify-between shrink-0 shadow-md select-none">
-            <div className="flex items-center gap-2.5 pl-3">
-              <div className="relative">
-                <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
-                  <Bot className="w-5 h-5 text-pink-200" />
-                </div>
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full border border-purple-600" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold tracking-tight">{aiName}</h3>
-                <p className="text-[10px] text-pink-100 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-emerald-300 rounded-full animate-pulse" /> Live Persona • Custom Instructions
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                title="Mở Cài đặt Cá nhân hóa AI (System Prompt & Persona)"
-                onClick={() => {
-                  const role = user?.role;
-                  const profilePath = role === 'LECTURER' ? '/lecturer/profile' : role === 'ADMIN' ? '/admin/profile' : '/student/profile';
-                  window.location.href = profilePath;
-                }}
-                className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition cursor-pointer"
-              >
-                <Settings className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                title="Xuất file lịch sử trò chuyện (.json)"
-                onClick={handleExportHistory}
-                className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition cursor-pointer"
-              >
-                <Download className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                title={isExpanded ? 'Thu nhỏ cửa sổ' : 'Mở rộng hiển thị (Kéo thả kích thước)'}
-                onClick={() => setIsExpanded((prev) => !prev)}
-                className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition cursor-pointer"
-              >
-                {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-              </button>
-
-              <button
-                type="button"
-                title="Xóa lịch sử trò chuyện"
-                onClick={handleClearHistory}
-                className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition cursor-pointer"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsOpenInput(false)}
-                className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Conversation Stream - Full Text Selection & 1-Click Copy with min-h-0 for proper flex overflow scrolling */}
-          <div
-            ref={chatScrollRef}
-            className="flex-1 min-h-0 p-4 space-y-3.5 overflow-y-auto bg-slate-50/50 dark:bg-slate-950/40 select-text cursor-text"
-          >
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'} space-y-1`}
-              >
-                <div
-                  className={`${isExpanded ? 'max-w-[90%]' : 'max-w-[85%]'} px-3.5 py-2.5 rounded-2xl text-xs leading-relaxed shadow-xs select-text ${
-                    msg.sender === 'user'
-                      ? 'bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-br-xs'
-                      : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-gray-700/80 rounded-bl-xs shadow-xs'
-                  }`}
-                >
-                  {msg.sender === 'ai' && (
-                    <div className="flex items-center justify-between font-bold text-pink-600 dark:text-pink-400 text-[11px] mb-1 select-none">
-                      <span className="flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> Hikari AI</span>
-                      <button
-                        type="button"
-                        title="Sao chép nội dung câu trả lời"
-                        onClick={() => handleCopyMessage(msg.id, msg.text)}
-                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition cursor-pointer flex items-center gap-1 text-[10px]"
-                      >
-                        {copiedId === msg.id ? (
-                          <span className="text-emerald-500 flex items-center gap-1 font-semibold"><Check className="w-3 h-3" /> Đã chép</span>
-                        ) : (
-                          <span className="flex items-center gap-1"><Copy className="w-3 h-3" /> Chép</span>
-                        )}
-                      </button>
-                    </div>
-                  )}
-                  <p className="whitespace-pre-wrap select-text selection:bg-purple-200 dark:selection:bg-purple-900 selection:text-purple-900 dark:selection:text-purple-100">
-                    {msg.text}
-                  </p>
-                </div>
-                <span className="text-[10px] text-gray-400 px-1 font-mono select-none">{msg.timestamp}</span>
-              </div>
-            ))}
-
-            {/* Thinking Indicator */}
-            {loading && (
-              <div className="flex flex-col items-start space-y-1 select-none">
-                <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl rounded-bl-xs px-3.5 py-2.5 text-xs text-gray-500 flex items-center gap-2 shadow-xs">
-                  <Loader2 className="w-3.5 h-3.5 text-pink-500 animate-spin" />
-                  <span className="italic font-medium text-pink-600 dark:text-pink-400 text-[11px]">Hikari đang suy nghĩ & liên kết ngữ cảnh...</span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Footer Input Area */}
-          <form
-            onSubmit={handleSearchSubmit}
-            className="p-3 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2 shrink-0 select-none"
-          >
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Nhập câu hỏi tra cứu thông tin học tập, thời khóa biểu, sinh viên..."
-              className="flex-1 bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-indigo-500 rounded-xl px-3.5 py-2 text-xs text-gray-900 dark:text-white outline-none transition select-text"
-            />
-            <button
-              type="submit"
-              disabled={loading || !query.trim()}
-              className="p-2 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:brightness-110 transition shadow cursor-pointer disabled:opacity-40"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </form>
-        </div>
-      )}
     </>
   );
 };

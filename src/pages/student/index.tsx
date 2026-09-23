@@ -25,12 +25,12 @@ type ClassProgressState = {
 
 const getStatusMeta = (percentage: number) => {
   if (percentage >= 100) {
-    return { label: 'Đã học', badgeClass: 'bg-emerald-100 text-emerald-700', barClass: 'from-emerald-500 to-emerald-400', glowClass: 'shadow-[0_0_0_1px_rgba(16,185,129,0.15)] ring-1 ring-emerald-200' };
+    return { label: 'Đã học', badgeClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60', barClass: 'bg-emerald-500', glowClass: 'border border-slate-200/70' };
   }
   if (percentage > 0) {
-    return { label: 'Đang học', badgeClass: 'bg-amber-100 text-amber-700', barClass: 'from-amber-500 to-orange-400', glowClass: 'shadow-[0_0_0_1px_rgba(245,158,11,0.18)] ring-1 ring-amber-200' };
+    return { label: 'Đang học', badgeClass: 'bg-amber-50 text-amber-700 border border-amber-200/60', barClass: 'bg-indigo-600', glowClass: 'border border-slate-200/70' };
   }
-  return { label: 'Chưa học', badgeClass: 'bg-slate-100 text-slate-600', barClass: 'from-slate-300 to-slate-200', glowClass: 'ring-1 ring-slate-200' };
+  return { label: 'Chưa học', badgeClass: 'bg-slate-100 text-slate-600 border border-slate-200/60', barClass: 'bg-slate-300', glowClass: 'border border-slate-200/70' };
 };
 
 function BookIcon() {

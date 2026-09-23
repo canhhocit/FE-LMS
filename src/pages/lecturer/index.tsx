@@ -48,22 +48,22 @@ export function LecturerDashboard() {
         Xin chào, {user?.fullName} <TeacherIcon className="inline w-5 h-5 ml-1 text-indigo-600" />
       </PageTitle>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <Card className="bg-linear-to-br from-indigo-600 to-blue-500 text-white">
-          <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-indigo-100">Lớp phụ trách</div>
-          <div className="mt-2 text-3xl font-bold">{classes.length}</div>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Card className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Lớp phụ trách</div>
+          <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{classes.length}</div>
         </Card>
-        <Card className="bg-linear-to-br from-amber-50 to-orange-50">
-          <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-amber-700">Tổng bài nộp</div>
-          <div className="mt-2 text-3xl font-bold text-amber-700">{subs.length}</div>
+        <Card className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Tổng bài nộp</div>
+          <div className="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400">{subs.length}</div>
         </Card>
-        <Card className="bg-linear-to-br from-emerald-50 to-green-50">
-          <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-emerald-700">Đã chấm</div>
-          <div className="mt-2 text-3xl font-bold text-emerald-700">{gradedCount}</div>
+        <Card className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Đã chấm</div>
+          <div className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400">{gradedCount}</div>
         </Card>
-        <Card className="bg-linear-to-br from-rose-50 to-pink-50">
-          <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-rose-700">Chờ chấm</div>
-          <div className="mt-2 text-3xl font-bold text-rose-700">{pendingCount}</div>
+        <Card className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Chờ chấm</div>
+          <div className="mt-2 text-2xl font-bold text-rose-600 dark:text-rose-400">{pendingCount}</div>
         </Card>
       </div>
 

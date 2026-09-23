@@ -1247,7 +1247,7 @@ export function AdminClasses() {
           <div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left border-collapse">
-                <thead className="bg-neutral-50 text-xs font-bold uppercase tracking-wider text-slate-600 border-b border-neutral-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-800">
+                <thead className="bg-slate-50/80 dark:bg-slate-800/60 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200/70 dark:border-slate-800">
                   <tr>
                     <th className="py-3.5 px-4">Mã lớp HP</th>
                     <th className="py-3.5 px-4">Tên lớp HP</th>

@@ -37,18 +37,18 @@ export const HomeroomGradebook: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Banner */}
-      <div className="bg-linear-to-r from-teal-600 via-emerald-600 to-green-700 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between">
+      <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Users className="w-7 h-7" />
-            Quản lý Điểm rèn luyện Lớp Chủ nhiệm (GVCN)
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Users className="w-5 h-5 text-indigo-600" />
+            Quản lý Điểm rèn luyện Lớp Chủ nhiệm
           </h1>
-          <p className="text-teal-100 text-sm mt-1">
-            Giáo viên chủ nhiệm có toàn quyền xem toàn bộ kết quả học tập & nhập Điểm rèn luyện niên khóa cho sinh viên lớp mình quản lý
+          <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
+            Giáo viên chủ nhiệm có toàn quyền xem kết quả học tập & nhập Điểm rèn luyện cho sinh viên lớp quản lý
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/30 text-white font-semibold px-4 py-2 rounded-xl text-sm cursor-pointer hover:bg-white/30 transition">
+        <div className="flex items-center gap-3 shrink-0">
+          <label className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-xl text-xs cursor-pointer transition shadow-xs">
             <Upload className="w-4 h-4" />
             Import Excel/CSV Điểm RL
             <input type="file" accept=".xlsx, .csv" className="hidden" onChange={() => setMsg('Đã import danh sách Điểm rèn luyện từ file Excel!')} />
