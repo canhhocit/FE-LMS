@@ -69,12 +69,14 @@ import PermissionRequestsPage from './pages/lecturer/PermissionRequestsPage';
 import AdminPbacApproval from './pages/admin/AdminPbacApproval';
 import HomeroomGradebook from './pages/lecturer/HomeroomGradebook';
 import DocumentHubPage from './pages/shared/DocumentHubPage';
+import ErrorBoundary from './components/ErrorBoundary';
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <BrowserRouter>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AuthProvider>
+          <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -151,5 +153,6 @@ export default function App() {
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
+    </ErrorBoundary>
   );
 }
