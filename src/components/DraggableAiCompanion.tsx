@@ -256,18 +256,18 @@ export const DraggableAiCompanion: React.FC = () => {
     if (isFollowUpQuestion && lastContextEntity && !hasNewSearchKeyword) {
       if (q.includes('đăng ký') || q.includes('môn nào') || q.includes('môn gì') || q.includes('học những gì')) {
         return (
-          `📚 **Danh sách các môn học phần sinh viên ${lastContextEntity.name} (MSV: ${lastContextEntity.code || '74DCTT22099'}) đã đăng ký:**\n\n` +
+          `**Danh sách các môn học phần sinh viên ${lastContextEntity.name} (MSV: ${lastContextEntity.code || '74DCTT22099'}) đã đăng ký:**\n\n` +
           `• **Lập trình Mobile (Flutter)** - 3 Tín chỉ | Lớp HP: \`62PM1_L01\` (Đã xếp lịch)\n` +
           `• **Công nghệ Phần mềm** - 3 Tín chỉ | Lớp HP: \`62PM1_L02\` (Đã xếp lịch)\n` +
           `• **Cơ sở Dữ liệu Nâng cao** - 4 Tín chỉ | Lớp HP: \`62PM1_L03\` (Đã xếp lịch)\n` +
           `• **Trí tuệ Nhân tạo (AI)** - 3 Tín chỉ | Lớp HP: \`62PM1_L04\` (Đã xếp lịch)\n\n` +
-          `📌 **Tổng số tín chỉ tích lũy:** 13 Tín chỉ • **Trạng thái:** Đã hoàn tất đóng Học phí & Đăng ký môn học thành công!`
+          `**Tổng số tín chỉ tích lũy:** 13 Tín chỉ • **Trạng thái:** Đã hoàn tất đóng Học phí & Đăng ký môn học thành công!`
         );
       }
 
       if (q.includes('lớp nào') || q.includes('lớp mấy')) {
         return (
-          `🏫 **Thông tin Lớp học của sinh viên ${lastContextEntity.name}:**\n\n` +
+          `**Thông tin Lớp học của sinh viên ${lastContextEntity.name}:**\n\n` +
           `• **Lớp hành chính:** \`${lastContextEntity.adminClass || '74DCTT24'}\`\n` +
           `• **Mã sinh viên:** \`${lastContextEntity.code || '74DCTT22099'}\`\n` +
           `• **Khoa:** Khoa Công nghệ thông tin\n` +
@@ -305,9 +305,9 @@ export const DraggableAiCompanion: React.FC = () => {
                     }`
                 )
                 .join('\n');
-              return `🔍 **Kết quả tra cứu Giảng viên thời gian thực trên CSDL (${lecturers.length} kết quả):**\n\n${listStr}`;
+              return `**Kết quả tra cứu Giảng viên thời gian thực trên CSDL (${lecturers.length} kết quả):**\n\n${listStr}`;
             } else {
-              return `🔍 **Kết quả tra cứu Giảng viên thời gian thực:**\n\n❌ Không tìm thấy Giảng viên nào có tên hoặc từ khóa "**${keyword}**" trong cơ sở dữ liệu hệ thống.`;
+              return `**Kết quả tra cứu Giảng viên thời gian thực:**\n\nKhông tìm thấy Giảng viên nào có tên hoặc từ khóa "**${keyword}**" trong cơ sở dữ liệu hệ thống.`;
             }
           } else {
             // Search Student
@@ -325,19 +325,19 @@ export const DraggableAiCompanion: React.FC = () => {
               const listStr = students
                 .map(
                   (s) =>
-                    `✅ **Thông tin Sinh viên:**\n` +
+                    `**Thông tin Sinh viên:**\n` +
                     `• **Họ và tên:** ${s.fullName}\n` +
                     `• **Mã sinh viên:** ${s.studentCode || keyword.toUpperCase()}\n` +
                     `• **Email hệ thống:** ${s.email}\n` +
                     `• **Lớp hành chính:** ${s.adminClassName || '74DCTT24'}\n` +
                     `• **Khoa / Ngành:** ${s.faculty || s.major || 'Khoa Công nghệ thông tin'}\n\n` +
-                    `📚 **Trạng thái Đăng ký môn học:**\n` +
+                    `**Trạng thái Đăng ký môn học:**\n` +
                     `• Sinh viên đã hoàn tất đăng ký 4 môn học phần trong học kỳ hiện tại!`
                 )
                 .join('\n\n');
-              return `🔍 **Kết quả tra cứu Sinh viên thời gian thực trên CSDL:**\n\n${listStr}`;
+              return `**Kết quả tra cứu Sinh viên thời gian thực trên CSDL:**\n\n${listStr}`;
             } else {
-              return `🔍 **Kết quả tra cứu Sinh viên thời gian thực:**\n\n❌ Không tìm thấy sinh viên nào khớp với mã hoặc tên từ khóa "**${keyword}**" trong cơ sở dữ liệu hệ thống LearningHub LMS.`;
+              return `**Kết quả tra cứu Sinh viên thời gian thực:**\n\nKhông tìm thấy sinh viên nào khớp với mã hoặc tên từ khóa "**${keyword}**" trong cơ sở dữ liệu hệ thống LearningHub LMS.`;
             }
           }
         } catch {
@@ -359,7 +359,7 @@ export const DraggableAiCompanion: React.FC = () => {
       try {
         const stats = await getDashboardStats();
         return (
-          `📊 **Thống kê dữ liệu thời gian thực của hệ thống LearningHub LMS:**\n\n` +
+          `**Thống kê dữ liệu thời gian thực của hệ thống LearningHub LMS:**\n\n` +
           `• **Tổng số người dùng:** ${stats.totalUsers} tài khoản\n` +
           `• **Tổng số Lớp học phần:** ${stats.totalClasses} lớp\n` +
           `• **Lượt đăng ký học:** ${stats.totalEnrollments} lượt\n` +
@@ -367,7 +367,7 @@ export const DraggableAiCompanion: React.FC = () => {
           `• **Bài tập đã nộp:** ${stats.totalSubmissions} bài nộp`
         );
       } catch {
-        return `📊 **Dữ liệu hệ thống LearningHub LMS:**\nHệ thống hiện đang quản lý toàn bộ tài khoản người dùng, lớp học phần và bài tập trên dữ liệu sản xuất!`;
+        return `**Dữ liệu hệ thống LearningHub LMS:**\nHệ thống hiện đang quản lý toàn bộ tài khoản người dùng, lớp học phần và bài tập trên dữ liệu sản xuất!`;
       }
     }
 
@@ -386,8 +386,8 @@ export const DraggableAiCompanion: React.FC = () => {
         const sched = await getMySchedule();
         if (!sched || sched.length === 0) {
           return isLecturer
-            ? `📅 **Lịch giảng dạy thời gian thực của Thầy/Cô:**\nHiện tại Thầy/Cô chưa có lịch giảng dạy nào được xếp trong hệ thống!`
-            : `📅 **Thời khóa biểu thời gian thực của sinh viên:**\nHiện tại bạn chưa có lịch học nào được xếp trong hệ thống!`;
+            ? `**Lịch giảng dạy thời gian thực của Thầy/Cô:**\nHiện tại Thầy/Cô chưa có lịch giảng dạy nào được xếp trong hệ thống!`
+            : `**Thời khóa biểu thời gian thực của sinh viên:**\nHiện tại bạn chưa có lịch học nào được xếp trong hệ thống!`;
         }
         const itemsStr = sched
           .slice(0, 6)
@@ -399,10 +399,10 @@ export const DraggableAiCompanion: React.FC = () => {
           )
           .join('\n');
         return isLecturer
-          ? `📅 **Lịch giảng dạy thời gian thực của Thầy/Cô ${user?.fullName} (${sched.length} môn học phần):**\n\n${itemsStr}`
-          : `📅 **Thời khóa biểu thời gian thực của sinh viên ${user?.fullName} (${sched.length} môn):**\n\n${itemsStr}`;
+          ? `**Lịch giảng dạy thời gian thực của Thầy/Cô ${user?.fullName} (${sched.length} môn học phần):**\n\n${itemsStr}`
+          : `**Thời khóa biểu thời gian thực của sinh viên ${user?.fullName} (${sched.length} môn):**\n\n${itemsStr}`;
       } catch {
-        return `📅 Vui lòng xem chi tiết lịch học/dạy tại mục **Thời khóa biểu** trên sidebar!`;
+        return `Vui lòng xem chi tiết lịch học/dạy tại mục **Thời khóa biểu** trên sidebar!`;
       }
     }
 
@@ -419,8 +419,8 @@ export const DraggableAiCompanion: React.FC = () => {
         const classes = await getMyClasses();
         if (!classes || classes.length === 0) {
           return isLecturer
-            ? `📚 **Danh sách Lớp học phần:**\nThầy/Cô hiện chưa được phân công giảng dạy lớp học phần nào!`
-            : `📚 **Danh sách Lớp học phần:**\nBạn hiện chưa tham gia lớp học phần nào!`;
+            ? `**Danh sách Lớp học phần:**\nThầy/Cô hiện chưa được phân công giảng dạy lớp học phần nào!`
+            : `**Danh sách Lớp học phần:**\nBạn hiện chưa tham gia lớp học phần nào!`;
         }
         const itemsStr = classes
           .slice(0, 6)
@@ -430,34 +430,34 @@ export const DraggableAiCompanion: React.FC = () => {
           )
           .join('\n');
         return isLecturer
-          ? `📚 **Danh sách các Lớp học phần Thầy/Cô ${user?.fullName} đang phụ trách giảng dạy (${classes.length} lớp):**\n\n${itemsStr}`
-          : `📚 **Danh sách các Lớp học phần thời gian thực của sinh viên ${user?.fullName} (${classes.length} lớp):**\n\n${itemsStr}`;
+          ? `**Danh sách các Lớp học phần Thầy/Cô ${user?.fullName} đang phụ trách giảng dạy (${classes.length} lớp):**\n\n${itemsStr}`
+          : `**Danh sách các Lớp học phần thời gian thực của sinh viên ${user?.fullName} (${classes.length} lớp):**\n\n${itemsStr}`;
       } catch {
-        return `📚 Bạn có thể xem toàn bộ danh sách lớp tại mục **Lớp học** trên menu sidebar!`;
+        return `Bạn có thể xem toàn bộ danh sách lớp tại mục **Lớp học** trên menu sidebar!`;
       }
     }
 
     // Intent 4: Tuition / Học phí
     if (q.includes('học phí') || q.includes('tiền học') || q.includes('học phí của tôi') || q.includes('nộp học phí')) {
       if (isLecturer || isAdmin) {
-        return `💳 **Thông tin Quản lý Học phí:**\nGiảng viên & Admin xem thông tin học phí toàn trường tại mục **Quản lý Học phí** trên menu quản trị!`;
+        return `**Thông tin Quản lý Học phí:**\nGiảng viên & Admin xem thông tin học phí toàn trường tại mục **Quản lý Học phí** trên menu quản trị!`;
       }
       try {
         const invoices = await getMyTuition();
         if (!invoices || invoices.length === 0) {
-          return `💳 **Thông tin Học phí:**\nBạn hiện không có hóa đơn học phí nào chưa thanh toán!`;
+          return `**Thông tin Học phí:**\nBạn hiện không có hóa đơn học phí nào chưa thanh toán!`;
         }
         const itemsStr = invoices
           .map(
             (inv) =>
               `• **Hóa đơn #${inv.id}** (${inv.semester} - ${inv.academicYear}): ${inv.amount?.toLocaleString('vi-VN')} VNĐ - Trạng thái: **${
-                inv.status === 'PAID' ? '✅ Đã nộp' : '⏳ Chưa nộp'
+                inv.status === 'PAID' ? 'Đã nộp' : 'Chưa nộp'
               }**`
           )
           .join('\n');
-        return `💳 **Thông tin Học phí thời gian thực của sinh viên ${user?.fullName}:**\n\n${itemsStr}`;
+        return `**Thông tin Học phí thời gian thực của sinh viên ${user?.fullName}:**\n\n${itemsStr}`;
       } catch {
-        return `💳 Chi tiết học phí và hóa đơn được xem tại mục **Học phí**!`;
+        return `Chi tiết học phí và hóa đơn được xem tại mục **Học phí**!`;
       }
     }
 
@@ -473,7 +473,7 @@ export const DraggableAiCompanion: React.FC = () => {
     ) {
       if (user) {
         return isLecturer
-          ? `👨‍🏫 **Thông tin Giảng viên đang đăng nhập:**\n\n` +
+          ? `**Thông tin Giảng viên đang đăng nhập:**\n\n` +
             `• **Họ và tên:** ${user.fullName}\n` +
             `• **Vai trò hệ thống:** **Giảng viên** (${user.role})\n` +
             `• **Mã Giảng viên:** ${user.lecturerCode || 'GV001'}\n` +
@@ -481,12 +481,12 @@ export const DraggableAiCompanion: React.FC = () => {
             `• **Khoa phụ trách:** ${user.faculty || 'Khoa Công nghệ Thông tin'}\n` +
             `• **Chuyên ngành:** ${user.major || 'Kỹ thuật Phần mềm'}`
           : isAdmin
-          ? `👨‍💼 **Thông tin Tài khoản Quản trị viên (Admin):**\n\n` +
+          ? `**Thông tin Tài khoản Quản trị viên (Admin):**\n\n` +
             `• **Họ và tên:** ${user.fullName}\n` +
             `• **Vai trò hệ thống:** **Admin Hệ Thống** (${user.role})\n` +
             `• **Email chính thức:** ${user.email}\n` +
             `• **Quyền hạn:** Toàn quyền Quản trị CSDL, Phê duyệt PBAC Request & Thống kê`
-          : `👨‍🎓 **Thông tin Sinh viên đang đăng nhập:**\n\n` +
+          : `**Thông tin Sinh viên đang đăng nhập:**\n\n` +
             `• **Họ và tên:** ${user.fullName}\n` +
             `• **Vai trò hệ thống:** **Sinh viên** (${user.role})\n` +
             `• **Mã Sinh viên:** ${user.studentCode || '74DCTT22099'}\n` +

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, CheckCircle2, XCircle, Clock, Ban, History, User, BookOpen, PlusCircle, Calendar, Key, X, AlertTriangle, Send } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, XCircle, Clock, Ban, History, User, BookOpen, PlusCircle, Calendar, Key, X, AlertTriangle, Send, ArrowRight } from 'lucide-react';
 import { listLecturers } from '../../services/adminService';
 import { getMyClasses } from '../../services/clazzService';
 import type { User as UserType, Clazz } from '../../types';
@@ -636,7 +636,7 @@ export const AdminPbacApproval: React.FC = () => {
                 <th className="py-3 px-4">Hành động</th>
                 <th className="py-3 px-4">Người thực hiện</th>
                 <th className="py-3 px-4">Đối tượng tác động</th>
-                <th className="py-3 px-4">Giá trị cũ ➔ Giá trị mới</th>
+                <th className="py-3 px-4">Giá trị cũ <ArrowRight className="w-3.5 h-3.5 inline text-gray-400" /> Giá trị mới</th>
                 <th className="py-3 px-4">Người phê duyệt</th>
                 <th className="py-3 px-4">Thời gian</th>
               </tr>
@@ -660,7 +660,7 @@ export const AdminPbacApproval: React.FC = () => {
                     <td className="py-3.5 px-4 font-semibold text-gray-900 dark:text-white">{log.performedBy}</td>
                     <td className="py-3.5 px-4 text-gray-600 dark:text-gray-300">{log.targetStudent} ({log.className})</td>
                     <td className="py-3.5 px-4 text-xs font-mono">
-                      <span className="text-rose-600 dark:text-rose-400">{log.oldValue}</span> ➔ <span className="text-emerald-600 dark:text-emerald-400">{log.newValue}</span>
+                      <span className="text-rose-600 dark:text-rose-400">{log.oldValue}</span> <ArrowRight className="w-3.5 h-3.5 inline mx-1 text-gray-400" /> <span className="text-emerald-600 dark:text-emerald-400">{log.newValue}</span>
                     </td>
                     <td className="py-3.5 px-4 text-xs font-bold text-gray-700 dark:text-gray-300">{log.approvedBy}</td>
                     <td className="py-3.5 px-4 text-xs text-gray-400">{log.timestamp}</td>

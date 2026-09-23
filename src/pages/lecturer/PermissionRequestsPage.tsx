@@ -38,7 +38,7 @@ export const PermissionRequestsPage: React.FC = () => {
       setRequests([newItem, ...requests]);
       setReason('');
       setIsSubmitting(false);
-      setMsg('✅ Đã gửi yêu cầu cấp quyền PBAC lên Admin phê duyệt!');
+      setMsg('Đã gửi yêu cầu cấp quyền PBAC lên Admin phê duyệt!');
       setTimeout(() => setMsg(''), 4000);
     }, 600);
   };

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { Zap } from 'lucide-react';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import * as tuitionService from '../../services/tuitionService';
 import * as adminService from '../../services/adminService';
@@ -115,9 +116,9 @@ export default function AdminTuitionManagement() {
         </button>
         <button
           onClick={() => { setShowGenForm(!showGenForm); setShowRateForm(false); }}
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 shadow-sm"
+          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 shadow-sm flex items-center gap-1.5"
         >
-          {showGenForm ? 'Hủy' : '⚡ Sinh hóa đơn cho sinh viên'}
+          {showGenForm ? 'Hủy' : <><Zap className="w-4 h-4" /> Sinh hóa đơn cho sinh viên</>}
         </button>
       </div>
 

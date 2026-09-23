@@ -30,7 +30,7 @@ export const HomeroomGradebook: React.FC = () => {
   };
 
   const handleSave = () => {
-    setMsg('✅ Đã lưu bảng Điểm rèn luyện lớp Chủ nhiệm thành công!');
+    setMsg('Đã lưu bảng Điểm rèn luyện lớp Chủ nhiệm thành công!');
     setTimeout(() => setMsg(''), 4000);
   };
 
@@ -51,7 +51,7 @@ export const HomeroomGradebook: React.FC = () => {
           <label className="flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/30 text-white font-semibold px-4 py-2 rounded-xl text-sm cursor-pointer hover:bg-white/30 transition">
             <Upload className="w-4 h-4" />
             Import Excel/CSV Điểm RL
-            <input type="file" accept=".xlsx, .csv" className="hidden" onChange={() => setMsg('✅ Đã import danh sách Điểm rèn luyện từ file Excel!')} />
+            <input type="file" accept=".xlsx, .csv" className="hidden" onChange={() => setMsg('Đã import danh sách Điểm rèn luyện từ file Excel!')} />
           </label>
         </div>
       </div>

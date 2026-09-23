@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Download } from 'lucide-react';
 import * as scheduleService from '../../services/scheduleService';
 import { PageTitle, Spinner, ErrorBox } from '../../components/Layout';
 import TimetableGrid from '../../components/TimetableGrid';
@@ -71,7 +72,7 @@ export default function StudentSchedule() {
             onClick={exportToIcs}
             className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm"
           >
-            📥 Tải file .ICS
+            <Download className="h-4 w-4 text-slate-500" /> Tải file .ICS
           </button>
         </div>
       </div>

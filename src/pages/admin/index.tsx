@@ -1288,9 +1288,9 @@ export function AdminClasses() {
                         <button
                           type="button"
                           onClick={() => void openScheduleModal(c)}
-                          className="rounded px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900 transition cursor-pointer"
+                          className="rounded px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900 transition cursor-pointer inline-flex items-center gap-1"
                         >
-                          📅 Xếp lịch học
+                          <Calendar className="w-3.5 h-3.5" /> Xếp lịch học
                         </button>
                         <button
                           type="button"
@@ -1407,8 +1407,8 @@ export function AdminClasses() {
                           <span className="font-semibold text-slate-700 dark:text-slate-200">
                             Tiết {s.startPeriod} - {s.endPeriod} ({startInfo} - {endInfo})
                           </span>
-                          <span className="rounded-md bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 font-mono font-bold text-amber-800 dark:text-amber-300">
-                            🏢 Phòng: {s.room || 'Chưa xếp'}
+                          <span className="rounded-md bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 font-mono font-bold text-amber-800 dark:text-amber-300 inline-flex items-center gap-1">
+                            <Building2 className="w-3.5 h-3.5" /> Phòng: {s.room || 'Chưa xếp'}
                           </span>
                         </div>
                         <button

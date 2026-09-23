@@ -64,14 +64,14 @@ export const DocumentHubPage: React.FC = () => {
   }, [documents]);
 
   const handleDownload = (doc: DocumentItem) => {
-    setMsg(`✅ Đã bắt đầu tải xuống tài liệu: "${doc.title}" (${doc.format})`);
+    setMsg(`Đã bắt đầu tải xuống tài liệu: "${doc.title}" (${doc.format})`);
     setTimeout(() => setMsg(''), 4000);
   };
 
   const handleDeleteDoc = (id: string) => {
     if (confirm('Bạn có chắc chắn muốn xóa biểu mẫu này khỏi hệ thống?')) {
       setDocuments((prev) => prev.filter((d) => d.id !== id));
-      setMsg('✅ Đã xóa biểu mẫu thành công!');
+      setMsg('Đã xóa biểu mẫu thành công!');
       setTimeout(() => setMsg(''), 3000);
     }
   };
@@ -98,7 +98,7 @@ export const DocumentHubPage: React.FC = () => {
     setTitleInput('');
     setSelectedFile(null);
 
-    setMsg(`✅ Tải lên biểu mẫu "${newDoc.title}" thành công!`);
+    setMsg(`Tải lên biểu mẫu "${newDoc.title}" thành công!`);
     setTimeout(() => setMsg(''), 4000);
   };
 
@@ -237,7 +237,7 @@ export const DocumentHubPage: React.FC = () => {
                 </button>
                 <label className="flex items-center justify-center p-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl cursor-pointer hover:bg-gray-200 transition" title="Tải tệp đã điền dữ liệu">
                   <Upload className="w-4 h-4" />
-                  <input type="file" accept=".xlsx,.csv,.pdf,.docx" className="hidden" onChange={() => setMsg(`✅ Đã nhận tệp cho biểu mẫu: "${item.title}"`)} />
+                  <input type="file" accept=".xlsx,.csv,.pdf,.docx" className="hidden" onChange={() => setMsg(`Đã nhận tệp cho biểu mẫu: "${item.title}"`)} />
                 </label>
               </div>
             </div>

@@ -1,7 +1,7 @@
 // Student pages
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Flame, BellRing } from "lucide-react";
+import { Flame, BellRing, X } from "lucide-react";
 import * as clazzService from "../../services/clazzService";
 import * as assessmentService from "../../services/assessmentService";
 import * as gradingService from "../../services/gradingService";
@@ -700,7 +700,9 @@ function SubmitBtn({ assignmentId, disabled }: { assignmentId: number; disabled?
           <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-xl max-h-[86vh] overflow-hidden">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-slate-800">Nộp bài tập</h3>
-              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-700">✕</button>
+              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-700 p-1 rounded-md transition hover:bg-slate-100">
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-4">

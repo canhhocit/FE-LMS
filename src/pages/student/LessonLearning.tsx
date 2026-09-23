@@ -435,7 +435,7 @@ export default function StudentLessonLearning() {
               <h2 className="text-xl font-bold text-slate-800">{selectedLesson.title}</h2>
               {!selectedLesson.videoUrl ? (
                 <div className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3.5 py-2 text-xs font-semibold text-emerald-700 shadow-sm">
-                  <span>✓ Tự động hoàn thành (Bài học tài liệu)</span>
+                  <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-600" /> Tự động hoàn thành (Bài học tài liệu)</span>
                 </div>
               ) : (
                 <div className="flex flex-col items-end gap-1">
