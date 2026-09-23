@@ -54,3 +54,15 @@ export const getAnnouncements = async (classId: number): Promise<Announcement[]>
 export const createAnnouncement = async (classId: number, data: { title: string; content: string }): Promise<Announcement> => unwrap(apiClient.post(`/classes/${classId}/announcements`, data));
 export const updateAnnouncement = async (announcementId: number, data: { title: string; content: string }): Promise<Announcement> => unwrap(apiClient.put(`/announcements/${announcementId}`, data));
 export const deleteAnnouncement = async (announcementId: number): Promise<void> => { await apiClient.delete(`/announcements/${announcementId}`); };
+
+// ===== AI Lesson Summarizer =====
+export interface AiLessonSummaryResponse {
+  lessonId: number;
+  summary: string;
+  keyTakeaways?: string[];
+  suggestedQuestions?: string[];
+}
+
+export const getAiLessonSummary = async (lessonId: number): Promise<AiLessonSummaryResponse> => {
+  return unwrap<AiLessonSummaryResponse>(apiClient.get(`/api/v1/content/lessons/${lessonId}/ai-summary`));
+};

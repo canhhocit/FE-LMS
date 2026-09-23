@@ -44,3 +44,20 @@ export const submitAssignment = async (assignmentId: number, payload: {
 export const getMySubmissions = async (): Promise<Submission[]> => {
   return unwrap<Submission[]>(apiClient.get('/me/submissions'));
 };
+
+// ===== AI Grading (Lecturer) =====
+export interface AiGradingResponse {
+  submissionId: number;
+  suggestedScore: number;
+  feedback: string;
+  strengths?: string[];
+  areasForImprovement?: string[];
+}
+
+export const evaluateSubmissionAi = async (submissionId: number): Promise<AiGradingResponse> => {
+  return unwrap<AiGradingResponse>(apiClient.post(`/api/v1/assessments/submissions/${submissionId}/ai-evaluate`));
+};
+
+export const applyAiGrade = async (submissionId: number): Promise<Submission> => {
+  return unwrap<Submission>(apiClient.post(`/api/v1/assessments/submissions/${submissionId}/ai-apply-grade`));
+};
