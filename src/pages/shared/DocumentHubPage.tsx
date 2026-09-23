@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Folder, Download, Upload, FileText, Send, ShieldAlert, CheckCircle2, User, FileCheck, X, Trash2 } from 'lucide-react';
+import { Folder, Download, Upload, FileText, CheckCircle2, User, FileCheck, X, Trash2 } from 'lucide-react';
 import { useAuth } from '../../contexts/useAuth';
 
 interface DocumentItem {
@@ -46,7 +46,7 @@ export const DocumentHubPage: React.FC = () => {
     return DEFAULT_DOCUMENTS;
   });
 
-  const [activeTab, setActiveTab] = useState<'STUDENT_FORMS' | 'LECTURER_TEMPLATES' | 'REQUESTS'>('STUDENT_FORMS');
+  const [activeTab, setActiveTab] = useState<'STUDENT_FORMS' | 'LECTURER_TEMPLATES'>('STUDENT_FORMS');
   const [msg, setMsg] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
 
@@ -74,6 +74,27 @@ export const DocumentHubPage: React.FC = () => {
       setMsg('Đã xóa biểu mẫu thành công!');
       setTimeout(() => setMsg(''), 3000);
     }
+  };
+
+  const handleUpdateIndividualDocFile = (docId: string, file: File) => {
+    const fileExt = file.name.split('.').pop()?.toUpperCase() || 'PDF';
+    const fileSizeStr = `${(file.size / 1024).toFixed(0)} KB`;
+    setDocuments((prev) =>
+      prev.map((doc) => {
+        if (doc.id === docId) {
+          return {
+            ...doc,
+            format: fileExt,
+            size: fileSizeStr,
+            uploadedBy: user?.fullName || 'Giảng viên / Admin',
+            createdAt: new Date().toLocaleDateString('vi-VN'),
+          };
+        }
+        return doc;
+      })
+    );
+    setMsg(`Đã cập nhật tệp mới "${file.name}" cho biểu mẫu thành công!`);
+    setTimeout(() => setMsg(''), 4000);
   };
 
   const handleUploadSubmit = (e: React.FormEvent) => {
@@ -115,7 +136,7 @@ export const DocumentHubPage: React.FC = () => {
             Trung tâm Biểu mẫu & Kho Tài liệu
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Quản lý, tải về và tải lên các mẫu đơn chuẩn cho Sinh viên, Giảng viên & Hệ thống
+            Quản lý, tải về và tải lên các mẫu đơn chuẩn cho Sinh viên & Giảng viên
           </p>
         </div>
 
@@ -137,7 +158,7 @@ export const DocumentHubPage: React.FC = () => {
         </div>
       )}
 
-      {/* 3-Tab Selector */}
+      {/* 2-Tab Selector */}
       <div className="flex border-b border-gray-200 dark:border-gray-700 space-x-4">
         <button
           onClick={() => setActiveTab('STUDENT_FORMS')}
@@ -147,7 +168,7 @@ export const DocumentHubPage: React.FC = () => {
               : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
           }`}
         >
-          <User className="w-4 h-4" /> 1. Mẫu đơn Sinh viên ({studentForms.length})
+          <User className="w-4 h-4" /> Mẫu đơn Sinh viên ({studentForms.length})
         </button>
         <button
           onClick={() => setActiveTab('LECTURER_TEMPLATES')}
@@ -157,17 +178,7 @@ export const DocumentHubPage: React.FC = () => {
               : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
           }`}
         >
-          <FileCheck className="w-4 h-4" /> 2. Biểu mẫu Giảng viên ({lecturerTemplates.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('REQUESTS')}
-          className={`pb-3 px-4 font-bold text-sm border-b-2 flex items-center gap-2 transition cursor-pointer ${
-            activeTab === 'REQUESTS'
-              ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
-          }`}
-        >
-          <ShieldAlert className="w-4 h-4" /> 3. Yêu cầu Hệ thống (PBAC)
+          <FileCheck className="w-4 h-4" /> Biểu mẫu Giảng viên ({lecturerTemplates.length})
         </button>
       </div>
 
@@ -194,12 +205,30 @@ export const DocumentHubPage: React.FC = () => {
                   </button>
                 )}
               </div>
-              <button
-                onClick={() => handleDownload(item)}
-                className="w-full flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-300 font-semibold py-2 rounded-xl text-xs transition cursor-pointer"
-              >
-                <Download className="w-4 h-4" /> Tải về Mẫu đơn ({item.format})
-              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleDownload(item)}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-300 font-semibold py-2 rounded-xl text-xs transition cursor-pointer"
+                >
+                  <Download className="w-4 h-4" /> Tải về ({item.format})
+                </button>
+                {isAdminOrLecturer && (
+                  <label className="flex items-center justify-center px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl cursor-pointer transition gap-1.5 shrink-0" title="Cập nhật / Thay thế file mẫu đơn mới">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Cập nhật file</span>
+                    <input
+                      type="file"
+                      accept=".pdf,.docx,.doc,.xlsx,.xls,.csv"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleUpdateIndividualDocFile(item.id, file);
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -228,6 +257,7 @@ export const DocumentHubPage: React.FC = () => {
                   </button>
                 )}
               </div>
+
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleDownload(item)}
@@ -235,29 +265,24 @@ export const DocumentHubPage: React.FC = () => {
                 >
                   <Download className="w-4 h-4" /> Tải Mẫu {item.format}
                 </button>
-                <label className="flex items-center justify-center p-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl cursor-pointer hover:bg-gray-200 transition" title="Tải tệp đã điền dữ liệu">
-                  <Upload className="w-4 h-4" />
-                  <input type="file" accept=".xlsx,.csv,.pdf,.docx" className="hidden" onChange={() => setMsg(`Đã nhận tệp cho biểu mẫu: "${item.title}"`)} />
-                </label>
+                {isAdminOrLecturer && (
+                  <label className="flex items-center justify-center px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl cursor-pointer transition gap-1.5 shrink-0" title="Cập nhật / Thay thế file mẫu mới">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Cập nhật file</span>
+                    <input
+                      type="file"
+                      accept=".xlsx,.csv,.pdf,.docx"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleUpdateIndividualDocFile(item.id, file);
+                      }}
+                    />
+                  </label>
+                )}
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Tab 3: System Requests */}
-      {activeTab === 'REQUESTS' && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-xs space-y-4">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Yêu cầu Cấp quyền Hệ thống (PBAC)</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Giảng viên gửi yêu cầu cấp quyền sửa điểm tạm thời lên Admin. Admin phê duyệt và cấp thời hạn truy cập trực tiếp trên hệ thống.
-          </p>
-          <button
-            onClick={() => window.location.href = user?.role === 'ADMIN' ? '/admin/pbac-approvals' : '/lecturer/permission-requests'}
-            className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl text-sm shadow-xs transition cursor-pointer"
-          >
-            <Send className="w-4 h-4" /> Quản lý Yêu cầu Cấp quyền (PBAC)
-          </button>
         </div>
       )}
 
