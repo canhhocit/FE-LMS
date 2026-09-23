@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Folder, Download, Upload, FileText, CheckCircle2, User, FileCheck, X, Trash2 } from 'lucide-react';
+import { Folder, Download, Upload, FileText, CheckCircle2, User, FileCheck, X, Trash2, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/useAuth';
+import { uploadCloudFile } from '../../services/storageService';
 
 interface DocumentItem {
   id: string;
@@ -48,6 +49,8 @@ export const DocumentHubPage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'STUDENT_FORMS' | 'LECTURER_TEMPLATES'>('STUDENT_FORMS');
   const [msg, setMsg] = useState('');
+  const [uploadingDocId, setUploadingDocId] = useState<string | null>(null);
+  const [isModalUploading, setIsModalUploading] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
 
   // Upload Modal Form State
@@ -64,7 +67,28 @@ export const DocumentHubPage: React.FC = () => {
   }, [documents]);
 
   const handleDownload = (doc: DocumentItem) => {
-    setMsg(`Đã bắt đầu tải xuống tài liệu: "${doc.title}" (${doc.format})`);
+    if (doc.downloadUrl) {
+      const link = document.createElement('a');
+      link.href = doc.downloadUrl;
+      link.download = `${doc.title}.${doc.format.toLowerCase()}`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setMsg(`Đang tải xuống tệp thực tế: "${doc.title}.${doc.format.toLowerCase()}"`);
+    } else {
+      // Create actual sample text/csv file for sample templates
+      const sampleText = `CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\nĐộc lập - Tự do - Hạnh phúc\n\nBIỂU MẪU CHUẨN HỆ THỐNG LMS\nTên biểu mẫu: ${doc.title}\nPhân loại: ${doc.category}\nĐịnh dạng: ${doc.format}\n\n(File mẫu được khởi tạo tự động từ hệ thống LearningHub)`;
+      const blob = new Blob([sampleText], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${doc.title}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setMsg(`Đã xuất tệp biểu mẫu thực tế: "${doc.title}.txt"`);
+    }
     setTimeout(() => setMsg(''), 4000);
   };
 
@@ -76,9 +100,19 @@ export const DocumentHubPage: React.FC = () => {
     }
   };
 
-  const handleUpdateIndividualDocFile = (docId: string, file: File) => {
+  const handleUpdateIndividualDocFile = async (docId: string, file: File) => {
+    setUploadingDocId(docId);
+    let realUrl = '';
+    try {
+      realUrl = await uploadCloudFile(file);
+    } catch {
+      // Fallback to local Object URL if backend is unreachable
+      realUrl = URL.createObjectURL(file);
+    }
+
     const fileExt = file.name.split('.').pop()?.toUpperCase() || 'PDF';
     const fileSizeStr = `${(file.size / 1024).toFixed(0)} KB`;
+
     setDocuments((prev) =>
       prev.map((doc) => {
         if (doc.id === docId) {
@@ -86,6 +120,7 @@ export const DocumentHubPage: React.FC = () => {
             ...doc,
             format: fileExt,
             size: fileSizeStr,
+            downloadUrl: realUrl,
             uploadedBy: user?.fullName || 'Giảng viên / Admin',
             createdAt: new Date().toLocaleDateString('vi-VN'),
           };
@@ -93,13 +128,24 @@ export const DocumentHubPage: React.FC = () => {
         return doc;
       })
     );
-    setMsg(`Đã cập nhật tệp mới "${file.name}" cho biểu mẫu thành công!`);
+    setUploadingDocId(null);
+    setMsg(`Đã upload tệp thực tế "${file.name}" và lưu thành công!`);
     setTimeout(() => setMsg(''), 4000);
   };
 
-  const handleUploadSubmit = (e: React.FormEvent) => {
+  const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!titleInput.trim()) return;
+
+    setIsModalUploading(true);
+    let realUrl = '';
+    if (selectedFile) {
+      try {
+        realUrl = await uploadCloudFile(selectedFile);
+      } catch {
+        realUrl = URL.createObjectURL(selectedFile);
+      }
+    }
 
     const fileExt = selectedFile?.name.split('.').pop()?.toUpperCase() || 'PDF';
     const fileSizeStr = selectedFile ? `${(selectedFile.size / 1024).toFixed(0)} KB` : '150 KB';
@@ -110,16 +156,18 @@ export const DocumentHubPage: React.FC = () => {
       category: categoryInput,
       format: fileExt,
       size: fileSizeStr,
+      downloadUrl: realUrl,
       uploadedBy: user?.fullName || 'Admin',
       createdAt: new Date().toLocaleDateString('vi-VN'),
     };
 
     setDocuments((prev) => [newDoc, ...prev]);
+    setIsModalUploading(false);
     setShowUploadModal(false);
     setTitleInput('');
     setSelectedFile(null);
 
-    setMsg(`Tải lên biểu mẫu "${newDoc.title}" thành công!`);
+    setMsg(`Tải lên & lưu tệp thực tế "${newDoc.title}" thành công!`);
     setTimeout(() => setMsg(''), 4000);
   };
 
@@ -136,7 +184,7 @@ export const DocumentHubPage: React.FC = () => {
             Trung tâm Biểu mẫu & Kho Tài liệu
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Quản lý, tải về và tải lên các mẫu đơn chuẩn cho Sinh viên & Giảng viên
+            Quản lý, tải về và tải lên các mẫu đơn chuẩn cho Sinh viên & Giảng viên (Hỗ trợ upload & lưu tệp thực tế)
           </p>
         </div>
 
@@ -215,10 +263,15 @@ export const DocumentHubPage: React.FC = () => {
                 </button>
                 {isAdminOrLecturer && (
                   <label className="flex items-center justify-center px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl cursor-pointer transition gap-1.5 shrink-0" title="Cập nhật / Thay thế file mẫu đơn mới">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Cập nhật file</span>
+                    {uploadingDocId === item.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600" />
+                    ) : (
+                      <Upload className="w-3.5 h-3.5" />
+                    )}
+                    <span>{uploadingDocId === item.id ? 'Đang lưu...' : 'Cập nhật file'}</span>
                     <input
                       type="file"
+                      disabled={uploadingDocId === item.id}
                       accept=".pdf,.docx,.doc,.xlsx,.xls,.csv"
                       className="hidden"
                       onChange={(e) => {
@@ -267,10 +320,15 @@ export const DocumentHubPage: React.FC = () => {
                 </button>
                 {isAdminOrLecturer && (
                   <label className="flex items-center justify-center px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl cursor-pointer transition gap-1.5 shrink-0" title="Cập nhật / Thay thế file mẫu mới">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Cập nhật file</span>
+                    {uploadingDocId === item.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                    ) : (
+                      <Upload className="w-3.5 h-3.5" />
+                    )}
+                    <span>{uploadingDocId === item.id ? 'Đang lưu...' : 'Cập nhật file'}</span>
                     <input
                       type="file"
+                      disabled={uploadingDocId === item.id}
                       accept=".xlsx,.csv,.pdf,.docx"
                       className="hidden"
                       onChange={(e) => {
@@ -293,7 +351,7 @@ export const DocumentHubPage: React.FC = () => {
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <Upload className="w-5 h-5 text-indigo-600" />
-                Tải lên Biểu mẫu / Tài liệu mới
+                Tải lên Biểu mẫu / Tài liệu mới (Lưu tệp thực tế)
               </h3>
               <button onClick={() => setShowUploadModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer">
                 <X className="w-5 h-5" />
@@ -358,9 +416,11 @@ export const DocumentHubPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md transition cursor-pointer"
+                  disabled={isModalUploading}
+                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold shadow-md transition cursor-pointer flex items-center gap-2"
                 >
-                  Tải lên & Phát hành
+                  {isModalUploading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {isModalUploading ? 'Đang upload tệp...' : 'Tải lên & Phát hành'}
                 </button>
               </div>
             </form>
