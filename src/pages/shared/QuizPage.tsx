@@ -9,7 +9,10 @@ import {
   Upload, Trash2, Pencil, Timer, HelpCircle, X
 } from 'lucide-react';
 
+import { useAuth } from '../../contexts/useAuth';
+
 export default function QuizPage() {
+  const { user } = useAuth();
   const [classes, setClasses] = useState<Clazz[]>([]);
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -55,8 +58,7 @@ export default function QuizPage() {
   const [aiNum, setAiNum] = useState(5);
   const [generatingAi, setGeneratingAi] = useState(false);
 
-  const storedUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
-  const isLecturer = storedUser?.role === 'LECTURER' || storedUser?.role === 'ADMIN';
+  const isLecturer = user?.role === 'LECTURER' || user?.role === 'ADMIN';
 
   // Load classes on mount
   useEffect(() => {

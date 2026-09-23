@@ -6,6 +6,7 @@ import * as assessmentService from "../../services/assessmentService";
 import * as registrationService from "../../services/registrationService";
 import * as progressService from "../../services/progressService";
 import { useAuth } from "../../contexts/useAuth";
+import { uploadCloudFile } from "../../services/storageService";
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from "../../components/Layout";
 import type { Clazz, User, Chapter, Announcement, Assignment, Lesson, EnrollmentProgress, Submission, SubmissionType } from "../../types";
 import { 
@@ -56,6 +57,7 @@ export default function ClassDetail() {
   const [assignDesc, setAssignDesc] = useState('');
   const [assignDueDate, setAssignDueDate] = useState('');
   const [assignMaxScore, setAssignMaxScore] = useState(10);
+  const [assignFile, setAssignFile] = useState<File | null>(null);
 
   // Submission Modal State (Student Submit Assignment)
   const [activeSubmitAssignment, setActiveSubmitAssignment] = useState<Assignment | null>(null);
@@ -237,9 +239,19 @@ export default function ClassDetail() {
         ? `[Chương ${chapters.find(c => c.id === assignTargetChapterId)?.sortOrder ?? ''}] ${assignTitle.trim()}`
         : assignTitle.trim();
 
+      let finalDesc = assignDesc.trim();
+      if (assignFile) {
+        try {
+          const fileUrl = await uploadCloudFile(assignFile);
+          finalDesc += `\n\n📎 **Tài liệu/Đề bài đính kèm:** [${assignFile.name}](${fileUrl})`;
+        } catch {
+          finalDesc += `\n\n📎 **Tài liệu đính kèm:** ${assignFile.name}`;
+        }
+      }
+
       await assessmentService.createAssignment(cid, {
         title: formattedTitle,
-        description: assignDesc.trim(),
+        description: finalDesc,
         dueDate: new Date(assignDueDate).toISOString(),
         maxScore: assignMaxScore || 10,
       });
@@ -248,9 +260,10 @@ export default function ClassDetail() {
       setAssignDesc('');
       setAssignDueDate('');
       setAssignMaxScore(10);
+      setAssignFile(null);
       setAssignTargetChapterId(null);
       await loadAssignments();
-      setFlash('Đã tạo bài tập mới thành công');
+      setFlash('Đã tạo bài tập kèm file đề bài thành công');
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Tạo bài tập thất bại');
     } finally {
@@ -1025,6 +1038,20 @@ export default function ClassDetail() {
                   rows={3}
                   className="w-full px-3 py-2 text-sm border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Upload File Đề Bài / Tài Liệu Đính Kèm (PDF, Word, Zip, Ảnh...)</label>
+                <input
+                  type="file"
+                  onChange={(e) => setAssignFile(e.target.files?.[0] || null)}
+                  className="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 cursor-pointer"
+                />
+                {assignFile && (
+                  <div className="mt-1 text-xs text-emerald-600 font-medium">
+                    Đã chọn file đề bài: {assignFile.name} ({(assignFile.size / 1024).toFixed(1)} KB)
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
