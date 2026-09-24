@@ -10,6 +10,7 @@ import type { Role, AuthUser } from "../types";
 import DraggableAiCompanion from "./DraggableAiCompanion";
 import {
   PageTitle as _PageTitle,
+  PageHeader as _PageHeader,
   Card as _Card,
   Spinner as _Spinner,
   Empty as _Empty,
@@ -53,11 +54,7 @@ const MoonIcon = ({ className = "h-4.5 w-4.5" }: { className?: string }) => (
   </svg>
 );
 
-const PageHeader = ({ children }: { children: ReactNode }) => (
-  <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white mb-4">
-    {children}
-  </h1>
-);
+
 
 const UiCard = ({
   children,
@@ -1212,6 +1209,7 @@ export default function Layout() {
 }
 
 export const PageTitle = _PageTitle;
+export const PageHeader = _PageHeader;
 export const Card = _Card;
 export const Spinner = _Spinner;
 export const Empty = ({ msg }: { msg?: string }) => (

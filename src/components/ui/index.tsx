@@ -1,11 +1,40 @@
 import { type ReactNode, type MouseEvent } from 'react';
-import { X, AlertTriangle, Info, Inbox, Loader2 } from 'lucide-react';
+import { X, AlertTriangle, Info, Inbox, Loader2, ChevronRight, Home } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════
    LearningHub Shared UI Primitives
    Design System: primary-600 navy, accent indigo,
    slate neutrals, standard radius & shadow scale.
    ═══════════════════════════════════════════════════ */
+
+/* ── Breadcrumbs ── */
+export interface BreadcrumbItem {
+  label: string;
+  to?: string;
+}
+
+export const Breadcrumbs = ({ items }: { items: BreadcrumbItem[] }) => (
+  <nav className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-3">
+    <a href="/" className="hover:text-slate-900 dark:hover:text-white transition flex items-center gap-1">
+      <Home className="w-3.5 h-3.5" />
+      <span>Trang chủ</span>
+    </a>
+    {items.map((item, index) => (
+      <span key={index} className="flex items-center gap-1.5">
+        <ChevronRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
+        {item.to ? (
+          <a href={item.to} className="hover:text-slate-900 dark:hover:text-white transition">
+            {item.label}
+          </a>
+        ) : (
+          <span className="font-semibold text-slate-900 dark:text-white truncate max-w-[200px]">
+            {item.label}
+          </span>
+        )}
+      </span>
+    ))}
+  </nav>
+);
 
 /* ── Page Header ── */
 export const PageTitle = ({ children }: { children: ReactNode }) => (
@@ -18,21 +47,26 @@ export const PageHeader = ({
   title,
   subtitle,
   actions,
+  breadcrumbs,
 }: {
   title: ReactNode;
   subtitle?: string;
   actions?: ReactNode;
+  breadcrumbs?: BreadcrumbItem[];
 }) => (
-  <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
-    <div>
-      <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-        {title}
-      </h1>
-      {subtitle && (
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>
-      )}
+  <div className="mb-6">
+    {breadcrumbs && <Breadcrumbs items={breadcrumbs} />}
+    <div className="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+          {title}
+        </h1>
+        {subtitle && (
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>
+        )}
+      </div>
+      {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>
-    {actions && <div className="flex items-center gap-2">{actions}</div>}
   </div>
 );
 

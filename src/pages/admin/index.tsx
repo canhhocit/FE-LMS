@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Users, BookOpen, ClipboardList, Calendar, Key, Building2, Zap } from 'lucide-react';
 import * as clazzService from '../../services/clazzService';
 import * as adminService from '../../services/adminService';
-import { PageTitle, Card, Spinner, Empty, Pill } from '../../components/Layout';
+import { PageTitle, PageHeader, Card, Spinner, Empty, Pill } from '../../components/Layout';
 import { importUsersByRole, exportUsersByRole, resetPassword, createUser, updateUser, updateUserStatus, type UserCreateRequest } from '../../services/userService';
 import * as adminClassService from '../../services/adminClassService';
 import type { AdminClassResponse } from '../../services/adminClassService';
@@ -347,7 +347,11 @@ export function AdminUsers() {
 
   return (
     <div>
-      <PageTitle>Người dùng</PageTitle>
+      <PageHeader
+        breadcrumbs={[{ label: 'Quản trị hệ thống', to: '/admin' }, { label: 'Quản lý Người dùng' }]}
+        title="Quản lý Người dùng & Tài khoản"
+        subtitle="Quản lý thông tin tài khoản sinh viên, giảng viên, import Excel và phân quyền hệ thống"
+      />
       <div className="flex flex-wrap gap-2 mb-3 items-center">
         {(['STUDENT', 'LECTURER'] as const).map((t) => (
           <button key={t} onClick={() => { setTab(t); setSelectedClass(''); setPage(0); }}
@@ -1007,25 +1011,20 @@ export function AdminClasses() {
 
   return (
     <div className="space-y-4">
-      <PageTitle>Quản lý Lớp học phần</PageTitle>
-      
-      {err && (
-        <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700 flex justify-between items-center">
-          <span>{err}</span>
-          <button onClick={() => setErr(null)} className="text-xs font-semibold cursor-pointer">Đóng</button>
-        </div>
-      )}
-
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="text-xs text-slate-500 font-medium">Tạo và phân công giảng viên, đặt sĩ số giới hạn cho các Lớp học phần</div>
-        <button
-          type="button"
-          onClick={() => setShowForm(!showForm)}
-          className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 transition shadow-sm cursor-pointer"
-        >
-          {showForm ? 'Hủy bỏ' : '+ Tạo Lớp học phần mới'}
-        </button>
-      </div>
+      <PageHeader
+        breadcrumbs={[{ label: 'Quản trị hệ thống', to: '/admin' }, { label: 'Quản lý Lớp học phần' }]}
+        title="Quản lý Lớp học phần"
+        subtitle="Tạo và phân công giảng viên, đặt sĩ số giới hạn và xếp thời khóa biểu cho các Lớp học phần"
+        actions={
+          <button
+            type="button"
+            onClick={() => setShowForm(!showForm)}
+            className="rounded-xl bg-accent-600 px-4 py-2 text-xs font-bold text-white hover:bg-accent-700 transition shadow-xs cursor-pointer"
+          >
+            {showForm ? 'Hủy bỏ' : '+ Tạo Lớp học phần mới'}
+          </button>
+        }
+      />
 
       {/* Filter and Search Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-800 p-3 rounded-2xl border border-neutral-200 dark:border-slate-700">

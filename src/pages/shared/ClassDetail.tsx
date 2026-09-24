@@ -7,7 +7,7 @@ import * as registrationService from "../../services/registrationService";
 import * as progressService from "../../services/progressService";
 import { useAuth } from "../../contexts/useAuth";
 import { uploadCloudFile } from "../../services/storageService";
-import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from "../../components/Layout";
+import { PageTitle, PageHeader, Card, Spinner, Empty, ErrorBox, Pill } from "../../components/Layout";
 import type { Clazz, User, Chapter, Announcement, Assignment, Lesson, EnrollmentProgress, Submission, SubmissionType } from "../../types";
 import { 
   FileText, Link2, Upload, ArrowUp, ArrowDown, Plus, Pencil, Trash2, 
@@ -490,9 +490,19 @@ export default function ClassDetail() {
     } catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
   };
 
+  const rolePath = isStudent ? '/student' : isLecturer ? '/lecturer' : '/admin';
+  const breadcrumbs = [
+    { label: 'Lớp học phần', to: `${rolePath}/classes` },
+    { label: clazz ? `${clazz.classCode} - ${clazz.className}` : 'Chi tiết lớp học' },
+  ];
+
   return (
     <div className="space-y-6">
-      <PageTitle>{clazz.classCode} - {clazz.className}</PageTitle>
+      <PageHeader
+        breadcrumbs={breadcrumbs}
+        title={`${clazz.classCode} - ${clazz.className}`}
+        subtitle={`Học kỳ: ${clazz.semester} • Năm học: ${clazz.academicYear} • Giảng viên: ${clazz.lecturerName ?? 'Chưa phân công'}`}
+      />
       
       {/* Overview Metadata Cards */}
       <div className="grid md:grid-cols-3 gap-4">
