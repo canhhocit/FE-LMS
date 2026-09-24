@@ -84,7 +84,7 @@ export const DraggableAiCompanion: React.FC = () => {
       ? `Xin chào Thầy/Cô ${user?.fullName || ''}! Em là ${aiName} – trợ lý hỗ trợ giảng dạy & quản lý đào tạo 24/7 của hệ thống LearningHub LMS.\n\nEm có thể hỗ trợ Thầy/Cô tra cứu nhanh: Lịch giảng dạy, danh sách sinh viên, các lớp học phần phụ trách, thông tin tài khoản Giảng viên... Thầy/Cô cần em hỗ trợ gì ạ?`
       : isAdmin
       ? `Xin chào Quản trị viên ${user?.fullName || ''}! Mình là ${aiName} – trợ lý quản trị hệ thống LearningHub LMS.\n\nMình hỗ trợ tra cứu: Thống kê tổng số tài khoản, danh sách lớp học phần, duyệt quyền PBAC, tài khoản Giảng viên/Sinh viên... Bạn cần hỗ trợ gì hôm nay?`
-      : `Xin chào ${user?.fullName || 'bạn'}! Mình là ${aiName} – trợ lý học tập 24/7 của hệ thống LearningHub LMS.\n\nMình có trí nhớ hội thoại & quyền truy cập CSDL thời gian thực: Tra cứu Sinh viên/Giảng viên (vd: "sinh viên 74dctt22099 là ai", hỏi tiếp "là đăng ký những môn nào"), thống kê hệ thống, thời khóa biểu, danh sách lớp học phần, học phí... Bạn muốn mình hỗ trợ gì hôm nay?`;
+      : `Xin chào ${user?.fullName || 'bạn'}! Mình là ${aiName} – trợ lý học tập 24/7 của hệ thống LearningHub LMS.\n\nMình có trí nhớ hội thoại & quyền truy cập CSDL thời gian thực: Tra cứu Sinh viên/Giảng viên (vd: "tìm sinh viên Nguyễn Văn A", "thời khóa biểu tuần này"), thống kê hệ thống, thời khóa biểu, danh sách lớp học phần, học phí... Bạn muốn mình hỗ trợ gì hôm nay?`;
 
     return [
       {
@@ -476,10 +476,10 @@ export const DraggableAiCompanion: React.FC = () => {
           ? `**Thông tin Giảng viên đang đăng nhập:**\n\n` +
             `• **Họ và tên:** ${user.fullName}\n` +
             `• **Vai trò hệ thống:** **Giảng viên** (${user.role})\n` +
-            `• **Mã Giảng viên:** ${user.lecturerCode || 'GV001'}\n` +
+            `• **Mã Giảng viên:** ${user.lecturerCode || user.email || 'Chưa cập nhật'}\n` +
             `• **Email chính thức:** ${user.email}\n` +
-            `• **Khoa phụ trách:** ${user.faculty || 'Khoa Công nghệ Thông tin'}\n` +
-            `• **Chuyên ngành:** ${user.major || 'Kỹ thuật Phần mềm'}`
+            `• **Khoa phụ trách:** ${user.faculty || 'Công nghệ Thông tin'}\n` +
+            `• **Chuyên ngành:** ${user.major || 'Chưa cập nhật'}`
           : isAdmin
           ? `**Thông tin Tài khoản Quản trị viên (Admin):**\n\n` +
             `• **Họ và tên:** ${user.fullName}\n` +
@@ -489,10 +489,10 @@ export const DraggableAiCompanion: React.FC = () => {
           : `**Thông tin Sinh viên đang đăng nhập:**\n\n` +
             `• **Họ và tên:** ${user.fullName}\n` +
             `• **Vai trò hệ thống:** **Sinh viên** (${user.role})\n` +
-            `• **Mã Sinh viên:** ${user.studentCode || '74DCTT22099'}\n` +
-            `• **Lớp hành chính:** ${user.adminClassName || '74DCTT24'}\n` +
+            `• **Mã Sinh viên:** ${user.studentCode || user.email || 'Chưa cập nhật'}\n` +
+            `• **Lớp hành chính:** ${user.adminClassName || 'Chưa cập nhật'}\n` +
             `• **Email hệ thống:** ${user.email}\n` +
-            `• **Khoa:** ${user.faculty || 'Khoa Công nghệ Thông tin'}`;
+            `• **Khoa:** ${user.faculty || 'Công nghệ Thông tin'}`;
       }
     }
 

@@ -2,29 +2,76 @@
 
 @variant dark (&:where(.dark, .dark *));
 
-:root {
-  --radius: 0.75rem;
+/* ═══════════════════════════════════════════════════
+   LearningHub Design System — Tailwind v4 Theme
+   ═══════════════════════════════════════════════════ */
+@theme {
+  /* ── Primary (Navy Blue) ── */
+  --color-primary-50:  #eef4fb;
+  --color-primary-100: #d4e4f5;
+  --color-primary-200: #a9c9eb;
+  --color-primary-300: #7eaee0;
+  --color-primary-400: #4b8ad0;
+  --color-primary-500: #2a6ab5;
+  --color-primary-600: #1e3a5f;
+  --color-primary-700: #182f4d;
+  --color-primary-800: #12243b;
+  --color-primary-900: #0c1929;
+  --color-primary-950: #070e18;
+
+  /* ── Accent (Indigo — interactive elements) ── */
+  --color-accent-50:  #eef2ff;
+  --color-accent-100: #e0e7ff;
+  --color-accent-200: #c7d2fe;
+  --color-accent-300: #a5b4fc;
+  --color-accent-400: #818cf8;
+  --color-accent-500: #6366f1;
+  --color-accent-600: #4f46e5;
+  --color-accent-700: #4338ca;
+  --color-accent-800: #3730a3;
+  --color-accent-900: #312e81;
+  --color-accent-950: #1e1b4b;
+
+  /* ── Sidebar ── */
+  --color-sidebar-from: #0c1929;
+  --color-sidebar-to:   #1e3a5f;
+
+  /* ── Border Radius Scale ── */
+  --radius-sm:  0.375rem;  /* 6px — small pills */
+  --radius-md:  0.5rem;    /* 8px — buttons, inputs */
+  --radius-lg:  0.75rem;   /* 12px — cards, containers */
+  --radius-xl:  1rem;      /* 16px — modals, large cards */
+  --radius-2xl: 1.25rem;   /* 20px — hero sections */
+
+  /* ── Shadows ── */
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-modal: 0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08);
+
+  /* ── Font Family ── */
+  --font-sans: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+/* ── Base Styles ── */
 body {
-  background-color: #f8fafc;
-  color: #0f172a;
-  font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--color-slate-50);
+  color: var(--color-slate-900);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 html.dark body {
   background-color: #0b0f19;
-  color: #f1f5f9;
+  color: var(--color-slate-100);
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-sans);
   letter-spacing: -0.015em;
 }
 
-/* Custom scrollbar for modern feel */
+/* ── Custom Scrollbar ── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -40,6 +87,7 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(100, 116, 139, 0.6);
 }
 
+/* ── Responsive Table ── */
 @media (max-width: 640px) {
   table {
     display: block;
@@ -47,4 +95,19 @@ h1, h2, h3, h4, h5, h6 {
     overflow-x: auto;
     white-space: nowrap;
   }
+}
+
+/* ── Skeleton Animation ── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--color-slate-200) 25%, var(--color-slate-100) 50%, var(--color-slate-200) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+html.dark .skeleton-shimmer {
+  background: linear-gradient(90deg, var(--color-slate-800) 25%, var(--color-slate-700) 50%, var(--color-slate-800) 75%);
+  background-size: 200% 100%;
 }

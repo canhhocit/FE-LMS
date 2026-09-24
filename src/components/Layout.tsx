@@ -8,6 +8,14 @@ import * as acService from "../services/adminClassService";
 import { writeStoredUser } from "../contexts/authStorage";
 import type { Role, AuthUser } from "../types";
 import DraggableAiCompanion from "./DraggableAiCompanion";
+import {
+  PageTitle as _PageTitle,
+  Card as _Card,
+  Spinner as _Spinner,
+  Empty as _Empty,
+  ErrorBox as _ErrorBox,
+  Badge as _Badge,
+} from "./ui";
 
 const SunIcon = ({ className = "h-4.5 w-4.5" }: { className?: string }) => (
   <svg
@@ -1203,13 +1211,15 @@ export default function Layout() {
   );
 }
 
-export const PageTitle = PageHeader;
-export const Card = UiCard;
-export const Spinner = LoadingState;
+export const PageTitle = _PageTitle;
+export const Card = _Card;
+export const Spinner = _Spinner;
 export const Empty = ({ msg }: { msg?: string }) => (
-  <EmptyState message={msg} />
+  <_Empty msg={msg} />
 );
 export const ErrorBox = ({ msg }: { msg: string }) => (
-  <ErrorState message={msg} />
+  <_ErrorBox msg={msg} />
 );
-export const Pill = StatusBadge;
+export const Pill = _Badge;
+
+

@@ -10,21 +10,22 @@ interface AcademicWarningProps {
 }
 
 export const AcademicWarningBanner: React.FC<AcademicWarningProps> = ({
-  studentName = 'Sinh viên',
-  studentCode = '74DCTT22099',
-  debtCredits = 12,
+  studentName,
+  studentCode,
+  debtCredits = 0,
   maxAllowedCredits = 10,
   onViewRemediationPlan,
 }) => {
   const [dismissed, setDismissed] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
-  if (dismissed || debtCredits <= maxAllowedCredits) {
+  // If dismissed or no debt / debt is within safe threshold, do not display banner
+  if (dismissed || debtCredits === 0 || debtCredits <= maxAllowedCredits) {
     return null;
   }
 
   return (
-    <div className="mb-6 rounded-xl bg-rose-50 border border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/70 p-4 shadow-2xs">
+    <div className="mb-6 rounded-xl bg-rose-50 border border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/70 p-4 shadow-2xs animate-in fade-in duration-200">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <div className="p-2 rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300 shrink-0 mt-0.5">
@@ -32,18 +33,21 @@ export const AcademicWarningBanner: React.FC<AcademicWarningProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-rose-600 text-white tracking-wide">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-600 text-white tracking-wide">
                 CẢNH BÁO HỌC VỤ LẦN 1
               </span>
-              <span className="text-xs font-mono text-rose-800 dark:text-rose-300 font-semibold">
-                MSV: {studentCode}
-              </span>
+              {studentCode && (
+                <span className="text-xs font-mono text-rose-800 dark:text-rose-300 font-semibold">
+                  MSV: {studentCode}
+                </span>
+              )}
             </div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-1.5">
               Cảnh báo tự động: Số tín chỉ nợ vượt ngưỡng quy định ({debtCredits}/{maxAllowedCredits} tín chỉ)
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-              Xin chào <strong className="text-slate-900 dark:text-white">{studentName}</strong>, hệ thống ghi nhận bạn đang nợ <strong className="text-rose-700 dark:text-rose-400 font-semibold">{debtCredits} tín chỉ</strong> (vượt ngưỡng cho phép tối đa là {maxAllowedCredits} tín chỉ). Vui lòng lập kế hoạch học bù và đăng ký học lại sớm nhất.
+              {studentName && <span className="font-semibold">{studentName}, </span>}
+              hệ thống ghi nhận bạn đang nợ <strong className="text-rose-700 dark:text-rose-400 font-semibold">{debtCredits} tín chỉ</strong> (vượt ngưỡng cho phép tối đa là {maxAllowedCredits} tín chỉ). Vui lòng lập kế hoạch học bù và đăng ký học lại sớm nhất.
             </p>
           </div>
         </div>

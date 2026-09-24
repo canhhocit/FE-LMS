@@ -197,8 +197,8 @@ export function StudentDashboard() {
       {/* Academic Warning Banner for Student (>10 Debt Credits) */}
       <AcademicWarningBanner
         studentName={user?.fullName}
-        studentCode="74DCTT22099"
-        debtCredits={12}
+        studentCode={user?.studentCode || user?.email}
+        debtCredits={0}
         maxAllowedCredits={10}
       />
 
