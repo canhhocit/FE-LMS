@@ -80,10 +80,14 @@ function NotFoundPage() {
   );
 }
 
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
+
 export default function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
         <AuthProvider>
           <BrowserRouter>
             <Suspense fallback={<Spinner />}>
@@ -164,6 +168,7 @@ export default function App() {
           </BrowserRouter>
         </AuthProvider>
       </ThemeProvider>
-    </ErrorBoundary>
+    </QueryClientProvider>
+  </ErrorBoundary>
   );
 }

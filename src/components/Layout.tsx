@@ -589,6 +589,10 @@ const ROLE_LABEL: Record<Role, string> = {
   ADMIN: "Quản trị",
 };
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { changePasswordSchema, type ChangePasswordFormData } from '../lib/schemas';
+
 function FirstLoginModal({
   user,
   onComplete,
@@ -597,40 +601,26 @@ function FirstLoginModal({
   onComplete: () => void;
 }) {
   const { logout, updateUser } = useAuth();
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showOldPw, setShowOldPw] = useState(false);
   const [showNewPw, setShowNewPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ChangePasswordFormData>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: { oldPassword: '', newPassword: '', confirmPassword: '' },
+  });
+
+  const onChangePwSubmit = async (data: ChangePasswordFormData) => {
     setErr(null);
-    if (!oldPassword) {
-      setErr("Vui lòng nhập mật khẩu hiện tại.");
-      return;
-    }
-    if (newPassword.length < 6) {
-      setErr("Mật khẩu mới phải có ít nhất 6 ký tự.");
-      return;
-    }
-    const hasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/]/.test(newPassword);
-    if (!hasSpecial) {
-      setErr(
-        "Mật khẩu mới phải chứa ít nhất 1 ký tự đặc biệt (VD: @, #, $, !...).",
-      );
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setErr("Mật khẩu xác nhận không khớp.");
-      return;
-    }
     setSaving(true);
     try {
-      await authService.changePassword({ oldPassword, newPassword });
+      await authService.changePassword({ oldPassword: data.oldPassword, newPassword: data.newPassword });
       const updated = { ...user, isFirstLogin: false, firstLogin: false };
       updateUser(updated);
       writeStoredUser(updated);
@@ -670,7 +660,7 @@ function FirstLoginModal({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onChangePwSubmit)} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
               Mật khẩu hiện tại{" "}
@@ -681,10 +671,13 @@ function FirstLoginModal({
             <div className="relative">
               <input
                 type={showOldPw ? "text" : "password"}
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
+                {...register('oldPassword')}
                 placeholder="Nhập 123456"
-                className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-xl text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
+                className={`w-full px-3 py-2 pr-10 border rounded-xl text-sm dark:bg-slate-800 dark:text-white outline-none transition focus:ring-2 ${
+                  errors.oldPassword
+                    ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
+                    : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500'
+                }`}
               />
               <button
                 type="button"
@@ -693,42 +686,15 @@ function FirstLoginModal({
                 title={showOldPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
                 {showOldPw ? (
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.8}
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22"
-                    />
-                  </svg>
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22" /></svg>
                 ) : (
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.8}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.8}
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                 )}
               </button>
             </div>
+            {errors.oldPassword && (
+              <p className="mt-1 text-[11px] font-medium text-rose-600 dark:text-rose-400">{errors.oldPassword.message}</p>
+            )}
           </div>
 
           <div>
@@ -738,10 +704,13 @@ function FirstLoginModal({
             <div className="relative">
               <input
                 type={showNewPw ? "text" : "password"}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                {...register('newPassword')}
                 placeholder="VD: Student@123"
-                className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-xl text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
+                className={`w-full px-3 py-2 pr-10 border rounded-xl text-sm dark:bg-slate-800 dark:text-white outline-none transition focus:ring-2 ${
+                  errors.newPassword
+                    ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
+                    : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500'
+                }`}
               />
               <button
                 type="button"
@@ -750,46 +719,19 @@ function FirstLoginModal({
                 title={showNewPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
                 {showNewPw ? (
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.8}
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22"
-                    />
-                  </svg>
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22" /></svg>
                 ) : (
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.8}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.8}
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                 )}
               </button>
             </div>
-            <p className="mt-1 text-[11px] text-slate-400">
-              Yêu cầu: Tối thiểu 6 ký tự và có ít nhất 1 ký tự đặc biệt (@, #,
-              $, !...)
-            </p>
+            {errors.newPassword ? (
+              <p className="mt-1 text-[11px] font-medium text-rose-600 dark:text-rose-400">{errors.newPassword.message}</p>
+            ) : (
+              <p className="mt-1 text-[11px] text-slate-400">
+                Yêu cầu: Tối thiểu 6 ký tự và có ít nhất 1 ký tự đặc biệt (@, #, $, !...)
+              </p>
+            )}
           </div>
 
           <div>
@@ -799,10 +741,13 @@ function FirstLoginModal({
             <div className="relative">
               <input
                 type={showConfirmPw ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                {...register('confirmPassword')}
                 placeholder="Nhập lại mật khẩu mới"
-                className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-xl text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
+                className={`w-full px-3 py-2 pr-10 border rounded-xl text-sm dark:bg-slate-800 dark:text-white outline-none transition focus:ring-2 ${
+                  errors.confirmPassword
+                    ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
+                    : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500'
+                }`}
               />
               <button
                 type="button"
@@ -811,42 +756,15 @@ function FirstLoginModal({
                 title={showConfirmPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
                 {showConfirmPw ? (
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.8}
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22"
-                    />
-                  </svg>
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22" /></svg>
                 ) : (
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.8}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.8}
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                 )}
               </button>
             </div>
+            {errors.confirmPassword && (
+              <p className="mt-1 text-[11px] font-medium text-rose-600 dark:text-rose-400">{errors.confirmPassword.message}</p>
+            )}
           </div>
 
           <button

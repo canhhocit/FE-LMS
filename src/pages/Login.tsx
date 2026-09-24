@@ -24,12 +24,14 @@ const DEMO_ACCOUNTS = [
   },
 ];
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema, type LoginFormData } from '../lib/schemas';
+
 export default function Login() {
   const { user, login } = useAuth();
   const nav = useNavigate();
   const loc = useLocation() as { state?: { from?: string } };
-  const [id, setId] = useState("");
-  const [pw, setPw] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -37,14 +39,23 @@ export default function Login() {
   const [googleEmailInput, setGoogleEmailInput] = useState("");
   const [showGoogleModal, setShowGoogleModal] = useState(false);
 
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { identifier: '', password: '' },
+  });
+
   if (user) return <Navigate to={`/${user.role.toLowerCase()}`} replace />;
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onLoginSubmit = async (data: LoginFormData) => {
     setErr(null);
     setBusy(true);
     try {
-      await login(id, pw);
+      await login(data.identifier, data.password);
       const to = loc.state?.from;
       nav(to && to !== "/login" ? to : "/", { replace: true });
     } catch (e: unknown) {
@@ -133,7 +144,7 @@ export default function Login() {
             </p>
           </div>
 
-          <form onSubmit={submit} className="space-y-4" noValidate>
+          <form onSubmit={handleSubmit(onLoginSubmit)} className="space-y-4" noValidate>
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Tài khoản / Email
@@ -142,15 +153,20 @@ export default function Login() {
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   id="identifier"
-                  name="identifier"
+                  type="text"
                   autoComplete="username"
-                  value={id}
-                  onChange={(e) => setId(e.target.value)}
-                  required
+                  {...register('identifier')}
                   placeholder="Nhập email tài khoản"
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 pl-10 pr-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-400 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
+                  className={`h-11 w-full rounded-xl border bg-white dark:bg-slate-900 pl-10 pr-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-400 focus:ring-2 ${
+                    errors.identifier
+                      ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
+                      : 'border-slate-200 dark:border-slate-800 focus:border-accent-500 focus:ring-accent-500/20'
+                  }`}
                 />
               </div>
+              {errors.identifier && (
+                <p className="mt-1 text-[11px] font-medium text-rose-600 dark:text-rose-400">{errors.identifier.message}</p>
+              )}
             </div>
 
             <div>
@@ -166,14 +182,15 @@ export default function Login() {
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   id="password"
-                  name="password"
                   type={showPw ? "text" : "password"}
                   autoComplete="current-password"
-                  value={pw}
-                  onChange={(e) => setPw(e.target.value)}
-                  required
+                  {...register('password')}
                   placeholder="Nhập mật khẩu"
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 pl-10 pr-10 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-400 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
+                  className={`h-11 w-full rounded-xl border bg-white dark:bg-slate-900 pl-10 pr-10 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-400 focus:ring-2 ${
+                    errors.password
+                      ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
+                      : 'border-slate-200 dark:border-slate-800 focus:border-accent-500 focus:ring-accent-500/20'
+                  }`}
                 />
                 <button
                   type="button"
@@ -184,6 +201,9 @@ export default function Login() {
                   {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {errors.password && (
+                <p className="mt-1 text-[11px] font-medium text-rose-600 dark:text-rose-400">{errors.password.message}</p>
+              )}
             </div>
 
             {err && (
@@ -261,8 +281,8 @@ export default function Login() {
                     key={acc.identifier}
                     type="button"
                     onClick={() => {
-                      setId(acc.identifier);
-                      setPw("123456");
+                      setValue('identifier', acc.identifier);
+                      setValue('password', '123456');
                     }}
                     className="flex w-full items-center justify-between p-2 rounded-lg text-left text-xs bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
                   >
