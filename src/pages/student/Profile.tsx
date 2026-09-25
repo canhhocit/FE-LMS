@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Bot } from 'lucide-react';
 import * as profileService from '../../services/profileService';
+import * as aiAdvisorService from '../../services/aiAdvisorService';
 import { AvatarUploader } from '../../components/AvatarUploader';
 import { PageTitle, Card, Spinner, ErrorBox, Pill } from '../../components/Layout';
 import type { UpdateProfileRequest, UserProfile } from '../../types';
@@ -186,10 +187,30 @@ function AiSettingsCard() {
 
   const [msg, setMsg] = useState<string | null>(null);
 
-  const handleSaveConfig = () => {
+  useEffect(() => {
+    let mounted = true;
+    aiAdvisorService.getMyAiPreference()
+      .then((pref) => {
+        if (!mounted || !pref) return;
+        if (pref.preferredName) setAiName(pref.preferredName);
+        if (pref.toneStyle) setToneStyle(pref.toneStyle);
+        if (pref.personalContext) setCustomPrompt(pref.personalContext);
+      })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, []);
+
+  const handleSaveConfig = async () => {
     const config = { aiName, toneStyle, customPrompt, targetGpa };
     localStorage.setItem(configKey, JSON.stringify(config));
     window.dispatchEvent(new Event('lms_update_ai_config'));
+    try {
+      await aiAdvisorService.updateMyAiPreference({
+        preferredName: aiName,
+        toneStyle,
+        personalContext: customPrompt,
+      });
+    } catch {}
     setMsg('Đã lưu cấu hình cá nhân hóa cho Trợ lý AI thành công!');
     setTimeout(() => setMsg(null), 3500);
   };

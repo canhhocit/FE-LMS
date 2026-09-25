@@ -859,7 +859,7 @@ export function AdminClasses() {
   const loadData = useCallback(() => {
     let mounted = true;
     Promise.all([
-      clazzService.getMyClasses(),
+      clazzService.getAllClasses(),
       import('../../services/curriculumService').then((m) => m.getAllCourses()),
       adminService.listLecturers(''),
     ])

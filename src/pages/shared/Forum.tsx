@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import * as forumService from '../../services/forumService';
+import * as clazzService from '../../services/clazzService';
 import { useAuth } from '../../contexts/useAuth';
 import { PageTitle, Card, Spinner, Empty, ErrorBox } from '../../components/Layout';
-import type { ForumPost, ForumComment } from '../../types';
+import type { ForumPost, ForumComment, Clazz } from '../../types';
 
 export default function Forum() {
   const { user } = useAuth();
-  const [params] = useSearchParams();
-  const classId = Number(params.get('classId')) || 0;
+  const [params, setParams] = useSearchParams();
+  const queryClassId = Number(params.get('classId')) || 0;
 
+  const [classes, setClasses] = useState<Clazz[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState<number>(queryClassId);
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<ForumPost | null>(null);
   const [comments, setComments] = useState<ForumComment[]>([]);
@@ -22,12 +25,38 @@ export default function Forum() {
   const [saving, setSaving] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
 
+  // Load user's classes on mount
   useEffect(() => {
-    if (!classId) return;
     let mounted = true;
+    clazzService.getMyClasses()
+      .then((cl) => {
+        if (!mounted) return;
+        setClasses(cl);
+        if (cl.length > 0 && !selectedClassId) {
+          setSelectedClassId(cl[0].id);
+        }
+      })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, []);
+
+  // Sync selectedClassId with queryClassId if URL changes
+  useEffect(() => {
+    if (queryClassId && queryClassId !== selectedClassId) {
+      setSelectedClassId(queryClassId);
+    }
+  }, [queryClassId]);
+
+  useEffect(() => {
+    if (!selectedClassId) {
+      setLoading(false);
+      return;
+    }
+    let mounted = true;
+    setLoading(true);
     (async () => {
       try {
-        const data = await forumService.getPosts(classId);
+        const data = await forumService.getPosts(selectedClassId);
         if (mounted) setPosts(data);
       } catch (e) {
         if (mounted) setErr((e as { message?: string })?.message ?? 'Lỗi tải bài viết');
@@ -36,7 +65,7 @@ export default function Forum() {
       }
     })();
     return () => { mounted = false; };
-  }, [classId]);
+  }, [selectedClassId]);
 
   useEffect(() => {
     if (!selectedPost) {
@@ -56,12 +85,12 @@ export default function Forum() {
   }, [selectedPost]);
 
   const handleCreatePost = async () => {
-    if (!classId || !newPostTitle.trim() || !newPostContent.trim()) return;
+    if (!selectedClassId || !newPostTitle.trim() || !newPostContent.trim()) return;
     setSaving(true);
     setFlash(null);
     try {
-      await forumService.createPost(classId, { title: newPostTitle.trim(), content: newPostContent.trim() });
-      const fresh = await forumService.getPosts(classId);
+      await forumService.createPost(selectedClassId, { title: newPostTitle.trim(), content: newPostContent.trim() });
+      const fresh = await forumService.getPosts(selectedClassId);
       setPosts(fresh);
       setNewPostTitle('');
       setNewPostContent('');
@@ -80,7 +109,7 @@ export default function Forum() {
     setFlash(null);
     try {
       await forumService.deletePost(id);
-      const fresh = await forumService.getPosts(classId);
+      const fresh = await forumService.getPosts(selectedClassId);
       setPosts(fresh);
       setSelectedPost(null);
       setFlash('Đã xóa bài viết');
@@ -108,13 +137,38 @@ export default function Forum() {
     }
   };
 
-  if (!classId) return <Empty msg="Vui lòng chọn lớp học phần" />;
-  if (loading) return <Spinner />;
-  if (err) return <ErrorBox msg={err} />;
-
   return (
-    <div>
-      <PageTitle>Diễn đàn thảo luận</PageTitle>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <PageTitle>Diễn đàn thảo luận</PageTitle>
+
+        {/* Class Selection Combobox */}
+        {classes.length > 0 && (
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Chọn lớp học phần:</label>
+            <select
+              value={selectedClassId}
+              onChange={(e) => {
+                const newId = Number(e.target.value);
+                setSelectedClassId(newId);
+                setSelectedPost(null);
+                setParams({ classId: String(newId) });
+              }}
+              className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-2xs outline-none focus:ring-2 focus:ring-accent-500/20"
+            >
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.classCode || c.className} - {c.className}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {!selectedClassId && <Empty msg="Vui lòng chọn một lớp học phần ở thanh chọn phía trên để trao đổi bài viết" />}
+      {loading && <Spinner />}
+      {err && <ErrorBox msg={err} />}
 
       {/* Form tạo bài viết */}
       <Card className="mb-6">

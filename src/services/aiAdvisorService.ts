@@ -39,10 +39,10 @@ export interface UserAiPreference {
 }
 
 export const getMyAiPreference = async (): Promise<UserAiPreference> =>
-  unwrap(apiClient.get('/api/v1/ai/preferences'));
+  unwrap(apiClient.get('/ai/preferences'));
 
 export const updateMyAiPreference = async (data: UserAiPreference): Promise<UserAiPreference> =>
-  unwrap(apiClient.put('/api/v1/ai/preferences', data));
+  unwrap(apiClient.put('/ai/preferences', data));
 
 // ===== Spring AI RAG Knowledge Base =====
 export interface RagQueryRequest {
@@ -56,4 +56,4 @@ export interface RagQueryResponse {
 }
 
 export const queryRagMaterials = async (request: RagQueryRequest): Promise<RagQueryResponse> =>
-  unwrap(apiClient.post('/api/v1/ai/rag/query', request));
+  unwrap(apiClient.post('/ai/rag/query', request));

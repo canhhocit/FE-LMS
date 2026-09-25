@@ -35,7 +35,7 @@ export default function ClazzPermissions() {
     (async () => {
       try {
         const [classList, lecturerList] = await Promise.all([
-          clazzService.getMyClasses(),
+          clazzService.getAllClasses(),
           listLecturers('', 0, 500),
         ]);
         if (mounted) {

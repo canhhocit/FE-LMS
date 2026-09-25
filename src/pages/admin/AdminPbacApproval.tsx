@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, CheckCircle2, XCircle, Clock, Ban, History, User, BookOpen, PlusCircle, Calendar, Key, X, AlertTriangle, Send, ArrowRight } from 'lucide-react';
 import { listLecturers } from '../../services/adminService';
-import { getMyClasses } from '../../services/clazzService';
+import { getAllClasses } from '../../services/clazzService';
 import type { User as UserType, Clazz } from '../../types';
 
 interface PbacRequest {
@@ -72,7 +72,7 @@ export const AdminPbacApproval: React.FC = () => {
         })
         .catch(() => {});
 
-      getMyClasses()
+      getAllClasses()
         .then((res) => {
           const list = res || [];
           setClassesList(list);

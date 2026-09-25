@@ -1,6 +1,16 @@
 import { apiClient, unwrap } from './api/client';
 import type { Clazz, User } from '../types';
+
 export const getMyClasses = async (): Promise<Clazz[]> => unwrap<Clazz[]>(apiClient.get('/me/classes'));
+
+export const getAllClasses = async (): Promise<Clazz[]> => {
+  try {
+    return await unwrap<Clazz[]>(apiClient.get('/admin/classes'));
+  } catch {
+    return unwrap<Clazz[]>(apiClient.get('/me/classes'));
+  }
+};
+
 export const getClazzDetail = async (id: number): Promise<Clazz> => unwrap<Clazz>(apiClient.get(`/me/classes/${id}`));
 export const getClassStudents = async (classId: number): Promise<User[]> => unwrap<User[]>(apiClient.get(`/me/classes/${classId}/students`));
 export const createClazz = async (data: Omit<Clazz, 'id'>): Promise<Clazz> => unwrap(apiClient.post('/admin/classes', data));
@@ -8,3 +18,4 @@ export const updateClazz = async (id: number, data: Partial<Clazz>): Promise<Cla
 export const deleteClazz = async (id: number): Promise<void> => { await apiClient.delete(`/admin/classes/${id}`); };
 export const enrollStudents = async (classId: number, studentIds: number[]): Promise<void> => { await apiClient.post(`/admin/classes/${classId}/enroll`, { studentIds }); };
 export const removeStudent = async (classId: number, studentId: number): Promise<void> => { await apiClient.delete(`/admin/classes/${classId}/students/${studentId}`); };
+

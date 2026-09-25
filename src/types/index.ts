@@ -111,10 +111,12 @@ export interface Announcement {
 export interface Assignment {
   id: number;
   classId: number;
+  chapterId?: number;
   title: string;
   description: string;
   dueDate: string;
   maxScore: number;
+  attachmentUrl?: string;
   createdAt?: string;
 }
 export type SubmissionType = 'FILE' | 'IMAGE' | 'GOOGLE_DRIVE_LINK' | 'GITHUB_LINK';
@@ -199,7 +201,7 @@ export interface Notification {
   createdAt: string;
   type: 'NEW_ASSIGNMENT' | 'NEW_GRADE' | 'NEW_ANNOUNCEMENT' | 'ACADEMIC_WARNING'
        | 'NEW_QUIZ' | 'QUIZ_UPDATED' | 'NEW_FORUM_POST' | 'NEW_FORUM_COMMENT'
-       | 'LESSON_COMPLETED' | 'COURSE_REGISTERED' | 'NEW_LESSON' | 'ASSIGNMENT_UPDATED';
+       | 'LESSON_COMPLETED' | 'COURSE_REGISTERED' | 'NEW_LESSON' | 'ASSIGNMENT_UPDATED' | 'REGISTRATION_OPEN';
   referenceId?: number;
 }
 
@@ -261,9 +263,13 @@ export interface Schedule {
 export interface Quiz {
   id: number;
   classId: number;
+  chapterId?: number;
   title: string;
   durationMinutes: number;
   totalScore: number;
+  startTime?: string;
+  endTime?: string;
+  status?: string;
   createdAt: string;
 }
 export interface QuizQuestion {

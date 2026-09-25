@@ -64,5 +64,5 @@ export interface AiLessonSummaryResponse {
 }
 
 export const getAiLessonSummary = async (lessonId: number): Promise<AiLessonSummaryResponse> => {
-  return unwrap<AiLessonSummaryResponse>(apiClient.get(`/api/v1/content/lessons/${lessonId}/ai-summary`));
+  return unwrap<AiLessonSummaryResponse>(apiClient.get(`/content/lessons/${lessonId}/ai-summary`));
 };

@@ -55,9 +55,9 @@ export interface AiGradingResponse {
 }
 
 export const evaluateSubmissionAi = async (submissionId: number): Promise<AiGradingResponse> => {
-  return unwrap<AiGradingResponse>(apiClient.post(`/api/v1/assessments/submissions/${submissionId}/ai-evaluate`));
+  return unwrap<AiGradingResponse>(apiClient.post(`/assessments/submissions/${submissionId}/ai-evaluate`));
 };
 
 export const applyAiGrade = async (submissionId: number): Promise<Submission> => {
-  return unwrap<Submission>(apiClient.post(`/api/v1/assessments/submissions/${submissionId}/ai-apply-grade`));
+  return unwrap<Submission>(apiClient.post(`/assessments/submissions/${submissionId}/ai-apply-grade`));
 };
