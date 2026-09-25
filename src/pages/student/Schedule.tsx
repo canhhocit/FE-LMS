@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Download, Calendar, ExternalLink, X, Clock, MapPin, CheckCircle2 } from 'lucide-react';
+import { Download, Calendar, ExternalLink, X, Clock, MapPin, CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
 import * as scheduleService from '../../services/scheduleService';
 import { PageTitle, Spinner, ErrorBox } from '../../components/Layout';
 import TimetableGrid from '../../components/TimetableGrid';
@@ -137,13 +137,15 @@ export default function StudentSchedule() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    setToastMsg('Đã xuất file .ICS chuẩn! Bạn có thể mở trực tiếp để thêm vào Lịch iPhone / Outlook / Google Calendar.');
+    setToastMsg('Đã tải file .ICS toàn bộ lịch! Bạn có thể mở trực tiếp hoặc nhập vào Google Calendar/Outlook/iPhone.');
     setTimeout(() => setToastMsg(null), 4000);
   };
 
-  const handleOpenGoogleCalendarForSchedule = (item: Schedule) => {
-    const url = buildGoogleCalendarUrl(item);
-    window.open(url, '_blank');
+  const handleSyncAllGoogleCalendar = () => {
+    exportToIcs();
+    window.open('https://calendar.google.com/calendar/r/settings/export', '_blank');
+    setToastMsg('Đã tải file .ICS và mở trang Nhập Lịch Google Calendar. Vui lòng chọn file vừa tải để nhập toàn bộ lịch!');
+    setTimeout(() => setToastMsg(null), 6000);
   };
 
   if (loading) return <Spinner />;
@@ -164,7 +166,7 @@ export default function StudentSchedule() {
           <button
             type="button"
             onClick={() => setShowSyncModal(true)}
-            className="flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition shadow-xs cursor-pointer active:scale-95"
+            className="flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-xs cursor-pointer active:scale-95"
           >
             <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
@@ -187,21 +189,22 @@ export default function StudentSchedule() {
       {/* Google Calendar Sync Modal */}
       {showSyncModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-xl rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
                   <Calendar className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Đồng bộ Google Calendar</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Chọn môn học để mở mẫu tự động tạo sự kiện trên Lịch Google</p>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Đồng bộ lịch học Google Calendar</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Đồng bộ nhanh toàn bộ thời khóa biểu hoặc thêm từng môn học</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowSyncModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -210,57 +213,88 @@ export default function StudentSchedule() {
             {schedules.length === 0 ? (
               <div className="py-8 text-center text-xs text-slate-400">Chưa có lịch học để đồng bộ.</div>
             ) : (
-              <div className="space-y-3">
-                <p className="text-xs text-slate-600 dark:text-slate-300">
-                  Nhấp vào nút <strong className="text-indigo-600 dark:text-indigo-400">Mở Google</strong> ở từng môn học bên dưới để mở giao diện tự động tạo sự kiện nhắc nhở trên Google:
-                </p>
-
-                <div className="space-y-2.5 max-h-[340px] overflow-y-auto pr-1">
-                  {schedules.map((s, idx) => {
-                    const dayName = DAY_NAMES[s.dayOfWeek || 1];
-                    return (
-                      <div
-                        key={s.id || idx}
-                        className="p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between gap-3 hover:border-indigo-300 transition"
-                      >
-                        <div className="space-y-1">
-                          <div className="text-xs font-bold text-slate-900 dark:text-white">
-                            {s.courseTitle || s.className || s.classCode}
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                            <span className="bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 px-2 py-0.5 rounded-md font-bold">
-                              {dayName}
-                            </span>
-                            <span className="flex items-center gap-1 font-mono">
-                              <Clock className="w-3 h-3 text-slate-400" /> Tiết {s.startPeriod}-{s.endPeriod}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-slate-400" /> {s.room ? `Phòng ${s.room}` : 'Trực tuyến'}
-                            </span>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => handleOpenGoogleCalendarForSchedule(s)}
-                          className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 shrink-0 transition cursor-pointer active:scale-95"
-                        >
-                          <span>Mở Google</span>
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </button>
+              <div className="space-y-4">
+                {/* Primary Action Card: Sync All */}
+                <div className="p-4 rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50/90 to-indigo-50/90 dark:from-blue-950/40 dark:to-indigo-950/40 dark:border-blue-800/60 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-1.5 font-bold text-sm text-blue-900 dark:text-blue-100">
+                        <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <span>Đồng bộ tất cả lịch học (Khuyên dùng)</span>
                       </div>
-                    );
-                  })}
+                      <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                        Tự động xuất file lịch <strong className="font-semibold text-slate-800 dark:text-slate-200">.ICS</strong> toàn bộ môn học và chuyển đến trang Nhập lịch của Google Calendar.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSyncAllGoogleCalendar}
+                    className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg flex items-center justify-center gap-2 transition cursor-pointer active:scale-[0.98]"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Đồng bộ tất cả vào Google Calendar (.ICS)</span>
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </button>
                 </div>
 
+                {/* Secondary Option: Manual Single Subject Links */}
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                    Hoặc thêm thủ công từng môn học:
+                  </h4>
+
+                  <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1">
+                    {schedules.map((s, idx) => {
+                      const dayName = DAY_NAMES[s.dayOfWeek || 1];
+                      const googleUrl = buildGoogleCalendarUrl(s);
+                      return (
+                        <div
+                          key={s.id || idx}
+                          className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between gap-3 hover:border-blue-300 transition"
+                        >
+                          <div className="space-y-1 min-w-0">
+                            <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                              {s.courseTitle || s.className || s.classCode}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                              <span className="bg-blue-100/70 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 px-2 py-0.5 rounded font-bold text-[10px]">
+                                {dayName}
+                              </span>
+                              <span className="flex items-center gap-1 font-mono">
+                                <Clock className="w-3 h-3 text-slate-400" /> Tiết {s.startPeriod}-{s.endPeriod}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <MapPin className="w-3 h-3 text-slate-400" /> {s.room ? `Phòng ${s.room}` : 'Trực tuyến'}
+                              </span>
+                            </div>
+                          </div>
+
+                          <a
+                            href={googleUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 shrink-0 transition cursor-pointer active:scale-95"
+                          >
+                            <span>Thêm vào Google</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Footer buttons */}
                 <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                   <button
                     type="button"
                     onClick={exportToIcs}
-                    className="text-xs font-bold text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 flex items-center gap-1.5 cursor-pointer"
+                    className="text-xs font-semibold text-slate-600 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 flex items-center gap-1.5 cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>Hoặc Tải file .ICS toàn bộ lịch</span>
+                    <span>Chỉ tải file .ICS</span>
                   </button>
                   <button
                     type="button"
