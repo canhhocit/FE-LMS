@@ -184,7 +184,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
           </div>
         ) : (
           <div className="p-3 overflow-x-auto flex-1 select-none">
-            <div className="min-w-[920px] flex flex-col border border-slate-200/80 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900">
+            <div className="min-w-[1000px] flex flex-col border border-slate-200/80 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900">
               
               {/* Top X-Axis Day Headers Row */}
               <div className="grid grid-cols-[64px_repeat(7,_1fr)] border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 sticky top-0 z-20">
@@ -290,13 +290,18 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                             } ${onSelectSchedule ? 'cursor-pointer' : ''}`}
                           >
                             {/* Top Card Header Strip (Solid Theme Color) */}
-                            <div className={`${theme.headerBg} p-1.5 text-white flex items-center justify-between gap-1 shrink-0`}>
+                            <div className={`${theme.headerBg} px-2 py-1 text-white flex items-center justify-between gap-1 shrink-0`}>
                               <span className="font-bold text-xs truncate leading-snug">
                                 {item.courseTitle || item.className || item.classCode}
                               </span>
-                              <span className="text-[10px] font-mono whitespace-nowrap bg-black/20 px-1.5 py-0.5 rounded font-bold shrink-0">
-                                {item.startTime} - {item.endTime} ({item.periodLabel})
-                              </span>
+                              <div className="text-[10px] font-mono leading-tight bg-black/25 px-1.5 py-0.5 rounded font-bold shrink-0 text-right flex flex-col items-end justify-center">
+                                <div>{item.startTime} - {item.endTime}</div>
+                                {item.periodLabel && (
+                                  <div className="text-[9.5px] font-sans font-medium text-white/90">
+                                    ({item.periodLabel})
+                                  </div>
+                                )}
+                              </div>
                             </div>
 
                             {/* Card Body Info */}
