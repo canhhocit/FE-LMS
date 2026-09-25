@@ -348,7 +348,9 @@ export default function TuitionPage() {
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs mb-4">
                         <div>
                           <span className="text-slate-400 block">Số tín chỉ:</span>
-                          <span className="font-semibold text-slate-700">{i.totalCredits || 0} tín chỉ</span>
+                          <span className="font-semibold text-slate-700">
+                            {i.totalCredits || (i.pricePerCredit > 0 ? Math.round(i.amount / i.pricePerCredit) : 0)} tín chỉ
+                          </span>
                         </div>
                         <div>
                           <span className="text-slate-400 block">Đơn giá / tín:</span>

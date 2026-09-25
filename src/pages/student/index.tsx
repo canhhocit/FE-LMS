@@ -9,10 +9,11 @@ import * as notificationService from "../../services/notificationService";
 import * as progressService from "../../services/progressService";
 import * as registrationService from "../../services/registrationService";
 import * as scheduleService from "../../services/scheduleService";
+import * as reportService from "../../services/reportService";
 import { PageTitle, Card, Spinner, Empty, Pill } from "../../components/Layout";
 import { AcademicWarningBanner } from "../../components/AcademicWarningBanner";
 import { useAuth } from "../../contexts/useAuth";
-import type { Clazz, Assignment, Submission, Grade, Notification, GradingPolicy, SubmissionType } from "../../types";
+import type { Clazz, Assignment, Submission, Grade, Notification, GradingPolicy, SubmissionType, AcademicStatus } from "../../types";
 import * as profileService from "../../services/profileService";
 import * as curriculumService from "../../services/curriculumService";
 
@@ -79,6 +80,7 @@ export function StudentDashboard() {
   const [subs, setSubs] = useState<Submission[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [scheduleCount, setScheduleCount] = useState(0);
+  const [academicStatus, setAcademicStatus] = useState<AcademicStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -89,9 +91,14 @@ export function StudentDashboard() {
       assessmentService.getMySubmissions(),
       notificationService.getNotifications(),
       scheduleService.getMySchedule(),
+      reportService.getAcademicStatus().catch(() => null),
     ])
-      .then(async ([classesResult, subsResult, notificationResult, scheduleResult]) => {
+      .then(async ([classesResult, subsResult, notificationResult, scheduleResult, academicStatusResult]) => {
         if (!mounted) return;
+
+        if (academicStatusResult.status === 'fulfilled' && academicStatusResult.value) {
+          setAcademicStatus(academicStatusResult.value);
+        }
 
         if (classesResult.status === 'fulfilled') {
           const classList = classesResult.value;
@@ -198,7 +205,7 @@ export function StudentDashboard() {
       <AcademicWarningBanner
         studentName={user?.fullName}
         studentCode={user?.studentCode || user?.email}
-        debtCredits={0}
+        debtCredits={academicStatus?.failedCourses?.reduce((sum, c) => sum + (c.credit || 0), 0) ?? 0}
         maxAllowedCredits={10}
       />
 
