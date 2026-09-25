@@ -20,11 +20,14 @@ export default function ClazzPermissions() {
   const [allLecturers, setAllLecturers] = useState<Lecturer[]>([]);
   const [selectedLecturer, setSelectedLecturer] = useState<number | null>(null);
   const [permissions, setPermissions] = useState<string[]>([]);
+  const [initialPermissions, setInitialPermissions] = useState<string[]>([]);
   const allPerms = ['MANAGE_CONTENT', 'GRADE_STUDENTS', 'MANAGE_ATTENDANCE', 'VIEW_REPORTS'];
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+
+  const hasChanges = JSON.stringify([...permissions].sort()) !== JSON.stringify([...initialPermissions].sort());
 
   // Load all classes & all lecturers on mount
   useEffect(() => {
@@ -59,14 +62,21 @@ export default function ClazzPermissions() {
     let mounted = true;
     if (!selectedClass || !selectedLecturer) {
       setPermissions([]);
+      setInitialPermissions([]);
       return;
     }
     (async () => {
       try {
         const perms = await cpService.getClazzPermissions(selectedClass, selectedLecturer);
-        if (mounted) setPermissions(perms);
+        if (mounted) {
+          setPermissions(perms);
+          setInitialPermissions(perms);
+        }
       } catch {
-        if (mounted) setPermissions([]);
+        if (mounted) {
+          setPermissions([]);
+          setInitialPermissions([]);
+        }
       }
     })();
     return () => { mounted = false; };
@@ -76,12 +86,17 @@ export default function ClazzPermissions() {
     setPermissions(prev => prev.includes(code) ? prev.filter(p => p !== code) : [...prev, code]);
   };
 
+  const handleReset = () => {
+    setPermissions([...initialPermissions]);
+  };
+
   const handleSave = async () => {
     if (!selectedClass || !selectedLecturer) return;
     setSaving(true);
     setMsg(null);
     try {
       await cpService.grantClazzPermissions(selectedClass, selectedLecturer, permissions);
+      setInitialPermissions([...permissions]);
       setMsg('Đã cập nhật phân quyền PBAC cho Giảng viên thành công!');
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Lưu phân quyền thất bại');
@@ -96,6 +111,7 @@ export default function ClazzPermissions() {
     try {
       await cpService.revokeClazzPermissions(selectedClass, selectedLecturer);
       setPermissions([]);
+      setInitialPermissions([]);
       setMsg('Đã thu hồi tất cả quyền trong lớp học.');
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Thu hồi thất bại');
@@ -260,24 +276,71 @@ export default function ClazzPermissions() {
                 </div>
 
                 <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
-                  <span className="text-xs text-slate-400 flex items-center gap-1">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    Thay đổi quyền PBAC sẽ có hiệu lực ngay lập tức.
-                  </span>
-                  <Button
-                    variant="primary"
-                    size="md"
-                    onClick={handleSave}
-                    loading={saving}
-                  >
-                    Lưu phân quyền PBAC
-                  </Button>
+                  {hasChanges ? (
+                    <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full dark:bg-amber-950/40 dark:text-amber-300 flex items-center gap-1 animate-pulse">
+                      <AlertCircle className="w-3.5 h-3.5" /> Có thay đổi chưa lưu
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-400 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      Thay đổi quyền PBAC sẽ có hiệu lực ngay khi nhấn lưu.
+                    </span>
+                  )}
+                  <div className="flex items-center gap-2">
+                    {hasChanges && (
+                      <button
+                        type="button"
+                        onClick={handleReset}
+                        className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"
+                      >
+                        Hoàn tác
+                      </button>
+                    )}
+                    <Button
+                      variant="primary"
+                      size="md"
+                      onClick={handleSave}
+                      loading={saving}
+                    >
+                      Lưu phân quyền PBAC
+                    </Button>
+                  </div>
                 </div>
               </>
             )}
           </Card>
         </div>
       </div>
+
+      {/* Floating Sticky Save Bar when changes detected */}
+      {hasChanges && activeLecturer && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white dark:bg-accent-950 dark:border dark:border-accent-800 p-4 rounded-2xl shadow-2xl flex items-center gap-4 animate-in fade-in slide-in-from-bottom-5">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 text-amber-400 animate-bounce" />
+            <div>
+              <div className="text-xs font-bold text-white">Bạn có thay đổi chưa lưu!</div>
+              <div className="text-[11px] text-slate-300">Giảng viên: {activeLecturer.fullName} ({activeClazz?.classCode})</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleReset}
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer"
+            >
+              Hủy
+            </button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleSave}
+              loading={saving}
+            >
+              Lưu ngay
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

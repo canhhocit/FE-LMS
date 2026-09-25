@@ -4,7 +4,7 @@ import { Users, BookOpen, ClipboardList, Calendar, Key, Building2, Zap } from 'l
 import * as clazzService from '../../services/clazzService';
 import * as adminService from '../../services/adminService';
 import { PageTitle, PageHeader, Card, Spinner, Empty, Pill } from '../../components/Layout';
-import { importUsersByRole, exportUsersByRole, resetPassword, createUser, updateUser, updateUserStatus, type UserCreateRequest } from '../../services/userService';
+import { importUsersByRole, exportUsersByRole, resetPassword, createUser, updateUser, updateUserStatus, deleteUser, type UserCreateRequest } from '../../services/userService';
 import * as adminClassService from '../../services/adminClassService';
 import type { AdminClassResponse } from '../../services/adminClassService';
 import { getDepartments, type DepartmentResponse } from '../../services/departmentService';
@@ -136,6 +136,7 @@ export function AdminUsers() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [importMsg, setImportMsg] = useState<string | null>(null);
   const [resettingId, setResettingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   // Pagination State
   const [page, setPage] = useState(0);
@@ -340,6 +341,24 @@ export function AdminUsers() {
     }
   };
 
+  const handleDeleteUser = async (userItem: User) => {
+    const confirmed = window.confirm(
+      `Bạn có chắc chắn muốn XÓA vĩnh viễn tài khoản "${userItem.fullName}" (${userItem.email})?\n\nHành động này không thể hoàn tác.`
+    );
+    if (!confirmed) return;
+
+    setDeletingId(userItem.id);
+    try {
+      await deleteUser(userItem.id);
+      setImportMsg(`Đã xóa vĩnh viễn tài khoản ${userItem.fullName}.`);
+      load();
+    } catch (e: unknown) {
+      setImportMsg((e as { message?: string })?.message ?? 'Xóa tài khoản thất bại.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const filteredUsers = users.filter((u) => {
     if (!selectedClass) return true;
     return u.adminClassName === selectedClass || String(u.adminClassId) === selectedClass;
@@ -465,9 +484,17 @@ export function AdminUsers() {
                             type="button"
                             onClick={() => void handleResetPassword(u)}
                             disabled={resettingId === u.id}
-                            className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-50 transition"
+                            className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-50 transition cursor-pointer"
                           >
                             {resettingId === u.id ? 'Đang reset...' : 'Reset MK'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void handleDeleteUser(u)}
+                            disabled={deletingId === u.id}
+                            className="rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-50 transition cursor-pointer"
+                          >
+                            {deletingId === u.id ? 'Đang xóa...' : 'Xóa'}
                           </button>
                         </div>
                       </td>
