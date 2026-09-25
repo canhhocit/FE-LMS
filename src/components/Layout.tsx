@@ -630,29 +630,34 @@ function FirstLoginModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-        <div className="mb-4 text-center">
-          <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
-            <KeyIcon className="h-6 w-6" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+        <div className="mb-5 flex flex-col items-center text-center">
+          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 dark:bg-indigo-950/50 dark:border-indigo-800/60 dark:text-indigo-400">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
           </div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
             Đổi mật khẩu lần đầu
           </h2>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Vui lòng cập nhật mật khẩu mới để tiếp tục sử dụng hệ thống.
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
+            Vì lý do an toàn, hệ thống yêu cầu bạn cập nhật mật khẩu mới khi đăng nhập lần đầu.
           </p>
         </div>
 
         {err && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 dark:bg-rose-950/40 dark:border-rose-900/60 dark:text-rose-300">
-            {err}
+          <div className="mb-4 flex items-start gap-2.5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 dark:bg-rose-950/40 dark:border-rose-900/60 dark:text-rose-300">
+            <svg className="h-4 w-4 shrink-0 mt-0.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{err}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit(onChangePwSubmit)} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
               Mật khẩu hiện tại
             </label>
             <div className="relative">
@@ -660,16 +665,16 @@ function FirstLoginModal({
                 type={showOldPw ? "text" : "password"}
                 {...register('oldPassword')}
                 placeholder="Nhập mật khẩu hiện tại"
-                className={`w-full px-3 py-2 pr-10 border rounded-xl text-sm dark:bg-slate-800 dark:text-white outline-none transition focus:ring-2 ${
+                className={`w-full px-3.5 py-2.5 pr-10 border rounded-xl text-sm bg-slate-50/50 dark:bg-slate-800/60 dark:text-white outline-none transition focus:bg-white dark:focus:bg-slate-800 focus:ring-2 ${
                   errors.oldPassword
                     ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
-                    : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500'
+                    : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500/20 focus:border-indigo-600'
                 }`}
               />
               <button
                 type="button"
                 onClick={() => setShowOldPw(!showOldPw)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 cursor-pointer"
                 title={showOldPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
                 {showOldPw ? (
@@ -685,7 +690,7 @@ function FirstLoginModal({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
               Mật khẩu mới
             </label>
             <div className="relative">
@@ -693,16 +698,16 @@ function FirstLoginModal({
                 type={showNewPw ? "text" : "password"}
                 {...register('newPassword')}
                 placeholder="Nhập mật khẩu mới"
-                className={`w-full px-3 py-2 pr-10 border rounded-xl text-sm dark:bg-slate-800 dark:text-white outline-none transition focus:ring-2 ${
+                className={`w-full px-3.5 py-2.5 pr-10 border rounded-xl text-sm bg-slate-50/50 dark:bg-slate-800/60 dark:text-white outline-none transition focus:bg-white dark:focus:bg-slate-800 focus:ring-2 ${
                   errors.newPassword
                     ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
-                    : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500'
+                    : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500/20 focus:border-indigo-600'
                 }`}
               />
               <button
                 type="button"
                 onClick={() => setShowNewPw(!showNewPw)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 cursor-pointer"
                 title={showNewPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
                 {showNewPw ? (
@@ -718,7 +723,7 @@ function FirstLoginModal({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
               Xác nhận mật khẩu mới
             </label>
             <div className="relative">
@@ -726,16 +731,16 @@ function FirstLoginModal({
                 type={showConfirmPw ? "text" : "password"}
                 {...register('confirmPassword')}
                 placeholder="Xác nhận mật khẩu mới"
-                className={`w-full px-3 py-2 pr-10 border rounded-xl text-sm dark:bg-slate-800 dark:text-white outline-none transition focus:ring-2 ${
+                className={`w-full px-3.5 py-2.5 pr-10 border rounded-xl text-sm bg-slate-50/50 dark:bg-slate-800/60 dark:text-white outline-none transition focus:bg-white dark:focus:bg-slate-800 focus:ring-2 ${
                   errors.confirmPassword
                     ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
-                    : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500'
+                    : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500/20 focus:border-indigo-600'
                 }`}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPw(!showConfirmPw)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 cursor-pointer"
                 title={showConfirmPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
                 {showConfirmPw ? (
@@ -750,24 +755,37 @@ function FirstLoginModal({
             )}
           </div>
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full py-2.5 rounded-xl font-semibold text-sm bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 transition shadow-sm"
-          >
-            {saving ? "Đang xử lý..." : "Đổi mật khẩu"}
-          </button>
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="w-full py-2.5 rounded-xl font-medium text-sm bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition duration-150 shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {saving ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <span>Đang lưu mật khẩu...</span>
+                </>
+              ) : (
+                "Cập nhật mật khẩu"
+              )}
+            </button>
+          </div>
         </form>
-        <div className="mt-3 text-center">
+
+        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-center">
           <button
             type="button"
             onClick={() => {
               logout();
               window.location.href = "/login";
             }}
-            className="text-xs text-rose-500 hover:text-rose-600 dark:text-rose-400 font-medium hover:underline transition"
+            className="text-xs text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 font-medium transition inline-flex items-center gap-1.5 cursor-pointer"
           >
-            Đăng xuất khỏi tài khoản này
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Đăng xuất tài khoản</span>
           </button>
         </div>
       </div>
