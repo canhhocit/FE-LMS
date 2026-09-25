@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Schedule } from '../types';
-import { Calendar, Clock, MapPin, User, RefreshCw, ChevronLeft, ChevronRight, Trash2, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, RefreshCw, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import { Empty } from './ui';
 
 interface TimetableGridProps {
@@ -26,22 +26,32 @@ const PERIOD_TIMES: Record<number, { start: string; end: string }> = {
   12: { start: '17:05', end: '17:55' },
 };
 
-const CARD_STYLES = [
-  { headerBg: 'bg-indigo-600', border: 'border-indigo-600/60', text: 'text-indigo-700 dark:text-indigo-300' },
-  { headerBg: 'bg-emerald-600', border: 'border-emerald-600/60', text: 'text-emerald-700 dark:text-emerald-300' },
-  { headerBg: 'bg-amber-600', border: 'border-amber-600/60', text: 'text-amber-700 dark:text-amber-300' },
-  { headerBg: 'bg-purple-600', border: 'border-purple-600/60', text: 'text-purple-700 dark:text-purple-300' },
-  { headerBg: 'bg-blue-600', border: 'border-blue-600/60', text: 'text-blue-700 dark:text-blue-300' },
+const CARD_THEMES = [
+  { headerBg: 'bg-amber-600', border: 'border-amber-600', text: 'text-amber-600', subBg: 'bg-amber-50 dark:bg-amber-950/40' },
+  { headerBg: 'bg-slate-800 dark:bg-slate-700', border: 'border-slate-800 dark:border-slate-700', text: 'text-slate-800 dark:text-slate-200', subBg: 'bg-slate-50 dark:bg-slate-800/40' },
+  { headerBg: 'bg-blue-600', border: 'border-blue-600', text: 'text-blue-600', subBg: 'bg-blue-50 dark:bg-blue-950/40' },
+  { headerBg: 'bg-orange-600', border: 'border-orange-600', text: 'text-orange-600', subBg: 'bg-orange-50 dark:bg-orange-950/40' },
+  { headerBg: 'bg-emerald-600', border: 'border-emerald-600', text: 'text-emerald-600', subBg: 'bg-emerald-50 dark:bg-emerald-950/40' },
 ];
 
 const DAY_NAMES = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
+
+const HOURS_LIST = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+const HOUR_ROW_HEIGHT = 64; // px per hour
+
+function timeToHours(timeStr: string, fallbackH: number): number {
+  if (!timeStr || timeStr === '00:00' || timeStr === '00:00:00') return fallbackH;
+  const parts = timeStr.split(':').map(Number);
+  if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) return fallbackH;
+  return parts[0] + parts[1] / 60;
+}
 
 const getScheduleTimeInfo = (item: Schedule) => {
   const sP = item.startPeriod || 1;
   const eP = item.endPeriod || (item.startPeriod ? item.startPeriod + 2 : 3);
 
   const calcStart = PERIOD_TIMES[sP]?.start || '06:45';
-  const calcEnd = PERIOD_TIMES[eP]?.end || '09:25';
+  const calcEnd = PERIOD_TIMES[eP]?.end || '12:10';
 
   let startTime = (item.startTime && item.startTime !== '00:00' && item.startTime !== '00:00:00')
     ? item.startTime
@@ -50,14 +60,14 @@ const getScheduleTimeInfo = (item: Schedule) => {
     ? item.endTime
     : calcEnd;
 
-  const [h1, m1] = startTime.split(':').map(Number);
-  const [h2, m2] = endTime.split(':').map(Number);
-  if ((h2 * 60 + m2) <= (h1 * 60 + m1)) {
-    startTime = calcStart;
-    endTime = calcEnd;
+  const startH = timeToHours(startTime, 6.75);
+  let endH = timeToHours(endTime, 12.167);
+
+  if (endH <= startH) {
+    endH = startH + 1.5;
   }
 
-  return { startTime, endTime, periodLabel: `Tiết ${sP}-${eP}` };
+  return { startTime, endTime, periodLabel: `Tiết ${sP}-${eP}`, startH, endH };
 };
 
 export const TimetableGrid: React.FC<TimetableGridProps> = ({
@@ -107,24 +117,21 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
 
-    let startingDayOfWeek = firstDayOfMonth.getDay(); // 0 = Sun, 1 = Mon...
-    startingDayOfWeek = startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1; // 0 = Mon
+    let startingDayOfWeek = firstDayOfMonth.getDay();
+    startingDayOfWeek = startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1;
 
     const days: { date: Date; dayNum: number; isCurrentMonth: boolean }[] = [];
 
-    // Prev month padding
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
       const prevDate = new Date(year, month, -i);
       days.push({ date: prevDate, dayNum: prevDate.getDate(), isCurrentMonth: false });
     }
 
-    // Current month days
     for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
       const currDate = new Date(year, month, i);
       days.push({ date: currDate, dayNum: i, isCurrentMonth: true });
     }
 
-    // Next month padding
     const remaining = (days.length > 35 ? 42 : 35) - days.length;
     for (let i = 1; i <= remaining; i++) {
       const nextDate = new Date(year, month + 1, i);
@@ -152,7 +159,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
 
   return (
     <div className="flex flex-col lg:flex-row gap-6">
-      {/* Left Main Grid Area */}
+      {/* Left Main 2D Time Grid Matrix */}
       <div className="flex-1 min-w-0 rounded-2xl border border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 overflow-hidden flex flex-col">
         {/* Header Bar */}
         <div className="p-4 border-b border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-900/50">
@@ -170,116 +177,183 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
           </div>
         </div>
 
-        {/* Grid Content */}
+        {/* 2D Time Matrix Body */}
         {displaySchedules.length === 0 ? (
           <div className="p-12 text-center flex-1 flex items-center justify-center">
             <Empty msg="Chưa có lịch học hoặc lịch giảng dạy nào được ghi nhận." />
           </div>
         ) : (
-          <div className="p-4 overflow-x-auto flex-1">
-            <div className="grid grid-cols-7 gap-3 min-w-[960px]">
-              {weekDates.map((date, idx) => {
-                const dayNum = idx + 1; // 1 = Mon ... 7 = Sun
-                const daySchedules = displaySchedules.filter((s) => s.dayOfWeek === dayNum);
-                const isToday = new Date().toDateString() === date.toDateString();
-                const isSelected = date.toDateString() === currentDate.toDateString();
+          <div className="p-3 overflow-x-auto flex-1 select-none">
+            <div className="min-w-[920px] flex flex-col border border-slate-200/80 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900">
+              
+              {/* Top X-Axis Day Headers Row */}
+              <div className="grid grid-cols-[64px_repeat(7,_1fr)] border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 sticky top-0 z-20">
+                {/* Top-Left Corner Box: Giờ VN */}
+                <div className="p-2 border-r border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center text-center">
+                  <Clock className="w-3.5 h-3.5 text-slate-500 mb-0.5" />
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Giờ VN</span>
+                </div>
 
-                return (
-                  <div
-                    key={idx}
-                    onClick={() => setCurrentDate(date)}
-                    className={`rounded-xl border p-3 min-h-[220px] flex flex-col gap-2 transition cursor-pointer ${
-                      isSelected
-                        ? 'border-indigo-500 bg-indigo-50/40 dark:border-indigo-700 dark:bg-indigo-950/30 shadow-xs'
-                        : isToday
-                        ? 'border-indigo-300 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/40'
-                        : 'border-slate-200/80 bg-slate-50/30 dark:border-slate-800 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/60'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-700/60 shrink-0 gap-1">
-                      <span className={`text-xs font-bold whitespace-nowrap ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-300'}`}>
-                        {['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'][idx]}
-                      </span>
-                      <span className={`text-[11px] font-mono px-1.5 py-0.5 rounded-md whitespace-nowrap shrink-0 ${
-                        isToday
-                          ? 'bg-indigo-600 text-white font-bold'
-                          : 'text-slate-400 dark:text-slate-500'
-                      }`}>
-                        {date.getDate()}/{date.getMonth() + 1}
-                      </span>
-                    </div>
+                {/* 7 Day Column Headers */}
+                {weekDates.map((date, idx) => {
+                  const isToday = new Date().toDateString() === date.toDateString();
+                  const isSelected = date.toDateString() === currentDate.toDateString();
 
-                    {daySchedules.length === 0 ? (
-                      <div className="flex-1 flex items-center justify-center text-[11px] text-slate-400 dark:text-slate-600 italic">
-                        Trống
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => setCurrentDate(date)}
+                      className={`p-2 border-r border-slate-200 dark:border-slate-800 text-center transition cursor-pointer last:border-r-0 ${
+                        isSelected
+                          ? 'bg-blue-100/70 dark:bg-blue-950/60'
+                          : isToday
+                          ? 'bg-indigo-50/60 dark:bg-indigo-950/30'
+                          : 'hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center justify-center">
+                        <span className={`text-base font-extrabold font-mono ${
+                          isSelected || isToday ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'
+                        }`}>
+                          {date.getDate()}
+                        </span>
+                        <span className={`text-xs font-bold ${
+                          isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-400'
+                        }`}>
+                          {['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'][idx]}
+                        </span>
                       </div>
-                    ) : (
-                      daySchedules.map((item, sIdx) => {
-                        const style = CARD_STYLES[sIdx % CARD_STYLES.length];
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Matrix Grid Container */}
+              <div className="relative grid grid-cols-[64px_repeat(7,_1fr)]">
+                
+                {/* Left Y-Axis Time Labels Column */}
+                <div className="border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 shrink-0">
+                  {HOURS_LIST.map((hour) => (
+                    <div
+                      key={hour}
+                      style={{ height: `${HOUR_ROW_HEIGHT}px` }}
+                      className="border-b border-slate-100 dark:border-slate-800/60 px-1 py-1 text-center font-mono text-[11px] font-bold text-slate-600 dark:text-slate-400"
+                    >
+                      {hour < 10 ? `0${hour}` : hour}:00
+                    </div>
+                  ))}
+                </div>
+
+                {/* 7 Columns Background Grid & Event Cards Placement */}
+                {weekDates.map((date, idx) => {
+                  const dayNum = idx + 1; // 1 = Mon ... 7 = Sun
+                  const daySchedules = displaySchedules.filter((s) => s.dayOfWeek === dayNum);
+                  const isSelected = date.toDateString() === currentDate.toDateString();
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`relative border-r border-slate-200/80 dark:border-slate-800 last:border-r-0 ${
+                        isSelected ? 'bg-blue-50/20 dark:bg-blue-950/10' : ''
+                      }`}
+                      style={{ height: `${HOURS_LIST.length * HOUR_ROW_HEIGHT}px` }}
+                    >
+                      {/* Background Hourly Grid Lines */}
+                      {HOURS_LIST.map((hour) => (
+                        <div
+                          key={hour}
+                          style={{ height: `${HOUR_ROW_HEIGHT}px` }}
+                          className="border-b border-slate-100 dark:border-slate-800/60"
+                        />
+                      ))}
+
+                      {/* Event Cards Positioned by Time Offset */}
+                      {daySchedules.map((item, sIdx) => {
+                        const theme = CARD_THEMES[(item.clazzId || item.id || sIdx) % CARD_THEMES.length];
+                        const topPx = Math.max(0, (item.startH - 6) * HOUR_ROW_HEIGHT);
+                        const durationH = Math.max(1, item.endH - item.startH);
+                        const heightPx = Math.max(76, durationH * HOUR_ROW_HEIGHT - 4);
+
                         return (
                           <div
                             key={item.id}
+                            style={{
+                              top: `${topPx}px`,
+                              height: `${heightPx}px`,
+                            }}
                             onClick={(e) => {
                               e.stopPropagation();
                               onSelectSchedule?.(item);
                             }}
-                            className={`rounded-xl border bg-white dark:bg-slate-900 p-2.5 shadow-2xs space-y-1.5 transition hover:shadow-xs ${
-                              onSelectSchedule ? 'cursor-pointer hover:border-indigo-500' : ''
-                            } ${style.border}`}
+                            className={`absolute left-1 right-1 z-10 rounded-xl border-2 overflow-hidden shadow-sm flex flex-col bg-white dark:bg-slate-900 transition hover:shadow-md hover:z-20 ${
+                              theme.border
+                            } ${onSelectSchedule ? 'cursor-pointer' : ''}`}
                           >
-                            <div className="flex items-start justify-between gap-1">
-                              <span className="text-xs font-bold text-slate-900 dark:text-white leading-snug">
+                            {/* Top Card Header Strip (Solid Theme Color) */}
+                            <div className={`${theme.headerBg} p-1.5 text-white flex items-center justify-between gap-1 shrink-0`}>
+                              <span className="font-bold text-xs truncate leading-snug">
                                 {item.courseTitle || item.className || item.classCode}
                               </span>
+                              <span className="text-[10px] font-mono whitespace-nowrap bg-black/20 px-1.5 py-0.5 rounded font-bold shrink-0">
+                                {item.startTime} - {item.endTime} ({item.periodLabel})
+                              </span>
+                            </div>
+
+                            {/* Card Body Info */}
+                            <div className="p-2 flex-1 flex flex-col justify-between text-xs text-slate-800 dark:text-slate-100 leading-relaxed font-medium space-y-1">
+                              <div>
+                                <div className="text-[11px] font-bold text-slate-900 dark:text-white line-clamp-2">
+                                  {item.className || item.courseTitle}
+                                </div>
+                                {item.classCode && (
+                                  <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                                    {item.classCode}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="space-y-0.5 pt-1 border-t border-slate-100 dark:border-slate-800 text-[11px]">
+                                {item.room && (
+                                  <div className="flex items-center gap-1 text-slate-700 dark:text-slate-300 font-semibold">
+                                    <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                                    <span className="truncate">{item.room}</span>
+                                  </div>
+                                )}
+                                {item.lecturerName && (
+                                  <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
+                                    <User className="w-3 h-3 text-slate-400 shrink-0" />
+                                    <span className="truncate">{item.lecturerName}</span>
+                                  </div>
+                                )}
+                              </div>
+
                               {isEditable && onDeleteSchedule && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDeleteSchedule(item.id);
-                                  }}
-                                  className="text-slate-400 hover:text-rose-500 cursor-pointer p-0.5 shrink-0"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
+                                <div className="pt-1 flex justify-end">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onDeleteSchedule(item.id);
+                                    }}
+                                    className="text-[10px] text-rose-600 font-bold hover:underline cursor-pointer"
+                                  >
+                                    Xóa
+                                  </button>
+                                </div>
                               )}
                             </div>
-
-                            <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                              <Clock className="w-3 h-3 text-slate-400 shrink-0" />
-                              <span className="whitespace-nowrap">{item.periodLabel} ({item.startTime}-{item.endTime})</span>
-                            </div>
-
-                            {item.room && (
-                              <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                                <span className="font-medium text-slate-700 dark:text-slate-300">Phòng {item.room}</span>
-                              </div>
-                            )}
-
-                            {item.lecturerName && (
-                              <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                                <User className="w-3 h-3 text-slate-400 shrink-0" />
-                                <span className="truncate">{item.lecturerName}</span>
-                              </div>
-                            )}
                           </div>
                         );
-                      })
-                    )}
-                  </div>
-                );
-              })}
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+
             </div>
           </div>
         )}
 
-        {/* Bottom Footer Info */}
-        <div className="p-3 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end text-xs text-slate-400">
-          <div className="text-[11px] font-mono">
-            Ca học: 06:45 - 17:55 (Tiết 1 - 12)
-          </div>
-        </div>
       </div>
 
       {/* Right Sidebar Panel: Mini Calendar & Today's Agenda */}
@@ -375,7 +449,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
           ) : (
             <div className="space-y-2.5">
               {selectedDaySchedules.map((item, idx) => {
-                const style = CARD_STYLES[(item.clazzId || item.id || idx) % CARD_STYLES.length];
+                const theme = CARD_THEMES[(item.clazzId || item.id || idx) % CARD_THEMES.length];
 
                 return (
                   <div key={item.id || idx} className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 hover:bg-indigo-50/40 dark:hover:bg-slate-800 transition text-xs space-y-1.5 shadow-2xs">
@@ -383,7 +457,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                       <div className="font-bold text-slate-900 dark:text-white text-xs leading-snug">
                         {item.className || item.courseTitle}
                       </div>
-                      <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold text-white shrink-0 ${style.headerBg}`}>
+                      <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold text-white shrink-0 ${theme.headerBg}`}>
                         {item.periodLabel}
                       </span>
                     </div>
