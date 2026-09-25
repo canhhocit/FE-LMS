@@ -268,21 +268,7 @@ export function StudentDashboard() {
         </div>
       </Card>
 
-      <Card className="p-4">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <h3 className="font-semibold text-[#243b78]">Learning streak</h3>
-          <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-700">{learningStreak} ngày</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-linear-to-br from-amber-400 to-orange-500 text-white shadow-[0_10px_20px_rgba(251,146,60,0.28)]">
-            <Flame className="w-7 h-7" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-slate-800">{learningStreak} ngày</div>
-            <div className="text-sm text-slate-500">Bạn đang duy trì nhịp học đều đặn.</div>
-          </div>
-        </div>
-      </Card>
+
 
       <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
         <Card className="overflow-hidden p-0">

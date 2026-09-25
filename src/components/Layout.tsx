@@ -556,12 +556,6 @@ const NAV: Record<Role, NavSection[]> = {
         },
         { to: "/admin/classes", label: "Lớp học phần", icon: BookOpenIcon, permission: "MANAGE_REGISTRATION" },
         { to: "/admin/tuition", label: "Quản lý học phí", icon: FileTextIcon, permission: "MANAGE_TUITION" },
-        {
-          to: "/admin/clazz-permissions",
-          label: "Phân quyền lớp học",
-          icon: KeyIcon,
-          permission: "SYSTEM_CONFIG",
-        },
       ],
     },
     {
