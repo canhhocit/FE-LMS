@@ -32,7 +32,10 @@ const DEFAULT_DOCUMENTS: DocumentItem[] = [
 
 export const DocumentHubPage: React.FC = () => {
   const { user } = useAuth();
-  const isAdminOrLecturer = user?.role === 'ADMIN' || user?.role === 'LECTURER';
+  const isStudent = user?.role === 'STUDENT';
+  const isLecturer = user?.role === 'LECTURER';
+  const isAdmin = user?.role === 'ADMIN';
+  const isAdminOrLecturer = isAdmin || isLecturer;
 
   const [documents, setDocuments] = useState<DocumentItem[]>(() => {
     try {
@@ -47,7 +50,10 @@ export const DocumentHubPage: React.FC = () => {
     return DEFAULT_DOCUMENTS;
   });
 
-  const [activeTab, setActiveTab] = useState<'STUDENT_FORMS' | 'LECTURER_TEMPLATES'>('STUDENT_FORMS');
+  const [activeTab, setActiveTab] = useState<'STUDENT_FORMS' | 'LECTURER_TEMPLATES'>(() => {
+    if (user?.role === 'LECTURER') return 'LECTURER_TEMPLATES';
+    return 'STUDENT_FORMS';
+  });
   const [msg, setMsg] = useState('');
   const [uploadingDocId, setUploadingDocId] = useState<string | null>(null);
   const [isModalUploading, setIsModalUploading] = useState(false);
@@ -174,6 +180,12 @@ export const DocumentHubPage: React.FC = () => {
   const studentForms = documents.filter((d) => d.category === 'STUDENT_FORMS');
   const lecturerTemplates = documents.filter((d) => d.category === 'LECTURER_TEMPLATES');
 
+  const headerSubtitle = isStudent
+    ? 'Danh sách các biểu mẫu đơn xin, giấy xác nhận sinh viên chuẩn. Bạn có thể tải về và điền thông tin khi cần.'
+    : isLecturer
+    ? 'Danh sách các biểu mẫu import điểm, đề thi và danh sách điểm danh dành cho Giảng viên.'
+    : 'Quản lý, tải về và tải lên các mẫu đơn chuẩn cho Sinh viên & Giảng viên (Hỗ trợ upload & lưu tệp thực tế)';
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Header Bar */}
@@ -181,10 +193,10 @@ export const DocumentHubPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Folder className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-            Trung tâm Biểu mẫu & Kho Tài liệu
+            {isStudent ? 'Kho Biểu mẫu & Giấy xác nhận Sinh viên' : 'Trung tâm Biểu mẫu & Kho Tài liệu'}
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Quản lý, tải về và tải lên các mẫu đơn chuẩn cho Sinh viên & Giảng viên (Hỗ trợ upload & lưu tệp thực tế)
+            {headerSubtitle}
           </p>
         </div>
 
@@ -206,29 +218,31 @@ export const DocumentHubPage: React.FC = () => {
         </div>
       )}
 
-      {/* 2-Tab Selector */}
-      <div className="flex border-b border-gray-200 dark:border-gray-700 space-x-4">
-        <button
-          onClick={() => setActiveTab('STUDENT_FORMS')}
-          className={`pb-3 px-4 font-bold text-sm border-b-2 flex items-center gap-2 transition cursor-pointer ${
-            activeTab === 'STUDENT_FORMS'
-              ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
-          }`}
-        >
-          <User className="w-4 h-4" /> Mẫu đơn Sinh viên ({studentForms.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('LECTURER_TEMPLATES')}
-          className={`pb-3 px-4 font-bold text-sm border-b-2 flex items-center gap-2 transition cursor-pointer ${
-            activeTab === 'LECTURER_TEMPLATES'
-              ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
-          }`}
-        >
-          <FileCheck className="w-4 h-4" /> Biểu mẫu Giảng viên ({lecturerTemplates.length})
-        </button>
-      </div>
+      {/* Tab Selector: Only show for Admin/Lecturer, hide Lecturer tab for Students */}
+      {!isStudent && (
+        <div className="flex border-b border-gray-200 dark:border-gray-700 space-x-4">
+          <button
+            onClick={() => setActiveTab('STUDENT_FORMS')}
+            className={`pb-3 px-4 font-bold text-sm border-b-2 flex items-center gap-2 transition cursor-pointer ${
+              activeTab === 'STUDENT_FORMS'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+            }`}
+          >
+            <User className="w-4 h-4" /> Mẫu đơn Sinh viên ({studentForms.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('LECTURER_TEMPLATES')}
+            className={`pb-3 px-4 font-bold text-sm border-b-2 flex items-center gap-2 transition cursor-pointer ${
+              activeTab === 'LECTURER_TEMPLATES'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+            }`}
+          >
+            <FileCheck className="w-4 h-4" /> Biểu mẫu Giảng viên ({lecturerTemplates.length})
+          </button>
+        </div>
+      )}
 
       {/* Tab 1: Student Forms */}
       {activeTab === 'STUDENT_FORMS' && (
