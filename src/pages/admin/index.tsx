@@ -248,11 +248,14 @@ export function AdminUsers() {
     setSubmittingUser(true);
     setFormErr(null);
     try {
+      const rawPassword = userForm.password.trim();
+      const defaultPassword = modalMode === 'CREATE' ? (rawPassword || '123456') : (rawPassword || undefined);
+
       const payload: UserCreateRequest = {
         fullName: userForm.fullName.trim(),
         email: userForm.email.trim(),
         role: userForm.role,
-        password: userForm.password || undefined,
+        password: defaultPassword,
         dateOfBirth: userForm.dateOfBirth || undefined,
       };
 
@@ -270,7 +273,7 @@ export function AdminUsers() {
 
       if (modalMode === 'CREATE') {
         await createUser(payload);
-        setImportMsg(`Tạo người dùng ${payload.fullName} thành công.`);
+        setImportMsg(`Tạo người dùng ${payload.fullName} thành công với mật khẩu: ${defaultPassword}`);
       } else if (editingUser) {
         await updateUser(editingUser.id, payload);
         if (editingUser.active !== userForm.active) {
