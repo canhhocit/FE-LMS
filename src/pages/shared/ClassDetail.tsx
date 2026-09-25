@@ -178,14 +178,20 @@ export default function ClassDetail() {
     let mounted = true;
     (async () => {
       try {
-        const registrations = await registrationService.getMyRegistrations();
-        const match = registrations.find((item) => item.clazzId === cid);
-        if (!match) {
-          if (mounted) setStudentProgress(null);
-          return;
+        const registrations = await registrationService.getMyRegistrations().catch(() => []);
+        const match = registrations.find(
+          (item) => Number(item.clazzId ?? (item as any).classId ?? (item as any).id) === cid
+        );
+        let enrollmentId = match?.enrollmentId ?? (match as any)?.id;
+        if (!enrollmentId) {
+          const myClasses = await clazzService.getMyClasses().catch(() => []);
+          const classMatch = myClasses.find((c) => c.id === cid);
+          enrollmentId = (classMatch as any)?.enrollmentId ?? classMatch?.id ?? cid;
         }
-        const progress = await progressService.getEnrollmentProgress(match.enrollmentId);
-        if (mounted) setStudentProgress(progress);
+        if (enrollmentId) {
+          const progress = await progressService.getEnrollmentProgress(enrollmentId);
+          if (mounted) setStudentProgress(progress);
+        }
       } catch {
         if (mounted) setStudentProgress(null);
       }

@@ -56,7 +56,7 @@ export default function StudentLessonLearning() {
   }, [resumeKey]);
 
   const isLessonCompleted = selectedLesson
-    ? progress?.lessons.some((item) => item.lessonId === selectedLesson.id && item.isCompleted)
+    ? progress?.lessons.some((item) => Number(item.lessonId) === Number(selectedLesson.id) && item.isCompleted)
     : false;
   const isLessonInProgress = selectedLesson
     ? !isLessonCompleted && Boolean(resumeSeconds > 5)
@@ -108,19 +108,26 @@ export default function StudentLessonLearning() {
     const load = async () => {
       try {
         const [classData, chapterList] = await Promise.all([
-          clazzService.getClazzDetail(classNum),
-          contentService.getChapters(classNum),
+          clazzService.getClazzDetail(classNum).catch(() => null),
+          contentService.getChapters(classNum).catch(() => []),
         ]);
 
         if (!mounted) return;
-        setClazz(classData);
+        if (classData) setClazz(classData);
         setChapters(chapterList);
 
         const lessonsByChapter = await Promise.all(
-          chapterList.map(async (chapter) => ({
-            chapterId: chapter.id,
-            lessons: await contentService.getLessons(chapter.id),
-          }))
+          chapterList.map(async (chapter) => {
+            let lessons: Lesson[] = chapter.lessons ?? [];
+            if (lessons.length === 0) {
+              try {
+                lessons = await contentService.getLessons(chapter.id);
+              } catch {
+                lessons = [];
+              }
+            }
+            return { chapterId: chapter.id, lessons };
+          })
         );
 
         const mapped: Record<number, Lesson[]> = {};
@@ -130,7 +137,14 @@ export default function StudentLessonLearning() {
         setChapterLessons(mapped);
 
         const flatLessons = lessonsByChapter.flatMap(({ lessons }) => lessons);
-        const lesson = flatLessons.find((item) => item.id === lessonNum) ?? flatLessons[0] ?? null;
+        let lesson = flatLessons.find((item) => Number(item.id) === lessonNum) ?? null;
+        if (!lesson) {
+          try {
+            lesson = await contentService.getLessonDetail(lessonNum);
+          } catch {
+            lesson = flatLessons[0] ?? null;
+          }
+        }
         if (!lesson) {
           setError('Bài học không tồn tại trong lớp này.');
           return;
@@ -142,50 +156,80 @@ export default function StudentLessonLearning() {
         maxWatchedTimeRef.current = savedResume;
         setMaxWatchedSec(savedResume);
 
-        const registrations: Registration[] = await registrationService.getMyRegistrations();
-        const matchedRegistration = registrations.find((item) => item.clazzId === classNum);
-        if (!matchedRegistration) {
-          setError('Bạn chưa tham gia lớp học này.');
-          return;
+        // Find student enrollment/registration safely
+        const registrations: Registration[] = await registrationService.getMyRegistrations().catch(() => []);
+        let matchedRegistration = registrations.find(
+          (item) => Number(item.clazzId ?? (item as any).classId ?? (item as any).id) === classNum
+        );
+
+        let enrollmentId = matchedRegistration?.enrollmentId ?? (matchedRegistration as any)?.id;
+        if (!enrollmentId) {
+          const myClasses = await clazzService.getMyClasses().catch(() => []);
+          const classMatch = myClasses.find((c) => c.id === classNum);
+          if (classMatch) {
+            enrollmentId = (classMatch as any).enrollmentId ?? (classMatch as any).id ?? classNum;
+          } else {
+            enrollmentId = classNum;
+          }
         }
 
-        enrollmentIdRef.current = matchedRegistration.enrollmentId;
+        enrollmentIdRef.current = enrollmentId;
 
-        // Load server-side progress
-        const serverProgress = await videoLearningService.getProgress(lessonNum, matchedRegistration.enrollmentId);
-        if (serverProgress) {
-          const serverLast = Number(serverProgress.lastWatchedSeconds || 0);
-          const serverMax = Number(serverProgress.maxWatchedSeconds || 0);
-          const highestServer = Math.max(serverLast, serverMax);
-          if (highestServer > getStoredResumeSeconds()) {
-            localStorage.setItem(resumeKey, String(Math.floor(highestServer)));
-            setResumeSeconds(Math.floor(highestServer));
+        // Load server-side video progress
+        if (enrollmentId) {
+          const serverProgress = await videoLearningService.getProgress(lessonNum, enrollmentId).catch(() => null);
+          if (serverProgress) {
+            const serverLast = Number(serverProgress.lastWatchedSeconds || 0);
+            const serverMax = Number(serverProgress.maxWatchedSeconds || 0);
+            const highestServer = Math.max(serverLast, serverMax);
+            if (highestServer > getStoredResumeSeconds()) {
+              localStorage.setItem(resumeKey, String(Math.floor(highestServer)));
+              setResumeSeconds(Math.floor(highestServer));
+            }
+            maxWatchedTimeRef.current = Math.max(maxWatchedTimeRef.current, highestServer);
           }
-          maxWatchedTimeRef.current = Math.max(maxWatchedTimeRef.current, highestServer);
         }
         setMaxWatchedSec(maxWatchedTimeRef.current);
 
-        // Load quizzes and notes
+        // Load quizzes and notes safely
         const [quizData, noteData] = await Promise.all([
-          videoLearningService.getQuizzesForLesson(lessonNum),
-          videoLearningService.getNotes(lessonNum),
+          videoLearningService.getQuizzesForLesson(lessonNum).catch(() => []),
+          videoLearningService.getNotes(lessonNum).catch(() => []),
         ]);
         if (mounted) {
           setQuizzes(quizData ?? []);
           setNotes(noteData ?? []);
         }
 
-        const progressData = await progressService.getEnrollmentProgress(matchedRegistration.enrollmentId);
+        // Load enrollment progress safely
+        let progressData = enrollmentId ? await progressService.getEnrollmentProgress(enrollmentId).catch(() => null) : null;
+        if (!progressData) {
+          progressData = {
+            enrollmentId: enrollmentId ?? classNum,
+            clazzId: classNum,
+            completedCount: 0,
+            totalCount: flatLessons.length,
+            percentage: 0,
+            lessons: flatLessons.map((l) => ({
+              lessonId: l.id,
+              lessonTitle: l.title,
+              isCompleted: false,
+              completedAt: null,
+            })),
+          };
+        }
         if (mounted) setProgress(progressData);
 
         // Auto mark complete if lesson has no video
-        if (!lesson.videoUrl && matchedRegistration.enrollmentId) {
-          const isAlreadyCompleted = progressData?.lessons.some((item) => item.lessonId === lesson.id && item.isCompleted);
+        if (!lesson.videoUrl && enrollmentId) {
+          const isAlreadyCompleted = progressData?.lessons.some(
+            (item) => Number(item.lessonId) === Number(lesson.id) && item.isCompleted
+          );
           if (!isAlreadyCompleted) {
             try {
-              await progressService.markLessonComplete(lesson.id, matchedRegistration.enrollmentId);
-              const updated = await progressService.getEnrollmentProgress(matchedRegistration.enrollmentId);
-              if (mounted) setProgress(updated);
+              await progressService.markLessonComplete(lesson.id, enrollmentId);
+              const updated = await progressService.getEnrollmentProgress(enrollmentId);
+              if (mounted && updated) setProgress(updated);
             } catch {
               // Best effort auto-mark
             }
@@ -612,8 +656,8 @@ export default function StudentLessonLearning() {
                   <div className="space-y-1">
                     {(chapterLessons[chapter.id] ?? []).map((lesson) => {
                       const active = lesson.id === selectedLesson.id;
-                      const done = progress?.lessons.some((item) => item.lessonId === lesson.id && item.isCompleted);
-                      const inProgress = !done && progress?.lessons.some((item) => item.lessonId === lesson.id && !item.isCompleted);
+                      const done = progress?.lessons.some((item) => Number(item.lessonId) === Number(lesson.id) && item.isCompleted);
+                      const inProgress = !done && progress?.lessons.some((item) => Number(item.lessonId) === Number(lesson.id) && !item.isCompleted);
                       const statusText = done ? 'Đã học' : inProgress ? 'Đang học' : 'Chưa học';
                       const statusClass = done
                         ? 'bg-emerald-100 text-emerald-700'

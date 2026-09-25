@@ -105,25 +105,40 @@ export function StudentDashboard() {
           setClasses(classList);
 
           try {
-            const registrations = await registrationService.getMyRegistrations();
+            const registrations = await registrationService.getMyRegistrations().catch(() => []);
             const progressMap: Record<number, ClassProgressState> = {};
 
+            const classToEnrollmentMap: Record<number, number> = {};
+            registrations.forEach((r) => {
+              const cId = Number(r.clazzId ?? (r as any).classId ?? (r as any).id);
+              const eId = Number(r.enrollmentId ?? (r as any).id);
+              if (cId && eId) classToEnrollmentMap[cId] = eId;
+            });
+
+            classList.forEach((c) => {
+              if (!classToEnrollmentMap[c.id]) {
+                classToEnrollmentMap[c.id] = (c as any).enrollmentId ?? c.id;
+              }
+            });
+
             const results = await Promise.allSettled(
-              registrations.map(async (registration) => {
-                const progress = await progressService.getEnrollmentProgress(registration.enrollmentId);
-                return { clazzId: registration.clazzId, progress };
+              Object.entries(classToEnrollmentMap).map(async ([clazzIdStr, enrollmentId]) => {
+                const clazzId = Number(clazzIdStr);
+                const progress = await progressService.getEnrollmentProgress(enrollmentId);
+                return { clazzId, progress };
               })
             );
 
             results.forEach((result) => {
-              if (result.status !== 'fulfilled') return;
+              if (result.status !== 'fulfilled' || !result.value) return;
               const { clazzId, progress } = result.value;
-              const percentage = progress?.percentage ?? 0;
+              if (!progress) return;
+              const percentage = progress.percentage ?? 0;
               const status = percentage >= 100 ? 'completed' : percentage > 0 ? 'in-progress' : 'not-started';
               progressMap[clazzId] = {
                 percentage,
-                completedCount: progress?.completedCount ?? 0,
-                totalCount: progress?.totalCount ?? 0,
+                completedCount: progress.completedCount ?? 0,
+                totalCount: progress.totalCount ?? 0,
                 status,
               };
             });

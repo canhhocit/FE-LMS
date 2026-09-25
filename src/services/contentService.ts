@@ -7,6 +7,7 @@ export const updateChapter = async (chapterId: number, data: Partial<Chapter>): 
 export const deleteChapter = async (chapterId: number): Promise<void> => { await apiClient.delete(`/chapters/${chapterId}`); };
 
 export const getLessons = async (chapterId: number): Promise<Lesson[]> => unwrap(apiClient.get(`/chapters/${chapterId}/lessons`));
+export const getLessonDetail = async (lessonId: number): Promise<Lesson> => unwrap(apiClient.get(`/lessons/${lessonId}`));
 export const createLesson = async (chapterId: number, data: Omit<Lesson, 'id' | 'chapterId'>): Promise<Lesson> => unwrap(apiClient.post(`/chapters/${chapterId}/lessons`, data));
 export const updateLesson = async (lessonId: number, data: Partial<Lesson>): Promise<Lesson> => unwrap(apiClient.put(`/lessons/${lessonId}`, data));
 export const deleteLesson = async (lessonId: number): Promise<void> => { await apiClient.delete(`/lessons/${lessonId}`); };
