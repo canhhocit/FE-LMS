@@ -95,12 +95,9 @@ export default function ResetPassword() {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Tối thiểu 8 ký tự, gồm chữ hoa, chữ thường, số, ký tự đặc biệt"
+                placeholder="Nhập mật khẩu mới"
                 className="w-full px-4 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600"
               />
-              <p className="text-xs text-slate-500 mt-1">
-                Ví dụ: Password@123 (chứa chữ hoa, chữ thường, số, ký tự đặc biệt)
-              </p>
             </div>
 
             <div>

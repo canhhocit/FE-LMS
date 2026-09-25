@@ -640,11 +640,7 @@ function FirstLoginModal({
             Đổi mật khẩu lần đầu
           </h2>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Tài khoản của bạn vừa đăng nhập lần đầu với mật khẩu mặc định (VD:{" "}
-            <code className="font-semibold text-slate-700 dark:text-slate-300">
-              123456
-            </code>
-            ). Vui lòng đặt mật khẩu mới để bảo mật tài khoản.
+            Vui lòng cập nhật mật khẩu mới để tiếp tục sử dụng hệ thống.
           </p>
         </div>
 
@@ -657,16 +653,13 @@ function FirstLoginModal({
         <form onSubmit={handleSubmit(onChangePwSubmit)} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-              Mật khẩu hiện tại{" "}
-              <span className="font-normal text-slate-400">
-                (mật khẩu vừa đăng nhập, VD: 123456)
-              </span>
+              Mật khẩu hiện tại
             </label>
             <div className="relative">
               <input
                 type={showOldPw ? "text" : "password"}
                 {...register('oldPassword')}
-                placeholder="Nhập 123456"
+                placeholder="Nhập mật khẩu hiện tại"
                 className={`w-full px-3 py-2 pr-10 border rounded-xl text-sm dark:bg-slate-800 dark:text-white outline-none transition focus:ring-2 ${
                   errors.oldPassword
                     ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
@@ -699,7 +692,7 @@ function FirstLoginModal({
               <input
                 type={showNewPw ? "text" : "password"}
                 {...register('newPassword')}
-                placeholder="VD: Student@123"
+                placeholder="Nhập mật khẩu mới"
                 className={`w-full px-3 py-2 pr-10 border rounded-xl text-sm dark:bg-slate-800 dark:text-white outline-none transition focus:ring-2 ${
                   errors.newPassword
                     ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
@@ -719,12 +712,8 @@ function FirstLoginModal({
                 )}
               </button>
             </div>
-            {errors.newPassword ? (
+            {errors.newPassword && (
               <p className="mt-1 text-[11px] font-medium text-rose-600 dark:text-rose-400">{errors.newPassword.message}</p>
-            ) : (
-              <p className="mt-1 text-[11px] text-slate-400">
-                Yêu cầu: Tối thiểu 6 ký tự và có ít nhất 1 ký tự đặc biệt (@, #, $, !...)
-              </p>
             )}
           </div>
 
@@ -736,7 +725,7 @@ function FirstLoginModal({
               <input
                 type={showConfirmPw ? "text" : "password"}
                 {...register('confirmPassword')}
-                placeholder="Nhập lại mật khẩu mới"
+                placeholder="Xác nhận mật khẩu mới"
                 className={`w-full px-3 py-2 pr-10 border rounded-xl text-sm dark:bg-slate-800 dark:text-white outline-none transition focus:ring-2 ${
                   errors.confirmPassword
                     ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
@@ -766,7 +755,7 @@ function FirstLoginModal({
             disabled={saving}
             className="w-full py-2.5 rounded-xl font-semibold text-sm bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 transition shadow-sm"
           >
-            {saving ? "Đang cập nhật..." : "Xác nhận & Đổi mật khẩu"}
+            {saving ? "Đang xử lý..." : "Đổi mật khẩu"}
           </button>
         </form>
         <div className="mt-3 text-center">

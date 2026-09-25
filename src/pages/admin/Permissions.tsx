@@ -453,7 +453,7 @@ export default function Permissions() {
                     required
                     value={newFullName}
                     onChange={(e) => setNewFullName(e.target.value)}
-                    placeholder="VD: Nguyễn Văn Admin"
+                    placeholder="Nhập họ và tên"
                     className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-accent-500/20 outline-none"
                   />
                 </div>
@@ -464,7 +464,7 @@ export default function Permissions() {
                     required
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    placeholder="xeplich@learninghub.edu.vn"
+                    placeholder="Nhập email"
                     className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-accent-500/20 outline-none"
                   />
                 </div>
@@ -476,7 +476,7 @@ export default function Permissions() {
                   type="text"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Mật khẩu mặc định: 123456@"
+                  placeholder="Mật khẩu ban đầu"
                   className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-accent-500/20 outline-none"
                 />
               </div>
