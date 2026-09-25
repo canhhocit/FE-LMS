@@ -252,7 +252,7 @@ export const DraggableAiCompanion: React.FC = () => {
     setTimeout(() => setCopiedId(null), 2500);
   };
 
-  // Resizing logic for expanded window (Drag top-left corner to resize width/height UPWARDS and LEFTWARDS)
+  // Resizing logic for expanded window (Drag bottom-right corner to resize width/height)
   const handleResizeStart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -265,8 +265,8 @@ export const DraggableAiCompanion: React.FC = () => {
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       if (!isResizingRef.current) return;
-      const dx = startX - moveEvent.clientX;
-      const dy = startY - moveEvent.clientY;
+      const dx = moveEvent.clientX - startX;
+      const dy = moveEvent.clientY - startY;
 
       const newWidth = Math.max(360, Math.min(window.innerWidth - 32, startWidth + dx));
       const newHeight = Math.max(380, Math.min(window.innerHeight - 80, startHeight + dy));
@@ -727,27 +727,13 @@ export const DraggableAiCompanion: React.FC = () => {
               : 'w-[calc(100vw-32px)] sm:w-[400px] h-[520px] max-h-[calc(100vh-48px)]'
           }`}
         >
-          {/* Resize Handle at Top-Left corner when in Expanded Mode */}
-          {isExpanded && (
-            <div
-              onMouseDown={handleResizeStart}
-              title="Kéo thả góc này để thay đổi Kích thước cửa sổ Chat"
-              className="absolute top-2 left-2 z-30 w-5 h-5 cursor-nwse-resize flex items-center justify-center bg-slate-800/60 hover:bg-slate-800 rounded-md transition"
-            >
-              <Move className="w-3.5 h-3.5 text-white" />
-            </div>
-          )}
-
           {/* Header - Draggable on desktop & touch */}
           <div
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
             className="bg-slate-900 dark:bg-slate-950 p-3 text-white flex items-center justify-between shrink-0 select-none border-b border-slate-800 cursor-grab active:cursor-grabbing touch-none"
           >
-            <div className="flex items-center gap-2 pl-1">
-              <div className="p-1 text-slate-400 hover:text-white" title="Kéo thả để di chuyển cửa sổ AI">
-                <Move className="w-4 h-4 text-indigo-400" />
-              </div>
+            <div className="flex items-center gap-2.5 pl-1">
               <div className="relative">
                 <div className="w-7.5 h-7.5 rounded-lg bg-indigo-600/30 border border-indigo-400/40 flex items-center justify-center">
                   <Bot className="w-4 h-4 text-indigo-400" />
@@ -757,7 +743,7 @@ export const DraggableAiCompanion: React.FC = () => {
               <div>
                 <h3 className="text-xs font-bold text-white leading-tight">{aiName}</h3>
                 <p className="text-[10px] text-slate-400 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" /> Trợ lý LMS 24/7 (Kéo để di chuyển)
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" /> Trợ lý LMS 24/7
                 </p>
               </div>
             </div>
@@ -895,6 +881,19 @@ export const DraggableAiCompanion: React.FC = () => {
                 <Send className="w-4 h-4" />
               </button>
             </form>
+
+            {/* Subtle Resize Handle at Bottom-Right corner when in Expanded Mode */}
+            {isExpanded && (
+              <div
+                onMouseDown={handleResizeStart}
+                title="Kéo góc này để thay đổi kích thước cửa sổ"
+                className="absolute bottom-1 right-1 z-30 w-4 h-4 cursor-se-resize flex items-center justify-center text-slate-400 hover:text-indigo-500 transition select-none"
+              >
+                <svg className="w-3 h-3 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-10 10M19 15l-4 4" />
+                </svg>
+              </div>
+            )}
           </div>
         )}
       </div>
