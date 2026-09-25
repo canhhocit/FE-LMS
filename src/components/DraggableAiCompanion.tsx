@@ -49,7 +49,14 @@ export const DraggableAiCompanion: React.FC = () => {
     return () => window.removeEventListener('lms_update_ai_config', handleConfigUpdate);
   }, [configKey]);
 
-  const [position, setPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight - 180 });
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    const isMobile = window.innerWidth < 640;
+    const initialX = Math.max(10, window.innerWidth - (isMobile ? 180 : 220));
+    const initialY = Math.max(10, window.innerHeight - (isMobile ? 80 : 90));
+    setPosition({ x: initialX, y: initialY });
+  }, []);
   const [isHovered, setIsHovered] = useState(false);
   const [isOpenInput, setIsOpenInput] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -141,25 +148,47 @@ export const DraggableAiCompanion: React.FC = () => {
     }
   }, [messages, isOpenInput, isExpanded]);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button !== 0) return;
+  const handleStartDrag = (clientX: number, clientY: number) => {
     isDraggingRef.current = true;
     hasMovedRef.current = false;
-    dragStartPos.current = { x: e.clientX, y: e.clientY };
-    initialBotPos.current = { ...position };
+    dragStartPos.current = { x: clientX, y: clientY };
+    initialBotPos.current = position || {
+      x: window.innerWidth - 220,
+      y: window.innerHeight - 90,
+    };
+  };
+
+  const handleMoveDrag = (clientX: number, clientY: number) => {
+    if (!isDraggingRef.current) return;
+    const dx = clientX - dragStartPos.current.x;
+    const dy = clientY - dragStartPos.current.y;
+
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      hasMovedRef.current = true;
+    }
+
+    const isMobile = window.innerWidth < 640;
+    const estWidth = isOpenInput ? (isExpanded ? expandedSize.width : (isMobile ? window.innerWidth - 32 : 400)) : 170;
+    const estHeight = isOpenInput ? (isExpanded ? expandedSize.height : 520) : 55;
+
+    const maxX = Math.max(10, window.innerWidth - estWidth - 10);
+    const maxY = Math.max(10, window.innerHeight - estHeight - 10);
+
+    const newX = Math.max(10, Math.min(maxX, initialBotPos.current.x + dx));
+    const newY = Math.max(10, Math.min(maxY, initialBotPos.current.y + dy));
+
+    setPosition({ x: newX, y: newY });
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('button, input, textarea, a')) return;
+
+    handleStartDrag(e.clientX, e.clientY);
 
     const onMouseMove = (moveEvent: MouseEvent) => {
-      if (!isDraggingRef.current) return;
-      const dx = moveEvent.clientX - dragStartPos.current.x;
-      const dy = moveEvent.clientY - dragStartPos.current.y;
-
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-        hasMovedRef.current = true;
-      }
-
-      const newX = Math.max(10, Math.min(window.innerWidth - 80, initialBotPos.current.x + dx));
-      const newY = Math.max(10, Math.min(window.innerHeight - 80, initialBotPos.current.y + dy));
-      setPosition({ x: newX, y: newY });
+      handleMoveDrag(moveEvent.clientX, moveEvent.clientY);
     };
 
     const onMouseUp = () => {
@@ -170,6 +199,33 @@ export const DraggableAiCompanion: React.FC = () => {
 
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('button, input, textarea, a')) return;
+
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    handleStartDrag(touch.clientX, touch.clientY);
+
+    const onTouchMove = (moveEvent: TouchEvent) => {
+      if (!isDraggingRef.current) return;
+      const t = moveEvent.touches[0];
+      if (!t) return;
+      if (moveEvent.cancelable) moveEvent.preventDefault();
+      handleMoveDrag(t.clientX, t.clientY);
+    };
+
+    const onTouchEnd = () => {
+      isDraggingRef.current = false;
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onTouchEnd);
   };
 
   const handleMascotClick = () => {
@@ -604,99 +660,125 @@ export const DraggableAiCompanion: React.FC = () => {
   };
 
   return (
-    <>
-      {/* Floating Action Button (FAB) at bottom-right corner */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-auto">
-        {!isOpenInput && (
-          <button
-            type="button"
-            onClick={() => setIsOpenInput(true)}
-            className="flex items-center gap-2.5 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg hover:shadow-indigo-500/25 transition duration-200 cursor-pointer active:scale-95 group border border-indigo-500/30"
-          >
-            <div className="relative">
-              <Bot className="w-5 h-5" />
-              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-indigo-600" />
-            </div>
-            <span className="text-xs font-semibold">{aiName}</span>
-            <Sparkles className="w-3.5 h-3.5 text-indigo-200 group-hover:rotate-12 transition" />
-          </button>
-        )}
-
-        {/* AI Chat Window */}
-        {isOpenInput && (
-          <div
-            style={
-              isExpanded
-                ? { width: `${expandedSize.width}px`, height: `${expandedSize.height}px`, maxWidth: 'calc(100vw - 32px)', maxHeight: 'calc(100vh - 32px)' }
-                : undefined
+    <div
+      style={
+        position
+          ? {
+              position: 'fixed',
+              left: `${position.x}px`,
+              top: `${position.y}px`,
+              zIndex: 9999,
             }
-            className={`bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-800 overflow-hidden flex flex-col transition-all duration-200 ${
-              isExpanded
-                ? 'min-w-[340px] min-h-80'
-                : 'w-[calc(100vw-32px)] sm:w-[400px] h-[520px] max-h-[calc(100vh-48px)]'
-            }`}
-          >
-            {/* Resize Handle at Top-Left corner when in Expanded Mode */}
-            {isExpanded && (
-              <div
-                onMouseDown={handleResizeStart}
-                title="Kéo thả góc này để thay đổi Kích thước cửa sổ Chat"
-                className="absolute top-2 left-2 z-30 w-5 h-5 cursor-nwse-resize flex items-center justify-center bg-slate-800/60 hover:bg-slate-800 rounded-md transition"
-              >
-                <Move className="w-3.5 h-3.5 text-white" />
-              </div>
-            )}
+          : {
+              position: 'fixed',
+              bottom: '24px',
+              right: '24px',
+              zIndex: 9999,
+            }
+      }
+      className="flex flex-col items-end pointer-events-auto select-none"
+    >
+      {/* Floating Action Button (FAB) */}
+      {!isOpenInput && (
+        <button
+          type="button"
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
+          onClick={handleMascotClick}
+          className="flex items-center gap-2.5 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-2xl hover:shadow-indigo-500/25 transition duration-200 cursor-grab active:cursor-grabbing group border border-indigo-500/30 touch-none select-none"
+        >
+          <Move className="w-3.5 h-3.5 text-indigo-200 shrink-0" />
+          <div className="relative">
+            <Bot className="w-5 h-5" />
+            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-indigo-600" />
+          </div>
+          <span className="text-xs font-semibold">{aiName}</span>
+          <Sparkles className="w-3.5 h-3.5 text-indigo-200 group-hover:rotate-12 transition" />
+        </button>
+      )}
 
-            {/* Header */}
-            <div className="bg-slate-900 dark:bg-slate-950 p-3.5 text-white flex items-center justify-between shrink-0 select-none border-b border-slate-800">
-              <div className="flex items-center gap-2.5 pl-2">
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-600/30 border border-indigo-400/40 flex items-center justify-center">
-                    <Bot className="w-4.5 h-4.5 text-indigo-400" />
-                  </div>
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-400 rounded-full" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold text-white leading-tight">{aiName}</h3>
-                  <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
-                    <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" /> Trợ lý LMS 24/7
-                  </p>
-                </div>
+      {/* AI Chat Window */}
+      {isOpenInput && (
+        <div
+          style={
+            isExpanded
+              ? { width: `${expandedSize.width}px`, height: `${expandedSize.height}px`, maxWidth: 'calc(100vw - 32px)', maxHeight: 'calc(100vh - 32px)' }
+              : undefined
+          }
+          className={`bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-800 overflow-hidden flex flex-col transition-all duration-200 ${
+            isExpanded
+              ? 'min-w-[340px] min-h-80'
+              : 'w-[calc(100vw-32px)] sm:w-[400px] h-[520px] max-h-[calc(100vh-48px)]'
+          }`}
+        >
+          {/* Resize Handle at Top-Left corner when in Expanded Mode */}
+          {isExpanded && (
+            <div
+              onMouseDown={handleResizeStart}
+              title="Kéo thả góc này để thay đổi Kích thước cửa sổ Chat"
+              className="absolute top-2 left-2 z-30 w-5 h-5 cursor-nwse-resize flex items-center justify-center bg-slate-800/60 hover:bg-slate-800 rounded-md transition"
+            >
+              <Move className="w-3.5 h-3.5 text-white" />
+            </div>
+          )}
+
+          {/* Header - Draggable on desktop & touch */}
+          <div
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+            className="bg-slate-900 dark:bg-slate-950 p-3 text-white flex items-center justify-between shrink-0 select-none border-b border-slate-800 cursor-grab active:cursor-grabbing touch-none"
+          >
+            <div className="flex items-center gap-2 pl-1">
+              <div className="p-1 text-slate-400 hover:text-white" title="Kéo thả để di chuyển cửa sổ AI">
+                <Move className="w-4 h-4 text-indigo-400" />
               </div>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  title="Xuất file lịch sử trò chuyện (.json)"
-                  onClick={handleExportHistory}
-                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
-                >
-                  <Download className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  title={isExpanded ? 'Thu nhỏ cửa sổ' : 'Mở rộng hiển thị'}
-                  onClick={() => setIsExpanded((prev) => !prev)}
-                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
-                >
-                  {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                </button>
-                <button
-                  type="button"
-                  title="Xóa lịch sử trò chuyện"
-                  onClick={handleClearHistory}
-                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsOpenInput(false)}
-                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
-                >
-                  <X className="w-4.5 h-4.5" />
-                </button>
+              <div className="relative">
+                <div className="w-7.5 h-7.5 rounded-lg bg-indigo-600/30 border border-indigo-400/40 flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-indigo-400" />
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-400 rounded-full" />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-white leading-tight">{aiName}</h3>
+                <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" /> Trợ lý LMS 24/7 (Kéo để di chuyển)
+                </p>
               </div>
             </div>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                title="Xuất file lịch sử trò chuyện (.json)"
+                onClick={handleExportHistory}
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                title={isExpanded ? 'Thu nhỏ cửa sổ' : 'Mở rộng hiển thị'}
+                onClick={() => setIsExpanded((prev) => !prev)}
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
+              >
+                {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </button>
+              <button
+                type="button"
+                title="Xóa lịch sử trò chuyện"
+                onClick={handleClearHistory}
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsOpenInput(false)}
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
+              >
+                <X className="w-4.5 h-4.5" />
+              </button>
+            </div>
+          </div>
 
             {/* Conversation Stream */}
             <div
@@ -796,7 +878,6 @@ export const DraggableAiCompanion: React.FC = () => {
           </div>
         )}
       </div>
-    </>
   );
 };
 
