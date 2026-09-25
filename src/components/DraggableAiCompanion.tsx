@@ -22,6 +22,18 @@ export interface ContextEntity {
   adminClass?: string;
 }
 
+export const cleanAiResponseText = (text: string, userPrompt?: string): string => {
+  if (!text) return '';
+  const prompt = userPrompt || '';
+  const wantsEmoji = /emoji|icon|biểu tượng|trang trí|hình vẽ/i.test(prompt);
+  if (wantsEmoji) return text;
+
+  return text
+    .replace(/[\u{1F300}-\u{1F9FF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F1E6}-\u{1F1FF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA70}-\u{1FAFF}]/gu, '')
+    .replace(/[✨🤖🚀🧠📌📚💡💬🔍⚡🎉🎓]/g, '')
+    .replace(/  +/g, ' ');
+};
+
 export const DraggableAiCompanion: React.FC = () => {
   const { user } = useAuth();
   const userId = user?.id || 'guest';
@@ -88,10 +100,10 @@ export const DraggableAiCompanion: React.FC = () => {
     }
 
     const welcomeText = isLecturer
-      ? `Xin chào Thầy/Cô ${user?.fullName || ''}! Em là ${aiName} – trợ lý hỗ trợ giảng dạy & quản lý đào tạo 24/7 của hệ thống LearningHub LMS.\n\nEm có thể hỗ trợ Thầy/Cô tra cứu nhanh: Lịch giảng dạy, danh sách sinh viên, các lớp học phần phụ trách, thông tin tài khoản Giảng viên... Thầy/Cô cần em hỗ trợ gì ạ?`
+      ? `Xin chào Thầy/Cô ${user?.fullName || ''}! Em là ${aiName} - trợ lý hỗ trợ giảng dạy và quản lý đào tạo của hệ thống LearningHub LMS.\n\nEm hỗ trợ tra cứu nhanh: Lịch giảng dạy, danh sách sinh viên, các lớp học phần phụ trách, thông tin tài khoản Giảng viên. Thầy/Cô cần hỗ trợ thông tin gì?`
       : isAdmin
-      ? `Xin chào Quản trị viên ${user?.fullName || ''}! Mình là ${aiName} – trợ lý quản trị hệ thống LearningHub LMS.\n\nMình hỗ trợ tra cứu: Thống kê tổng số tài khoản, danh sách lớp học phần, duyệt quyền PBAC, tài khoản Giảng viên/Sinh viên... Bạn cần hỗ trợ gì hôm nay?`
-      : `Xin chào ${user?.fullName || 'bạn'}! Mình là ${aiName} – trợ lý học tập 24/7 của hệ thống LearningHub LMS.\n\nMình có trí nhớ hội thoại & quyền truy cập CSDL thời gian thực: Tra cứu Sinh viên/Giảng viên (vd: "tìm sinh viên Nguyễn Văn A", "thời khóa biểu tuần này"), thống kê hệ thống, thời khóa biểu, danh sách lớp học phần, học phí... Bạn muốn mình hỗ trợ gì hôm nay?`;
+      ? `Xin chào Quản trị viên ${user?.fullName || ''}! Mình là ${aiName} - trợ lý quản trị hệ thống LearningHub LMS.\n\nMình hỗ trợ tra cứu: Thống kê tổng số tài khoản, danh sách lớp học phần, duyệt quyền PBAC, tài khoản Giảng viên/Sinh viên. Bạn cần hỗ trợ công việc gì hôm nay?`
+      : `Xin chào ${user?.fullName || 'bạn'}! Mình là ${aiName} - trợ lý học tập của hệ thống LearningHub LMS.\n\nMình hỗ trợ tra cứu thời gian thực: Danh sách sinh viên, giảng viên, thời khóa biểu, danh sách lớp học phần, học phí. Bạn muốn mình hỗ trợ thông tin gì hôm nay?`;
 
     return [
       {
@@ -573,10 +585,11 @@ export const DraggableAiCompanion: React.FC = () => {
       const liveAnswer = await processLiveSystemQuery(userText.trim());
 
       if (liveAnswer) {
+        const cleanedText = cleanAiResponseText(liveAnswer, userText.trim());
         const aiMsg: ChatMessage = {
           id: `ai-${Date.now()}`,
           sender: 'ai',
-          text: liveAnswer,
+          text: cleanedText,
           timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
         };
         setMessages((prev) => [...prev, aiMsg]);
@@ -587,15 +600,18 @@ export const DraggableAiCompanion: React.FC = () => {
           ? `[VAI TRÒ NGƯỜI DÙNG: QUẢN TRỊ VIÊN - ${user?.fullName || ''}]. Hãy xưng 'Quản trị viên', hỗ trợ về Thống kê hệ thống, Phê duyệt PBAC, Quản lý tài khoản.`
           : `[VAI TRÒ NGƯỜI DÙNG: SINH VIÊN - ${user?.fullName || ''}]. Hãy xưng 'bạn' hoặc 'em', hỗ trợ về Lịch học, Đăng ký môn, Học phí, Kết quả học tập.`;
 
+        const noEmojiRule = `[LƯU Ý QUAN TRỌNG VỀ ĐỊNH DẠNG: Trả lời rõ ràng, thông minh, đúng trọng tâm. Tuyệt đối KHÔNG dùng emoji hay icon trang trí trong câu trả lời trừ khi người dùng chủ động yêu cầu]`;
+
         const promptToSend = lastContextEntity
-          ? `${roleContextPrompt} [Ngữ cảnh hội thoại: Người dùng đang hỏi tiếp nối về ${lastContextEntity.type} ${lastContextEntity.name} (Mã: ${lastContextEntity.code || 'n/a'}, Lớp: ${lastContextEntity.adminClass || 'n/a'})]. Câu hỏi: ${userText.trim()}`
-          : `${roleContextPrompt} Câu hỏi: ${userText.trim()}`;
+          ? `${roleContextPrompt} ${noEmojiRule} [Ngữ cảnh hội thoại: Người dùng đang hỏi tiếp nối về ${lastContextEntity.type} ${lastContextEntity.name} (Mã: ${lastContextEntity.code || 'n/a'}, Lớp: ${lastContextEntity.adminClass || 'n/a'})]. Câu hỏi: ${userText.trim()}`
+          : `${roleContextPrompt} ${noEmojiRule} Câu hỏi: ${userText.trim()}`;
 
         const res = await unwrap<{ reply: string }>(apiClient.post('/ai/advisor/chat', { prompt: promptToSend }));
+        const cleanedReply = cleanAiResponseText(res.reply, userText.trim());
         const aiMsg: ChatMessage = {
           id: `ai-${Date.now()}`,
           sender: 'ai',
-          text: res.reply,
+          text: cleanedReply,
           timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
         };
         setMessages((prev) => [...prev, aiMsg]);
@@ -605,7 +621,7 @@ export const DraggableAiCompanion: React.FC = () => {
       const fallbackAiMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         sender: 'ai',
-        text: `Xin chào ${salutationStr}! Tra cứu yêu cầu "${userText.trim()}": Hệ thống đã kết nối dữ liệu tài khoản ${user?.role} của ${salutationStr} trên LearningHub LMS thành công!`,
+        text: cleanAiResponseText(`Xin chào ${salutationStr}! Tra cứu yêu cầu "${userText.trim()}": Hệ thống đã kết nối dữ liệu tài khoản ${user?.role} của ${salutationStr} trên LearningHub LMS thành công!`, userText.trim()),
         timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, fallbackAiMsg]);
