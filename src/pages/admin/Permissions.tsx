@@ -355,21 +355,27 @@ export default function Permissions() {
               </div>
 
               {/* Action Buttons Header/Footer */}
-              <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
                 {hasChanges ? (
-                  <button
-                    type="button"
-                    onClick={handleResetChanges}
-                    className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 flex items-center gap-1 cursor-pointer"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" /> Hoàn tác
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleResetChanges}
+                      className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 flex items-center gap-1.5 cursor-pointer transition"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" /> Hoàn tác
+                    </button>
+                    <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-200/60 dark:border-amber-900/40">
+                      Có thay đổi chưa lưu
+                    </span>
+                  </div>
                 ) : <div />}
                 <Button
                   variant="primary"
                   size="md"
                   onClick={handleSavePermissions}
                   loading={saving}
+                  disabled={!hasChanges && !saving}
                 >
                   <Save className="w-4 h-4" />
                   {saving ? 'Đang lưu...' : 'Lưu thay đổi phân quyền'}
@@ -383,37 +389,6 @@ export default function Permissions() {
           )}
         </div>
       </div>
-
-      {/* Floating Sticky Save Bar when changes detected */}
-      {hasChanges && selectedAdmin && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white dark:bg-accent-950 dark:border dark:border-accent-800 p-4 rounded-2xl shadow-2xl flex items-center gap-4 animate-in fade-in slide-in-from-bottom-5">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-amber-400 animate-bounce" />
-            <div>
-              <div className="text-xs font-bold text-white">Bạn có thay đổi chưa lưu!</div>
-              <div className="text-[11px] text-slate-300">Tài khoản: {selectedAdmin.fullName}</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleResetChanges}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer"
-            >
-              Hủy
-            </button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleSavePermissions}
-              loading={saving}
-            >
-              <Save className="w-3.5 h-3.5" />
-              Lưu ngay
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* Modal Tạo tài khoản Manager / Admin mới */}
       {showCreateModal && (

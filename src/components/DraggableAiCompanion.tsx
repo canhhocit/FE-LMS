@@ -702,14 +702,13 @@ export const DraggableAiCompanion: React.FC = () => {
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           onClick={handleMascotClick}
-          className="flex items-center gap-2.5 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-2xl hover:shadow-indigo-500/25 transition duration-200 cursor-grab active:cursor-grabbing group border border-indigo-500/30 touch-none select-none"
+          className="flex items-center gap-2 px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg hover:shadow-indigo-500/20 transition duration-200 cursor-grab active:cursor-grabbing group border border-indigo-500/30 touch-none select-none"
         >
-          <Move className="w-3.5 h-3.5 text-indigo-200 shrink-0" />
           <div className="relative">
-            <Bot className="w-5 h-5" />
-            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-indigo-600" />
+            <Bot className="w-4.5 h-4.5" />
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-400 rounded-full border-2 border-indigo-600" />
           </div>
-          <span className="text-xs font-semibold">{aiName}</span>
+          <span className="text-xs font-semibold tracking-tight">{aiName}</span>
           <Sparkles className="w-3.5 h-3.5 text-indigo-200 group-hover:rotate-12 transition" />
         </div>
       )}
