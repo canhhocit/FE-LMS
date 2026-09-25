@@ -282,7 +282,7 @@ export default function Login() {
                     type="button"
                     onClick={() => {
                       setValue('identifier', acc.identifier);
-                      setValue('password', '123456');
+                      setValue('password', 'password');
                     }}
                     className="flex w-full items-center justify-between p-2 rounded-lg text-left text-xs bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
                   >
