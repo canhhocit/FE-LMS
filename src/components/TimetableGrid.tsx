@@ -177,7 +177,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
           </div>
         ) : (
           <div className="p-4 overflow-x-auto flex-1">
-            <div className="grid grid-cols-7 gap-3 min-w-[720px]">
+            <div className="grid grid-cols-7 gap-3 min-w-[960px]">
               {weekDates.map((date, idx) => {
                 const dayNum = idx + 1; // 1 = Mon ... 7 = Sun
                 const daySchedules = displaySchedules.filter((s) => s.dayOfWeek === dayNum);
@@ -196,11 +196,11 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                         : 'border-slate-200/80 bg-slate-50/30 dark:border-slate-800 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/60'
                     }`}
                   >
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-700/60">
-                      <span className={`text-xs font-bold ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-700/60 shrink-0 gap-1">
+                      <span className={`text-xs font-bold whitespace-nowrap ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-300'}`}>
                         {['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'][idx]}
                       </span>
-                      <span className={`text-[11px] font-mono px-1.5 py-0.5 rounded-md ${
+                      <span className={`text-[11px] font-mono px-1.5 py-0.5 rounded-md whitespace-nowrap shrink-0 ${
                         isToday
                           ? 'bg-indigo-600 text-white font-bold'
                           : 'text-slate-400 dark:text-slate-500'
@@ -247,7 +247,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
 
                             <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
                               <Clock className="w-3 h-3 text-slate-400 shrink-0" />
-                              <span>{item.periodLabel} ({item.startTime}-{item.endTime})</span>
+                              <span className="whitespace-nowrap">{item.periodLabel} ({item.startTime}-{item.endTime})</span>
                             </div>
 
                             {item.room && (
@@ -274,13 +274,9 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
           </div>
         )}
 
-        {/* Bottom Horizontal Scroll Hint Banner */}
-        <div className="p-3 bg-slate-50/80 dark:bg-slate-900/80 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-2 font-medium text-slate-600 dark:text-slate-300">
-            <ArrowRight className="w-4 h-4 text-indigo-600 animate-pulse" />
-            <span>Kéo sang ngang để xem đầy đủ thời khóa biểu các ngày trong tuần</span>
-          </div>
-          <div className="text-[11px] font-mono text-slate-400">
+        {/* Bottom Footer Info */}
+        <div className="p-3 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end text-xs text-slate-400">
+          <div className="text-[11px] font-mono">
             Ca học: 06:45 - 17:55 (Tiết 1 - 12)
           </div>
         </div>
