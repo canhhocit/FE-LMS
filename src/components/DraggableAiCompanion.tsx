@@ -195,7 +195,7 @@ export const DraggableAiCompanion: React.FC = () => {
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
     const target = e.target as HTMLElement;
-    if (target.closest('button, input, textarea, a')) return;
+    if (target.closest('[data-no-drag="true"], input, textarea, a')) return;
 
     handleStartDrag(e.clientX, e.clientY);
 
@@ -215,7 +215,7 @@ export const DraggableAiCompanion: React.FC = () => {
 
   const handleTouchStart = (e: React.TouchEvent) => {
     const target = e.target as HTMLElement;
-    if (target.closest('button, input, textarea, a')) return;
+    if (target.closest('[data-no-drag="true"], input, textarea, a')) return;
 
     const touch = e.touches[0];
     if (!touch) return;
@@ -696,8 +696,9 @@ export const DraggableAiCompanion: React.FC = () => {
     >
       {/* Floating Action Button (FAB) */}
       {!isOpenInput && (
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex={0}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           onClick={handleMascotClick}
@@ -710,7 +711,7 @@ export const DraggableAiCompanion: React.FC = () => {
           </div>
           <span className="text-xs font-semibold">{aiName}</span>
           <Sparkles className="w-3.5 h-3.5 text-indigo-200 group-hover:rotate-12 transition" />
-        </button>
+        </div>
       )}
 
       {/* AI Chat Window */}
@@ -764,6 +765,7 @@ export const DraggableAiCompanion: React.FC = () => {
             <div className="flex items-center gap-1">
               <button
                 type="button"
+                data-no-drag="true"
                 title="Xuất file lịch sử trò chuyện (.json)"
                 onClick={handleExportHistory}
                 className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
@@ -772,6 +774,7 @@ export const DraggableAiCompanion: React.FC = () => {
               </button>
               <button
                 type="button"
+                data-no-drag="true"
                 title={isExpanded ? 'Thu nhỏ cửa sổ' : 'Mở rộng hiển thị'}
                 onClick={() => setIsExpanded((prev) => !prev)}
                 className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
@@ -780,6 +783,7 @@ export const DraggableAiCompanion: React.FC = () => {
               </button>
               <button
                 type="button"
+                data-no-drag="true"
                 title="Xóa lịch sử trò chuyện"
                 onClick={handleClearHistory}
                 className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
@@ -788,6 +792,7 @@ export const DraggableAiCompanion: React.FC = () => {
               </button>
               <button
                 type="button"
+                data-no-drag="true"
                 onClick={() => setIsOpenInput(false)}
                 className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
               >
