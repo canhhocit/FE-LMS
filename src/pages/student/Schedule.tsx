@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Download, Calendar, ExternalLink, X, Clock, MapPin, ArrowRight } from 'lucide-react';
+import { Download, Calendar, ExternalLink, ArrowRight, CheckCircle2, CalendarPlus } from 'lucide-react';
 import * as scheduleService from '../../services/scheduleService';
 import { PageHeader, Spinner, ErrorBox, Button, Modal, Toast } from '../../components/ui';
 import TimetableGrid from '../../components/TimetableGrid';
@@ -67,7 +67,7 @@ function buildGoogleCalendarUrl(schedule: Schedule): string {
     `Môn học: ${schedule.courseTitle || schedule.className}\nMã lớp: ${schedule.classCode ?? ''}\nGiảng viên: ${schedule.lecturerName ?? 'Chưa cập nhật'}\nTiết: ${startP}-${endP} (${startTimeStr} - ${endTimeStr})\nHệ thống LearningHub LMS`
   );
 
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startIso}/${endIso}&details=${details}&location=${location}&ctz=Asia/Ho_Chi_Minh`;
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startIso}/${endIso}&details=${details}&location=${location}&recur=RRULE:FREQ=WEEKLY;COUNT=15&ctz=Asia/Ho_Chi_Minh`;
 }
 
 function buildIcsContent(schedules: Schedule[]): string {
@@ -141,10 +141,24 @@ export default function StudentSchedule() {
     setTimeout(() => setToastMsg(null), 4000);
   };
 
-  const handleSyncAllGoogleCalendar = () => {
-    exportToIcs();
-    window.open('https://calendar.google.com/calendar/r/settings/export', '_blank');
-    setToastMsg('Đã tải file .ICS và mở trang Nhập Lịch Google Calendar.');
+  const handleDirectSyncAllGoogleCalendar = () => {
+    if (schedules.length === 0) return;
+
+    const uniqueMap = new Map<string, Schedule>();
+    schedules.forEach((s) => {
+      const key = `${s.classCode || s.className}_${s.dayOfWeek}_${s.startPeriod}`;
+      if (!uniqueMap.has(key)) uniqueMap.set(key, s);
+    });
+
+    const uniqueSchedules = Array.from(uniqueMap.values());
+    uniqueSchedules.forEach((s, idx) => {
+      const url = buildGoogleCalendarUrl(s);
+      setTimeout(() => {
+        window.open(url, '_blank');
+      }, idx * 350);
+    });
+
+    setToastMsg(`Đã mở ${uniqueSchedules.length} trang Google Calendar để bạn bấm "Lưu" trực tiếp!`);
     setTimeout(() => setToastMsg(null), 6000);
   };
 
@@ -178,28 +192,37 @@ export default function StudentSchedule() {
       <Modal
         open={showSyncModal}
         onClose={() => setShowSyncModal(false)}
-        title="Đồng bộ lịch học Google Calendar"
+        title="Đồng bộ trực tiếp với Google Calendar"
         maxWidth="max-w-xl"
       >
         {schedules.length === 0 ? (
           <div className="py-6 text-center text-xs text-slate-400">Chưa có lịch học để đồng bộ.</div>
         ) : (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl border border-accent-200 bg-accent-50/50 dark:bg-accent-950/30 dark:border-accent-900/60 space-y-3">
-              <div>
-                <h4 className="font-bold text-xs text-accent-700 dark:text-accent-300">Đồng bộ tự động (.ICS)</h4>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-                  Xuất toàn bộ thời khóa biểu thành file .ICS để nạp trực tiếp vào Google Calendar hoặc Outlook.
-                </p>
+            {/* Primary Direct Google Calendar Sync Card */}
+            <div className="p-4 rounded-xl border border-indigo-200 bg-indigo-50/60 dark:bg-indigo-950/40 dark:border-indigo-900/60 space-y-3 shadow-2xs">
+              <div className="flex items-start gap-3">
+                <CalendarPlus className="w-6 h-6 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-sm text-indigo-900 dark:text-indigo-200">
+                    Đồng bộ trực tiếp vào Google Calendar
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                    Tự động mở ứng dụng Google Calendar với đầy đủ thông tin môn học, phòng học và thời gian lặp lại theo tuần. Bạn chỉ cần bấm <strong>"Lưu"</strong> trực tiếp trên Google Calendar mà không cần tải file về máy.
+                  </p>
+                </div>
               </div>
-              <Button onClick={handleSyncAllGoogleCalendar} className="w-full">
-                <Download className="w-4 h-4" /> Đồng bộ toàn bộ lịch (.ICS) <ArrowRight className="w-4 h-4" />
+
+              <Button onClick={handleDirectSyncAllGoogleCalendar} className="w-full justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-xs">
+                <CalendarPlus className="w-4 h-4 mr-1" />
+                Mở Google Calendar & Đồng bộ trực tiếp tất cả môn <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
 
+            {/* Individual Course Direct Add List */}
             <div className="space-y-2">
               <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                Thêm từng môn học thủ công:
+                Thêm trực tiếp từng môn học vào Google Calendar:
               </h4>
 
               <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
@@ -209,14 +232,14 @@ export default function StudentSchedule() {
                   return (
                     <div
                       key={s.id || idx}
-                      className="p-3 rounded-lg border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-800/60 flex items-center justify-between gap-3 text-xs"
+                      className="p-3 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-3 text-xs hover:border-slate-300 transition shadow-2xs"
                     >
                       <div className="space-y-1 min-w-0">
                         <div className="font-bold text-slate-900 dark:text-white truncate">
                           {s.courseTitle || s.className || s.classCode}
                         </div>
                         <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-[11px]">
-                          <span className="font-bold text-accent-600 dark:text-accent-400">{dayName}</span>
+                          <span className="font-bold text-indigo-600 dark:text-indigo-400">{dayName}</span>
                           <span>Tiết {s.startPeriod}-{s.endPeriod}</span>
                           <span>{s.room ? `Phòng ${s.room}` : ''}</span>
                         </div>
@@ -226,15 +249,26 @@ export default function StudentSchedule() {
                         href={googleUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3 py-1.5 bg-accent-600 hover:bg-accent-700 text-white rounded-md font-semibold text-xs shrink-0 flex items-center gap-1 transition"
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-xs shrink-0 flex items-center gap-1 transition shadow-2xs"
                       >
-                        <span>Thêm</span>
+                        <span>Thêm trực tiếp</span>
                         <ExternalLink className="w-3.5 h-3.5" />
                       </a>
                     </div>
                   );
                 })}
               </div>
+            </div>
+
+            {/* Secondary fallback link */}
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+              <span>Cần dùng cho Outlook hoặc Apple Calendar?</span>
+              <button
+                onClick={exportToIcs}
+                className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" /> Tải file .ICS
+              </button>
             </div>
           </div>
         )}
