@@ -517,8 +517,10 @@ export default function ClassDetail() {
           <div className="mt-1 text-base font-semibold text-slate-800">{clazz.lecturerName ?? "Chưa phân công"}</div>
         </Card>
         <Card>
-          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">Sĩ số tối đa</div>
-          <div className="mt-1 text-base font-semibold text-slate-800">{clazz.maxStudents} sinh viên</div>
+          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">Sĩ số</div>
+          <div className="mt-1 text-base font-semibold text-slate-800">
+            {clazz.currentStudents ?? students.length}/{clazz.maxStudents || '∞'} sinh viên
+          </div>
         </Card>
         <Card>
           <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">Học kỳ / Năm học</div>

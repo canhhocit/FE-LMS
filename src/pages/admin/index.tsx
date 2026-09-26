@@ -1251,7 +1251,7 @@ export function AdminClasses() {
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-center">
-                        <Badge variant="info">{c.maxStudents ?? 'Không giới hạn'}</Badge>
+                        <Badge variant="info">{c.currentStudents ?? 0}/{c.maxStudents ?? '∞'}</Badge>
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <Badge variant="success">{c.semester} · {c.academicYear}</Badge>

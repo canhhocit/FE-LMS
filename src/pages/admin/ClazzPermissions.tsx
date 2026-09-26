@@ -162,7 +162,7 @@ export default function ClazzPermissions() {
             {activeClazz && (
               <div className="mt-3 text-xs text-slate-500 dark:text-slate-400 space-y-1 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <div>GV Phụ trách chính: <span className="font-semibold text-slate-800 dark:text-slate-200">{activeClazz.lecturerName || 'Chưa gán'}</span></div>
-                <div>Sĩ số: <span className="font-semibold">{activeClazz.maxStudents} sinh viên</span></div>
+                <div>Sĩ số: <span className="font-semibold">{activeClazz.currentStudents ?? 0}/{activeClazz.maxStudents} sinh viên</span></div>
               </div>
             )}
           </Card>
