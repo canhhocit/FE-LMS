@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useRef, type ChangeEvent } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PageTitle, Card, Spinner, Empty, ErrorBox } from '../../components/Layout';
 import * as clazzService from '../../services/clazzService';
 import * as quizService from '../../services/quizService';
@@ -14,6 +15,8 @@ import { useAuth } from '../../contexts/useAuth';
 
 export default function QuizPage() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const paramClassId = searchParams.get('classId');
   const [classes, setClasses] = useState<Clazz[]>([]);
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -81,7 +84,11 @@ export default function QuizPage() {
         const list = await clazzService.getMyClasses();
         if (!mounted) return;
         setClasses(list);
-        if (list[0]) setSelectedClass(list[0].id);
+        if (paramClassId && list.some(c => c.id === Number(paramClassId))) {
+          setSelectedClass(Number(paramClassId));
+        } else if (list[0]) {
+          setSelectedClass(list[0].id);
+        }
       } catch (e: unknown) {
         if (mounted) setErr((e as { message?: string })?.message ?? 'Không tải được danh sách lớp học');
       } finally {
@@ -89,7 +96,7 @@ export default function QuizPage() {
       }
     })();
     return () => { mounted = false; };
-  }, []);
+  }, [paramClassId]);
 
   // Load quizzes when selectedClass changes
   const loadQuizzes = async (classId: number) => {

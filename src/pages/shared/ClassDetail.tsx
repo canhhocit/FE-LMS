@@ -11,7 +11,7 @@ import { PageTitle, PageHeader, Card, Spinner, Empty, ErrorBox, Pill } from "../
 import type { Clazz, User, Chapter, Announcement, Assignment, Lesson, EnrollmentProgress, Submission, SubmissionType } from "../../types";
 import { 
   FileText, Link2, Upload, ArrowUp, ArrowDown, Plus, Pencil, Trash2, 
-  CheckCircle, Clock, Video, File, X, Sparkles, AlertCircle
+  CheckCircle, Clock, Video, File, X, Sparkles, AlertCircle, HelpCircle
 } from "lucide-react";
 
 export default function ClassDetail() {
@@ -508,6 +508,15 @@ export default function ClassDetail() {
         breadcrumbs={breadcrumbs}
         title={`${clazz.classCode} - ${clazz.className}`}
         subtitle={`Học kỳ: ${clazz.semester} • Năm học: ${clazz.academicYear} • Giảng viên: ${clazz.lecturerName ?? 'Chưa phân công'}`}
+        actions={
+          <Link
+            to={`${rolePath}/quizzes?classId=${cid}`}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-2xs cursor-pointer"
+          >
+            <HelpCircle className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <span>Bài kiểm tra môn học</span>
+          </Link>
+        }
       />
       
       {/* Overview Metadata Cards */}
