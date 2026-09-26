@@ -1,7 +1,7 @@
 // Student pages
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Flame, BellRing, X } from "lucide-react";
+import { BellRing, BookOpen, Calendar, CreditCard, Bell, ArrowRight, CheckCircle2, Clock, FileText, Upload, Trash2, Eye, X } from "lucide-react";
 import * as clazzService from "../../services/clazzService";
 import * as assessmentService from "../../services/assessmentService";
 import * as gradingService from "../../services/gradingService";
@@ -10,7 +10,7 @@ import * as progressService from "../../services/progressService";
 import * as registrationService from "../../services/registrationService";
 import * as scheduleService from "../../services/scheduleService";
 import * as reportService from "../../services/reportService";
-import { PageTitle, Card, Spinner, Empty, Pill } from "../../components/Layout";
+import { PageHeader, Card, StatCard, Spinner, Empty, Badge, Button, Table } from "../../components/ui";
 import { AcademicWarningBanner } from "../../components/AcademicWarningBanner";
 import { useAuth } from "../../contexts/useAuth";
 import type { Clazz, Assignment, Submission, Grade, Notification, GradingPolicy, SubmissionType, AcademicStatus } from "../../types";
@@ -26,52 +26,13 @@ type ClassProgressState = {
 
 const getStatusMeta = (percentage: number) => {
   if (percentage >= 100) {
-    return { label: 'Đã học', badgeClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60', barClass: 'bg-emerald-500', glowClass: 'border border-slate-200/70' };
+    return { label: 'Đã hoàn thành', badgeColor: 'emerald' as const, barClass: 'bg-emerald-500' };
   }
   if (percentage > 0) {
-    return { label: 'Đang học', badgeClass: 'bg-amber-50 text-amber-700 border border-amber-200/60', barClass: 'bg-indigo-600', glowClass: 'border border-slate-200/70' };
+    return { label: 'Đang học', badgeColor: 'indigo' as const, barClass: 'bg-accent-600' };
   }
-  return { label: 'Chưa học', badgeClass: 'bg-slate-100 text-slate-600 border border-slate-200/60', barClass: 'bg-slate-300', glowClass: 'border border-slate-200/70' };
+  return { label: 'Chưa bắt đầu', badgeColor: 'slate' as const, barClass: 'bg-slate-300 dark:bg-slate-700' };
 };
-
-function BookIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
-      <path d="M5 6.5A2.5 2.5 0 0 1 7.5 4H19v14.5H7.5A2.5 2.5 0 0 0 5 21V6.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-      <path d="M5 6.5A2.5 2.5 0 0 1 7.5 4H19v14.5H7.5A2.5 2.5 0 0 0 5 21" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-      <path d="M8.5 8h7M8.5 11.5h7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
-      <rect x="3.5" y="5.5" width="17" height="15" rx="2.3" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M8 3.8v3M16 3.8v3M3.5 9.5h17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M8.5 13h2.5v2.5H8.5z" fill="currentColor" />
-    </svg>
-  );
-}
-
-function WalletIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
-      <path d="M4 8.6A2.6 2.6 0 0 1 6.6 6h10.8A2.6 2.6 0 0 1 20 8.6v7.8A2.6 2.6 0 0 1 17.4 19H6.6A2.6 2.6 0 0 1 4 16.4V8.6Z" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M15 12h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M4 10.5h12.5A2.5 2.5 0 0 1 19 13v1.5A2.5 2.5 0 0 1 16.5 17H4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
-      <path d="M7 17.5h10l-1.1-1.5V10a4.9 4.9 0 1 0-9.8 0v6l-1.1 1.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-      <path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 export function StudentDashboard() {
   const { user } = useAuth();
@@ -169,12 +130,6 @@ export function StudentDashboard() {
   const continueLearningPercentage = continueLearningProgress?.percentage ?? 0;
   const continueLearningMeta = getStatusMeta(continueLearningPercentage);
 
-  const activityDates = [
-    ...notifications.map((item) => new Date(item.createdAt)),
-    ...subs.map((item) => new Date(item.submittedAt)),
-  ].filter((value) => !Number.isNaN(value.getTime()));
-  const uniqueDates = new Set(activityDates.map((date) => date.toISOString().slice(0, 10)));
-  const learningStreak = Math.min(7, Math.max(1, uniqueDates.size || 1));
   const recentActivity = [
     ...notifications.slice(0, 3).map((item) => ({
       title: item.title,
@@ -191,32 +146,31 @@ export function StudentDashboard() {
   if (loading) return <Spinner />;
 
   return (
-    <div className="space-y-5">
-      <PageTitle>Trang chủ</PageTitle>
+    <div className="space-y-6">
+      <PageHeader
+        title={`Chào mừng trở lại, ${user?.fullName || 'Sinh viên'}`}
+        subtitle={`Hôm nay, ${new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`}
+      />
 
-      {/* FCM Push Notification (Nhắc lịch học động theo đúng lớp sinh viên đã đăng ký) */}
+      {/* Class Reminder Banner */}
       {continueLearningClass && (
-        <div className="p-3 bg-linear-to-r from-indigo-50/80 via-white to-sky-50/80 border border-indigo-200 dark:border-indigo-900 rounded-2xl flex items-center justify-between gap-3 text-xs text-indigo-900 dark:text-indigo-200 shadow-2xs">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 bg-indigo-600 text-white rounded-xl shrink-0">
-              <BellRing className="w-4 h-4 animate-bounce" />
+        <div className="p-4 bg-accent-50/60 dark:bg-accent-950/40 border border-accent-200/80 dark:border-accent-900/60 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-slate-700 dark:text-slate-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-accent-600 text-white rounded-lg shrink-0">
+              <BellRing className="w-4 h-4" />
             </div>
             <div>
-              <strong className="font-bold flex items-center gap-1 text-indigo-700 dark:text-indigo-300">
-                FCM Push Notification (Nhắc lịch học sắp diễn ra):
-              </strong>
+              <span className="font-bold text-accent-700 dark:text-accent-300 mr-1.5">Lịch học sắp tới:</span>
               <span>
-                Lớp học phần <strong className="font-semibold text-indigo-800 dark:text-indigo-300">{continueLearningClass.className} ({continueLearningClass.classCode})</strong> sẽ bắt đầu sau <strong>1 tiếng nữa</strong> (07h45 tại Phòng 302). Bạn nhớ đến đúng giờ nhé!
+                Lớp học phần <strong className="font-semibold text-slate-900 dark:text-white">{continueLearningClass.className} ({continueLearningClass.classCode})</strong> diễn ra theo thời khóa biểu sinh viên.
               </span>
             </div>
           </div>
-          <span className="text-[10px] bg-indigo-100 dark:bg-indigo-950 px-2 py-0.5 rounded-full text-indigo-600 font-mono shrink-0">
-            Firebase Push Active
-          </span>
+          <Badge color="indigo" className="shrink-0">Nhắc lịch tự động</Badge>
         </div>
       )}
 
-      {/* Academic Warning Banner for Student (>10 Debt Credits) */}
+      {/* Academic Warning Banner */}
       <AcademicWarningBanner
         studentName={user?.fullName}
         studentCode={user?.studentCode || user?.email}
@@ -224,168 +178,158 @@ export function StudentDashboard() {
         maxAllowedCredits={10}
       />
 
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <p className="text-sm text-slate-500">Chào mừng trở lại,</p>
-          <h2 className="text-xl font-bold text-[#243b78]">{user?.fullName}</h2>
-        </div>
-        <span className="text-xs text-slate-400">Hôm nay · {new Date().toLocaleDateString('vi-VN')}</span>
-      </div>
-
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {/* Quick Navigation Cards */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { icon: BookIcon, label: 'HỌC TẬP', title: 'Đăng ký học', to: '/student/registrations', color: 'bg-blue-600' },
-          { icon: CalendarIcon, label: 'LỊCH', title: 'Thời khóa biểu', to: '/student/schedule', color: 'bg-amber-500' },
-          { icon: WalletIcon, label: 'TÀI CHÍNH', title: 'Học phí', to: '/student/tuition', color: 'bg-emerald-600' },
-          { icon: BellIcon, label: 'THÔNG TIN', title: 'Tin tức & thông báo', to: '/student/notifications', color: 'bg-rose-500' },
-        ].map(({ icon: Icon, label, title, to, color }) => (
-          <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl border border-white bg-white p-4 shadow-[0_8px_20px_rgba(36,59,120,0.08)] transition hover:-translate-y-0.5">
-            <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl text-white ${color}`}>
-              <Icon />
-            </span>
-            <span>
-              <span className="block text-[11px] font-medium text-slate-400">{label}</span>
-              <span className="block font-semibold text-[#243b78]">{title}</span>
-            </span>
+          { icon: <BookOpen className="w-5 h-5" />, label: 'Đăng ký học', desc: 'Đăng ký tín chỉ', to: '/student/registrations', color: 'accent' as const },
+          { icon: <Calendar className="w-5 h-5" />, label: 'Thời khóa biểu', desc: `${scheduleCount} buổi học`, to: '/student/schedule', color: 'emerald' as const },
+          { icon: <CreditCard className="w-5 h-5" />, label: 'Học phí', desc: 'Tra cứu & thanh toán', to: '/student/tuition', color: 'amber' as const },
+          { icon: <Bell className="w-5 h-5" />, label: 'Thông báo', desc: `${notifications.length} tin mới`, to: '/student/notifications', color: 'rose' as const },
+        ].map((item) => (
+          <Link key={item.to} to={item.to}>
+            <StatCard
+              label={item.label}
+              value={item.desc}
+              icon={item.icon}
+              color={item.color}
+              className="hover:border-accent-500/50 cursor-pointer"
+            />
           </Link>
         ))}
       </div>
 
-      <Card className="overflow-hidden border border-indigo-100 bg-linear-to-r from-indigo-600 via-blue-600 to-sky-500 text-white shadow-[0_16px_30px_rgba(59,130,246,0.2)]">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div className="mb-2 inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-indigo-50">
-              Học tiếp
+      {/* Continue Learning Featured Card */}
+      <Card className="bg-slate-900 text-white dark:bg-slate-900/90 dark:border-slate-800 border border-slate-800 p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center rounded-md bg-accent-600/20 text-accent-300 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider border border-accent-500/30">
+              Tiến độ học tập
             </div>
-            <h3 className="text-2xl font-bold text-white">
-              {continueLearningClass ? continueLearningClass.className : 'Chưa có lớp học nào'}
+            <h3 className="text-xl font-bold text-white tracking-tight">
+              {continueLearningClass ? continueLearningClass.className : 'Chưa có lớp học phần nào'}
             </h3>
-            <p className="mt-1 text-sm text-indigo-50">
-              {continueLearningClass ? `${continueLearningClass.classCode} · ${continueLearningClass.courseTitle ?? 'Học phần'}` : 'Bắt đầu bằng một lớp học để thấy tiến độ của bạn.'}
+            <p className="text-xs text-slate-400">
+              {continueLearningClass ? `${continueLearningClass.classCode} · ${continueLearningClass.courseTitle ?? 'Học phần'}` : 'Vui lòng đăng ký học phần để bắt đầu.'}
             </p>
           </div>
 
-          <div className="min-w-55 lg:max-w-70">
-            <div className="mb-2 flex items-center justify-between text-sm text-indigo-50">
-              <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${continueLearningMeta.badgeClass}`}>
-                {continueLearningMeta.label}
-              </span>
-              <span className="font-semibold">{continueLearningPercentage}%</span>
+          <div className="w-full lg:w-72 shrink-0 bg-slate-800/80 dark:bg-slate-950/50 p-4 rounded-xl border border-slate-700/60">
+            <div className="flex items-center justify-between text-xs mb-2">
+              <Badge color={continueLearningMeta.badgeColor}>{continueLearningMeta.label}</Badge>
+              <span className="font-bold text-white">{continueLearningPercentage}%</span>
             </div>
-            <div className="h-2.5 overflow-hidden rounded-full bg-white/20">
+            <div className="h-2 overflow-hidden rounded-full bg-slate-700">
               <div
-                className={`h-full rounded-full bg-linear-to-r ${continueLearningMeta.barClass} transition-all duration-300`}
+                className={`h-full rounded-full ${continueLearningMeta.barClass} transition-all duration-300`}
                 style={{ width: `${Math.min(100, continueLearningPercentage)}%` }}
               />
             </div>
-            <div className="mt-3 flex items-center justify-between text-[11px] text-indigo-100">
+            <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400">
               <span>{continueLearningProgress?.completedCount ?? 0}/{continueLearningProgress?.totalCount ?? 0} bài học</span>
-              {continueLearningClass ? (
-                <Link to={`/student/classes/${continueLearningClass.id}`} className="font-semibold text-white underline-offset-2 hover:underline">
-                  Tiếp tục
+              {continueLearningClass && (
+                <Link to={`/student/classes/${continueLearningClass.id}`} className="font-semibold text-accent-400 hover:underline flex items-center gap-1">
+                  Vào học <ArrowRight className="w-3 h-3" />
                 </Link>
-              ) : null}
+              )}
             </div>
           </div>
         </div>
       </Card>
 
-
-
-      <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-        <Card className="overflow-hidden p-0">
-          <div className="flex items-center justify-between border-b border-blue-100 bg-blue-50 px-4 py-3">
-            <h3 className="font-semibold text-[#243b78]">Recent activity</h3>
-            <Link to="/student/notifications" className="rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-semibold text-blue-700">
+      {/* Grid: Recent Activity & Academic Summary */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Hoạt động gần đây</h3>
+            <Link to="/student/notifications" className="text-xs font-semibold text-accent-600 hover:underline">
               Xem tất cả
             </Link>
           </div>
-          <div className="px-4">
-            {recentActivity.length === 0 ? (
-              <Empty msg="Chưa có hoạt động gần đây" />
-            ) : (
-              recentActivity.map((activity, index) => (
-                <div key={`${activity.title}-${index}`} className="flex gap-3 border-b border-dashed border-slate-200 py-3 last:border-0">
-                  <span className="mt-0.5 grid h-7 w-7 place-items-center rounded-full bg-blue-100 text-xs text-blue-700">•</span>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-semibold text-slate-800">{activity.title}</div>
-                    <div className="mt-1 text-xs text-slate-500">{activity.detail}</div>
+          {recentActivity.length === 0 ? (
+            <Empty msg="Chưa có hoạt động gần đây" />
+          ) : (
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {recentActivity.map((activity, index) => (
+                <div key={`${activity.title}-${index}`} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">{activity.title}</div>
+                    <div className="text-[11px] text-slate-400">{activity.detail}</div>
                   </div>
-                  <div className="text-[11px] text-slate-400">{activity.time}</div>
+                  <span className="text-[11px] text-slate-400 shrink-0">{activity.time}</span>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </Card>
 
-        <Card className="overflow-hidden p-0">
-          <div className="border-b border-rose-100 bg-rose-50 px-4 py-3">
-            <h3 className="font-semibold text-[#243b78]">Tổng quan học tập</h3>
+        <Card>
+          <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Tổng quan học kỳ</h3>
           </div>
-          <div className="grid grid-cols-2 gap-px bg-slate-100">
-            <div className="bg-white p-4">
-              <div className="text-xs text-slate-500">Lớp đang học</div>
-              <div className="mt-1 text-2xl font-bold text-[#243b78]">{classes.length}</div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800">
+              <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Lớp đang học</div>
+              <div className="mt-1 text-xl font-bold text-slate-900 dark:text-white">{classes.length}</div>
             </div>
-            <div className="bg-white p-4">
-              <div className="text-xs text-slate-500">Buổi học</div>
-              <div className="mt-1 text-2xl font-bold text-amber-600">{scheduleCount}</div>
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800">
+              <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Buổi học</div>
+              <div className="mt-1 text-xl font-bold text-amber-600 dark:text-amber-400">{scheduleCount}</div>
             </div>
-            <div className="bg-white p-4">
-              <div className="text-xs text-slate-500">Bài đã nộp</div>
-              <div className="mt-1 text-2xl font-bold text-emerald-600">{subs.length}</div>
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800">
+              <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Bài đã nộp</div>
+              <div className="mt-1 text-xl font-bold text-emerald-600 dark:text-emerald-400">{subs.length}</div>
             </div>
-            <div className="bg-white p-4">
-              <div className="text-xs text-slate-500">Chờ chấm</div>
-              <div className="mt-1 text-2xl font-bold text-rose-600">{subs.filter((submission) => submission.score == null).length}</div>
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800">
+              <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Chờ chấm</div>
+              <div className="mt-1 text-xl font-bold text-rose-600 dark:text-rose-400">{subs.filter((s) => s.score == null).length}</div>
             </div>
           </div>
         </Card>
       </div>
 
-      <div className="mt-5">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-semibold text-[#243b78]">Lớp học của tôi</h3>
-          <Link to="/student/classes" className="text-xs font-semibold text-blue-700">Xem tất cả</Link>
+      {/* Classes Grid */}
+      <div>
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="font-bold text-slate-900 dark:text-white text-base">Lớp học phần của tôi</h3>
+          <Link to="/student/classes" className="text-xs font-semibold text-accent-600 hover:underline">
+            Xem tất cả ({classes.length})
+          </Link>
         </div>
 
         {classes.length === 0 ? (
-          <Card>
-            <Empty msg="Bạn chưa có lớp học nào" />
-          </Card>
+          <Empty msg="Bạn chưa tham gia lớp học phần nào" />
         ) : (
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             {classes.slice(0, 4).map((c: Clazz) => {
               const progress = classProgress[c.id];
               const percentage = progress?.percentage ?? 0;
               const statusMeta = getStatusMeta(percentage);
               return (
-                <Link
-                  key={c.id}
-                  to={`/student/classes/${c.id}`}
-                  className={`block rounded-2xl border border-white bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${statusMeta.glowClass}`}
-                >
-                  <div className="mb-2 flex items-start justify-between gap-2">
-                    <span className="font-mono text-xs font-semibold text-blue-700">{c.classCode}</span>
-                    <Pill color="indigo">{c.semester}</Pill>
-                  </div>
-                  <div className="font-semibold text-slate-800">{c.className}</div>
-                  <div className="mt-1 text-xs text-slate-500">{c.courseTitle ?? 'Học phần'} · {c.lecturerName ?? 'Chưa phân công'}</div>
-                  <div className="mt-3 flex items-center justify-between gap-2">
-                    <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${statusMeta.badgeClass}`}>
-                      {statusMeta.label}
-                    </span>
-                    <span className="text-xs font-medium text-slate-600">{percentage}%</span>
-                  </div>
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="flex-1 h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full bg-linear-to-r ${statusMeta.barClass} transition-all duration-300`}
-                        style={{ width: `${Math.min(100, percentage)}%` }}
-                      />
+                <Link key={c.id} to={`/student/classes/${c.id}`}>
+                  <Card className="hover:border-accent-500/50 cursor-pointer h-full flex flex-col justify-between">
+                    <div>
+                      <div className="mb-2 flex items-start justify-between gap-2">
+                        <span className="font-mono text-xs font-bold text-accent-600 dark:text-accent-400">{c.classCode}</span>
+                        <Badge color="indigo">{c.semester}</Badge>
+                      </div>
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm">{c.className}</h4>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        {c.courseTitle ?? 'Học phần'} · {c.lecturerName ?? 'Chưa phân công'}
+                      </p>
                     </div>
-                    <span className="text-[11px] text-slate-500">{progress?.completedCount ?? 0}/{progress?.totalCount ?? 0}</span>
-                  </div>
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center justify-between text-xs mb-1.5">
+                        <Badge color={statusMeta.badgeColor}>{statusMeta.label}</Badge>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">{percentage}%</span>
+                      </div>
+                      <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${statusMeta.barClass} transition-all duration-300`}
+                          style={{ width: `${Math.min(100, percentage)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </Card>
                 </Link>
               );
             })}
@@ -457,55 +401,56 @@ export function StudentClasses() {
   if (loading) return <Spinner />;
 
   return (
-    <div>
-      <PageTitle>Lớp học của tôi</PageTitle>
-      <div className="mb-4 grid gap-3 md:grid-cols-3">
-        {[
-          { label: 'Đã học', value: statusSummary.completed, tone: 'bg-emerald-50 text-emerald-700' },
-          { label: 'Đang học', value: statusSummary.inProgress, tone: 'bg-amber-50 text-amber-700' },
-          { label: 'Chưa học', value: statusSummary.notStarted, tone: 'bg-slate-100 text-slate-600' },
-        ].map((summary) => (
-          <div key={summary.label} className={`rounded-2xl border border-white p-4 shadow-sm ${summary.tone}`}>
-            <div className="text-xs font-medium uppercase tracking-[0.12em] opacity-80">{summary.label}</div>
-            <div className="mt-2 text-2xl font-bold">{summary.value}</div>
-          </div>
-        ))}
+    <div className="space-y-6">
+      <PageHeader
+        title="Lớp học phần của tôi"
+        subtitle="Danh sách các lớp học phần sinh viên đang theo học trong các học kỳ"
+      />
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <StatCard label="Đã hoàn thành" value={statusSummary.completed} color="emerald" />
+        <StatCard label="Đang học" value={statusSummary.inProgress} color="accent" />
+        <StatCard label="Chưa bắt đầu" value={statusSummary.notStarted} color="sky" />
       </div>
+
       {classes.length === 0 ? (
-        <Empty msg="Bạn chưa có lớp học nào" />
+        <Empty msg="Bạn chưa tham gia lớp học phần nào" />
       ) : (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           {classes.map((c) => {
             const progress = classProgress[c.id];
             const percentage = progress?.percentage ?? 0;
             const statusMeta = getStatusMeta(percentage);
             return (
-              <Link
-                key={c.id}
-                to={`/student/classes/${c.id}`}
-                className={`block rounded-2xl border border-white bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${statusMeta.glowClass}`}
-              >
-                <div className="mb-2 flex items-start justify-between gap-2">
-                  <span className="font-mono text-xs font-semibold text-blue-700">{c.classCode}</span>
-                  <Pill color="indigo">{c.semester}</Pill>
-                </div>
-                <div className="font-semibold text-slate-800">{c.className}</div>
-                <div className="mt-1 text-xs text-slate-500">{c.courseTitle ?? 'Học phần'} · {c.lecturerName ?? 'Chưa phân công'}</div>
-                <div className="mt-3 flex items-center justify-between gap-2">
-                  <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${statusMeta.badgeClass}`}>
-                    {statusMeta.label}
-                  </span>
-                  <span className="text-xs font-medium text-slate-600">{percentage}%</span>
-                </div>
-                <div className="mt-2 flex items-center gap-2">
-                  <div className="flex-1 h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full bg-linear-to-r ${statusMeta.barClass} transition-all duration-300`}
-                      style={{ width: `${Math.min(100, percentage)}%` }}
-                    />
+              <Link key={c.id} to={`/student/classes/${c.id}`}>
+                <Card className="hover:border-accent-500/50 cursor-pointer h-full flex flex-col justify-between">
+                  <div>
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <span className="font-mono text-xs font-bold text-accent-600 dark:text-accent-400">{c.classCode}</span>
+                      <Badge color="indigo">{c.semester}</Badge>
+                    </div>
+                    <h4 className="font-bold text-slate-900 dark:text-white text-base">{c.className}</h4>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      {c.courseTitle ?? 'Học phần'} · {c.lecturerName ?? 'Chưa phân công'}
+                    </p>
                   </div>
-                  <span className="text-[11px] text-slate-500">{progress?.completedCount ?? 0}/{progress?.totalCount ?? 0}</span>
-                </div>
+                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center justify-between text-xs mb-1.5">
+                      <Badge color={statusMeta.badgeColor}>{statusMeta.label}</Badge>
+                      <span className="font-semibold text-slate-700 dark:text-slate-300">{percentage}%</span>
+                    </div>
+                    <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${statusMeta.barClass} transition-all duration-300`}
+                        style={{ width: `${Math.min(100, percentage)}%` }}
+                      />
+                    </div>
+                    <div className="mt-2 text-[11px] text-slate-400 flex justify-between">
+                      <span>{progress?.completedCount ?? 0}/{progress?.totalCount ?? 0} bài học</span>
+                      <span>{c.room ? `Phòng ${c.room}` : ''}</span>
+                    </div>
+                  </div>
+                </Card>
               </Link>
             );
           })}
@@ -518,6 +463,7 @@ export function StudentClasses() {
 export function StudentAssignments() {
   const [items, setItems] = useState<{ a: Assignment; sub?: Submission }[]>([]);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     let m = true;
     (async () => {
@@ -532,7 +478,9 @@ export function StudentAssignments() {
     })();
     return () => { m = false; };
   }, []);
+
   if (loading) return <Spinner />;
+
   const summary = {
     total: items.length,
     submitted: items.filter(({ sub }) => !!sub).length,
@@ -541,45 +489,55 @@ export function StudentAssignments() {
   };
 
   return (
-    <div>
-      <PageTitle>Bài tập của tôi</PageTitle>
-      <div className="mb-4 grid gap-3 md:grid-cols-4">
-        {[
-          { label: 'Tổng bài tập', value: summary.total, tone: 'bg-indigo-50 text-indigo-700' },
-          { label: 'Đã nộp', value: summary.submitted, tone: 'bg-emerald-50 text-emerald-700' },
-          { label: 'Đã chấm', value: summary.graded, tone: 'bg-blue-50 text-blue-700' },
-          { label: 'Chưa nộp', value: summary.pending, tone: 'bg-amber-50 text-amber-700' },
-        ].map((item) => (
-          <div key={item.label} className={`rounded-2xl border border-white p-4 shadow-sm ${item.tone}`}>
-            <div className="text-[11px] font-medium uppercase tracking-[0.12em] opacity-80">{item.label}</div>
-            <div className="mt-2 text-2xl font-bold">{item.value}</div>
-          </div>
-        ))}
+    <div className="space-y-6">
+      <PageHeader
+        title="Bài tập của tôi"
+        subtitle="Danh sách bài tập và tiến độ nộp bài các lớp học phần"
+      />
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Tổng bài tập" value={summary.total} color="accent" />
+        <StatCard label="Đã nộp" value={summary.submitted} color="emerald" />
+        <StatCard label="Đã chấm" value={summary.graded} color="sky" />
+        <StatCard label="Chưa nộp" value={summary.pending} color="amber" />
       </div>
 
-      <Card>
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <h3 className="font-semibold text-slate-800">Flow nộp bài</h3>
-          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600">Assignment</span>
-        </div>
-
-        <table className="w-full text-sm">
-          <thead className="text-xs text-slate-400 border-b border-slate-200">
-            <tr><th className="text-left py-2">Bài</th><th>Hạn nộp</th><th>Điểm</th><th>Trạng thái</th><th></th></tr>
-          </thead>
-          <tbody>
-            {items.map(({ a, sub }) => (
-              <tr key={a.id} className="border-b border-slate-200/80 last:border-0">
-                <td className="py-2"><div className="font-medium text-slate-800">{a.title}</div><div className="text-xs text-slate-500">{a.description}</div></td>
-                <td className="text-slate-500 text-xs">{new Date(a.dueDate).toLocaleDateString("vi-VN")}</td>
-                <td className="text-center">{sub?.score != null ? <span className="font-semibold text-emerald-600">{sub.score}/{a.maxScore}</span> : <span className="text-slate-500">-</span>}</td>
-                <td className="text-center">{sub ? <Pill color={sub.score != null ? "green" : sub.isLate ? "red" : "amber"}>{sub.score != null ? "Đã chấm" : sub.isLate ? "Nộp trễ" : "Đã nộp"}</Pill> : <Pill color="slate">Chưa nộp</Pill>}</td>
-                <td><SubmitBtn assignmentId={a.id} disabled={!!sub} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
+      {items.length === 0 ? (
+        <Empty msg="Chưa có bài tập nào" />
+      ) : (
+        <Table headers={['Tên bài tập', 'Hạn nộp', 'Điểm số', 'Trạng thái', 'Hành động']}>
+          {items.map(({ a, sub }) => (
+            <tr key={a.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+              <td className="px-4 py-3">
+                <div className="font-semibold text-slate-900 dark:text-white text-xs">{a.title}</div>
+                {a.description && <div className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">{a.description}</div>}
+              </td>
+              <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-mono text-[11px]">
+                {new Date(a.dueDate).toLocaleDateString("vi-VN")}
+              </td>
+              <td className="px-4 py-3 text-center">
+                {sub?.score != null ? (
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{sub.score} / {a.maxScore}</span>
+                ) : (
+                  <span className="text-slate-400">-</span>
+                )}
+              </td>
+              <td className="px-4 py-3 text-center">
+                {sub ? (
+                  <Badge color={sub.score != null ? "emerald" : sub.isLate ? "red" : "amber"}>
+                    {sub.score != null ? "Đã chấm" : sub.isLate ? "Nộp trễ" : "Đã nộp"}
+                  </Badge>
+                ) : (
+                  <Badge color="slate">Chưa nộp</Badge>
+                )}
+              </td>
+              <td className="px-4 py-3 text-right">
+                <SubmitBtn assignmentId={a.id} disabled={!!sub} />
+              </td>
+            </tr>
+          ))}
+        </Table>
+      )}
     </div>
   );
 }
@@ -692,39 +650,43 @@ function SubmitBtn({ assignmentId, disabled }: { assignmentId: number; disabled?
     }
   };
 
-  if (disabled) return <span className="text-xs text-slate-500">Đã nộp</span>;
+  if (disabled) return <span className="text-xs text-slate-400 font-medium">Đã nộp</span>;
   return (
     <>
-      <button
+      <Button
+        size="sm"
         disabled={busy}
         onClick={() => setOpen(true)}
-        className="rounded-lg bg-[#243b78] px-3 py-1.5 text-xs font-medium text-white transition hover:bg-[#1e3267] disabled:opacity-50"
       >
-        {busy ? '...' : 'Nộp'}
-      </button>
+        {busy ? 'Đang gửi...' : 'Nộp bài'}
+      </Button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-xl max-h-[86vh] overflow-hidden">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-800">Nộp bài tập</h3>
-              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-700 p-1 rounded-md transition hover:bg-slate-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-lg rounded-2xl border border-slate-200/90 bg-white dark:bg-slate-900 dark:border-slate-800 p-5 shadow-modal max-h-[86vh] overflow-y-auto">
+            <div className="mb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Nộp bài tập</h3>
+              <button type="button" onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-4">
+            <div className="mb-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
-                { label: 'Tải file', value: 'FILE' },
+                { label: 'File', value: 'FILE' },
                 { label: 'Ảnh', value: 'IMAGE' },
-                { label: 'Google Drive', value: 'GOOGLE_DRIVE_LINK' },
+                { label: 'Drive', value: 'GOOGLE_DRIVE_LINK' },
                 { label: 'GitHub', value: 'GITHUB_LINK' },
               ].map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => setSubmissionType(option.value as SubmissionType)}
-                  className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${submissionType === option.value ? 'border-[#243b78] bg-[#243b78] text-white' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
+                  className={`rounded-lg border px-3 py-2 text-xs font-semibold transition cursor-pointer ${
+                    submissionType === option.value
+                      ? 'border-accent-600 bg-accent-600 text-white'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
+                  }`}
                 >
                   {option.label}
                 </button>
@@ -734,7 +696,9 @@ function SubmitBtn({ assignmentId, disabled }: { assignmentId: number; disabled?
             {submissionType === 'FILE' || submissionType === 'IMAGE' ? (
               <div className="mb-4 space-y-3">
                 <div
-                  className={`rounded-2xl border-2 border-dashed p-3 transition ${isDragActive ? 'border-[#243b78] bg-blue-50' : 'border-slate-300 bg-slate-50'}`}
+                  className={`rounded-xl border-2 border-dashed p-4 transition text-center ${
+                    isDragActive ? 'border-accent-500 bg-accent-50/50 dark:bg-accent-950/30' : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40'
+                  }`}
                   onDragOver={(event) => {
                     event.preventDefault();
                     setIsDragActive(true);
@@ -746,127 +710,60 @@ function SubmitBtn({ assignmentId, disabled }: { assignmentId: number; disabled?
                     addFilesToSelection(Array.from(event.dataTransfer.files ?? []));
                   }}
                 >
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    {submissionType === 'FILE' ? 'Chọn nhiều file hoặc kéo thả vào đây' : 'Chọn ảnh bài làm hoặc kéo thả ảnh vào đây'}
-                  </label>
-
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <input
-                      type="file"
-                      multiple
-                      accept={submissionType === 'IMAGE' ? 'image/*' : '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.png,.jpg,.jpeg'}
-                      onChange={(event) => {
-                        const files = Array.from(event.target.files ?? []);
-                        if (files.length > 0) {
-                          addFilesToSelection(files);
-                        }
-                        event.target.value = '';
-                      }}
-                      className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-[#243b78] file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
-                    />
-
-                    {selectedFiles.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={resetFileSelection}
-                        className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-xs font-medium text-red-600 transition hover:bg-red-100"
-                      >
-                        Xóa tất cả
-                      </button>
-                    )}
-                  </div>
-
-                  <p className="mt-2 text-[11px] text-slate-500">
-                    {submissionType === 'FILE'
-                      ? 'Có thể chọn nhiều file từ máy hoặc kéo thả trực tiếp. Mỗi file sẽ được hiển thị rõ ràng trước khi nộp.'
-                      : 'Bạn có thể chọn 1 hoặc nhiều ảnh chụp bài làm.'}
+                  <Upload className="w-6 h-6 text-slate-400 mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    {submissionType === 'FILE' ? 'Kéo thả file vào đây hoặc chọn từ máy' : 'Kéo thả ảnh bài làm vào đây'}
                   </p>
+
+                  <input
+                    type="file"
+                    multiple
+                    accept={submissionType === 'IMAGE' ? 'image/*' : '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.png,.jpg,.jpeg'}
+                    onChange={(event) => {
+                      const files = Array.from(event.target.files ?? []);
+                      if (files.length > 0) addFilesToSelection(files);
+                      event.target.value = '';
+                    }}
+                    className="block w-full text-xs text-slate-500 file:mr-3 file:rounded-md file:border-0 file:bg-slate-200 dark:file:bg-slate-700 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-slate-700 dark:file:text-slate-200 cursor-pointer mt-2"
+                  />
                 </div>
 
                 {selectedFiles.length > 0 && (
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-                      <span>Tổng cộng</span>
-                      <span>{selectedFiles.length} file</span>
+                    <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
+                      <span>File đã chọn ({selectedFiles.length})</span>
+                      <button type="button" onClick={resetFileSelection} className="text-rose-600 hover:underline">Xóa tất cả</button>
                     </div>
 
-                    <div className="grid max-h-48 gap-2 overflow-auto rounded-xl border border-slate-200 bg-white p-2">
-                      {selectedFiles.map((file, index) => {
-                        const isImage = file.type.startsWith('image/');
-                        return (
-                          <div
-                            key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
-                            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/40"
-                            draggable
-                            onDragStart={() => setDraggedIndex(index)}
-                            onDragOver={(event) => event.preventDefault()}
-                            onDrop={(event) => {
-                              event.preventDefault();
-                              if (draggedIndex !== null) {
-                                moveSelectedFile(draggedIndex, index);
-                                setDraggedIndex(null);
-                              }
-                            }}
-                          >
-                            <button type="button" onClick={() => isImage && openPreview(file)} className="shrink-0">
-                              {isImage ? (
-                                <img src={URL.createObjectURL(file)} alt={file.name} className="h-11 w-11 rounded-lg object-cover ring-1 ring-slate-200" />
-                              ) : (
-                                <div className="grid h-11 w-11 place-items-center rounded-lg bg-slate-200 text-[9px] font-bold text-slate-600">
-                                  {file.name.split('.').pop()?.toUpperCase() || 'FILE'}
-                                </div>
-                              )}
-                            </button>
-                            <div className="min-w-0 flex-1">
-                              <div className="truncate text-sm font-medium text-slate-700">{file.name}</div>
-                              <div className="mt-0.5 text-[11px] text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => removeSelectedFile(index)}
-                              className="rounded-md border border-red-200 bg-white px-2 py-1 text-[10px] font-semibold text-red-600 transition hover:bg-red-50"
-                            >
-                              Xóa
-                            </button>
-                          </div>
-                        );
-                      })}
+                    <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
+                      {selectedFiles.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs">
+                          <span className="truncate max-w-[240px] text-slate-800 dark:text-slate-200">{file.name}</span>
+                          <button type="button" onClick={() => removeSelectedFile(index)} className="text-slate-400 hover:text-rose-600">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
-
-                <div className="text-xs text-slate-500">
-                  {selectedFiles.length > 0 ? `${selectedFiles.length} file đã chọn` : 'Chưa có file nào được chọn'}
-                </div>
               </div>
             ) : (
-              <>
-                <label className="mb-2 block text-sm font-medium text-slate-700">Link nộp</label>
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Link nộp bài</label>
                 <input
                   value={externalLink}
                   onChange={(event) => setExternalLink(event.target.value)}
-                  className="mb-4 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 outline-none ring-0 transition focus:border-[#243b78]"
-                  placeholder={submissionType === 'GOOGLE_DRIVE_LINK' ? 'https://drive.google.com/...' : 'https://github.com/username/repo'}
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-accent-600"
+                  placeholder={submissionType === 'GOOGLE_DRIVE_LINK' ? 'https://drive.google.com/...' : 'https://github.com/...'}
                 />
-              </>
+              </div>
             )}
 
-            <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => { resetFileSelection(); setOpen(false); }} className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100">Huỷ</button>
-              <button type="button" onClick={() => void submit()} className="rounded-lg bg-[#243b78] px-3 py-2 text-sm font-medium text-white hover:bg-[#1e3267]">Nộp bài</button>
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <Button variant="secondary" onClick={() => setOpen(false)}>Hủy</Button>
+              <Button onClick={() => void submit()}>Gửi bài nộp</Button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {previewUrl && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-950/80 p-4" onClick={closePreview}>
-          <div className="max-h-[92vh] max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-white p-2 shadow-2xl" onClick={(event) => event.stopPropagation()}>
-            <div className="mb-2 flex items-center justify-between gap-3 px-2 pt-1">
-              <span className="text-sm font-medium text-slate-700">Xem trước ảnh</span>
-              <button type="button" onClick={closePreview} className="rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-600 hover:bg-slate-100">Đóng</button>
-            </div>
-            <img src={previewUrl} alt="Preview" className="max-h-[78vh] max-w-full rounded-xl object-contain" />
           </div>
         </div>
       )}
@@ -880,6 +777,7 @@ export function StudentGrades() {
   const [classes, setClasses] = useState<Clazz[]>([]);
   const [policy, setPolicy] = useState<GradingPolicy | null>(null);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     let m = true;
     Promise.all([
@@ -902,49 +800,77 @@ export function StudentGrades() {
       .finally(() => m && setLoading(false));
     return () => { m = false; };
   }, []);
+
   if (loading) return <Spinner />;
+
   const classesById = new Map(classes.map((item) => [item.id, item]));
   const scored = grades.map((g) => g.totalScore).filter((score): score is number => score != null);
   const avg = scored.length ? (scored.reduce((a, b) => a + b, 0) / scored.length).toFixed(2) : "-";
+
   const groupedGrades = new Map<string, Grade[]>();
   grades.forEach((grade) => {
     const clazz = classesById.get(grade.classId);
     const group = `${clazz?.academicYear ?? 'Chưa xác định'} · ${clazz?.semester ?? 'Chưa xác định'}`;
     groupedGrades.set(group, [...(groupedGrades.get(group) ?? []), grade]);
   });
+
   return (
-    <div>
-      <PageTitle>Bảng điểm</PageTitle>
-      {policy !== undefined && (
-        <div className="mb-4 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-800 flex justify-between items-center shadow-sm">
-          <span className="font-semibold text-blue-900">Trọng số tính điểm áp dụng:</span>
-          <span className="font-medium">
-            {policy
-              ? `${Math.round(policy.attendanceWeight * 100)}% Chuyên cần + ${Math.round(policy.midtermWeight * 100)}% Giữa kỳ + ${Math.round(policy.finalWeight * 100)}% Cuối kỳ`
-              : '40% Giữa kỳ + 60% Cuối kỳ'}
+    <div className="space-y-6">
+      <PageHeader
+        title="Kết quả học tập"
+        subtitle="Bảng điểm quá trình, giữa kỳ và tổng kết theo từng học phần"
+      />
+
+      {policy && (
+        <div className="p-3 bg-slate-100 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-center text-slate-700 dark:text-slate-300">
+          <span className="font-semibold">Trọng số tính điểm:</span>
+          <span>
+            {Math.round(policy.attendanceWeight * 100)}% Chuyên cần + {Math.round(policy.midtermWeight * 100)}% Giữa kỳ + {Math.round(policy.finalWeight * 100)}% Cuối kỳ
           </span>
         </div>
       )}
-      <div className="mb-5 grid gap-4 lg:grid-cols-[minmax(220px,0.75fr)_2fr]">
-        <Card className="bg-linear-to-br from-[#00376f] to-[#0b5ca8] text-white">
-          <div className="mb-5 flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-white/15 text-lg font-bold">{user?.fullName?.[0] ?? '?'}</div>
-            <div><div className="font-semibold">{user?.fullName}</div><div className="text-xs text-blue-100">Sinh viên · {user?.email}</div></div>
-          </div>
-          <div className="space-y-3 border-t border-white/20 pt-4 text-sm"><div className="flex justify-between gap-3"><span className="text-blue-100">Mã sinh viên</span><span>{user?.id ? `SV #${user.id}` : '-'}</span></div><div className="flex justify-between gap-3"><span className="text-blue-100">Số học phần</span><span>{grades.length}</span></div></div>
-        </Card>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Card><div className="text-xs font-medium text-slate-500">Điểm trung bình</div><div className="mt-2 text-3xl font-bold text-emerald-600">{avg}</div><div className="mt-1 text-xs text-slate-400">Theo điểm tổng kết</div></Card>
-          <Card><div className="text-xs font-medium text-slate-500">Học phần có điểm</div><div className="mt-2 text-3xl font-bold text-primary">{grades.length}</div><div className="mt-1 text-xs text-slate-400">Theo lớp học phần</div></Card>
-          <Card><div className="text-xs font-medium text-slate-500">Điểm cao nhất</div><div className="mt-2 text-3xl font-bold text-slate-900">{scored.length ? Math.max(...scored).toFixed(1) : '-'}</div><div className="mt-1 text-xs text-slate-400">Thang điểm 10</div></Card>
-        </div>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <StatCard label="Điểm TB tích lũy" value={avg} color="emerald" />
+        <StatCard label="Số môn đã có điểm" value={grades.length} color="accent" />
+        <StatCard label="Điểm cao nhất" value={scored.length ? Math.max(...scored).toFixed(1) : '-'} color="amber" />
       </div>
-      {grades.length === 0 ? <Card><Empty msg="Chưa có điểm" /></Card> : Array.from(groupedGrades.entries()).map(([group, groupGrades]) => (
-        <Card key={group} className="mb-4 overflow-hidden p-0">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-blue-100 bg-blue-50 px-4 py-3"><div><div className="font-semibold text-primary">{group}</div><div className="text-xs text-slate-500">Bảng điểm học phần</div></div><span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-primary">{groupGrades.length} học phần</span></div>
-          <div className="overflow-x-auto"><table className="w-full min-w-175 text-sm"><thead className="border-b border-slate-200 text-xs text-slate-500"><tr><th className="px-4 py-3 text-left">Học phần</th><th className="text-left">Lớp học phần</th><th className="text-center">Giữa kỳ</th><th className="text-center">Cuối kỳ</th><th className="text-center">Tổng kết</th><th className="text-center">Đánh giá</th></tr></thead><tbody>{groupGrades.map((grade) => { const clazz = classesById.get(grade.classId); const passed = grade.totalScore != null && grade.totalScore >= 5; return <tr key={grade.id} className="border-b border-slate-100 last:border-0"><td className="px-4 py-3"><div className="font-medium text-slate-800">{clazz?.courseTitle ?? 'Chưa có thông tin môn học'}</div><div className="mt-0.5 text-xs text-slate-400">Môn #{clazz?.courseId ?? '-'}</div></td><td className="font-mono text-xs text-primary">{clazz?.classCode ?? `Lớp #${grade.classId}`}</td><td className="text-center">{grade.midtermScore ?? '-'}</td><td className="text-center">{grade.finalScore ?? '-'}</td><td className="text-center font-semibold text-slate-900">{grade.totalScore ?? '-'}</td><td className="text-center"><Pill color={passed ? 'green' : grade.totalScore == null ? 'slate' : 'red'}>{passed ? 'Đạt' : grade.totalScore == null ? 'Chưa đủ điểm' : 'Chưa đạt'}</Pill></td></tr>; })}</tbody></table></div>
-        </Card>
-      ))}
+
+      {grades.length === 0 ? (
+        <Empty msg="Chưa có kết quả điểm môn học" />
+      ) : (
+        Array.from(groupedGrades.entries()).map(([group, groupGrades]) => (
+          <div key={group} className="space-y-3">
+            <h4 className="font-bold text-slate-900 dark:text-white text-sm">{group}</h4>
+            <Table headers={['Học phần', 'Mã Lớp HP', 'Giữa kỳ', 'Cuối kỳ', 'Tổng kết', 'Đánh giá']}>
+              {groupGrades.map((grade) => {
+                const clazz = classesById.get(grade.classId);
+                const passed = grade.totalScore != null && grade.totalScore >= 5;
+                return (
+                  <tr key={grade.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                    <td className="px-4 py-3">
+                      <div className="font-semibold text-slate-900 dark:text-white text-xs">{clazz?.courseTitle ?? 'Học phần'}</div>
+                    </td>
+                    <td className="px-4 py-3 font-mono text-xs text-accent-600 dark:text-accent-400">
+                      {clazz?.classCode ?? `Lớp #${grade.classId}`}
+                    </td>
+                    <td className="px-4 py-3 text-center text-xs">{grade.midtermScore ?? '-'}</td>
+                    <td className="px-4 py-3 text-center text-xs">{grade.finalScore ?? '-'}</td>
+                    <td className="px-4 py-3 text-center font-bold text-slate-900 dark:text-white text-xs">
+                      {grade.totalScore ?? '-'}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <Badge color={passed ? 'emerald' : grade.totalScore == null ? 'slate' : 'red'}>
+                        {passed ? 'Đạt' : grade.totalScore == null ? 'Chờ điểm' : 'Không đạt'}
+                      </Badge>
+                    </td>
+                  </tr>
+                );
+              })}
+            </Table>
+          </div>
+        ))
+      )}
     </div>
   );
 }

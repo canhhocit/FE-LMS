@@ -1,31 +1,27 @@
-// Student Profile page
 import { useEffect, useState, useCallback } from 'react';
-import { Bot } from 'lucide-react';
+import { Bot, User, Key } from 'lucide-react';
 import * as profileService from '../../services/profileService';
 import * as aiAdvisorService from '../../services/aiAdvisorService';
 import { AvatarUploader } from '../../components/AvatarUploader';
-import { PageTitle, Card, Spinner, ErrorBox, Pill } from '../../components/Layout';
+import { PageHeader, Card, Spinner, ErrorBox, Badge, Button, Input, Select, Textarea, Toast } from '../../components/ui';
 import type { UpdateProfileRequest, UserProfile } from '../../types';
 
-function Field({ label, value, editing, onChange, type = 'text', options, className = '' }:
-  { label: string; value?: string | null; editing?: boolean; onChange?: (v: string) => void; type?: string; options?: string[]; className?: string; }) {
+function Field({ label, value, editing, onChange, type = 'text', options }:
+  { label: string; value?: string | null; editing?: boolean; onChange?: (v: string) => void; type?: string; options?: string[]; }) {
   const displayVal = value && value.trim() !== '' ? value : null;
   return (
-    <div className={`p-3 rounded-xl border border-slate-200/80 bg-slate-50/70 shadow-2xs ${className}`}>
-      <div className="text-xs font-semibold text-slate-600 mb-1">{label}</div>
+    <div className="p-3.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40">
+      <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{label}</div>
       {editing && onChange ? (
         type === 'select' ? (
-          <select value={value ?? ''} onChange={(e) => onChange(e.target.value)}
-            className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <Select value={value ?? ''} onChange={(e) => onChange(e.target.value)}>
             {options?.map((o) => <option key={o} value={o}>{o}</option>)}
-          </select>
+          </Select>
         ) : (
-          <input type={type} value={value ?? ''} onChange={(e) => onChange(e.target.value)}
-            placeholder="Nhập thông tin..."
-            className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <Input type={type} value={value ?? ''} onChange={(e) => onChange(e.target.value)} placeholder="Nhập thông tin..." />
         )
       ) : (
-        <div className={`text-sm font-semibold ${displayVal ? 'text-slate-900' : 'text-slate-400 italic'}`}>
+        <div className={`text-xs font-semibold ${displayVal ? 'text-slate-900 dark:text-white' : 'text-slate-400 italic'}`}>
           {displayVal ?? 'Chưa cập nhật'}
         </div>
       )}
@@ -39,6 +35,7 @@ export default function StudentProfile() {
   const [form, setForm] = useState<Partial<UpdateProfileRequest>>({});
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+
   const load = useCallback(() => {
     let mounted = true;
     profileService.getMyProfile()
@@ -47,7 +44,7 @@ export default function StudentProfile() {
         setProfile(p);
         setForm(p);
       })
-      .catch((e: unknown) => mounted && setErr((e as { message?: string })?.message ?? 'Lỗi'))
+      .catch((e: unknown) => mounted && setErr((e as { message?: string })?.message ?? 'Lỗi tải hồ sơ'))
       .finally(() => mounted && setLoading(false));
     return () => { mounted = false; };
   }, []);
@@ -56,9 +53,11 @@ export default function StudentProfile() {
     const cleanup = load();
     return cleanup;
   }, [load]);
+
   if (loading) return <Spinner />;
   if (err) return <ErrorBox msg={err} />;
   if (!profile) return null;
+
   const handleAvatarUpload = async (file: File) => {
     setErr(null);
     try {
@@ -92,58 +91,71 @@ export default function StudentProfile() {
         localStorage.setItem('lms_auth', JSON.stringify({ ...stored, avatarUrl: updated.avatarUrl ?? null, fullName: updated.fullName }));
       }
       setEditing(false);
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Lỗi lưu thông tin');
     }
-    catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
   };
+
   return (
-    <div>
-      <PageTitle>Hồ sơ cá nhân</PageTitle>
-      <Card className="mb-4">
-        {editing ? (
-          <div className="mb-6">
-            <h3 className="font-semibold mb-3">Đổi ảnh đại diện</h3>
+    <div className="space-y-6">
+      <PageHeader
+        title="Hồ sơ cá nhân"
+        subtitle="Quản lý thông tin cá nhân, cập nhật avatar và cấu hình tài khoản"
+      />
+
+      <Card>
+        {editing && (
+          <div className="mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
+            <h4 className="font-bold text-xs text-slate-900 dark:text-white mb-3">Đổi ảnh đại diện</h4>
             <AvatarUploader
               currentAvatar={profile.avatarUrl ?? undefined}
               onUpload={handleAvatarUpload}
               label="Lưu ảnh"
             />
           </div>
-        ) : null}
-        <div className="flex items-center gap-4 mb-4">
-          <div className="relative h-20 w-20 overflow-hidden rounded-full border border-slate-200 bg-indigo-600 text-3xl text-white shadow-sm">
-            {profile.avatarUrl ? (
-              <img src={profile.avatarUrl} alt={profile.fullName} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center">{profile.fullName?.[0]?.toUpperCase() ?? '?'}</div>
-            )}
+        )}
+
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-4">
+            <div className="relative h-16 w-16 overflow-hidden rounded-full border border-slate-200 dark:border-slate-700 bg-slate-900 text-2xl font-bold text-white shrink-0">
+              {profile.avatarUrl ? (
+                <img src={profile.avatarUrl} alt={profile.fullName} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">{profile.fullName?.[0]?.toUpperCase() ?? '?'}</div>
+              )}
+            </div>
+            <div>
+              <div className="text-lg font-bold text-slate-900 dark:text-white">{profile.fullName}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">{profile.email}</div>
+              <div className="mt-1">
+                <Badge color="indigo">{profile.role}</Badge>
+              </div>
+            </div>
           </div>
-          <div>
-            <div className="text-xl font-semibold">{profile.fullName}</div>
-            <div className="text-sm text-slate-400">{profile.email}</div>
-            <div className="text-xs mt-1"><Pill color="indigo">{profile.role}</Pill></div>
-          </div>
-          <button onClick={() => setEditing(!editing)} className="ml-auto px-3 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-sm">
-            {editing ? 'Hủy' : 'Chỉnh sửa'}
-          </button>
+
+          <Button variant={editing ? "secondary" : "primary"} onClick={() => setEditing(!editing)}>
+            {editing ? 'Hủy' : 'Chỉnh sửa hồ sơ'}
+          </Button>
         </div>
-        <div className="grid md:grid-cols-2 gap-3 text-sm">
+
+        <div className="grid md:grid-cols-2 gap-3 text-xs">
           <Field label="Mã sinh viên" value={profile.studentCode} />
           <Field label="Lớp hành chính" value={profile.adminClassName ?? 'Chưa phân lớp'} />
           <Field label="Chương trình đào tạo" value={profile.curriculumName ?? profile.major ?? 'Chưa cập nhật'} />
-          <Field label="Khoa" value={profile.faculty} editing={editing}
-            onChange={(v) => setForm({ ...form, faculty: v })} />
-          <Field label="Chuyên ngành" value={profile.major} editing={editing}
-            onChange={(v) => setForm({ ...form, major: v })} />
-          <Field label="Ngày sinh" value={profile.dateOfBirth} type="date" editing={editing}
-            onChange={(v) => setForm({ ...form, dateOfBirth: v })} />
+          <Field label="Khoa" value={profile.faculty} editing={editing} onChange={(v) => setForm({ ...form, faculty: v })} />
+          <Field label="Chuyên ngành" value={profile.major} editing={editing} onChange={(v) => setForm({ ...form, major: v })} />
+          <Field label="Ngày sinh" value={profile.dateOfBirth} type="date" editing={editing} onChange={(v) => setForm({ ...form, dateOfBirth: v })} />
           <Field label="Email sinh viên (mặc định)" value={profile.email} />
-          <Field label="Email cá nhân (nhận thông báo & quên mật khẩu)" value={profile.personalEmail} editing={editing} type="email"
-            onChange={(v) => setForm({ ...form, personalEmail: v })} />
+          <Field label="Email cá nhân" value={profile.personalEmail} editing={editing} type="email" onChange={(v) => setForm({ ...form, personalEmail: v })} />
         </div>
+
         {editing && (
-          <button onClick={save} className="mt-3 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium">Lưu thay đổi</button>
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+            <Button onClick={save}>Lưu thay đổi</Button>
+          </div>
         )}
       </Card>
+
       <ChangePasswordCard />
       <AiSettingsCard />
     </div>
@@ -156,12 +168,11 @@ function AiSettingsCard() {
   const configKey = `lms_ai_config_${userId}`;
   const historyKey = `lms_ai_chat_history_${userId}`;
 
-  // Custom AI Instructions State
   const [aiName, setAiName] = useState(() => {
     try {
       const cfg = JSON.parse(localStorage.getItem(configKey) || '{}');
-      return cfg.aiName || 'Hikari AI';
-    } catch { return 'Hikari AI'; }
+      return cfg.aiName || 'Trợ lý AI';
+    } catch { return 'Trợ lý AI'; }
   });
 
   const [toneStyle, setToneStyle] = useState(() => {
@@ -174,8 +185,8 @@ function AiSettingsCard() {
   const [customPrompt, setCustomPrompt] = useState(() => {
     try {
       const cfg = JSON.parse(localStorage.getItem(configKey) || '{}');
-      return cfg.customPrompt || 'Đóng vai Cố vấn Học tập 24/7, đưa ra câu trả lời ngắn gọn, tạo động lực học tập.';
-    } catch { return 'Đóng vai Cố vấn Học tập 24/7, đưa ra câu trả lời ngắn gọn, tạo động lực học tập.'; }
+      return cfg.customPrompt || 'Hỗ trợ tra cứu thông tin học tập ngắn gọn, chính xác.';
+    } catch { return 'Hỗ trợ tra cứu thông tin học tập ngắn gọn, chính xác.'; }
   });
 
   const [targetGpa, setTargetGpa] = useState(() => {
@@ -211,15 +222,15 @@ function AiSettingsCard() {
         personalContext: customPrompt,
       });
     } catch {}
-    setMsg('Đã lưu cấu hình cá nhân hóa cho Trợ lý AI thành công!');
-    setTimeout(() => setMsg(null), 3500);
+    setMsg('Đã lưu cấu hình Trợ lý AI thành công');
+    setTimeout(() => setMsg(null), 3000);
   };
 
   const handleExportChat = () => {
     try {
       const saved = localStorage.getItem(historyKey);
       if (!saved) {
-        alert('Chưa có lịch sử trò chuyện nào để xuất!');
+        alert('Chưa có lịch sử trò chuyện để xuất!');
         return;
       }
       const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(saved);
@@ -235,118 +246,77 @@ function AiSettingsCard() {
   };
 
   const handleClear = () => {
-    if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử trò chuyện với Trợ lý AI không?')) {
+    if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử trò chuyện không?')) {
       localStorage.removeItem(historyKey);
       window.dispatchEvent(new Event('lms_clear_ai_chat'));
-      setMsg('Đã xóa toàn bộ lịch sử trò chuyện với Trợ lý AI thành công!');
-      setTimeout(() => setMsg(null), 4000);
+      setMsg('Đã xóa toàn bộ lịch sử trò chuyện AI');
+      setTimeout(() => setMsg(null), 3000);
     }
   };
 
   return (
-    <Card className="mt-4">
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-base">
-            <Bot className="w-5 h-5 text-indigo-600 shrink-0" />
-            Cá nhân hóa Trợ lý AI (Custom Instructions)
+    <Card>
+      <div className="space-y-4">
+        {msg && <Toast message={msg} type="success" onClose={() => setMsg(null)} />}
+
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+            <Bot className="w-4 h-4 text-accent-600 dark:text-accent-400" />
+            <span>Cấu hình Trợ lý AI</span>
           </h3>
-          <span className="text-xs px-2.5 py-1 bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-semibold rounded-full border border-purple-200 dark:border-purple-800">
-            Live AI Persona
-          </span>
+          <Badge color="slate">Trợ lý học tập</Badge>
         </div>
 
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Tùy chỉnh tên trợ lý, chỉ dẫn hệ thống (System Prompt), mục tiêu GPA và văn phong phản hồi của AI theo đúng nhu cầu học tập của bạn.
-        </p>
+        <div className="grid md:grid-cols-2 gap-4">
+          <Input
+            label="Tên Trợ lý AI hiển thị"
+            value={aiName}
+            onChange={(e) => setAiName(e.target.value)}
+            placeholder="Ví dụ: Trợ lý AI"
+          />
 
-        {/* Custom Instructions Form */}
-        <div className="grid md:grid-cols-2 gap-3 mt-2">
-          <div>
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
-              Tên Trợ lý AI hiển thị:
-            </label>
-            <input
-              type="text"
-              value={aiName}
-              onChange={(e) => setAiName(e.target.value)}
-              placeholder="Vd: Hikari AI, Jarvis..."
-              className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
-              Phong cách giao tiếp (Tone of Voice):
-            </label>
-            <select
-              value={toneStyle}
-              onChange={(e) => setToneStyle(e.target.value)}
-              className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white"
-            >
-              <option value="FRIENDLY">Thân thiện, gần gũi & Khích lệ</option>
-              <option value="FORMAL">Trang trọng, Chuẩn mực Sư phạm</option>
-              <option value="CONCISE">Ngắn gọn, Trực diện & Tập trung</option>
-              <option value="TUTOR">Tutor Học thuật & Giải thích Chi tiết</option>
-            </select>
-          </div>
+          <Select
+            label="Phong cách giao tiếp"
+            value={toneStyle}
+            onChange={(e) => setToneStyle(e.target.value)}
+          >
+            <option value="FRIENDLY">Gần gũi & Khích lệ</option>
+            <option value="FORMAL">Chuẩn mực, Trang trọng</option>
+            <option value="CONCISE">Ngắn gọn, Trực diện</option>
+            <option value="TUTOR">Giải thích Chi tiết</option>
+          </Select>
 
           <div className="md:col-span-2">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
-              Chỉ dẫn cá nhân hóa Custom System Instructions (System Prompt):
-            </label>
-            <textarea
+            <Textarea
+              label="Chỉ dẫn hệ thống cho AI (System Prompt)"
               rows={2}
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
-              placeholder="Nhập yêu cầu riêng cho AI (Vd: Hãy nhắc tôi về deadline, luôn xưng thầy/em...)"
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white leading-relaxed"
+              placeholder="Yêu cầu cách xưng hô hoặc ưu tiên thông tin..."
             />
           </div>
 
-          <div>
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
-              Mục tiêu GPA kỳ tới:
-            </label>
-            <input
-              type="text"
-              value={targetGpa}
-              onChange={(e) => setTargetGpa(e.target.value)}
-              placeholder="Vd: 3.6 / 4.0"
-              className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white"
-            />
-          </div>
+          <Input
+            label="Mục tiêu GPA kỳ tới"
+            value={targetGpa}
+            onChange={(e) => setTargetGpa(e.target.value)}
+            placeholder="Ví dụ: 3.6"
+          />
 
           <div className="flex items-end">
-            <button
-              onClick={handleSaveConfig}
-              className="w-full px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-2xs transition cursor-pointer"
-            >
-              Lưu Cấu hình Cá nhân hóa AI
-            </button>
+            <Button onClick={handleSaveConfig} className="w-full">
+              Lưu cấu hình AI
+            </Button>
           </div>
         </div>
 
-        {/* History Management & Export */}
-        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 mt-1">
-          <span className="text-xs text-slate-500 font-medium">Quản lý Lịch sử trò chuyện:</span>
+        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Quản lý dữ liệu hội thoại</span>
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleExportChat}
-              className="px-3.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-300 font-semibold text-xs border border-indigo-200 dark:border-indigo-800 transition cursor-pointer"
-            >
-              Xuất Lịch sử (.json)
-            </button>
-            <button
-              onClick={handleClear}
-              className="px-3.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 font-semibold text-xs border border-rose-200 dark:border-rose-900 transition cursor-pointer"
-            >
-              Xóa Lịch sử Chat AI
-            </button>
+            <Button variant="secondary" size="sm" onClick={handleExportChat}>Xuất JSON</Button>
+            <Button variant="danger" size="sm" onClick={handleClear}>Xóa lịch sử</Button>
           </div>
         </div>
-
-        {msg && <div className="mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">{msg}</div>}
       </div>
     </Card>
   );
@@ -357,23 +327,47 @@ function ChangePasswordCard() {
   const [newP, setNewP] = useState('');
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+
   const submit = async () => {
     setErr(null); setMsg(null);
-    try { await profileService.changePassword(old, newP); setMsg('Đổi mật khẩu thành công'); setOld(''); setNewP(''); }
-    catch (e: unknown) { setErr((e as { message?: string })?.message ?? 'Lỗi'); }
+    try {
+      await profileService.changePassword(old, newP);
+      setMsg('Đổi mật khẩu thành công');
+      setOld('');
+      setNewP('');
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Đổi mật khẩu thất bại');
+    }
   };
+
   return (
     <Card>
-      <h3 className="font-semibold mb-3">Đổi mật khẩu</h3>
-      <div className="grid md:grid-cols-2 gap-3">
-        <input type="password" placeholder="Mật khẩu cũ" value={old} onChange={(e) => setOld(e.target.value)}
-          className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
-        <input type="password" placeholder="Mật khẩu mới" value={newP} onChange={(e) => setNewP(e.target.value)}
-          className="px-3 py-2 bg-white border border-slate-200 rounded-lg" />
+      <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Đổi mật khẩu</h3>
+      <div className="grid md:grid-cols-2 gap-4 mb-4">
+        <Input
+          type="password"
+          label="Mật khẩu hiện tại"
+          placeholder="••••••••"
+          value={old}
+          onChange={(e) => setOld(e.target.value)}
+        />
+        <Input
+          type="password"
+          label="Mật khẩu mới"
+          placeholder="••••••••"
+          value={newP}
+          onChange={(e) => setNewP(e.target.value)}
+        />
       </div>
-      {err && <div className="mt-2 text-sm text-rose-300">{err}</div>}
-      {msg && <div className="mt-2 text-sm text-emerald-300">{msg}</div>}
-      <button onClick={submit} className="mt-3 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500">Đổi</button>
+
+      {err && <ErrorBox msg={err} />}
+      {msg && <Toast message={msg} type="success" onClose={() => setMsg(null)} />}
+
+      <div className="mt-3 flex justify-end">
+        <Button onClick={submit} disabled={!old || !newP}>
+          Cập nhật mật khẩu
+        </Button>
+      </div>
     </Card>
   );
 }

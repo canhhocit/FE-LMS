@@ -3,14 +3,13 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Megaphone, CheckCircle2, XCircle, ClipboardList, CalendarCheck2,
-  Save, ChevronRight, Flame
+  Save, ArrowRight
 } from 'lucide-react';
 import * as clazzService from '../../services/clazzService';
 import * as assessmentService from '../../services/assessmentService';
 import * as gradingService from '../../services/gradingService';
 import { useAuth } from '../../contexts/useAuth';
-import { PageTitle, Card, Spinner, Empty, Pill } from '../../components/Layout';
-import { TeacherIcon, DotIcon } from '../../components/icons';
+import { PageHeader, Card, StatCard, Spinner, Empty, Badge, Button, Table, Input, Textarea, Select, Toast } from '../../components/ui';
 import type { Clazz, Assignment, Submission, AttendanceRecord } from '../../types';
 
 export function LecturerDashboard() {
@@ -18,10 +17,10 @@ export function LecturerDashboard() {
   const [classes, setClasses] = useState<Clazz[]>([]);
   const [subs, setSubs] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     let m = true;
     clazzService.getMyClasses().then(setClasses);
-    // Tổng submissions của các bài tập thuộc lớp của giảng viên
     (async () => {
       const cs = await clazzService.getMyClasses();
       const allAssigns = (await Promise.all(cs.map((c) => assessmentService.getAssignments(c.id)))).flat();
@@ -30,125 +29,132 @@ export function LecturerDashboard() {
     })().finally(() => m && setLoading(false));
     return () => { m = false; };
   }, []);
+
   const gradedCount = subs.filter((s) => s.score != null).length;
   const pendingCount = subs.filter((s) => s.score == null).length;
-  const activityDates = subs.map((item) => new Date(item.submittedAt)).filter((date) => !Number.isNaN(date.getTime()));
-  const uniqueDates = new Set(activityDates.map((date) => date.toISOString().slice(0, 10)));
-  const teachingStreak = Math.min(7, Math.max(1, uniqueDates.size || 1));
   const recentActivity = subs.slice(0, 4).map((item) => ({
-    title: `Bài nộp mới · ${item.studentId}`,
+    title: `Bài nộp mới · SV #${item.studentId}`,
     detail: item.score == null ? 'Chờ chấm điểm' : 'Đã chấm điểm',
     time: new Date(item.submittedAt).toLocaleDateString('vi-VN'),
   }));
 
   if (loading) return <Spinner />;
-  return (
-    <div className="space-y-5">
-      <PageTitle>
-        Xin chào, {user?.fullName} <TeacherIcon className="inline w-5 h-5 ml-1 text-indigo-600" />
-      </PageTitle>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
-          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Lớp phụ trách</div>
-          <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{classes.length}</div>
-        </Card>
-        <Card className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
-          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Tổng bài nộp</div>
-          <div className="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400">{subs.length}</div>
-        </Card>
-        <Card className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
-          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Đã chấm</div>
-          <div className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400">{gradedCount}</div>
-        </Card>
-        <Card className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
-          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Chờ chấm</div>
-          <div className="mt-2 text-2xl font-bold text-rose-600 dark:text-rose-400">{pendingCount}</div>
-        </Card>
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title={`Xin chào, ${user?.fullName || 'Giảng viên'}`}
+        subtitle="Tổng quan lớp giảng dạy, bài nộp của sinh viên và hoạt động gần đây"
+      />
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Lớp phụ trách" value={classes.length} color="accent" />
+        <StatCard label="Tổng bài nộp" value={subs.length} color="sky" />
+        <StatCard label="Đã chấm điểm" value={gradedCount} color="emerald" />
+        <StatCard label="Chờ chấm điểm" value={pendingCount} color="rose" />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-1">
-        <Card>
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <h3 className="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-              <Megaphone className="w-4 h-4 text-indigo-600" />
-              Hoạt động nộp bài &amp; Thông báo gần đây
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+              <Megaphone className="w-4 h-4 text-accent-600 dark:text-accent-400" />
+              Hoạt động nộp bài gần đây
             </h3>
-            <span className="rounded-full bg-indigo-100 dark:bg-indigo-950 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">Hoạt động mới</span>
+            <Badge color="indigo">Mới cập nhật</Badge>
           </div>
-          <div className="space-y-3">
-            {recentActivity.length === 0 ? <Empty msg="Chưa có hoạt động gần đây" /> : recentActivity.map((item) => (
-              <div key={`${item.title}-${item.time}`} className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 dark:border-slate-800 bg-neutral-50/70 dark:bg-slate-800/60 p-3.5 hover:border-indigo-300 dark:hover:border-indigo-700 transition cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <span className="grid h-8 w-8 place-items-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300 flex-shrink-0 font-bold text-xs">
-                    <DotIcon className="w-2 h-2 text-indigo-600" />
-                  </span>
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-bold text-slate-800 dark:text-slate-100">{item.title}</div>
-                    <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{item.detail}</div>
+
+          {recentActivity.length === 0 ? (
+            <Empty msg="Chưa có bài nộp nào gần đây" />
+          ) : (
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {recentActivity.map((item, i) => (
+                <div key={i} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                  <div>
+                    <div className="font-semibold text-slate-900 dark:text-white text-xs">{item.title}</div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">{item.detail}</div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[11px] text-slate-400">{item.time}</span>
+                    <Link to="/lecturer/grading">
+                      <Button variant="ghost" size="sm">Chấm điểm <ArrowRight className="w-3 h-3" /></Button>
+                    </Link>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-xs text-slate-400 font-medium">{item.time}</div>
-                  <Link to="/lecturer/grading" className="text-xs font-bold text-indigo-600 hover:underline">Chấm điểm →</Link>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        <Card>
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Lớp giảng dạy</h3>
+            <Link to="/lecturer/classes" className="text-xs font-semibold text-accent-600 hover:underline">
+              Xem tất cả
+            </Link>
+          </div>
+
+          <div className="space-y-2.5">
+            {classes.slice(0, 4).map((c) => (
+              <Link key={c.id} to={`/lecturer/classes/${c.id}`}>
+                <div className="p-3 rounded-lg border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:border-accent-500/50 transition cursor-pointer">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-mono text-xs font-bold text-accent-600 dark:text-accent-400">{c.classCode}</span>
+                    <Badge color="indigo">{c.semester}</Badge>
+                  </div>
+                  <div className="font-bold text-slate-900 dark:text-white text-xs truncate">{c.className}</div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{c.courseTitle ?? 'Học phần'}</div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </Card>
       </div>
-
-      <Card>
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <h3 className="font-semibold text-slate-800">Lớp của tôi</h3>
-          <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-indigo-700">Active</span>
-        </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          {classes.map((c) => (
-            <Link key={c.id} to={`/lecturer/classes/${c.id}`}
-              className="block rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md">
-              <div className="mb-2 flex items-start justify-between gap-2">
-                <span className="font-mono text-xs font-semibold text-indigo-700">{c.classCode}</span>
-                <Pill color="indigo">{c.semester}</Pill>
-              </div>
-              <div className="font-semibold text-slate-800">{c.className}</div>
-              <div className="mt-1 text-xs text-slate-500">{c.courseTitle ?? 'Học phần'} · Tối đa {c.maxStudents} sinh viên</div>
-              <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500">
-                <span>{c.academicYear}</span>
-                <span className="font-medium text-indigo-700">Xem chi tiết →</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </Card>
     </div>
   );
 }
+
 export function LecturerClasses() {
   const [classes, setClasses] = useState<Clazz[]>([]);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     let m = true;
     clazzService.getMyClasses().then((c) => m && setClasses(c)).finally(() => m && setLoading(false));
     return () => { m = false; };
   }, []);
+
   if (loading) return <Spinner />;
+
   return (
-    <div>
-      <PageTitle>Lớp phụ trách</PageTitle>
-      {classes.length === 0 ? <Empty msg="Chưa có lớp nào" /> : (
-        <div className="grid md:grid-cols-2 gap-3">
+    <div className="space-y-6">
+      <PageHeader
+        title="Lớp phụ trách giảng dạy"
+        subtitle="Danh sách các lớp học phần được phân công giảng dạy trong học kỳ"
+      />
+
+      {classes.length === 0 ? (
+        <Empty msg="Chưa có lớp nào được phân công" />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
           {classes.map((c) => (
-            <Link key={c.id} to={`/lecturer/classes/${c.id}`}
-              className="block rounded-lg border border-slate-200 bg-white p-4 hover:border-primary transition">
-              <div className="flex justify-between items-start">
+            <Link key={c.id} to={`/lecturer/classes/${c.id}`}>
+              <Card className="hover:border-accent-500/50 cursor-pointer h-full flex flex-col justify-between">
                 <div>
-                  <div className="text-xs text-indigo-300 font-mono">{c.classCode}</div>
-                  <div className="font-semibold">{c.className}</div>
-                  <div className="text-xs text-slate-400 mt-1">{c.semester} · {c.academicYear}</div>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <span className="font-mono text-xs font-bold text-accent-600 dark:text-accent-400">{c.classCode}</span>
+                    <Badge color="indigo">{c.semester}</Badge>
+                  </div>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-base">{c.className}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    {c.courseTitle ?? 'Học phần'} · Tối đa {c.maxStudents} sinh viên
+                  </p>
                 </div>
-                <Pill color="green">{c.semester}</Pill>
-              </div>
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                  <span>{c.academicYear}</span>
+                  <span className="font-semibold text-accent-600 dark:text-accent-400">Xem chi tiết lớp →</span>
+                </div>
+              </Card>
             </Link>
           ))}
         </div>
@@ -156,7 +162,7 @@ export function LecturerClasses() {
     </div>
   );
 }
-// Lecturer quản lý assignments + chấm điểm
+
 const getDefaultDueDate = () => {
   const now = new Date();
   now.setDate(now.getDate() + 7);
@@ -214,75 +220,91 @@ export function LecturerAssignments() {
   };
 
   if (loading) return <Spinner />;
+
   return (
-    <div>
-      <PageTitle>Bài tập</PageTitle>
-      {data.length === 0 ? <Empty msg="Chưa có lớp nào" /> : data.map(({ clazz, assigns }) => (
-        <div key={clazz.id} className="mb-6">
-          <h3 className="text-sm text-slate-400 mb-2">{clazz.classCode} — {clazz.className}</h3>
-          <Card>
-            <div className="mb-4 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-              <input
-                value={drafts[clazz.id]?.title ?? ''}
-                onChange={(e) => updateDraft(clazz.id, 'title', e.target.value)}
-                placeholder="Tên bài tập"
-                className="px-2 py-1.5 rounded border border-slate-200 bg-white text-sm"
-              />
-              <input
-                type="datetime-local"
-                value={drafts[clazz.id]?.dueDate ?? getDefaultDueDate()}
-                onChange={(e) => updateDraft(clazz.id, 'dueDate', e.target.value)}
-                className="px-2 py-1.5 rounded border border-slate-200 bg-white text-sm"
-              />
-              <input
-                type="number"
-                min={1}
-                value={drafts[clazz.id]?.maxScore ?? 10}
-                onChange={(e) => updateDraft(clazz.id, 'maxScore', Number(e.target.value) || 10)}
-                className="px-2 py-1.5 rounded border border-slate-200 bg-white text-sm"
-              />
-              <button
-                onClick={() => void createAssignmentFor(clazz.id)}
-                className="px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-sm text-white"
-              >
-                + Tạo bài tập
-              </button>
-              <textarea
-                value={drafts[clazz.id]?.description ?? ''}
-                onChange={(e) => updateDraft(clazz.id, 'description', e.target.value)}
-                placeholder="Mô tả bài tập"
-                rows={2}
-                className="md:col-span-2 xl:col-span-4 px-2 py-1.5 rounded border border-slate-200 bg-white text-sm"
-              />
+    <div className="space-y-6">
+      <PageHeader
+        title="Quản lý Bài tập"
+        subtitle="Tạo mới bài tập và theo dõi bài làm của sinh viên theo từng lớp học phần"
+      />
+
+      {data.length === 0 ? (
+        <Empty msg="Chưa có lớp học phần nào" />
+      ) : (
+        data.map(({ clazz, assigns }) => (
+          <Card key={clazz.id}>
+            <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 flex items-center justify-between">
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                {clazz.classCode} — {clazz.className}
+              </h3>
+              <Badge color="indigo">{assigns.length} bài tập</Badge>
             </div>
 
-            {assigns.length === 0 ? <Empty msg="Chưa có bài tập" /> : (
-              <table className="w-full text-sm">
-                <thead className="text-xs text-slate-400 border-b border-slate-800">
-                  <tr><th className="text-left py-2">Bài</th><th>Hạn</th><th>Điểm tối đa</th><th></th></tr>
-                </thead>
-                <tbody>
-                  {assigns.map((a) => (
-                    <tr key={a.id} className="border-b border-slate-800/50">
-                      <td className="py-2 font-medium">{a.title}</td>
-                      <td className="text-xs text-slate-400">{new Date(a.dueDate).toLocaleDateString('vi-VN')}</td>
-                      <td>{a.maxScore}</td>
-                      <td className="text-right">
-                        <Link to={`/lecturer/grading?assignmentId=${a.id}`} className="text-xs text-indigo-300 hover:underline">Xem bài nộp →</Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {/* Create Assignment Form */}
+            <div className="p-4 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 mb-5 space-y-3">
+              <h4 className="font-bold text-slate-800 dark:text-slate-200 text-xs">Tạo bài tập mới</h4>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Input
+                  label="Tên bài tập"
+                  placeholder="Ví dụ: Bài tập tuần 3"
+                  value={drafts[clazz.id]?.title ?? ''}
+                  onChange={(e) => updateDraft(clazz.id, 'title', e.target.value)}
+                />
+                <Input
+                  type="datetime-local"
+                  label="Hạn nộp"
+                  value={drafts[clazz.id]?.dueDate ?? getDefaultDueDate()}
+                  onChange={(e) => updateDraft(clazz.id, 'dueDate', e.target.value)}
+                />
+                <Input
+                  type="number"
+                  label="Thang điểm tối đa"
+                  min={1}
+                  value={drafts[clazz.id]?.maxScore ?? 10}
+                  onChange={(e) => updateDraft(clazz.id, 'maxScore', Number(e.target.value) || 10)}
+                />
+              </div>
+              <Textarea
+                label="Mô tả bài tập / Hướng dẫn"
+                rows={2}
+                placeholder="Nhập nội dung hướng dẫn làm bài..."
+                value={drafts[clazz.id]?.description ?? ''}
+                onChange={(e) => updateDraft(clazz.id, 'description', e.target.value)}
+              />
+              <div className="flex justify-end pt-1">
+                <Button onClick={() => void createAssignmentFor(clazz.id)} disabled={!drafts[clazz.id]?.title?.trim()}>
+                  + Tạo bài tập
+                </Button>
+              </div>
+            </div>
+
+            {assigns.length === 0 ? (
+              <Empty msg="Chưa có bài tập nào trong lớp này" />
+            ) : (
+              <Table headers={['Tên bài tập', 'Hạn nộp', 'Điểm tối đa', 'Thao tác']}>
+                {assigns.map((a) => (
+                  <tr key={a.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white text-xs">{a.title}</td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-mono text-xs">
+                      {new Date(a.dueDate).toLocaleDateString('vi-VN')}
+                    </td>
+                    <td className="px-4 py-3 text-center font-semibold text-xs">{a.maxScore}</td>
+                    <td className="px-4 py-3 text-right">
+                      <Link to={`/lecturer/grading?assignmentId=${a.id}`}>
+                        <Button variant="ghost" size="sm">Xem bài nộp →</Button>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </Table>
             )}
           </Card>
-        </div>
-      ))}
+        ))
+      )}
     </div>
   );
 }
 
-// ===== Grading + Attendance (gộp 1 trang) =====
 export function LecturerGrading() {
   const [classes, setClasses] = useState<Clazz[]>([]);
   const [subs, setSubs] = useState<Submission[]>([]);
@@ -304,7 +326,6 @@ export function LecturerGrading() {
     return () => { m = false; };
   }, [selectedClass]);
 
-  // Load submissions của lớp
   useEffect(() => {
     if (selectedClass == null) return;
     (async () => {
@@ -314,7 +335,6 @@ export function LecturerGrading() {
     })();
   }, [selectedClass]);
 
-  // Load attendance
   useEffect(() => {
     if (selectedClass == null) return;
     gradingService.getAttendance(selectedClass, date).then((rs) => {
@@ -336,7 +356,7 @@ export function LecturerGrading() {
   const saveAtt = async () => {
     if (!selectedClass) return;
     await gradingService.submitAttendance(selectedClass, { attendanceDate: date, records: att.map(({ studentId, status }) => ({ studentId, status })) });
-    alert('Đã lưu điểm danh');
+    alert('Đã lưu điểm danh thành công!');
   };
 
   const handlePublishGrades = async () => {
@@ -346,158 +366,137 @@ export function LecturerGrading() {
     setPublishMsg(null);
     try {
       await gradingService.publishGrades(selectedClass);
-      setPublishMsg('success:Đã công bố điểm thành công! Sinh viên đã được thông báo.');
+      setPublishMsg('Đã công bố điểm thành công! Sinh viên đã nhận thông báo.');
     } catch (e: unknown) {
-      setPublishMsg('error:' + ((e as { message?: string })?.message ?? 'Công bố điểm thất bại'));
+      setPublishMsg((e as { message?: string })?.message ?? 'Công bố điểm thất bại');
     } finally {
       setPublishing(false);
     }
   };
 
   if (loading) return <Spinner />;
-  return (
-    <div>
-      <PageTitle>Chấm điểm &amp; Điểm danh</PageTitle>
-      <div className="mb-4 flex flex-wrap gap-3 items-center">
-        <div className="flex gap-2 items-center">
-          <label className="text-sm text-slate-400">Lớp:</label>
-          <select value={selectedClass ?? ''} onChange={(e) => setSelectedClass(Number(e.target.value))}
-            className="bg-white border border-slate-200 rounded px-2 py-1 text-sm">
-            {classes.map((c) => <option key={c.id} value={c.id}>{c.classCode} — {c.className}</option>)}
-          </select>
-        </div>
-        <button
-          onClick={handlePublishGrades}
-          disabled={publishing || !selectedClass}
-          className="ml-auto flex items-center gap-2 px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-medium transition"
-        >
-          {publishing ? (
-            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-          ) : <Megaphone className="w-4 h-4" />}
-          {publishing ? 'Đang công bố...' : 'Công bố điểm'}
-        </button>
-      </div>
-      {publishMsg && (() => {
-        const isSuccess = publishMsg.startsWith('success:');
-        const msg = publishMsg.replace(/^(success|error):/, '');
-        return (
-          <div className={`mb-3 px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 ${
-            isSuccess ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
-          }`}>
-            {isSuccess
-              ? <CheckCircle2 className="w-4 h-4 shrink-0" />
-              : <XCircle className="w-4 h-4 shrink-0" />}
-            {msg}
-          </div>
-        );
-      })()}
 
-      <div className="grid lg:grid-cols-2 gap-4">
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Chấm điểm & Điểm danh"
+        subtitle="Quản lý điểm bài tập, điểm danh theo buổi học và công bố điểm cho sinh viên"
+        actions={
+          <Button onClick={handlePublishGrades} loading={publishing} disabled={!selectedClass}>
+            <Megaphone className="w-3.5 h-3.5" />
+            <span>Công bố điểm</span>
+          </Button>
+        }
+      />
+
+      {publishMsg && <Toast message={publishMsg} type="info" onClose={() => setPublishMsg(null)} />}
+
+      <div className="max-w-md">
+        <Select
+          label="Chọn lớp học phần"
+          value={selectedClass ?? ''}
+          onChange={(e) => setSelectedClass(Number(e.target.value))}
+        >
+          {classes.map((c) => (
+            <option key={c.id} value={c.id}>{c.classCode} — {c.className}</option>
+          ))}
+        </Select>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Submissions Grading */}
         <Card>
-          <h3 className="font-semibold mb-3 flex items-center gap-2">
-            <ClipboardList className="w-4 h-4 text-indigo-500" />
-            Bài nộp cần chấm ({subs.filter(s => s.score == null).length})
-          </h3>
-          {subs.length === 0 ? <Empty msg="Chưa có bài nộp" /> : (
-            <div className="space-y-2 max-h-125 overflow-auto">
+          <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 flex items-center justify-between">
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+              <ClipboardList className="w-4 h-4 text-accent-600" />
+              Bài nộp cần chấm ({subs.filter(s => s.score == null).length})
+            </h3>
+          </div>
+
+          {subs.length === 0 ? (
+            <Empty msg="Chưa có bài nộp nào" />
+          ) : (
+            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
               {subs.map((s) => (
-                <div key={s.id} className="border border-slate-800 rounded p-3">
-                  <div className="flex justify-between items-center">
+                <div key={s.id} className="p-3.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium text-sm">{s.studentName ?? `SV #${s.studentId}`}</div>
-                      <div className="text-xs text-slate-500">{new Date(s.submittedAt).toLocaleString('vi-VN')}</div>
+                      <div className="font-semibold text-slate-900 dark:text-white text-xs">{s.studentName ?? `SV #${s.studentId}`}</div>
+                      <div className="text-[11px] text-slate-400 font-mono">{new Date(s.submittedAt).toLocaleString('vi-VN')}</div>
                     </div>
-                    <Pill color={s.score != null ? 'green' : s.isLate ? 'red' : 'amber'}>{s.score != null ? 'DA CHAM' : s.isLate ? 'NOP TRE' : 'CHO CHAM'}</Pill>
+                    <Badge color={s.score != null ? 'emerald' : s.isLate ? 'red' : 'amber'}>
+                      {s.score != null ? 'Đã chấm' : s.isLate ? 'Nộp trễ' : 'Chờ chấm'}
+                    </Badge>
                   </div>
-                  {((s.fileUrls && s.fileUrls.length > 0) || s.fileUrl) ? (
-                    <div className="mt-2 space-y-1">
-                      {((s.fileUrls && s.fileUrls.length > 0) ? s.fileUrls : [s.fileUrl]).filter(Boolean).map((url, index) => (
-                        <a key={`${url}-${index}`} href={url} target="_blank" rel="noreferrer" className="block text-sm text-blue-700 underline break-all">
-                          Mở file bài nộp {index + 1}
+
+                  {((s.fileUrls && s.fileUrls.length > 0) || s.fileUrl) && (
+                    <div className="space-y-1">
+                      {((s.fileUrls && s.fileUrls.length > 0) ? s.fileUrls : [s.fileUrl]).filter(Boolean).map((url, idx) => (
+                        <a key={`${url}-${idx}`} href={url} target="_blank" rel="noreferrer" className="block text-xs font-semibold text-accent-600 hover:underline truncate">
+                          Mở file đính kèm {idx + 1} →
                         </a>
                       ))}
                     </div>
-                  ) : (
-                    <div className="mt-2 text-sm text-slate-500">Không có file đính kèm</div>
                   )}
-                  {s.score == null ? (
-                    <div className="mt-2 space-y-2">
-                      <div className="flex gap-2">
-                        <input id={`score-${s.id}`} type="number" defaultValue={8} className="w-20 px-2 py-1 bg-white border border-slate-200 rounded text-sm" />
-                        <button onClick={() => gradeRow(s.id, Number((document.getElementById(`score-${s.id}`) as HTMLInputElement).value), (document.getElementById(`feedback-${s.id}`) as HTMLTextAreaElement | null)?.value)}
-                          className="text-xs px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500">Chấm</button>
-                      </div>
-                      <textarea id={`feedback-${s.id}`} rows={2} placeholder="Nhận xét" className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-sm" />
+
+                  <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        id={`score-${s.id}`}
+                        type="number"
+                        defaultValue={s.score ?? 8}
+                        className="w-20 px-2.5 py-1 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white rounded-lg outline-none"
+                        placeholder="Điểm"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => gradeRow(s.id, Number((document.getElementById(`score-${s.id}`) as HTMLInputElement).value), (document.getElementById(`feedback-${s.id}`) as HTMLTextAreaElement | null)?.value)}
+                      >
+                        Lưu điểm
+                      </Button>
                     </div>
-                  ) : (
-                    <div className="mt-2 space-y-2">
-                      <div className="text-sm">Điểm: <span className="text-emerald-300 font-semibold">{s.score}</span></div>
-                      <textarea id={`feedback-${s.id}`} defaultValue={s.feedback ?? ''} rows={2} placeholder="Nhận xét" className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-sm" />
-                      <button onClick={() => gradeRow(s.id, Number((document.getElementById(`score-${s.id}`) as HTMLInputElement | null)?.value ?? s.score ?? 0), (document.getElementById(`feedback-${s.id}`) as HTMLTextAreaElement | null)?.value)}
-                        className="text-xs px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500">Cập nhật</button>
-                    </div>
-                  )}
+                    <textarea
+                      id={`feedback-${s.id}`}
+                      defaultValue={s.feedback ?? ''}
+                      rows={2}
+                      placeholder="Nhập lời nhận xét..."
+                      className="w-full px-2.5 py-1.5 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white rounded-lg outline-none"
+                    />
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </Card>
 
+        {/* Attendance */}
         <Card>
-          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <h3 className="font-semibold flex items-center gap-2">
-              <CalendarCheck2 className="w-4 h-4 text-indigo-500" />
-              Điểm &amp; Điểm danh môn học
+          <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 flex items-center justify-between gap-2">
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+              <CalendarCheck2 className="w-4 h-4 text-accent-600" />
+              Điểm danh theo buổi
             </h3>
-            <div className="flex items-center gap-2">
-              <input 
-                type="date" 
-                value={date} 
-                onChange={(e) => setDate(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none" 
-              />
-            </div>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="px-2.5 py-1 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white rounded-lg outline-none"
+            />
           </div>
 
-          {/* Time Window Guard Notice */}
-          {(() => {
-            const todayStr = new Date().toISOString().split('T')[0];
-            const isToday = date === todayStr;
-            return (
-              <div className={`mb-3 p-2.5 rounded-lg text-xs font-medium flex items-center gap-2 border ${
-                isToday 
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                  : 'bg-amber-50 text-amber-700 border-amber-200'
-              }`}>
-                {isToday ? (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-                    <span>Hôm nay ({date}) thuộc khung giờ tiết học hợp lệ — Cho phép tạo/cập nhật phiên điểm danh.</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="w-4 h-4 shrink-0 text-amber-600" />
-                    <span>Ngày {date} không thuộc ngày học hôm nay. Hệ thống chỉ cho phép điều chỉnh điểm danh trong ngày thực tế.</span>
-                  </>
-                )}
-              </div>
-            );
-          })()}
-
-          {att.length === 0 ? <Empty msg="Chưa có dữ liệu điểm danh cho ngày được chọn" /> : (
-            <table className="w-full text-sm">
-              <thead className="text-xs text-slate-400 border-b border-slate-200 bg-slate-50">
-                <tr><th className="text-left py-2 px-2">Sinh viên</th><th className="text-right px-2">Trạng thái điểm danh</th></tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
+          {att.length === 0 ? (
+            <Empty msg="Chưa có dữ liệu điểm danh cho ngày này" />
+          ) : (
+            <div className="space-y-4">
+              <Table headers={['Sinh viên', 'Trạng thái điểm danh']}>
                 {att.map((r) => (
-                  <tr key={r.studentId} className="hover:bg-slate-50">
-                    <td className="py-2 px-2 font-medium text-slate-800">{r.studentName}</td>
-                    <td className="text-right px-2">
-                      <select 
-                        value={r.status} 
+                  <tr key={r.studentId} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                    <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200 text-xs">{r.studentName}</td>
+                    <td className="px-4 py-3 text-right">
+                      <select
+                        value={r.status}
                         onChange={(e) => updateAtt(r.studentId, e.target.value as AttendanceRecord['status'])}
-                        className="bg-white border border-slate-200 rounded-md px-2 py-1 text-xs cursor-pointer focus:ring-2 focus:ring-indigo-500"
+                        className="px-2.5 py-1 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white rounded-lg outline-none"
                       >
                         <option value="PRESENT">Có mặt</option>
                         <option value="LATE">Đi trễ</option>
@@ -506,17 +505,13 @@ export function LecturerGrading() {
                     </td>
                   </tr>
                 ))}
-              </tbody>
-            </table>
-          )}
+              </Table>
 
-          <button 
-            onClick={saveAtt} 
-            className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-sm font-medium text-white transition shadow-xs cursor-pointer"
-          >
-            <Save className="w-4 h-4" />
-            Lưu điểm danh
-          </button>
+              <div className="flex justify-end">
+                <Button onClick={saveAtt}>Lưu điểm danh</Button>
+              </div>
+            </div>
+          )}
         </Card>
       </div>
     </div>

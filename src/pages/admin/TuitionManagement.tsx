@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Zap } from 'lucide-react';
-import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
+import { DollarSign, Plus, Zap, CheckCircle2 } from 'lucide-react';
+import { PageHeader, Card, Button, Input, Select, Badge, Spinner, Empty, ErrorBox } from '../../components/ui';
 import * as tuitionService from '../../services/tuitionService';
 import * as adminService from '../../services/adminService';
 import type { TuitionRate, User } from '../../types';
@@ -96,149 +96,150 @@ export default function AdminTuitionManagement() {
   if (loading) return <Spinner />;
 
   return (
-    <div>
-      <PageTitle>Quản lý Học phí & Định mức Tín chỉ</PageTitle>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <PageHeader
+        breadcrumbs={[{ label: 'Quản trị hệ thống', to: '/admin' }, { label: 'Quản lý Học phí' }]}
+        title="Quản lý Học phí & Định mức Tín chỉ"
+        subtitle="Thiết lập đơn giá học phí tín chỉ theo năm học và sinh tự động hóa đơn học phí cho sinh viên"
+        actions={
+          <div className="flex items-center gap-3">
+            <Button variant="secondary" size="sm" onClick={() => { setShowGenForm(!showGenForm); setShowRateForm(false); }}>
+              <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+              {showGenForm ? 'Đóng form' : 'Sinh hóa đơn SV'}
+            </Button>
+            <Button variant="primary" size="sm" onClick={() => { setShowRateForm(!showRateForm); setShowGenForm(false); }}>
+              <Plus className="w-4 h-4" />
+              {showRateForm ? 'Đóng form' : 'Thêm mức học phí'}
+            </Button>
+          </div>
+        }
+      />
 
-      {err && <ErrorBox msg={err} />}
+      {err && <ErrorBox message={err} />}
+
       {successMsg && (
-        <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 flex items-center justify-between">
-          <span>{successMsg}</span>
-          <button onClick={() => setSuccessMsg(null)} className="text-xs font-semibold text-emerald-700 hover:underline">Đóng</button>
+        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-medium flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          {successMsg}
         </div>
       )}
 
-      <div className="mb-6 flex flex-wrap gap-3">
-        <button
-          onClick={() => { setShowRateForm(!showRateForm); setShowGenForm(false); }}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 shadow-sm"
-        >
-          {showRateForm ? 'Hủy' : '+ Thêm định mức học phí mới'}
-        </button>
-        <button
-          onClick={() => { setShowGenForm(!showGenForm); setShowRateForm(false); }}
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 shadow-sm flex items-center gap-1.5"
-        >
-          {showGenForm ? 'Hủy' : <><Zap className="w-4 h-4" /> Sinh hóa đơn cho sinh viên</>}
-        </button>
-      </div>
-
       {showRateForm && (
-        <Card className="mb-6 border-2 border-indigo-100">
-          <h3 className="font-bold text-slate-800 mb-3 text-base">Thêm định mức tín chỉ mới</h3>
-          <div className="grid gap-3 sm:grid-cols-3">
+        <Card className="border border-navy-200 dark:border-navy-800">
+          <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm">Thêm Mức Đơn giá Học phí Tín chỉ Nối tiếp</h3>
+          <div className="grid gap-4 text-xs sm:grid-cols-3">
             <div>
-              <label className="block text-xs text-slate-500 mb-1 font-medium">Năm học</label>
-              <input
-                type="text"
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Năm học *</label>
+              <Input
                 placeholder="VD: 2026-2027"
                 value={rateForm.academicYear}
                 onChange={(e) => setRateForm({ ...rateForm, academicYear: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs text-slate-500 mb-1 font-medium">Đơn giá / tín chỉ (VNĐ)</label>
-              <input
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Giá mỗi tín chỉ (VNĐ) *</label>
+              <Input
                 type="number"
-                step="10000"
                 value={rateForm.pricePerCredit}
                 onChange={(e) => setRateForm({ ...rateForm, pricePerCredit: Number(e.target.value) })}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               />
             </div>
-            <div className="flex items-end pb-1">
-              <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 w-full cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rateForm.isActive}
-                  onChange={(e) => setRateForm({ ...rateForm, isActive: e.target.checked })}
-                  className="h-4 w-4 rounded border-slate-300 text-indigo-600"
-                />
-                Áp dụng ngay
-              </label>
+            <div>
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Trạng thái</label>
+              <Select
+                value={rateForm.isActive ? 'true' : 'false'}
+                onChange={(e) => setRateForm({ ...rateForm, isActive: e.target.value === 'true' })}
+                options={[
+                  { label: 'Kích hoạt ngay (Active)', value: 'true' },
+                  { label: 'Không kích hoạt (Inactive)', value: 'false' },
+                ]}
+              />
             </div>
           </div>
-          <button
-            onClick={() => void handleCreateRate()}
-            disabled={submittingRate}
-            className="mt-4 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
-          >
-            {submittingRate ? 'Đang lưu...' : 'Lưu định mức'}
-          </button>
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="secondary" size="sm" onClick={() => setShowRateForm(false)}>Hủy</Button>
+            <Button variant="primary" size="sm" onClick={handleCreateRate} disabled={submittingRate}>
+              {submittingRate ? 'Đang lưu...' : 'Lưu mức học phí'}
+            </Button>
+          </div>
         </Card>
       )}
 
       {showGenForm && (
-        <Card className="mb-6 border-2 border-emerald-100">
-          <h3 className="font-bold text-slate-800 mb-3 text-base">Sinh hóa đơn học phí cho sinh viên</h3>
-          <div className="grid gap-3 sm:grid-cols-3">
+        <Card className="border-2 border-amber-200 dark:border-amber-900 bg-amber-50/20 dark:bg-amber-950/20">
+          <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm flex items-center gap-2">
+            <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+            Sinh Tự động Hóa đơn Học phí cho Sinh viên
+          </h3>
+          <div className="grid gap-4 text-xs sm:grid-cols-3">
             <div>
-              <label className="block text-xs text-slate-500 mb-1 font-medium">Chọn sinh viên</label>
-              <select
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Chọn Sinh viên *</label>
+              <Select
                 value={genStudentId}
                 onChange={(e) => setGenStudentId(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-              >
-                <option value="">-- Chọn sinh viên --</option>
-                {students.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.studentCode ? `[${s.studentCode}] ` : ''}{s.fullName} ({s.email})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 mb-1 font-medium">Học kỳ</label>
-              <input
-                type="text"
-                value={genSemester}
-                onChange={(e) => setGenSemester(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                options={[
+                  { label: '-- Chọn sinh viên --', value: '' },
+                  ...students.map(s => ({ label: `${s.fullName} (${s.studentCode || s.email})`, value: String(s.id) }))
+                ]}
               />
             </div>
             <div>
-              <label className="block text-xs text-slate-500 mb-1 font-medium">Năm học</label>
-              <input
-                type="text"
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Học kỳ</label>
+              <Input
+                value={genSemester}
+                onChange={(e) => setGenSemester(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Năm học</label>
+              <Input
                 value={genYear}
                 onChange={(e) => setGenYear(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               />
             </div>
           </div>
-          <button
-            onClick={() => void handleGenerateInvoice()}
-            disabled={submittingGen}
-            className="mt-4 rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
-          >
-            {submittingGen ? 'Đang sinh hóa đơn...' : 'Sinh hóa đơn ngay'}
-          </button>
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="secondary" size="sm" onClick={() => setShowGenForm(false)}>Hủy</Button>
+            <Button variant="warning" size="sm" onClick={handleGenerateInvoice} disabled={submittingGen}>
+              {submittingGen ? 'Đang sinh...' : 'Sinh hóa đơn'}
+            </Button>
+          </div>
         </Card>
       )}
 
-      <Card>
-        <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-lg mb-4">Các mức đơn giá tín chỉ trong hệ thống</h3>
+      <Card padding="none">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="flex items-center gap-2">
+            <DollarSign className="w-5 h-5 text-navy-700 dark:text-navy-300" />
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+              Bảng Đơn giá Tín chỉ đã Cấu hình
+            </h3>
+          </div>
+        </div>
+
         {rates.length === 0 ? (
           <Empty msg="Chưa có định mức học phí nào" />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-600 border-b">
-                <tr>
-                  <th className="py-3 px-4 text-left">Năm học</th>
-                  <th className="py-3 px-4 text-right">Đơn giá / tín chỉ</th>
-                  <th className="py-3 px-4 text-center">Trạng thái</th>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  <th className="py-3.5 px-4">#</th>
+                  <th className="py-3.5 px-4">Năm học</th>
+                  <th className="py-3.5 px-4">Đơn giá / 1 Tín chỉ (VNĐ)</th>
+                  <th className="py-3.5 px-4 text-center">Trạng thái áp dụng</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {rates.map((r) => (
-                  <tr key={r.id} className="hover:bg-slate-50 transition">
-                    <td className="py-3 px-4 font-semibold text-slate-800">{r.academicYear}</td>
-                    <td className="py-3 px-4 text-right font-bold text-indigo-600">{fmtMoney(r.pricePerCredit)}</td>
-                    <td className="py-3 px-4 text-center">
-                      <Pill intent={r.isActive ? 'success' : 'neutral'}>
-                        {r.isActive ? 'ĐANG ÁP DỤNG' : 'KHÔNG ÁP DỤNG'}
-                      </Pill>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+                {rates.map((r, i) => (
+                  <tr key={r.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3.5 px-4 text-slate-400 font-mono">{i + 1}</td>
+                    <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-slate-100">{r.academicYear}</td>
+                    <td className="py-3.5 px-4 font-mono font-bold text-navy-900 dark:text-navy-300">{fmtMoney(r.pricePerCredit)}</td>
+                    <td className="py-3.5 px-4 text-center">
+                      <Badge variant={r.isActive ? 'success' : 'neutral'}>
+                        {r.isActive ? 'Đang áp dụng' : 'Khóa'}
+                      </Badge>
                     </td>
                   </tr>
                 ))}

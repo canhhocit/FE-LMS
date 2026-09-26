@@ -1,8 +1,7 @@
-// Admin Registration Periods page
 import { useEffect, useState, useCallback } from 'react';
-import { Search, Filter, Calendar } from 'lucide-react';
+import { Search, Plus, Calendar, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import * as registrationService from '../../services/registrationService';
-import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
+import { PageHeader, Card, Button, Input, Select, Badge, Spinner, Empty, ErrorBox } from '../../components/ui';
 import type { RegistrationPeriod } from '../../types';
 
 const parseDate = (val: unknown): Date | null => {
@@ -78,9 +77,6 @@ export default function RegistrationPeriods() {
     return cleanup;
   }, [load]);
 
-  if (loading) return <Spinner />;
-  if (err) return <ErrorBox msg={err} />;
-
   const validateForm = () => {
     if (!form.name.trim()) return 'Vui lòng nhập tên đợt đăng ký';
     if (!form.openAt) return 'Vui lòng chọn thời gian bắt đầu';
@@ -102,13 +98,17 @@ export default function RegistrationPeriods() {
       return;
     }
 
-    setFormError(null);
     setSubmitting(true);
+    setFormError(null);
     try {
       await registrationService.createRegistrationPeriod({
-        ...form,
+        name: form.name.trim(),
+        semester: form.semester,
+        academicYear: form.academicYear,
+        openAt: form.openAt,
+        closeAt: form.closeAt,
         maxCredits: Number(form.maxCredits),
-        isActive: true,
+        isActive: form.isActive,
       });
       setShowForm(false);
       setForm({
@@ -122,33 +122,42 @@ export default function RegistrationPeriods() {
       });
       load();
     } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'Lỗi');
+      setFormError((e as { message?: string })?.message ?? 'Tạo thất bại');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const getPeriodStatus = (p: RegistrationPeriod) => {
-    if (!p.isActive) return { label: 'Đã đóng', intent: 'neutral' as const };
-    const now = new Date();
-    const openAt = parseDate(p.openAt);
-    const closeAt = parseDate(p.closeAt);
-
-    if (closeAt && now > closeAt) {
-      return { label: 'Đã đóng', intent: 'neutral' as const };
+  const toggle = async (p: RegistrationPeriod) => {
+    try {
+      await registrationService.updateRegistrationPeriod(p.id, { isActive: !p.isActive });
+      load();
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Không thể cập nhật trạng thái');
     }
-    if (openAt && now < openAt) {
-      return { label: 'Sắp mở', intent: 'warn' as const };
-    }
-    return { label: 'Đang mở', intent: 'success' as const };
   };
 
-  // Filtered and Paginated Periods
+  const removePeriod = async (p: RegistrationPeriod) => {
+    if (!confirm(`Bạn có chắc muốn xóa đợt đăng ký "${p.name}"?`)) return;
+    try {
+      await registrationService.deleteRegistrationPeriod(p.id);
+      load();
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Không thể xóa đợt đăng ký');
+    }
+  };
+
+  if (loading) return <Spinner />;
+  if (err && !periods.length) return <ErrorBox message={err} />;
+
   const filteredPeriods = periods.filter((p) => {
-    const matchesSearch = !searchKw.trim() || p.name.toLowerCase().includes(searchKw.toLowerCase()) || (p.academicYear && p.academicYear.toLowerCase().includes(searchKw.toLowerCase()));
-    const statusInfo = getPeriodStatus(p);
-    const isOpen = statusInfo.label === 'Đang mở';
-    const matchesStatus = statusFilter === 'ALL' || (statusFilter === 'ACTIVE' ? isOpen : !isOpen);
+    const matchesSearch = !searchKw.trim() ||
+      p.name.toLowerCase().includes(searchKw.toLowerCase()) ||
+      p.semester.toLowerCase().includes(searchKw.toLowerCase()) ||
+      p.academicYear.toLowerCase().includes(searchKw.toLowerCase());
+    const matchesStatus = statusFilter === 'ALL' ||
+      (statusFilter === 'ACTIVE' && p.isActive) ||
+      (statusFilter === 'INACTIVE' && !p.isActive);
     return matchesSearch && matchesStatus;
   });
 
@@ -156,184 +165,204 @@ export default function RegistrationPeriods() {
   const paginatedPeriods = filteredPeriods.slice(page * pageSize, (page + 1) * pageSize);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <PageTitle>Đợt Đăng Ký Học Phần</PageTitle>
-          <div className="text-xs text-slate-500 dark:text-slate-400 -mt-2">Quản lý và thiết lập khung thời gian đăng ký tín chỉ môn học cho sinh viên</div>
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 rounded-lg bg-[#00376f] hover:bg-[#002b57] text-white font-semibold text-xs shadow-sm transition cursor-pointer"
-        >
-          {showForm ? 'Hủy bỏ' : '+ Tạo đợt đăng ký mới'}
-        </button>
-      </div>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <PageHeader
+        breadcrumbs={[{ label: 'Quản trị hệ thống', to: '/admin' }, { label: 'Đợt Đăng ký Học tập' }]}
+        title="Quản lý Đợt Đăng ký Học tập"
+        subtitle="Mở/khóa đợt đăng ký môn học phần, quy định hạn ngạch tín chỉ tối đa và thời gian đóng mở portal"
+        actions={
+          <Button variant="primary" size="sm" onClick={() => setShowForm(!showForm)}>
+            <Plus className="w-4 h-4" />
+            {showForm ? 'Hủy bỏ' : 'Mở đợt đăng ký mới'}
+          </Button>
+        }
+      />
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-neutral-200 dark:border-slate-800">
-        <div className="flex items-center gap-2 flex-1 min-w-[240px]">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchKw}
-              onChange={(e) => { setSearchKw(e.target.value); setPage(0); }}
-              placeholder="Tìm theo tên đợt, năm học..."
-              className="w-full pl-9 pr-3 py-1.5 bg-neutral-50 dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#00376f]"
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-slate-400" />
-          <select
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value as any); setPage(0); }}
-            className="px-3 py-1.5 bg-neutral-50 dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-[#00376f] cursor-pointer"
-          >
-            <option value="ALL">Tất cả trạng thái</option>
-            <option value="ACTIVE">Đang mở đăng ký</option>
-            <option value="INACTIVE">Đã đóng đợt</option>
-          </select>
-        </div>
-      </div>
+      {err && <ErrorBox message={err} />}
 
       {showForm && (
-        <Card className="border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-          <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-[#00376f]" />
-            Tạo Đợt Đăng Ký Mới
+        <Card className="border border-navy-200 dark:border-navy-800">
+          <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-navy-700 dark:text-navy-300" />
+            Cấu hình Đợt Đăng ký Môn học phần Mới
           </h3>
+
           {formError && (
-            <div role="alert" aria-live="assertive" className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+            <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
               {formError}
             </div>
           )}
+
           <div className="grid gap-4 text-xs sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <label className="block mb-1 font-semibold text-slate-600 dark:text-slate-300">Tên đợt đăng ký <span className="text-rose-500">*</span></label>
-              <input required placeholder="VD: Đợt đăng ký học phần HK1" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#00376f] focus:outline-none" />
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tên đợt đăng ký *</label>
+              <Input
+                placeholder="VD: Đợt 1 - Học kỳ 1 2026-2027"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
             </div>
             <div>
-              <label className="block mb-1 font-semibold text-slate-600 dark:text-slate-300">Học kỳ</label>
-              <input placeholder="HK1 / HK2 / HK3" value={form.semester} onChange={(e) => setForm({ ...form, semester: e.target.value })}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#00376f] focus:outline-none" />
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Học kỳ</label>
+              <Input
+                value={form.semester}
+                onChange={(e) => setForm({ ...form, semester: e.target.value })}
+              />
             </div>
             <div>
-              <label className="block mb-1 font-semibold text-slate-600 dark:text-slate-300">Năm học</label>
-              <input placeholder="VD: 2026-2027" value={form.academicYear} onChange={(e) => setForm({ ...form, academicYear: e.target.value })}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#00376f] focus:outline-none" />
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Năm học</label>
+              <Input
+                value={form.academicYear}
+                onChange={(e) => setForm({ ...form, academicYear: e.target.value })}
+              />
             </div>
             <div>
-              <label className="block mb-1 font-semibold text-slate-600 dark:text-slate-300">Thời gian bắt đầu mở đợt <span className="text-rose-500">*</span></label>
-              <input required type="datetime-local" value={form.openAt} onChange={(e) => setForm({ ...form, openAt: e.target.value })}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#00376f] focus:outline-none" />
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Thời gian mở cổng *</label>
+              <Input
+                type="datetime-local"
+                value={form.openAt}
+                onChange={(e) => setForm({ ...form, openAt: e.target.value })}
+              />
             </div>
             <div>
-              <label className="block mb-1 font-semibold text-slate-600 dark:text-slate-300">Thời gian kết thúc <span className="text-rose-500">*</span></label>
-              <input required type="datetime-local" value={form.closeAt} onChange={(e) => setForm({ ...form, closeAt: e.target.value })}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#00376f] focus:outline-none" />
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Thời gian đóng cổng *</label>
+              <Input
+                type="datetime-local"
+                value={form.closeAt}
+                onChange={(e) => setForm({ ...form, closeAt: e.target.value })}
+              />
             </div>
             <div>
-              <label className="block mb-1 font-semibold text-slate-600 dark:text-slate-300">Số tín chỉ tối đa</label>
-              <input type="number" min="1" placeholder="Số tín chỉ tối đa (Mặc định 24)" value={form.maxCredits} onChange={(e) => setForm({ ...form, maxCredits: e.target.value })}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#00376f] focus:outline-none" />
-            </div>
-            <div className="sm:col-span-2 lg:col-span-3">
-              <label className="flex items-center gap-2 rounded-lg border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={form.isActive}
-                  onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                  className="h-4 w-4 rounded border-neutral-300 text-[#00376f] focus:ring-[#00376f]"
-                />
-                <span className="font-semibold">Mở ngay đợt đăng ký này cho sinh viên</span>
-              </label>
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Số TC tối đa cho phép *</label>
+              <Input
+                type="number"
+                min="1"
+                value={form.maxCredits}
+                onChange={(e) => setForm({ ...form, maxCredits: e.target.value })}
+              />
             </div>
           </div>
-          <div className="mt-3 flex justify-end gap-2">
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-1.5 rounded-lg text-xs font-semibold border border-neutral-300 text-slate-600 hover:bg-neutral-100 transition cursor-pointer">Hủy</button>
-            <button type="button" onClick={submit} disabled={submitting} className="rounded-lg bg-[#00376f] px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-[#002b57] disabled:opacity-60 cursor-pointer shadow-sm">
-              {submitting ? 'Đang tạo...' : 'Tạo đợt đăng ký'}
-            </button>
+
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="secondary" size="sm" onClick={() => setShowForm(false)}>Huỷ</Button>
+            <Button variant="primary" size="sm" onClick={submit} disabled={submitting}>
+              {submitting ? 'Đang lưu...' : 'Tạo đợt đăng ký'}
+            </Button>
           </div>
         </Card>
       )}
 
-      <Card>
-        {filteredPeriods.length === 0 ? <Empty msg="Không tìm thấy đợt đăng ký nào" /> : (
+      <Card padding="none">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="w-full sm:w-64">
+            <Input
+              placeholder="Tìm theo tên đợt, học kỳ..."
+              value={searchKw}
+              onChange={(e) => { setSearchKw(e.target.value); setPage(0); }}
+              leftIcon={<Search className="w-4 h-4" />}
+            />
+          </div>
+
+          <div className="flex bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-semibold">
+            <button
+              onClick={() => { setStatusFilter('ALL'); setPage(0); }}
+              className={`px-3 py-1.5 rounded-md transition ${statusFilter === 'ALL' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+            >
+              Tất cả
+            </button>
+            <button
+              onClick={() => { setStatusFilter('ACTIVE'); setPage(0); }}
+              className={`px-3 py-1.5 rounded-md transition ${statusFilter === 'ACTIVE' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+            >
+              Đang mở (Active)
+            </button>
+            <button
+              onClick={() => { setStatusFilter('INACTIVE'); setPage(0); }}
+              className={`px-3 py-1.5 rounded-md transition ${statusFilter === 'INACTIVE' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+            >
+              Đã khóa
+            </button>
+          </div>
+        </div>
+
+        {filteredPeriods.length === 0 ? (
+          <Empty msg="Chưa có đợt đăng ký môn học nào" />
+        ) : (
           <div>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left border-collapse">
-                <thead className="bg-neutral-50 text-xs font-bold tracking-wider text-slate-600 border-b border-neutral-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-800">
-                  <tr>
-                    <th className="py-3.5 px-4">Tên đợt đăng ký</th>
-                    <th className="py-3.5 px-4">Thời gian bắt đầu</th>
-                    <th className="py-3.5 px-4">Thời gian kết thúc</th>
-                    <th className="py-3.5 px-4 text-center">Trần tín chỉ</th>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    <th className="py-3.5 px-4">Tên đợt</th>
+                    <th className="py-3.5 px-4">Học kỳ / Năm</th>
+                    <th className="py-3.5 px-4">Thời gian mở portal</th>
+                    <th className="py-3.5 px-4">Thời gian đóng portal</th>
+                    <th className="py-3.5 px-4 text-center">Tín chỉ tối đa</th>
                     <th className="py-3.5 px-4 text-center">Trạng thái</th>
+                    <th className="py-3.5 px-4 text-right">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-100 dark:divide-slate-800/80">
-                  {paginatedPeriods.map((p) => {
-                    const statusInfo = getPeriodStatus(p);
-                    return (
-                      <tr key={p.id} className="hover:bg-neutral-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-[#00376f] dark:text-[#63a1ff]">{p.name}</td>
-                        <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-medium">{fmt(p.openAt)}</td>
-                        <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 font-medium">{fmt(p.closeAt)}</td>
-                        <td className="py-3.5 px-4 text-center font-bold text-slate-700 dark:text-slate-200">{p.maxCredits ?? 24} Tín chỉ</td>
-                        <td className="py-3.5 px-4 text-center">
-                          <Pill intent={statusInfo.intent}>{statusInfo.label}</Pill>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+                  {paginatedPeriods.map((p) => (
+                    <tr key={p.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-slate-100">{p.name}</td>
+                      <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300">{p.semester} · {p.academicYear}</td>
+                      <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400 font-mono">{fmt(p.openAt)}</td>
+                      <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400 font-mono">{fmt(p.closeAt)}</td>
+                      <td className="py-3.5 px-4 text-center">
+                        <Badge variant="info">{p.maxCredits ?? 24} TC</Badge>
+                      </td>
+                      <td className="py-3.5 px-4 text-center">
+                        <Badge variant={p.isActive ? 'success' : 'neutral'}>
+                          {p.isActive ? 'Mở đăng ký' : 'Đã khóa'}
+                        </Badge>
+                      </td>
+                      <td className="py-3.5 px-4 text-right space-x-1.5">
+                        <Button variant="ghost" size="sm" onClick={() => void toggle(p)}>
+                          {p.isActive ? (
+                            <span className="text-amber-600 flex items-center gap-1"><ToggleLeft className="w-3.5 h-3.5" /> Khóa</span>
+                          ) : (
+                            <span className="text-emerald-600 flex items-center gap-1"><ToggleRight className="w-3.5 h-3.5" /> Mở portal</span>
+                          )}
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => void removePeriod(p)}>
+                          <Trash2 className="w-3.5 h-3.5 text-rose-600" /> Xóa
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 dark:border-slate-800 pt-3 mt-3 px-2">
-              <div className="text-xs text-slate-500 dark:text-slate-400">
-                Hiển thị <span className="font-bold text-slate-800 dark:text-slate-200">{page * pageSize + 1}</span> - <span className="font-bold text-slate-800 dark:text-slate-200">{Math.min((page + 1) * pageSize, filteredPeriods.length)}</span> trên tổng số <span className="font-bold text-slate-800 dark:text-slate-200">{filteredPeriods.length}</span> đợt
+            <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-t border-slate-200 dark:border-slate-800 text-xs">
+              <div className="text-slate-500 dark:text-slate-400">
+                Hiển thị <span className="font-semibold text-slate-800 dark:text-slate-200">{filteredPeriods.length > 0 ? page * pageSize + 1 : 0}</span> - <span className="font-semibold text-slate-800 dark:text-slate-200">{Math.min((page + 1) * pageSize, filteredPeriods.length)}</span> trên tổng số <span className="font-semibold text-slate-800 dark:text-slate-200">{filteredPeriods.length}</span> đợt
               </div>
 
               <div className="flex items-center gap-2">
-                <select
+                <Select
                   value={pageSize}
                   onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
-                  className="px-2.5 py-1 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
-                >
-                  <option value={10}>10 dòng / trang</option>
-                  <option value={20}>20 dòng / trang</option>
-                  <option value={50}>50 dòng / trang</option>
-                </select>
+                  options={[
+                    { label: '10 dòng / trang', value: '10' },
+                    { label: '20 dòng / trang', value: '20' },
+                    { label: '50 dòng / trang', value: '50' },
+                  ]}
+                />
 
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.max(0, p - 1))}
-                  disabled={page === 0}
-                  className="px-3 py-1 text-xs font-semibold rounded-lg border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 disabled:opacity-40 transition cursor-pointer"
-                >
+                <Button variant="secondary" size="sm" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
                   &laquo; Trước
-                </button>
+                </Button>
 
-                <span className="text-xs text-slate-600 dark:text-slate-400 font-medium px-1">
+                <span className="text-slate-600 dark:text-slate-400 font-medium px-1">
                   Trang {page + 1} / {totalPages}
                 </span>
 
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                  disabled={page >= totalPages - 1}
-                  className="px-3 py-1 text-xs font-semibold rounded-lg border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-800 disabled:opacity-40 transition cursor-pointer"
-                >
+                <Button variant="secondary" size="sm" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>
                   Sau &raquo;
-                </button>
+                </Button>
               </div>
             </div>
           </div>

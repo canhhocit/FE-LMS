@@ -77,6 +77,7 @@ export interface Clazz {
   lecturerName: string | null;
   maxStudents: number;
   currentStudents?: number;
+  room?: string;
   createdAt: string;
 }
 

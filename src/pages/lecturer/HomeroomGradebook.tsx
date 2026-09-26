@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Users, Upload, Save, Award, CheckCircle2, FileSpreadsheet } from 'lucide-react';
+import { Users, Upload, Save, Award, CheckCircle2, FileSpreadsheet, Search } from 'lucide-react';
+import { PageHeader, Card, Button, Input, Badge } from '../../components/ui';
 
 interface StudentTrainingScore {
   id: number;
@@ -11,19 +12,43 @@ interface StudentTrainingScore {
   classification: string;
 }
 
-export const HomeroomGradebook: React.FC = () => {
-  const [students, setStudents] = useState<StudentTrainingScore[]>([]);
+const INITIAL_STUDENTS: StudentTrainingScore[] = [
+  { id: 1, studentCode: 'SV001', fullName: 'Nguyen Van An', className: '62PM1', gpa: 8.75, trainingScore: 92, classification: 'Xuất sắc' },
+  { id: 2, studentCode: 'SV002', fullName: 'Tran Thi Binh', className: '62PM1', gpa: 7.80, trainingScore: 85, classification: 'Tốt' },
+  { id: 3, studentCode: 'SV003', fullName: 'Le Hoang Cuong', className: '62PM1', gpa: 6.90, trainingScore: 78, classification: 'Khá' },
+  { id: 4, studentCode: 'SV004', fullName: 'Pham Minh Dung', className: '62PM1', gpa: 8.20, trainingScore: 88, classification: 'Tốt' },
+  { id: 5, studentCode: 'SV005', fullName: 'Vo Thi Em', className: '62PM1', gpa: 5.40, trainingScore: 65, classification: 'Trung bình' },
+];
 
+export const HomeroomGradebook: React.FC = () => {
+  const [students, setStudents] = useState<StudentTrainingScore[]>(INITIAL_STUDENTS);
+  const [searchTerm, setSearchTerm] = useState('');
   const [msg, setMsg] = useState('');
 
+  const getClassification = (val: number) => {
+    if (val >= 90) return 'Xuất sắc';
+    if (val >= 80) return 'Tốt';
+    if (val >= 70) return 'Khá';
+    if (val >= 50) return 'Trung bình';
+    return 'Yếu';
+  };
+
+  const getBadgeVariant = (cls: string) => {
+    switch (cls) {
+      case 'Xuất sắc': return 'success';
+      case 'Tốt': return 'info';
+      case 'Khá': return 'neutral';
+      case 'Trung bình': return 'warning';
+      default: return 'danger';
+    }
+  };
+
   const handleScoreChange = (id: number, val: number) => {
-    setStudents(students.map(s => {
+    const clampedVal = Math.min(100, Math.max(0, val));
+    setStudents(prev => prev.map(s => {
       if (s.id === id) {
-        let cls = 'Trung bình';
-        if (val >= 90) cls = 'Xuất sắc';
-        else if (val >= 80) cls = 'Tốt';
-        else if (val >= 70) cls = 'Khá';
-        return { ...s, trainingScore: val, classification: cls };
+        const cls = getClassification(clampedVal);
+        return { ...s, trainingScore: clampedVal, classification: cls };
       }
       return s;
     }));
@@ -34,91 +59,118 @@ export const HomeroomGradebook: React.FC = () => {
     setTimeout(() => setMsg(''), 4000);
   };
 
+  const filteredStudents = students.filter(s =>
+    s.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.studentCode.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Banner */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Users className="w-5 h-5 text-indigo-600" />
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Users className="w-6 h-6 text-navy-900 dark:text-navy-100" />
             Quản lý Điểm rèn luyện Lớp Chủ nhiệm
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
-            Giáo viên chủ nhiệm có toàn quyền xem kết quả học tập & nhập Điểm rèn luyện cho sinh viên lớp quản lý
-          </p>
-        </div>
-        <div className="flex items-center gap-3 shrink-0">
-          <label className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-xl text-xs cursor-pointer transition shadow-xs">
-            <Upload className="w-4 h-4" />
-            Import Excel/CSV Điểm RL
-            <input type="file" accept=".xlsx, .csv" className="hidden" onChange={() => setMsg('Đã import danh sách Điểm rèn luyện từ file Excel!')} />
-          </label>
-        </div>
-      </div>
+          </span>
+        }
+        subtitle="Giáo viên chủ nhiệm xem kết quả học tập & nhập Điểm rèn luyện cho sinh viên lớp quản lý (Lớp 62PM1)"
+        actions={
+          <div className="flex items-center gap-3">
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept=".xlsx, .csv"
+                className="hidden"
+                onChange={() => setMsg('Đã import danh sách Điểm rèn luyện từ file thành công!')}
+              />
+              <span className="inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold px-3 py-2 rounded-lg transition border border-slate-200 dark:border-slate-700 shadow-xs">
+                <Upload className="w-4 h-4 text-slate-500" />
+                Import Excel/CSV
+              </span>
+            </label>
+
+            <Button variant="primary" size="sm" onClick={handleSave}>
+              <Save className="w-4 h-4" />
+              Lưu thay đổi
+            </Button>
+          </div>
+        }
+      />
 
       {msg && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center gap-2">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-medium flex items-center gap-2 shadow-xs">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           {msg}
         </div>
       )}
 
-      {/* Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5 text-emerald-500" />
-            Danh sách Sinh viên Lớp 62PM1 (Lớp Hành chính)
-          </h2>
-          <button
-            onClick={handleSave}
-            className="flex items-center gap-2 bg-emerald-600 text-white font-semibold px-5 py-2 rounded-xl text-sm shadow hover:bg-emerald-500 transition"
-          >
-            <Save className="w-4 h-4" />
-            Lưu thay đổi
-          </button>
+      <Card padding="none">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="flex items-center gap-2">
+            <FileSpreadsheet className="w-5 h-5 text-navy-700 dark:text-navy-300" />
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+              Danh sách Sinh viên Lớp 62PM1 ({filteredStudents.length} SV)
+            </h2>
+          </div>
+          <div className="w-full sm:w-64">
+            <Input
+              placeholder="Tìm kiếm theo mã SV, tên..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              leftIcon={<Search className="w-4 h-4" />}
+            />
+          </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-gray-100 dark:border-gray-700 text-xs font-bold text-gray-500 uppercase">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <th className="py-3 px-4">Mã SV</th>
                 <th className="py-3 px-4">Họ và Tên</th>
                 <th className="py-3 px-4">Lớp HC</th>
-                <th className="py-3 px-4">GPA Học tập (Tất cả HP)</th>
+                <th className="py-3 px-4">GPA Học tập</th>
                 <th className="py-3 px-4">Điểm rèn luyện (0 - 100)</th>
                 <th className="py-3 px-4">Xếp loại Rèn luyện</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
-              {students.map((s) => (
-                <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                  <td className="py-3.5 px-4 font-mono font-bold text-emerald-600">{s.studentCode}</td>
-                  <td className="py-3.5 px-4 font-semibold text-gray-900 dark:text-white">{s.fullName}</td>
-                  <td className="py-3.5 px-4 text-gray-600 dark:text-gray-300">{s.className}</td>
-                  <td className="py-3.5 px-4 font-bold text-indigo-600">{s.gpa} / 10.0</td>
-                  <td className="py-3.5 px-4">
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={s.trainingScore}
-                      onChange={(e) => handleScoreChange(s.id, Number(e.target.value))}
-                      className="w-24 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1 text-sm font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-300 px-3 py-1 rounded-full border border-emerald-200">
-                      <Award className="w-3.5 h-3.5" /> {s.classification}
-                    </span>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+              {filteredStudents.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-slate-500 dark:text-slate-400">
+                    Không tìm thấy sinh viên phù hợp
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredStudents.map((s) => (
+                  <tr key={s.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3 px-4 font-mono font-semibold text-navy-900 dark:text-navy-300">{s.studentCode}</td>
+                    <td className="py-3 px-4 font-medium text-slate-900 dark:text-slate-100">{s.fullName}</td>
+                    <td className="py-3 px-4 text-slate-600 dark:text-slate-400">{s.className}</td>
+                    <td className="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200">{s.gpa.toFixed(2)} / 10.0</td>
+                    <td className="py-3 px-4">
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={s.trainingScore}
+                        onChange={(e) => handleScoreChange(s.id, Number(e.target.value))}
+                        className="w-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500"
+                      />
+                    </td>
+                    <td className="py-3 px-4">
+                      <Badge variant={getBadgeVariant(s.classification)}>
+                        <Award className="w-3 h-3 mr-1" />
+                        {s.classification}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

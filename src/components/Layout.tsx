@@ -17,389 +17,28 @@ import {
   ErrorBox as _ErrorBox,
   Badge as _Badge,
 } from "./ui";
-
-const SunIcon = ({ className = "h-4.5 w-4.5" }: { className?: string }) => (
-  <svg
-    className={className}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="5" />
-    <line x1="12" y1="1" x2="12" y2="3" />
-    <line x1="12" y1="21" x2="12" y2="23" />
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-    <line x1="1" y1="12" x2="3" y2="12" />
-    <line x1="21" y1="12" x2="23" y2="12" />
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-  </svg>
-);
-
-const MoonIcon = ({ className = "h-4.5 w-4.5" }: { className?: string }) => (
-  <svg
-    className={className}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-  </svg>
-);
-
-
-
-const UiCard = ({
-  children,
-  className = "",
-  onClick,
-}: {
-  children: ReactNode;
-  className?: string;
-  onClick?: () => void;
-}) => (
-  <div
-    onClick={onClick}
-    className={`rounded-xl border border-slate-200/70 bg-white p-5 shadow-xs transition hover:border-slate-300 dark:border-slate-800/80 dark:bg-slate-900 dark:text-slate-100 ${className}`}
-  >
-    {children}
-  </div>
-);
-
-const LoadingState = () => (
-  <div className="flex h-32 items-center justify-center text-indigo-600 dark:text-indigo-400">
-    <div className="h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
-  </div>
-);
-
-const EmptyState = ({ message = "Không có dữ liệu" }: { message?: string }) => (
-  <div className="rounded-xl border border-slate-200/70 bg-white p-8 text-center text-sm font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-    {message}
-  </div>
-);
-
-const ErrorState = ({ message }: { message: string }) => (
-  <div className="rounded-xl border border-red-200/80 bg-red-50/70 p-4 text-sm font-medium text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
-    {message}
-  </div>
-);
-
-const StatusBadge = (props: {
-  children: ReactNode;
-  intent?: "success" | "warn" | "error" | "neutral";
-  color?: string;
-}) => {
-  const { children, intent = "neutral" } = props;
-  const styles = {
-    success:
-      "bg-emerald-50 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/50",
-    warn: "bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/50",
-    error:
-      "bg-rose-50 text-rose-700 border border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/50",
-    neutral:
-      "bg-slate-100 text-slate-700 border border-slate-200/60 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700/50",
-  }[intent];
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-tight ${styles}`}
-    >
-      {children}
-    </span>
-  );
-};
-
-const HomeIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-    />
-  </svg>
-);
-
-const BookOpenIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-    />
-  </svg>
-);
-
-const UserIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-    />
-  </svg>
-);
-
-const UsersIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-    />
-  </svg>
-);
-
-const BarChartIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-    />
-  </svg>
-);
-
-const FileTextIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-    />
-  </svg>
-);
-
-const CheckCircleIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-    />
-  </svg>
-);
-
-const CalendarIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-    />
-  </svg>
-);
-
-const BrainIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-    />
-  </svg>
-);
-
-const GraduationCapIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 14l9-5-9-5-9 5 9 5z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
-    />
-  </svg>
-);
-
-const ClipboardListIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-    />
-  </svg>
-);
-
-const KeyIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M15 7a2 2 0 012 2m-5 4a5 5 0 01-5-5 5 5 0 015-5 5 5 0 015 5 5 5 0 01-5 5zm0 0v1a2 2 0 01-2 2h-2a2 2 0 00-2 2v3h2v-2h2v-2h2a2 2 0 002-2v-1.333a5.05 5.05 0 001.36-.67l1.36 1.36a1 1 0 001.414 0l1.414-1.414a1 1 0 000-1.414l-1.36-1.36a5.05 5.05 0 00.67-1.36H15z"
-    />
-  </svg>
-);
-
-const ChevronDownIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-  </svg>
-);
-
-const LogOutIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-    />
-  </svg>
-);
-
-const BellIcon = ({ className = "h-4.5 w-4.5" }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-    width="18"
-    height="18"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-    />
-  </svg>
-);
+import {
+  Home,
+  BookOpen,
+  User,
+  Users,
+  BarChart3,
+  FileText,
+  CheckCircle2,
+  Calendar,
+  Sparkles,
+  GraduationCap,
+  ClipboardList,
+  Key,
+  ChevronDown,
+  LogOut,
+  Bell,
+  Sun,
+  Moon,
+  Menu,
+  X,
+  Search,
+} from "lucide-react";
 
 interface NavItem {
   to: string;
@@ -418,47 +57,27 @@ const NAV: Record<Role, NavSection[]> = {
     {
       title: "Tổng quan",
       items: [
-        { to: "/student", label: "Trang chủ", icon: HomeIcon },
-        { to: "/student/notifications", label: "Thông báo", icon: BellIcon },
-        { to: "/student/classes", label: "Lớp học", icon: BookOpenIcon },
-        {
-          to: "/student/schedule",
-          label: "Thời khoá biểu",
-          icon: CalendarIcon,
-        },
-        { to: "/student/grades", label: "Kết quả học tập", icon: BarChartIcon },
-        {
-          to: "/student/transcript",
-          label: "Bảng điểm",
-          icon: GraduationCapIcon,
-        },
-        { to: "/student/tuition", label: "Học phí", icon: FileTextIcon },
-        {
-          to: "/student/registration",
-          label: "Đăng ký học",
-          icon: BookOpenIcon,
-        },
+        { to: "/student", label: "Trang chủ", icon: Home },
+        { to: "/student/notifications", label: "Thông báo", icon: Bell },
+        { to: "/student/classes", label: "Lớp học", icon: BookOpen },
+        { to: "/student/schedule", label: "Thời khoá biểu", icon: Calendar },
+        { to: "/student/grades", label: "Kết quả học tập", icon: BarChart3 },
+        { to: "/student/transcript", label: "Bảng điểm", icon: GraduationCap },
+        { to: "/student/tuition", label: "Học phí", icon: FileText },
+        { to: "/student/registration", label: "Đăng ký học", icon: ClipboardList },
       ],
     },
     {
       title: "Biểu mẫu & AI",
       items: [
-        {
-          to: "/student/documents",
-          label: "Kho Biểu mẫu & Đơn",
-          icon: FileTextIcon,
-        },
-        {
-          to: "/student/ai-advisor",
-          label: "Cố vấn học tập AI",
-          icon: BrainIcon,
-        },
+        { to: "/student/documents", label: "Kho Biểu mẫu & Đơn", icon: FileText },
+        { to: "/student/ai-advisor", label: "Cố vấn học tập AI", icon: Sparkles },
       ],
     },
     {
       title: "Cá nhân",
       items: [
-        { to: "/student/profile", label: "Hồ sơ cá nhân", icon: UserIcon },
+        { to: "/student/profile", label: "Hồ sơ cá nhân", icon: User },
       ],
     },
   ],
@@ -466,112 +85,64 @@ const NAV: Record<Role, NavSection[]> = {
     {
       title: "Tổng quan",
       items: [
-        { to: "/lecturer", label: "Trang chủ", icon: HomeIcon },
-        { to: "/lecturer/notifications", label: "Thông báo", icon: BellIcon },
-        { to: "/lecturer/classes", label: "Lớp giảng dạy", icon: BookOpenIcon },
-        {
-          to: "/lecturer/analytics",
-          label: "Báo cáo Analytics",
-          icon: BarChartIcon,
-        },
+        { to: "/lecturer", label: "Trang chủ", icon: Home },
+        { to: "/lecturer/notifications", label: "Thông báo", icon: Bell },
+        { to: "/lecturer/classes", label: "Lớp giảng dạy", icon: BookOpen },
+        { to: "/lecturer/analytics", label: "Báo cáo Analytics", icon: BarChart3 },
       ],
     },
     {
       title: "Quản lý Giảng dạy",
       items: [
-        { to: "/lecturer/assignments", label: "Bài tập", icon: FileTextIcon },
-        { to: "/lecturer/quizzes", label: "Quiz", icon: BrainIcon },
-        { to: "/lecturer/grading", label: "Chấm điểm", icon: CheckCircleIcon },
-        {
-          to: "/lecturer/homeroom",
-          label: "Điểm rèn luyện (GVCN)",
-          icon: UsersIcon,
-        },
-        { to: "/lecturer/schedule", label: "Lịch dạy", icon: CalendarIcon },
+        { to: "/lecturer/assignments", label: "Bài tập", icon: FileText },
+        { to: "/lecturer/quizzes", label: "Quiz", icon: Sparkles },
+        { to: "/lecturer/grading", label: "Chấm điểm", icon: CheckCircle2 },
+        { to: "/lecturer/homeroom", label: "Điểm rèn luyện (GVCN)", icon: Users },
+        { to: "/lecturer/schedule", label: "Lịch dạy", icon: Calendar },
       ],
     },
     {
       title: "Biểu mẫu & Cấp quyền",
       items: [
-        {
-          to: "/lecturer/documents",
-          label: "Kho Biểu mẫu & Đơn",
-          icon: FileTextIcon,
-        },
-        {
-          to: "/lecturer/permission-requests",
-          label: "Yêu cầu Cấp quyền PBAC",
-          icon: KeyIcon,
-        },
+        { to: "/lecturer/documents", label: "Kho Biểu mẫu & Đơn", icon: FileText },
+        { to: "/lecturer/permission-requests", label: "Yêu cầu Cấp quyền PBAC", icon: Key },
       ],
     },
     {
       title: "Cá nhân",
-      items: [{ to: "/lecturer/profile", label: "Hồ sơ", icon: UserIcon }],
+      items: [
+        { to: "/lecturer/profile", label: "Hồ sơ", icon: User },
+      ],
     },
   ],
   ADMIN: [
     {
       title: "Tổng quan",
       items: [
-        { to: "/admin", label: "Dashboard", icon: HomeIcon },
-        { to: "/admin/notifications", label: "Thông báo", icon: BellIcon },
-        { to: "/admin/users", label: "Người dùng", icon: UsersIcon, permission: "MANAGE_USERS" },
-        { to: "/admin/reports", label: "Báo cáo", icon: BarChartIcon, permission: "VIEW_REPORTS" },
-        {
-          to: "/admin/audit-logs",
-          label: "Nhật ký hệ thống",
-          icon: FileTextIcon,
-          permission: "SYSTEM_CONFIG",
-        },
-        {
-          to: "/admin/permissions",
-          label: "Phân quyền",
-          icon: KeyIcon,
-          permission: "SYSTEM_CONFIG",
-        },
+        { to: "/admin", label: "Dashboard", icon: Home },
+        { to: "/admin/notifications", label: "Thông báo", icon: Bell },
+        { to: "/admin/users", label: "Người dùng", icon: Users, permission: "MANAGE_USERS" },
+        { to: "/admin/reports", label: "Báo cáo", icon: BarChart3, permission: "VIEW_REPORTS" },
+        { to: "/admin/audit-logs", label: "Nhật ký hệ thống", icon: FileText, permission: "SYSTEM_CONFIG" },
+        { to: "/admin/permissions", label: "Phân quyền", icon: Key, permission: "SYSTEM_CONFIG" },
       ],
     },
     {
       title: "Đào tạo",
       items: [
-        {
-          to: "/admin/curricula",
-          label: "Chương trình ĐT",
-          icon: GraduationCapIcon,
-          permission: "MANAGE_CURRICULUM",
-        },
-        { to: "/admin/departments", label: "Khoa/Bộ môn", icon: UsersIcon, permission: "MANAGE_CURRICULUM" },
-        {
-          to: "/admin/administrative-classes",
-          label: "Lớp hành chính",
-          icon: UsersIcon,
-          permission: "MANAGE_USERS",
-        },
-        {
-          to: "/admin/registration",
-          label: "Đợt đăng ký",
-          icon: ClipboardListIcon,
-          permission: "MANAGE_REGISTRATION",
-        },
-        { to: "/admin/classes", label: "Lớp học phần", icon: BookOpenIcon, permission: "MANAGE_REGISTRATION" },
-        { to: "/admin/tuition", label: "Quản lý học phí", icon: FileTextIcon, permission: "MANAGE_TUITION" },
+        { to: "/admin/curricula", label: "Chương trình ĐT", icon: GraduationCap, permission: "MANAGE_CURRICULUM" },
+        { to: "/admin/departments", label: "Khoa/Bộ môn", icon: Users, permission: "MANAGE_CURRICULUM" },
+        { to: "/admin/administrative-classes", label: "Lớp hành chính", icon: Users, permission: "MANAGE_USERS" },
+        { to: "/admin/registration", label: "Đợt đăng ký", icon: ClipboardList, permission: "MANAGE_REGISTRATION" },
+        { to: "/admin/classes", label: "Lớp học phần", icon: BookOpen, permission: "MANAGE_REGISTRATION" },
+        { to: "/admin/tuition", label: "Quản lý học phí", icon: FileText, permission: "MANAGE_TUITION" },
       ],
     },
     {
       title: "Biểu mẫu & Phê duyệt",
       items: [
-        {
-          to: "/admin/documents",
-          label: "Kho Biểu mẫu & Đơn",
-          icon: FileTextIcon,
-        },
-        {
-          to: "/admin/pbac-approvals",
-          label: "Phê duyệt PBAC & Logs",
-          icon: KeyIcon,
-          permission: "MANAGE_GRADING_POLICY",
-        },
+        { to: "/admin/documents", label: "Kho Biểu mẫu & Đơn", icon: FileText },
+        { to: "/admin/pbac-approvals", label: "Phê duyệt PBAC & Logs", icon: Key, permission: "MANAGE_GRADING_POLICY" },
       ],
     },
   ],
@@ -580,7 +151,7 @@ const NAV: Record<Role, NavSection[]> = {
 const ROLE_LABEL: Record<Role, string> = {
   STUDENT: "Sinh viên",
   LECTURER: "Giảng viên",
-  ADMIN: "Quản trị",
+  ADMIN: "Quản trị viên",
 };
 
 import { useForm } from 'react-hook-form';
@@ -630,34 +201,29 @@ function FirstLoginModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-xs p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-modal dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800">
         <div className="mb-5 flex flex-col items-center text-center">
-          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 dark:bg-indigo-950/50 dark:border-indigo-800/60 dark:text-indigo-400">
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
+          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-accent-50 text-accent-600 dark:bg-accent-950/50 dark:text-accent-400 border border-accent-100 dark:border-accent-900">
+            <Key className="h-5 w-5" />
           </div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">
             Đổi mật khẩu lần đầu
           </h2>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
-            Vì lý do an toàn, hệ thống yêu cầu bạn cập nhật mật khẩu mới khi đăng nhập lần đầu.
+            Vì lý do an toàn, vui lòng cập nhật mật khẩu mới khi đăng nhập lần đầu.
           </p>
         </div>
 
         {err && (
-          <div className="mb-4 flex items-start gap-2.5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 dark:bg-rose-950/40 dark:border-rose-900/60 dark:text-rose-300">
-            <svg className="h-4 w-4 shrink-0 mt-0.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <div className="mb-4 flex items-start gap-2 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 dark:bg-rose-950/40 dark:border-rose-900/60 dark:text-rose-300">
             <span>{err}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit(onChangePwSubmit)} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Mật khẩu hiện tại
             </label>
             <div className="relative">
@@ -665,32 +231,27 @@ function FirstLoginModal({
                 type={showOldPw ? "text" : "password"}
                 {...register('oldPassword')}
                 placeholder="Nhập mật khẩu hiện tại"
-                className={`w-full px-3.5 py-2.5 pr-10 border rounded-xl text-sm bg-slate-50/50 dark:bg-slate-800/60 dark:text-white outline-none transition focus:bg-white dark:focus:bg-slate-800 focus:ring-2 ${
+                className={`w-full px-3.5 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 dark:text-white outline-none transition ${
                   errors.oldPassword
-                    ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
-                    : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500/20 focus:border-indigo-600'
+                    ? 'border-rose-300 focus:border-rose-500'
+                    : 'border-slate-200 dark:border-slate-700 focus:border-accent-600'
                 }`}
               />
               <button
                 type="button"
                 onClick={() => setShowOldPw(!showOldPw)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 cursor-pointer"
-                title={showOldPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs cursor-pointer"
               >
-                {showOldPw ? (
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22" /></svg>
-                ) : (
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                )}
+                {showOldPw ? "Ẩn" : "Hiện"}
               </button>
             </div>
             {errors.oldPassword && (
-              <p className="mt-1 text-[11px] font-medium text-rose-600 dark:text-rose-400">{errors.oldPassword.message}</p>
+              <p className="mt-1 text-[11px] font-medium text-rose-600">{errors.oldPassword.message}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Mật khẩu mới
             </label>
             <div className="relative">
@@ -698,32 +259,27 @@ function FirstLoginModal({
                 type={showNewPw ? "text" : "password"}
                 {...register('newPassword')}
                 placeholder="Nhập mật khẩu mới"
-                className={`w-full px-3.5 py-2.5 pr-10 border rounded-xl text-sm bg-slate-50/50 dark:bg-slate-800/60 dark:text-white outline-none transition focus:bg-white dark:focus:bg-slate-800 focus:ring-2 ${
+                className={`w-full px-3.5 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 dark:text-white outline-none transition ${
                   errors.newPassword
-                    ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
-                    : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500/20 focus:border-indigo-600'
+                    ? 'border-rose-300 focus:border-rose-500'
+                    : 'border-slate-200 dark:border-slate-700 focus:border-accent-600'
                 }`}
               />
               <button
                 type="button"
                 onClick={() => setShowNewPw(!showNewPw)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 cursor-pointer"
-                title={showNewPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs cursor-pointer"
               >
-                {showNewPw ? (
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22" /></svg>
-                ) : (
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                )}
+                {showNewPw ? "Ẩn" : "Hiện"}
               </button>
             </div>
             {errors.newPassword && (
-              <p className="mt-1 text-[11px] font-medium text-rose-600 dark:text-rose-400">{errors.newPassword.message}</p>
+              <p className="mt-1 text-[11px] font-medium text-rose-600">{errors.newPassword.message}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Xác nhận mật khẩu mới
             </label>
             <div className="relative">
@@ -731,27 +287,22 @@ function FirstLoginModal({
                 type={showConfirmPw ? "text" : "password"}
                 {...register('confirmPassword')}
                 placeholder="Xác nhận mật khẩu mới"
-                className={`w-full px-3.5 py-2.5 pr-10 border rounded-xl text-sm bg-slate-50/50 dark:bg-slate-800/60 dark:text-white outline-none transition focus:bg-white dark:focus:bg-slate-800 focus:ring-2 ${
+                className={`w-full px-3.5 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 dark:text-white outline-none transition ${
                   errors.confirmPassword
-                    ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
-                    : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500/20 focus:border-indigo-600'
+                    ? 'border-rose-300 focus:border-rose-500'
+                    : 'border-slate-200 dark:border-slate-700 focus:border-accent-600'
                 }`}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPw(!showConfirmPw)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 cursor-pointer"
-                title={showConfirmPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs cursor-pointer"
               >
-                {showConfirmPw ? (
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22" /></svg>
-                ) : (
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                )}
+                {showConfirmPw ? "Ẩn" : "Hiện"}
               </button>
             </div>
             {errors.confirmPassword && (
-              <p className="mt-1 text-[11px] font-medium text-rose-600 dark:text-rose-400">{errors.confirmPassword.message}</p>
+              <p className="mt-1 text-[11px] font-medium text-rose-600">{errors.confirmPassword.message}</p>
             )}
           </div>
 
@@ -759,33 +310,23 @@ function FirstLoginModal({
             <button
               type="submit"
               disabled={saving}
-              className="w-full py-2.5 rounded-xl font-medium text-sm bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition duration-150 shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-2 rounded-lg font-semibold text-xs bg-accent-600 text-white hover:bg-accent-700 disabled:opacity-50 transition cursor-pointer flex items-center justify-center gap-2"
             >
-              {saving ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  <span>Đang lưu mật khẩu...</span>
-                </>
-              ) : (
-                "Cập nhật mật khẩu"
-              )}
+              {saving ? "Đang lưu mật khẩu..." : "Cập nhật mật khẩu"}
             </button>
           </div>
         </form>
 
-        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-center">
+        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
           <button
             type="button"
             onClick={() => {
               logout();
               window.location.href = "/login";
             }}
-            className="text-xs text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 font-medium transition inline-flex items-center gap-1.5 cursor-pointer"
+            className="text-xs text-slate-500 hover:text-rose-600 dark:text-slate-400 font-medium transition cursor-pointer"
           >
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            <span>Đăng xuất tài khoản</span>
+            Đăng xuất tài khoản
           </button>
         </div>
       </div>
@@ -816,6 +357,10 @@ export default function Layout() {
       "Cá nhân": true,
       "Quản lý": true,
       "Đào tạo": true,
+      "Biểu mẫu & AI": true,
+      "Biểu mẫu & Cấp quyền": true,
+      "Biểu mẫu & Phê duyệt": true,
+      "Quản lý Giảng dạy": true,
     }),
   );
 
@@ -892,36 +437,56 @@ export default function Layout() {
   const sections = NAV[role];
   const roleLower = role.toLowerCase();
 
+  const openAiCompanion = () => {
+    window.dispatchEvent(new CustomEvent('lms_open_ai_companion'));
+  };
+
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
+      {/* Mobile Backdrop */}
       {sidebarOpen && (
         <button
           type="button"
           aria-label="Đóng menu"
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-[2px] lg:hidden"
+          className="fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-xs lg:hidden"
         />
       )}
+
+      {/* Sidebar Navigation */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex h-full w-72 shrink-0 flex-col border-r border-slate-200/90 bg-white/95 p-4 text-slate-800 shadow-xl backdrop-blur-md transition-transform dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-100 lg:static lg:h-screen lg:w-64 lg:translate-x-0 lg:shadow-none ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 z-40 flex h-full w-64 shrink-0 flex-col border-r border-slate-200/90 bg-white p-4 text-slate-800 shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 lg:static lg:h-screen lg:translate-x-0 lg:shadow-none transition-transform duration-200 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
-        <Link
-          to={`/${roleLower}`}
-          className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800/80 px-2 pb-5 pt-2"
-        >
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#00376f] text-white shadow-md shadow-[#00376f]/20">
-            <GraduationCapIcon className="h-6 w-6 text-white" />
-          </span>
-          <div>
-            <div className="font-bold tracking-tight text-slate-900 dark:text-white text-base">
-              LearningHub
+        {/* Sidebar Brand Header */}
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4 pt-1 px-1">
+          <Link
+            to={`/${roleLower}`}
+            className="flex items-center gap-3"
+          >
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary-600 text-white shadow-xs">
+              <GraduationCap className="h-5 w-5 text-white" />
+            </span>
+            <div>
+              <div className="font-bold tracking-tight text-slate-900 dark:text-white text-base leading-tight">
+                LearningHub
+              </div>
+              <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                {ROLE_LABEL[role]}
+              </div>
             </div>
-            <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
-              {ROLE_LABEL[role]}
-            </div>
-          </div>
-        </Link>
-        <nav className="mt-5 flex-1 space-y-4 overflow-y-auto pr-1">
+          </Link>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 lg:hidden rounded-lg"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Sidebar Nav Items */}
+        <nav className="mt-4 flex-1 space-y-4 overflow-y-auto pr-1">
           {sections.map((section) => {
             const filteredItems = section.items.filter(
               (it) =>
@@ -936,18 +501,18 @@ export default function Layout() {
                 <button
                   type="button"
                   onClick={() => toggleSection(section.title)}
-                  className="flex w-full items-center justify-between px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition group"
+                  className="flex w-full items-center justify-between px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition cursor-pointer"
                 >
                   <span>{section.title}</span>
-                  <ChevronDownIcon
-                    className={`h-3 w-3 transform transition-transform duration-200 ${
+                  <ChevronDown
+                    className={`h-3 w-3 transform transition-transform duration-150 ${
                       isSectionOpen ? "" : "-rotate-90"
-                    } text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300`}
+                    }`}
                   />
                 </button>
 
                 {isSectionOpen && (
-                  <div className="space-y-1 mt-1 transition-all duration-200">
+                  <div className="space-y-0.5 mt-1">
                     {filteredItems.map((it: NavItem) => {
                       const IconComponent = it.icon;
                       return (
@@ -957,21 +522,20 @@ export default function Layout() {
                           end={it.to === `/${roleLower}`}
                           onClick={() => setSidebarOpen(false)}
                           className={({ isActive }) =>
-                            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 relative ${
+                            `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-150 ${
                               isActive
-                                ? "bg-[#00376f] text-white shadow-sm font-semibold"
-                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white"
+                                ? "bg-primary-600 text-white shadow-2xs"
+                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                             }`
                           }
                         >
-                          <IconComponent className="h-4.5 w-4.5 shrink-0 opacity-85" />
-                          <span>{it.label}</span>
-                          {it.to.includes("/notifications") &&
-                            unreadCount > 0 && (
-                              <span className="ml-auto inline-flex items-center justify-center h-5 w-5 rounded-full bg-rose-500 text-white text-xs font-bold shadow-xs">
-                                {unreadCount > 99 ? "99+" : unreadCount}
-                              </span>
-                            )}
+                          <IconComponent className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{it.label}</span>
+                          {it.to.includes("/notifications") && unreadCount > 0 && (
+                            <span className="ml-auto inline-flex items-center justify-center px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-bold">
+                              {unreadCount > 99 ? "99+" : unreadCount}
+                            </span>
+                          )}
                         </NavLink>
                       );
                     })}
@@ -981,116 +545,103 @@ export default function Layout() {
             );
           })}
         </nav>
-        <button
-          onClick={() => {
-            logout();
-            nav("/login");
-          }}
-          className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition w-full"
-        >
-          <LogOutIcon className="h-4 w-4 opacity-75" />
-          <span>Đăng xuất</span>
-        </button>
+
+        {/* Sidebar Footer */}
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+          <button
+            onClick={() => {
+              logout();
+              nav("/login");
+            }}
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition w-full cursor-pointer"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Đăng xuất</span>
+          </button>
+        </div>
       </aside>
 
+      {/* Main Content Layout */}
       <div className="flex flex-1 flex-col h-full min-w-0 overflow-hidden">
-        <header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center justify-between gap-4 border-b border-slate-200/80 bg-white/90 px-4 py-3 text-slate-800 shadow-2xs backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:text-slate-100 sm:px-6">
-          <div className="flex min-w-0 items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
+        {/* Top Header */}
+        <header className="sticky top-0 z-20 flex h-14 w-full shrink-0 items-center justify-between gap-4 border-b border-slate-200/90 bg-white/95 px-4 py-2.5 text-slate-800 backdrop-blur-xs dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-100 sm:px-6">
+          <div className="flex items-center gap-3">
             <button
               type="button"
               aria-label="Mở menu"
               onClick={() => setSidebarOpen(true)}
-              className="p-1 lg:hidden text-slate-700 dark:text-slate-200 hover:bg-slate-100 rounded-lg"
+              className="p-1.5 lg:hidden text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 rounded-lg cursor-pointer"
             >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
+              <Menu className="h-5 w-5" />
             </button>
-            <span className="hidden truncate sm:inline">
-              Xin chào,{" "}
-              <span className="font-semibold text-slate-900 dark:text-white">
-                {user.fullName}
-              </span>
+            <span className="hidden truncate text-xs text-slate-500 dark:text-slate-400 sm:inline">
+              Xin chào, <span className="font-semibold text-slate-900 dark:text-white">{user.fullName}</span>
             </span>
           </div>
-          <div className="hidden max-w-md flex-1 items-center rounded-xl bg-slate-100/80 border border-slate-200/80 px-4 py-1.5 text-sm text-slate-500 dark:bg-slate-800 dark:border-slate-700/80 dark:text-slate-400 md:flex">
-            <svg
-              className="mr-2 h-4 w-4 opacity-60 shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <span>Tìm kiếm thông tin...</span>
+
+          {/* Quick Search */}
+          <div className="hidden max-w-sm flex-1 items-center rounded-lg bg-slate-100/90 border border-slate-200/80 px-3 py-1.5 text-xs text-slate-500 dark:bg-slate-800 dark:border-slate-700/80 dark:text-slate-400 md:flex">
+            <Search className="mr-2 h-3.5 w-3.5 opacity-60 shrink-0" />
+            <span className="truncate">Tìm kiếm thông tin...</span>
           </div>
 
-          <div className="relative flex items-center gap-3">
-            {/* Notification Bell Button */}
+          {/* Header Action Items */}
+          <div className="relative flex items-center gap-2">
+            {/* Ask AI Button */}
+            <button
+              type="button"
+              onClick={openAiCompanion}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition cursor-pointer"
+              title="Mở Trợ lý AI"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-accent-600 dark:text-accent-400" />
+              <span className="hidden sm:inline">Hỏi AI</span>
+            </button>
+
+            {/* Notification Bell */}
             <Link
               to={`/${roleLower}/notifications`}
               title="Thông báo"
-              className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-sky-200 bg-white/80 text-slate-700 shadow-xs transition hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 active:scale-95"
+              className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition cursor-pointer"
             >
-              <BellIcon className="h-4.5 w-4.5 text-slate-700 dark:text-slate-200" />
+              <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-xs">
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white">
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
               )}
             </Link>
 
-            {/* SVG Dark/Light mode toggle button */}
+            {/* Theme Switcher */}
             <button
               type="button"
               onClick={toggleTheme}
-              title={
-                darkMode ? "Chuyển sang Chế độ Sáng" : "Chuyển sang Chế độ Tối"
-              }
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-sky-200 bg-white/80 text-slate-700 shadow-xs transition hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 active:scale-95 cursor-pointer"
+              title={darkMode ? "Chuyển Chế độ Sáng" : "Chuyển Chế độ Tối"}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition cursor-pointer"
             >
-              {darkMode ? (
-                <SunIcon className="h-4.5 w-4.5 text-amber-400" />
-              ) : (
-                <MoonIcon className="h-4.5 w-4.5 text-slate-700" />
-              )}
+              {darkMode ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-slate-600" />}
             </button>
 
-            {/* Profile Dropdown Header */}
+            {/* Profile Dropdown */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setProfileOpen((open) => !open)}
-                className="flex items-center gap-2 rounded-xl border border-sky-200 bg-white/80 px-3 py-1.5 text-sm font-semibold text-slate-800 transition hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-750 transition cursor-pointer"
               >
-                <UserIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                <span className="hidden max-w-32 truncate sm:inline">
+                <User className="h-3.5 w-3.5 text-slate-500" />
+                <span className="hidden max-w-28 truncate sm:inline">
                   {user.fullName}
                 </span>
-                <ChevronDownIcon className="h-3.5 w-3.5 opacity-60" />
+                <ChevronDown className="h-3 w-3 opacity-60" />
               </button>
               {profileOpen && (
-                <div className="absolute right-0 top-12 z-50 w-56 rounded-2xl border border-slate-200/80 bg-white p-3 text-slate-800 shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
-                  <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-                    <div className="font-semibold text-slate-900 dark:text-white">
+                <div className="absolute right-0 top-11 z-50 w-52 rounded-xl border border-slate-200/90 bg-white p-3 text-slate-800 shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
+                  <div className="border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                    <div className="font-semibold text-xs text-slate-900 dark:text-white truncate">
                       {user.fullName}
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
                       {ROLE_LABEL[role]}
                     </div>
                   </div>
@@ -1099,9 +650,9 @@ export default function Layout() {
                       logout();
                       nav("/login");
                     }}
-                    className="mt-2 flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left text-sm font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40 transition"
+                    className="mt-2 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40 transition cursor-pointer"
                   >
-                    <LogOutIcon className="h-4 w-4" />
+                    <LogOut className="h-3.5 w-3.5" />
                     <span>Đăng xuất</span>
                   </button>
                 </div>
@@ -1110,8 +661,11 @@ export default function Layout() {
           </div>
         </header>
 
+        {/* Page Content Body */}
         <main className="flex-1 overflow-y-auto bg-slate-50/80 dark:bg-slate-950 p-4 sm:p-6 lg:p-8">
-          <Outlet />
+          <div className="max-w-7xl mx-auto">
+            <Outlet />
+          </div>
         </main>
       </div>
 
@@ -1131,12 +685,10 @@ export const PageTitle = _PageTitle;
 export const PageHeader = _PageHeader;
 export const Card = _Card;
 export const Spinner = _Spinner;
-export const Empty = ({ msg }: { msg?: string }) => (
-  <_Empty msg={msg} />
+export const Empty = ({ msg, message }: { msg?: string; message?: string }) => (
+  <_Empty msg={msg} message={message} />
 );
-export const ErrorBox = ({ msg }: { msg: string }) => (
-  <_ErrorBox msg={msg} />
+export const ErrorBox = ({ msg, message }: { msg?: string; message?: string }) => (
+  <_ErrorBox msg={msg} message={message} />
 );
 export const Pill = _Badge;
-
-

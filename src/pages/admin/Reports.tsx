@@ -1,9 +1,9 @@
-// Admin Reports page - charts + export + tuition rates management
 import { useEffect, useState } from 'react';
+import { BarChart3, FileSpreadsheet, FileText, AlertTriangle, Plus, Download, Edit3, Trash2, CheckCircle2 } from 'lucide-react';
 import * as reportService from '../../services/reportService';
 import { exportClazzScoresExcel, exportStudentTranscriptPdf, scanAcademicProbation } from '../../services/reportService';
 import * as tuitionService from '../../services/tuitionService';
-import { PageTitle, Card, Spinner, ErrorBox } from '../../components/Layout';
+import { PageHeader, Card, Button, Input, Badge, Spinner, ErrorBox } from '../../components/ui';
 import type { EnrollmentReport, ScoreReport, TuitionRate } from '../../types';
 
 const downloadBlob = (blob: Blob, filename: string) => {
@@ -207,140 +207,168 @@ export default function AdminReports() {
   };
 
   if (loading && loadingTuition) return <Spinner />;
-  if (err && !enrolls.length && !scores.length) return <ErrorBox msg={err} />;
+  if (err && !enrolls.length && !scores.length) return <ErrorBox message={err} />;
 
   const maxEnroll = Math.max(...enrolls.map((e) => e.count), 1);
   const maxScore = 10;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <PageTitle>Báo cáo & Thống kê</PageTitle>
-        <div className="flex gap-2">
-          <button aria-label="button"
-            onClick={() => setActiveTab('reports')}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${activeTab === 'reports' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-          >
-            Báo cáo hệ thống
-          </button>
-          <button aria-label="button"
-            onClick={() => setActiveTab('tuition')}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${activeTab === 'tuition' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-          >
-            Quản lý Mức học phí
-          </button>
-        </div>
-      </div>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <PageHeader
+        breadcrumbs={[{ label: 'Quản trị hệ thống', to: '/admin' }, { label: 'Báo cáo & Thống kê' }]}
+        title="Báo cáo & Thống kê Hệ thống"
+        subtitle="Xuất file báo cáo Excel/PDF, phân tích dữ liệu học tập và quản lý định mức học phí tín chỉ"
+        actions={
+          <div className="flex bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-semibold">
+            <button
+              onClick={() => setActiveTab('reports')}
+              className={`px-3 py-1.5 rounded-md transition ${activeTab === 'reports' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+            >
+              Báo cáo hệ thống
+            </button>
+            <button
+              onClick={() => setActiveTab('tuition')}
+              className={`px-3 py-1.5 rounded-md transition ${activeTab === 'tuition' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+            >
+              Quản lý Mức học phí
+            </button>
+          </div>
+        }
+      />
 
-      {err && <ErrorBox msg={err} />}
+      {err && <ErrorBox message={err} />}
 
       {activeTab === 'reports' ? (
         <>
           <Card>
-            <h3 className="font-bold text-slate-800 mb-4">Xuất báo cáo & Quét nguy cơ học tập</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-navy-700 dark:text-navy-300" />
+              Tác vụ Xuất Báo cáo & Quét nguy cơ học tập
+            </h3>
             <div className="grid md:grid-cols-3 gap-4">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
-                <div className="text-xs font-semibold text-slate-500">Xuất điểm lớp học phần (Excel)</div>
+              <div className="p-4 bg-slate-50/70 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+                <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-600" /> Xuất điểm lớp học phần (Excel)
+                </div>
                 <div className="flex gap-2">
-                  <input
+                  <Input
                     type="number"
                     placeholder="ID Lớp (VD: 1)"
                     value={clazzIdInput}
                     onChange={(e) => setClazzIdInput(e.target.value)}
-                    className="w-full px-2 py-1 text-sm border border-slate-300 rounded"
                   />
-                  <button aria-label="button"
+                  <Button
+                    variant="primary"
+                    size="sm"
                     onClick={handleExportClazzScores}
                     disabled={exporting !== null || !clazzIdInput}
-                    className="px-3 py-1 bg-indigo-600 text-white text-xs font-medium rounded hover:bg-indigo-500 disabled:opacity-50 shrink-0"
                   >
                     {exporting === 'clazz' ? 'Đang xuất…' : 'Xuất Excel'}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
-                <div className="text-xs font-semibold text-slate-500">Xuất bảng điểm sinh viên (PDF)</div>
+              <div className="p-4 bg-slate-50/70 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+                <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <FileText className="w-4 h-4 text-indigo-600" /> Xuất bảng điểm sinh viên (PDF)
+                </div>
                 <div className="flex gap-2">
-                  <input
+                  <Input
                     type="number"
                     placeholder="ID Sinh viên (VD: 1)"
                     value={studentIdInput}
                     onChange={(e) => setStudentIdInput(e.target.value)}
-                    className="w-full px-2 py-1 text-sm border border-slate-300 rounded"
                   />
-                  <button aria-label="button"
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={handleExportTranscript}
                     disabled={exporting !== null || !studentIdInput}
-                    className="px-3 py-1 bg-emerald-600 text-white text-xs font-medium rounded hover:bg-emerald-500 disabled:opacity-50 shrink-0"
                   >
                     {exporting === 'transcript' ? 'Đang xuất…' : 'Xuất PDF'}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
-                <div className="text-xs font-semibold text-slate-500">Quét cảnh báo nguy cơ học vụ</div>
+              <div className="p-4 bg-slate-50/70 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+                <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-500" /> Quét cảnh báo nguy cơ học vụ
+                </div>
                 <div className="flex flex-col gap-2">
-                  <button aria-label="button"
+                  <Button
+                    variant="warning"
+                    size="sm"
                     onClick={handleScanProbation}
                     disabled={scanning}
-                    className="w-full py-1.5 bg-amber-600 text-white text-xs font-medium rounded hover:bg-amber-500 disabled:opacity-50"
                   >
                     {scanning ? 'Đang quét…' : 'Chạy quét nguy cơ'}
-                  </button>
-                  {scanResult && <div className="text-xs font-medium text-amber-700">{scanResult}</div>}
+                  </Button>
+                  {scanResult && <div className="text-xs font-semibold text-amber-700 dark:text-amber-400">{scanResult}</div>}
                 </div>
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button aria-label="button"
+            <div className="mt-4 flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleExportEnrollments}
                 disabled={exporting !== null}
-                className="px-3 py-2 rounded text-sm bg-indigo-600 text-white disabled:opacity-50 hover:bg-indigo-500"
               >
-                {exporting === 'enroll' ? 'Đang xuất…' : 'Xuất Excel Đăng ký theo tháng'}
-              </button>
-              <button aria-label="button"
+                <Download className="w-3.5 h-3.5" />
+                {exporting === 'enroll' ? 'Đang xuất Excel…' : 'Xuất Đăng ký theo Tháng (Excel)'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleExportScores}
                 disabled={exporting !== null}
-                className="px-3 py-2 rounded text-sm bg-emerald-600 text-white disabled:opacity-50 hover:bg-emerald-500"
               >
-                {exporting === 'score' ? 'Đang xuất…' : 'Xuất PDF Điểm trung bình'}
-              </button>
+                <Download className="w-3.5 h-3.5" />
+                {exporting === 'score' ? 'Đang xuất PDF…' : 'Xuất Điểm TB theo Lớp (PDF)'}
+              </Button>
             </div>
           </Card>
 
-          <div className="grid md:grid-cols-2 gap-4">
+          {/* Graphical Distributions */}
+          <div className="grid md:grid-cols-2 gap-6">
             <Card>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-slate-800">Đăng ký học theo tháng</h3>
-              </div>
-              <div className="space-y-2">
-                {enrolls.map((e) => (
-                  <div key={e.month} className="flex items-center gap-2 text-sm">
-                    <div className="w-24 text-slate-500">{e.month}</div>
-                    <div className="min-w-0 flex-1 bg-slate-100 rounded h-6 overflow-hidden">
-                      <div className="bg-indigo-500 h-full" style={{ width: `${(e.count / maxEnroll) * 100}%` }} />
+              <h3 className="font-bold text-slate-900 dark:text-white mb-2 text-sm">Lượt đăng ký môn học theo Tháng</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Biểu đồ tổng hợp lưu lượng đăng ký học phần</p>
+              <div className="space-y-3">
+                {enrolls.map((item) => (
+                  <div key={item.month}>
+                    <div className="flex justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      <span>{item.month}</span>
+                      <span className="font-bold text-navy-900 dark:text-navy-300">{item.count} lượt</span>
                     </div>
-                    <div className="w-16 text-right font-mono text-slate-700">{e.count}</div>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-navy-700 dark:bg-navy-400 h-full rounded-full transition-all duration-500"
+                        style={{ width: `${(item.count / maxEnroll) * 100}%` }}
+                      ></div>
+                    </div>
                   </div>
                 ))}
               </div>
             </Card>
+
             <Card>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-slate-800">Điểm TB theo lớp</h3>
-              </div>
-              <div className="space-y-2">
-                {scores.map((s) => (
-                  <div key={s.classId} className="flex items-center gap-2 text-sm">
-                    <div className="w-32 truncate text-slate-500">{s.classCode}</div>
-                    <div className="min-w-0 flex-1 bg-slate-100 rounded h-6 overflow-hidden">
-                      <div className="bg-emerald-500 h-full" style={{ width: `${(s.averageScore / maxScore) * 100}%` }} />
+              <h3 className="font-bold text-slate-900 dark:text-white mb-2 text-sm">Điểm trung bình theo Lớp học phần</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Đánh giá phổ điểm chung giữa các môn học</p>
+              <div className="space-y-3">
+                {scores.map((item, idx) => (
+                  <div key={item.classCode || idx}>
+                    <div className="flex justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      <span className="truncate max-w-[200px]">{item.className || item.classCode}</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400">{item.averageScore.toFixed(2)} / 10</span>
                     </div>
-                    <div className="w-16 text-right font-mono text-slate-700">{s.averageScore.toFixed(2)}</div>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-emerald-600 h-full rounded-full transition-all duration-500"
+                        style={{ width: `${(item.averageScore / maxScore) * 100}%` }}
+                      ></div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -348,145 +376,99 @@ export default function AdminReports() {
           </div>
         </>
       ) : (
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-slate-800">Danh sách Mức học phí theo Năm học</h3>
-            <button aria-label="button"
-              onClick={() => setShowCreateRate(true)}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition"
-            >
-              + Tạo mức mới
-            </button>
+        /* Tuition Rates Tab */
+        <Card padding="none">
+          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+            <div>
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">Định mức Học phí / Tín chỉ theo Năm học</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cấu hình đơn giá 1 tín chỉ cho hệ thống tự động tính học phí sinh viên</p>
+            </div>
+            <Button variant="primary" size="sm" onClick={() => setShowCreateRate(true)}>
+              <Plus className="w-4 h-4" /> Thêm định mức mới
+            </Button>
           </div>
 
           {showCreateRate && (
-            <div className="mb-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
-              <h4 className="text-xs font-bold text-slate-700 mb-3">Tạo mức học phí mới</h4>
-              <div className="grid grid-cols-2 gap-4 mb-3">
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">Năm học (VD: 2024-2025)</label>
-                  <input
-                    type="text"
-                    value={newRateYear}
-                    onChange={(e) => setNewRateYear(e.target.value)}
-                    className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-md"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">Giá mỗi tín chỉ (VNĐ)</label>
-                  <input
-                    type="number"
-                    value={newRatePrice}
-                    onChange={(e) => setNewRatePrice(Number(e.target.value))}
-                    className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-md"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end gap-2">
-                <button aria-label="button"
-                  onClick={() => setShowCreateRate(false)}
-                  className="px-3 py-1.5 text-xs text-slate-600 border border-slate-300 rounded-md"
-                >
-                  Hủy
-                </button>
-                <button aria-label="button"
-                  onClick={handleCreateRate}
-                  disabled={creatingRate}
-                  className="px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded-md hover:bg-indigo-500 disabled:opacity-50"
-                >
-                  {creatingRate ? 'Đang tạo…' : 'Lưu mức mới'}
-                </button>
-              </div>
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-navy-50/30 dark:bg-navy-950/30 flex flex-wrap items-center gap-3">
+              <Input
+                placeholder="Năm học (VD: 2026-2027)"
+                value={newRateYear}
+                onChange={(e) => setNewRateYear(e.target.value)}
+              />
+              <Input
+                type="number"
+                placeholder="Giá / Tín chỉ (VNĐ)"
+                value={newRatePrice || ''}
+                onChange={(e) => setNewRatePrice(Number(e.target.value))}
+              />
+              <Button variant="primary" size="sm" onClick={handleCreateRate} disabled={creatingRate}>
+                {creatingRate ? 'Đang tạo...' : 'Lưu mức mới'}
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => setShowCreateRate(false)}>
+                Hủy
+              </Button>
             </div>
           )}
 
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-xs text-slate-500 border-b border-slate-200 bg-slate-50">
-                <tr>
-                  <th className="text-left p-3">ID</th>
-                  <th className="text-left p-3">Năm học</th>
-                  <th className="text-right p-3">Giá / Tín chỉ (VNĐ)</th>
-                  <th className="text-center p-3">Trạng thái</th>
-                  <th className="text-center p-3">Thao tác</th>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  <th className="py-3.5 px-4">ID</th>
+                  <th className="py-3.5 px-4">Năm học</th>
+                  <th className="py-3.5 px-4">Đơn giá / Tín chỉ (VNĐ)</th>
+                  <th className="py-3.5 px-4 text-center">Trạng thái</th>
+                  <th className="py-3.5 px-4 text-right">Thao tác</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
                 {tuitionRates.map((r) => (
-                  <tr key={r.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="p-3 text-slate-500">{r.id}</td>
-                    <td className="p-3 font-semibold text-slate-800">
+                  <tr key={r.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3.5 px-4 text-slate-400 font-mono">{r.id}</td>
+                    <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-slate-100">
                       {editRateId === r.id ? (
-                        <input
-                          type="text"
-                          value={editRateYear}
-                          onChange={(e) => setEditRateYear(e.target.value)}
-                          className="px-2 py-1 text-xs border border-slate-300 rounded"
-                        />
+                        <Input value={editRateYear} onChange={(e) => setEditRateYear(e.target.value)} />
                       ) : (
                         r.academicYear
                       )}
                     </td>
-                    <td className="p-3 text-right font-mono font-medium text-emerald-600">
+                    <td className="py-3.5 px-4 font-bold text-navy-900 dark:text-navy-300">
                       {editRateId === r.id ? (
-                        <input
-                          type="number"
-                          value={editRatePrice}
-                          onChange={(e) => setEditRatePrice(Number(e.target.value))}
-                          className="px-2 py-1 text-xs border border-slate-300 rounded w-32 text-right"
-                        />
+                        <Input type="number" value={editRatePrice} onChange={(e) => setEditRatePrice(Number(e.target.value))} />
                       ) : (
-                        r.pricePerCredit.toLocaleString('vi-VN') + ' đ'
+                        `${r.pricePerCredit.toLocaleString()} VNĐ`
                       )}
                     </td>
-                    <td className="p-3 text-center">
+                    <td className="py-3.5 px-4 text-center">
                       {editRateId === r.id ? (
-                        <input
-                          type="checkbox"
-                          checked={editRateActive}
-                          onChange={(e) => setEditRateActive(e.target.checked)}
-                        />
-                      ) : r.isActive ? (
-                        <span className="px-2 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-full">
-                          Hoạt động
-                        </span>
+                        <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                          <input type="checkbox" checked={editRateActive} onChange={(e) => setEditRateActive(e.target.checked)} />
+                          <span>Active</span>
+                        </label>
                       ) : (
-                        <span className="px-2 py-0.5 text-xs font-semibold bg-slate-100 text-slate-500 rounded-full">
-                          Khóa
-                        </span>
+                        <Badge variant={r.isActive ? 'success' : 'neutral'}>
+                          {r.isActive ? 'Kích hoạt' : 'Khóa'}
+                        </Badge>
                       )}
                     </td>
-                    <td className="p-3 text-center space-x-2">
+                    <td className="py-3.5 px-4 text-right space-x-1.5">
                       {editRateId === r.id ? (
                         <>
-                          <button aria-label="button"
-                            onClick={handleSaveEditRate}
-                            disabled={savingRate}
-                            className="px-2 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-500"
-                          >
-                            Lưu
-                          </button>
-                          <button aria-label="button"
-                            onClick={cancelEditRate}
-                            className="px-2 py-1 text-xs border border-slate-300 text-slate-600 rounded"
-                          >
+                          <Button variant="primary" size="sm" onClick={handleSaveEditRate} disabled={savingRate}>
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Lưu
+                          </Button>
+                          <Button variant="secondary" size="sm" onClick={cancelEditRate}>
                             Hủy
-                          </button>
+                          </Button>
                         </>
                       ) : (
                         <>
-                          <button aria-label="button"
-                            onClick={() => startEditRate(r)}
-                            className="px-2 py-1 text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded hover:bg-amber-100"
-                          >
-                            Sửa
-                          </button>
-                          <button aria-label="button"
-                            onClick={() => handleDeleteRate(r.id)}
-                            className="px-2 py-1 text-xs bg-rose-50 text-rose-700 border border-rose-200 rounded hover:bg-rose-100"
-                          >
-                            Xoá
-                          </button>
+                          <Button variant="ghost" size="sm" onClick={() => startEditRate(r)}>
+                            <Edit3 className="w-3.5 h-3.5" /> Sửa
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => void handleDeleteRate(r.id)}>
+                            <Trash2 className="w-3.5 h-3.5 text-rose-600" /> Xóa
+                          </Button>
                         </>
                       )}
                     </td>

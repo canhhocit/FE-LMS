@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { History, Search, Filter } from 'lucide-react';
 import * as auditService from '../../services/auditLogService';
-import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
+import { PageHeader, Card, Button, Input, Badge, Spinner, Empty, ErrorBox } from '../../components/ui';
 import type { AuditLogEntry } from '../../services/auditLogService';
 
 export default function AdminAuditLogs() {
@@ -53,67 +54,100 @@ export default function AdminAuditLogs() {
   const handleFilter = () => { load(0, filterType); };
   const handleClear = () => { setFilterType(''); load(0); };
 
-  const resultColor = (r: string): 'emerald' | 'rose' | 'slate' => {
-    if (r === 'SUCCESS') return 'emerald';
-    if (r === 'FAILURE') return 'rose';
-    return 'slate';
+  const getBadgeVariant = (r: string) => {
+    if (r === 'SUCCESS') return 'success';
+    if (r === 'FAILURE') return 'danger';
+    return 'neutral';
   };
 
   return (
-    <div className="space-y-6">
-      <PageTitle>Nhật ký hệ thống (Audit Logs)</PageTitle>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <PageHeader
+        breadcrumbs={[{ label: 'Quản trị hệ thống', to: '/admin' }, { label: 'Nhật ký hệ thống' }]}
+        title="Nhật ký Hệ thống (Audit Logs)"
+        subtitle="Truy vết toàn bộ lịch sử thao tác, tạo/sửa/xóa và đăng nhập của người dùng trong hệ thống"
+      />
 
-      <Card>
-        <div className="flex items-center gap-3 mb-4">
-          <input value={filterType} onChange={e => setFilterType(e.target.value)} placeholder="Lọc theo resource (VD: USER, COURSE...)"
-            className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500" />
-          <button aria-label="button" onClick={handleFilter} className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition">Lọc</button>
-          <button aria-label="button" onClick={handleClear} className="px-4 py-2 rounded-lg text-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition">Xoá lọc</button>
-          <span className="text-xs text-slate-400 ml-auto">Tổng: {totalElements} bản ghi</span>
-        </div>
-      </Card>
-
-      {err && <ErrorBox msg={err} />}
-      {loading ? <Spinner /> : logs.length === 0 ? <Empty msg="Không có bản ghi nào" /> : (
-        <Card>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-xs text-slate-500 border-b border-slate-200 bg-slate-50">
-                <tr>
-                  <th className="text-left p-3">Thời gian</th>
-                  <th className="text-left p-3">Người thực hiện</th>
-                  <th className="text-left p-3">Hành động</th>
-                  <th className="text-left p-3">Resource</th>
-                  <th className="text-left p-3">Chi tiết</th>
-                  <th className="text-left p-3">IP</th>
-                  <th className="text-center p-3">Kết quả</th>
-                </tr>
-              </thead>
-              <tbody>
-                {logs.map(log => (
-                  <tr key={log.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition">
-                    <td className="p-3 text-xs text-slate-500 font-mono">{new Date(log.createdAt).toLocaleString('vi-VN')}</td>
-                    <td className="p-3 text-slate-700">{log.actorEmail}</td>
-                    <td className="p-3"><span className="font-semibold text-slate-800">{log.action}</span></td>
-                    <td className="p-3 text-xs text-slate-500">{log.resourceType} #{log.resourceId}</td>
-                    <td className="p-3 text-xs text-slate-400 max-w-xs truncate">{log.detail || '-'}</td>
-                    <td className="p-3 text-xs text-slate-400 font-mono">{log.ipAddress || '-'}</td>
-                    <td className="p-3 text-center"><Pill color={resultColor(log.result)}>{log.result}</Pill></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <Card padding="none">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="flex items-center gap-2 flex-1 max-w-md">
+            <Input
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              placeholder="Lọc theo resource (VD: USER, COURSE...)"
+              leftIcon={<Search className="w-4 h-4" />}
+            />
+            <Button variant="primary" size="sm" onClick={handleFilter}>
+              Lọc
+            </Button>
+            <Button variant="secondary" size="sm" onClick={handleClear}>
+              Xóa
+            </Button>
           </div>
+          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            Tổng số: <span className="text-slate-900 dark:text-white font-bold">{totalElements}</span> bản ghi
+          </div>
+        </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-4 pt-4 border-t border-slate-100">
-              <button aria-label="button" disabled={page === 0} onClick={() => load(page - 1, filterType)} className="px-3 py-1 rounded text-xs border border-slate-200 disabled:opacity-40 hover:bg-slate-50 transition">Trước</button>
-              <span className="text-xs text-slate-500">Trang {page + 1} / {totalPages}</span>
-              <button aria-label="button" disabled={page >= totalPages - 1} onClick={() => load(page + 1, filterType)} className="px-3 py-1 rounded text-xs border border-slate-200 disabled:opacity-40 hover:bg-slate-50 transition">Sau</button>
+        {err && <ErrorBox message={err} />}
+
+        {loading ? (
+          <div className="p-8 text-center"><Spinner /></div>
+        ) : logs.length === 0 ? (
+          <Empty msg="Không có bản ghi nhật ký nào" />
+        ) : (
+          <div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    <th className="py-3.5 px-4">Thời gian</th>
+                    <th className="py-3.5 px-4">Người thực hiện</th>
+                    <th className="py-3.5 px-4">Hành động</th>
+                    <th className="py-3.5 px-4">Resource</th>
+                    <th className="py-3.5 px-4">Chi tiết</th>
+                    <th className="py-3.5 px-4">Địa chỉ IP</th>
+                    <th className="py-3.5 px-4 text-center">Kết quả</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+                  {logs.map((log) => (
+                    <tr key={log.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3.5 px-4 text-slate-500 font-mono text-[11px]">{new Date(log.createdAt).toLocaleString('vi-VN')}</td>
+                      <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-slate-100">{log.actorEmail}</td>
+                      <td className="py-3.5 px-4 font-semibold text-navy-900 dark:text-navy-300">{log.action}</td>
+                      <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400 font-mono">{log.resourceType} #{log.resourceId}</td>
+                      <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400 max-w-xs truncate">{log.detail || '-'}</td>
+                      <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">{log.ipAddress || '-'}</td>
+                      <td className="py-3.5 px-4 text-center">
+                        <Badge variant={getBadgeVariant(log.result)}>
+                          {log.result}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
-        </Card>
-      )}
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between p-4 border-t border-slate-200 dark:border-slate-800 text-xs">
+                <div className="text-slate-500 dark:text-slate-400">
+                  Trang <span className="font-semibold text-slate-900 dark:text-white">{page + 1}</span> / <span className="font-semibold text-slate-900 dark:text-white">{totalPages}</span>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="secondary" size="sm" disabled={page === 0} onClick={() => load(page - 1, filterType)}>
+                    &laquo; Trước
+                  </Button>
+                  <Button variant="secondary" size="sm" disabled={page >= totalPages - 1} onClick={() => load(page + 1, filterType)}>
+                    Sau &raquo;
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

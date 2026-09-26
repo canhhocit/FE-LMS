@@ -1,21 +1,27 @@
-import { NoEntryIcon } from '../components/icons';
+import { Link } from 'react-router-dom';
+import { ShieldAlert, ArrowLeft } from 'lucide-react';
+import { Button, Card } from '../components/ui';
 
 export default function ForbiddenPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6 text-slate-900">
-      <div className="max-w-md rounded-2xl border border-amber-200 bg-white p-8 text-center shadow-sm">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-6 text-slate-900 dark:text-white font-sans">
+      <Card className="max-w-md w-full p-8 text-center border border-slate-200 dark:border-slate-800 shadow-md">
         <div className="mb-4 flex justify-center">
-          <NoEntryIcon className="w-16 h-16 text-rose-500" />
+          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 rounded-2xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400">
+            <ShieldAlert className="w-12 h-12" />
+          </div>
         </div>
-        <h1 className="mb-2 text-3xl font-bold">403</h1>
-        <h2 className="mb-3 text-xl font-semibold">Bạn không có quyền truy cập</h2>
-        <p className="mb-6 text-sm text-slate-600">
-          Trang này yêu cầu vai trò khác với tài khoản hiện tại. Vui lòng quay lại trang chính.
+        <h1 className="mb-1 text-4xl font-extrabold text-navy-900 dark:text-navy-300">403</h1>
+        <h2 className="mb-2 text-lg font-bold">Không có quyền truy cập</h2>
+        <p className="mb-6 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+          Trang bạn đang truy cập yêu cầu quyền hạn đặc biệt khác với tài khoản của bạn. Vui lòng quay lại trang chủ.
         </p>
-        <a href="/" className="inline-flex rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">
-          Về trang chủ
-        </a>
-      </div>
+        <Link to="/">
+          <Button variant="primary" size="md">
+            <ArrowLeft className="w-4 h-4 mr-1.5" /> Quay về Trang chủ
+          </Button>
+        </Link>
+      </Card>
     </div>
   );
 }
