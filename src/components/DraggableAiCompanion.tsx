@@ -199,7 +199,7 @@ export const DraggableAiCompanion: React.FC = () => {
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
     const target = e.target as HTMLElement;
-    if (target.closest('[data-no-drag="true"], input, textarea, a, button')) return;
+    if (target.closest('[data-no-drag="true"], input, textarea, a')) return;
     handleStartDrag(e.clientX, e.clientY);
 
     const onMouseMove = (moveEvent: MouseEvent) => {
@@ -218,7 +218,7 @@ export const DraggableAiCompanion: React.FC = () => {
 
   const handleTouchStart = (e: React.TouchEvent) => {
     const target = e.target as HTMLElement;
-    if (target.closest('[data-no-drag="true"], input, textarea, a, button')) return;
+    if (target.closest('[data-no-drag="true"], input, textarea, a')) return;
 
     const touch = e.touches[0];
     if (!touch) return;
