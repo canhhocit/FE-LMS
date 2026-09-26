@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useState, useRef, type ChangeEvent } from 'react';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import * as clazzService from '../../services/clazzService';
 import * as quizService from '../../services/quizService';
@@ -6,7 +6,8 @@ import type { QuestionRequest } from '../../services/quizService';
 import type { Clazz, Quiz, QuizQuestion } from '../../types';
 import { 
   Wand2, Plus, Clock, CheckCircle2, FileText, 
-  Upload, Trash2, Pencil, Timer, HelpCircle, X
+  Upload, Trash2, Pencil, Timer, HelpCircle, X,
+  FileSpreadsheet, Eye, Sparkles, Check, FileCode
 } from 'lucide-react';
 
 import { useAuth } from '../../contexts/useAuth';
@@ -19,6 +20,7 @@ export default function QuizPage() {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null);
   const [startedQuizId, setStartedQuizId] = useState<number | null>(null);
+  const [isLecturerPreview, setIsLecturerPreview] = useState(false);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -47,17 +49,29 @@ export default function QuizPage() {
   const [qCorrect, setQCorrect] = useState<'A' | 'B' | 'C' | 'D'>('A');
   const [savingQ, setSavingQ] = useState(false);
 
-  // Quizlet Import Modal
-  const [showQuizletModal, setShowQuizletModal] = useState(false);
-  const [quizletText, setQuizletText] = useState('');
+  // File / Quizlet Import Modal
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importTab, setImportTab] = useState<'FILE' | 'TEXT'>('FILE');
+  const [importText, setImportText] = useState('');
+  const [parsedQuestions, setParsedQuestions] = useState<QuestionRequest[]>([]);
+  const [fileName, setFileName] = useState<string | null>(null);
 
   // AI Generator Modal
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiTopic, setAiTopic] = useState('');
   const [aiNum, setAiNum] = useState(5);
+  const [aiDifficulty, setAiDifficulty] = useState<'EASY' | 'MEDIUM' | 'HARD'>('MEDIUM');
   const [generatingAi, setGeneratingAi] = useState(false);
+  const [aiDocName, setAiDocName] = useState<string | null>(null);
 
   const isLecturer = user?.role === 'LECTURER' || user?.role === 'ADMIN';
+
+  // Auto dismiss flash banner after 5 seconds
+  useEffect(() => {
+    if (!flash) return;
+    const timer = setTimeout(() => setFlash(null), 5000);
+    return () => clearTimeout(timer);
+  }, [flash]);
 
   // Load classes on mount
   useEffect(() => {
@@ -152,10 +166,24 @@ export default function QuizPage() {
     }
   };
 
+  const handleDeleteQuiz = async (quizId: number) => {
+    if (!confirm('Bạn có chắc chắn muốn xóa bài Quiz này không?')) return;
+    try {
+      await quizService.deleteQuiz(quizId);
+      setFlash('Đã xóa bài Quiz thành công.');
+      setSelectedQuizId(null);
+      if (selectedClass) await loadQuizzes(selectedClass);
+    } catch (e: unknown) {
+      setErr((e as { message?: string })?.message ?? 'Xóa Quiz thất bại');
+    }
+  };
+
   const handleStart = async () => {
     if (selectedQuizId == null || !activeQuiz) return;
     try {
-      await quizService.startQuiz(selectedQuizId);
+      if (!isLecturerPreview) {
+        await quizService.startQuiz(selectedQuizId);
+      }
       setStartedQuizId(selectedQuizId);
       const minutes = activeQuiz.durationMinutes ?? 30;
       setTimeLeftSeconds(minutes > 0 ? minutes * 60 : 3600);
@@ -169,15 +197,18 @@ export default function QuizPage() {
     if (!selectedQuizId) return;
     setSubmitting(true);
     try {
-      await quizService.submitQuiz(
-        selectedQuizId,
-        Object.entries(answers).map(([questionId, selected]) => ({
-          questionId: Number(questionId),
-          selectedAnswer: String.fromCharCode(65 + selected) as 'A' | 'B' | 'C' | 'D',
-        }))
-      );
+      if (!isLecturerPreview) {
+        await quizService.submitQuiz(
+          selectedQuizId,
+          Object.entries(answers).map(([questionId, selected]) => ({
+            questionId: Number(questionId),
+            selectedAnswer: String.fromCharCode(65 + selected) as 'A' | 'B' | 'C' | 'D',
+          }))
+        );
+      }
       setStartedQuizId(null);
       setTimeLeftSeconds(null);
+      setIsLecturerPreview(false);
       setFlash('Hết giờ làm bài! Bài làm của bạn đã được tự động nộp thành công.');
       if (selectedClass) await loadQuizzes(selectedClass);
     } catch (e: unknown) {
@@ -191,16 +222,19 @@ export default function QuizPage() {
     if (!selectedQuizId) return;
     setSubmitting(true);
     try {
-      await quizService.submitQuiz(
-        selectedQuizId,
-        Object.entries(answers).map(([questionId, selected]) => ({
-          questionId: Number(questionId),
-          selectedAnswer: String.fromCharCode(65 + selected) as 'A' | 'B' | 'C' | 'D',
-        }))
-      );
+      if (!isLecturerPreview) {
+        await quizService.submitQuiz(
+          selectedQuizId,
+          Object.entries(answers).map(([questionId, selected]) => ({
+            questionId: Number(questionId),
+            selectedAnswer: String.fromCharCode(65 + selected) as 'A' | 'B' | 'C' | 'D',
+          }))
+        );
+      }
       setStartedQuizId(null);
       setTimeLeftSeconds(null);
-      setFlash('Chúc mừng! Bạn đã hoàn thành và nộp bài kiểm tra thành công.');
+      setIsLecturerPreview(false);
+      setFlash(isLecturerPreview ? 'Đã hoàn thành xem trước bài quiz làm thử.' : 'Chúc mừng! Bạn đã hoàn thành và nộp bài kiểm tra thành công.');
       if (selectedClass) await loadQuizzes(selectedClass);
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Nộp bài thất bại');
@@ -217,11 +251,12 @@ export default function QuizPage() {
       const generated = await quizService.generateAiQuestions(selectedQuizId, {
         content: aiTopic.trim(),
         numberOfQuestions: aiNum || 5,
-        difficulty: 'MEDIUM',
+        difficulty: aiDifficulty,
       });
       setShowAiModal(false);
       setAiTopic('');
-      setFlash(`Đã tạo tự động thành công ${generated.length} câu hỏi mới cho bài Quiz!`);
+      setAiDocName(null);
+      setFlash(`Đã khởi tạo tự động thành công ${generated.length} câu hỏi mới bằng AI!`);
       const freshQuestions = await quizService.getQuizQuestions(selectedQuizId);
       setQuestions(freshQuestions);
     } catch (e: unknown) {
@@ -231,35 +266,98 @@ export default function QuizPage() {
     }
   };
 
-  const handleImportQuizlet = async () => {
-    if (!selectedQuizId || !quizletText.trim()) return;
+  // Helper parser for Import text / file
+  const parseQuestionText = (text: string): QuestionRequest[] => {
+    const list: QuestionRequest[] = [];
+    const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+
+    // Try JSON parse first
+    if (text.trim().startsWith('[') && text.trim().endsWith(']')) {
+      try {
+        const json = JSON.parse(text);
+        if (Array.isArray(json)) {
+          for (const item of json) {
+            if (item.questionText && item.optionA && item.optionB) {
+              list.push({
+                questionText: item.questionText || item.content || '',
+                optionA: item.optionA || '',
+                optionB: item.optionB || '',
+                optionC: item.optionC || '',
+                optionD: item.optionD || '',
+                correctAnswer: (['A', 'B', 'C', 'D'].includes(item.correctAnswer) ? item.correctAnswer : 'A') as 'A' | 'B' | 'C' | 'D',
+              });
+            }
+          }
+          if (list.length > 0) return list;
+        }
+      } catch {
+        // Fallback to text parsing
+      }
+    }
+
+    // Tab-separated or comma-separated lines
+    for (const line of lines) {
+      const parts = line.includes('\t') ? line.split('\t') : line.split(',');
+      const cleanParts = parts.map((p) => p.trim());
+      if (cleanParts.length >= 5) {
+        const rawAns = cleanParts[5]?.toUpperCase();
+        const correctAnswer = (['A', 'B', 'C', 'D'].includes(rawAns) ? rawAns : 'A') as 'A' | 'B' | 'C' | 'D';
+        list.push({
+          questionText: cleanParts[0],
+          optionA: cleanParts[1],
+          optionB: cleanParts[2],
+          optionC: cleanParts[3] || '',
+          optionD: cleanParts[4] || '',
+          correctAnswer,
+        });
+      }
+    }
+
+    return list;
+  };
+
+  const handleTextOrFileParse = (text: string) => {
+    setImportText(text);
+    const parsed = parseQuestionText(text);
+    setParsedQuestions(parsed);
+  };
+
+  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>, isForAi = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      if (isForAi) {
+        setAiTopic(content);
+        setAiDocName(file.name);
+      } else {
+        setFileName(file.name);
+        handleTextOrFileParse(content);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleConfirmImport = async () => {
+    if (!selectedQuizId || parsedQuestions.length === 0) return;
     setErr(null);
     try {
-      const lines = quizletText.split('\n').filter(l => l.trim().length > 0);
       let count = 0;
-      for (const line of lines) {
-        const parts = line.split('\t').map(p => p.trim());
-        if (parts.length >= 5) {
-          const rawAnswer = parts[5]?.toUpperCase();
-          const correctAnswer = (rawAnswer === 'A' || rawAnswer === 'B' || rawAnswer === 'C' || rawAnswer === 'D') ? rawAnswer : 'A';
-          await quizService.createQuestion(selectedQuizId, {
-            questionText: parts[0],
-            optionA: parts[1],
-            optionB: parts[2],
-            optionC: parts[3],
-            optionD: parts[4],
-            correctAnswer,
-          });
-          count++;
-        }
+      for (const q of parsedQuestions) {
+        await quizService.createQuestion(selectedQuizId, q);
+        count++;
       }
-      setShowQuizletModal(false);
-      setQuizletText('');
-      setFlash(`Đã nhập thành công ${count} câu hỏi định dạng Quizlet!`);
+      setShowImportModal(false);
+      setImportText('');
+      setParsedQuestions([]);
+      setFileName(null);
+      setFlash(`Đã nhập thành công ${count} câu hỏi vào bài Quiz!`);
       const freshQuestions = await quizService.getQuizQuestions(selectedQuizId);
       setQuestions(freshQuestions);
     } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'Import Quizlet thất bại');
+      setErr((e as { message?: string })?.message ?? 'Import câu hỏi thất bại');
     }
   };
 
@@ -355,10 +453,20 @@ export default function QuizPage() {
         )}
       </div>
 
+      {/* Flash Banner with Close Button & 5s Auto Dismiss */}
       {flash && (
-        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-          {flash}
+        <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-sm font-medium flex items-center justify-between gap-2 shadow-xs transition-all">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span>{flash}</span>
+          </div>
+          <button 
+            onClick={() => setFlash(null)} 
+            className="p-1 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition cursor-pointer"
+            title="Đóng thông báo"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -379,7 +487,7 @@ export default function QuizPage() {
               {quizzes.map((q) => (
                 <button 
                   key={q.id} 
-                  onClick={() => { setSelectedQuizId(q.id); setStartedQuizId(null); }} 
+                  onClick={() => { setSelectedQuizId(q.id); setStartedQuizId(null); setIsLecturerPreview(false); }} 
                   className={`w-full text-left rounded-xl border p-4 transition cursor-pointer ${
                     selectedQuizId === q.id 
                       ? 'border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 shadow-xs ring-1 ring-indigo-500' 
@@ -413,24 +521,24 @@ export default function QuizPage() {
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Bài kiểm tra đánh giá kiến thức trắc nghiệm ({questions.length} câu hỏi)</p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Pill color="indigo">{activeQuiz.durationMinutes ?? 30} phút làm bài</Pill>
                   {isLecturer && (
-                    <div className="flex items-center gap-2 ml-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => setShowAiModal(true)}
                         className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition cursor-pointer flex items-center gap-1.5 shadow-xs"
                       >
                         <Wand2 className="w-3.5 h-3.5" />
-                        Tạo tự động
+                        Tạo tự động AI
                       </button>
 
                       <button
-                        onClick={() => setShowQuizletModal(true)}
+                        onClick={() => setShowImportModal(true)}
                         className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition cursor-pointer flex items-center gap-1.5 shadow-xs"
                       >
                         <Upload className="w-3.5 h-3.5" />
-                        Import Quizlet
+                        Import File / Quizlet
                       </button>
 
                       <button
@@ -444,80 +552,114 @@ export default function QuizPage() {
                         <Plus className="w-3.5 h-3.5" />
                         Thêm câu hỏi
                       </button>
+
+                      <button
+                        onClick={() => handleDeleteQuiz(activeQuiz.id)}
+                        className="px-2.5 py-1.5 text-xs font-semibold rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900 transition cursor-pointer flex items-center gap-1"
+                        title="Xóa Quiz"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Student View (Before Start vs In Progress) */}
-              {startedQuizId !== selectedQuizId ? (
-                <div className="py-8 text-center bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 space-y-3">
-                  <Timer className="w-12 h-12 text-indigo-500 mx-auto opacity-80" />
-                  <h4 className="text-base font-bold text-slate-800 dark:text-white">Sẵn sàng làm bài trắc nghiệm</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                    Thời gian làm bài sẽ được tính ngược ngay khi bạn bấm nút bắt đầu. Khi hết giờ, bài làm sẽ tự động được gửi lên hệ thống.
-                  </p>
-                  <button 
-                    onClick={() => void handleStart()} 
-                    className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition shadow-md cursor-pointer inline-flex items-center gap-2"
-                  >
-                    <Clock className="w-4 h-4" />
-                    Bắt đầu làm bài ngay
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Countdown Timer Header */}
-                  {timeLeftSeconds != null && (
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 sticky top-2 z-10 shadow-sm">
-                      <span className="font-semibold text-sm flex items-center gap-2">
-                        <Timer className="w-4 h-4 text-amber-600 animate-pulse" />
-                        Thời gian còn lại:
-                      </span>
-                      <span className="font-mono text-xl font-bold text-amber-700 tracking-wider">
-                        {formatTimer(timeLeftSeconds)}
-                      </span>
-                    </div>
-                  )}
+              {/* LECTURER VIEW: Questions & Answers List */}
+              {isLecturer && !isLecturerPreview && startedQuizId !== selectedQuizId ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                      <HelpCircle className="w-4 h-4 text-indigo-500" />
+                      Danh sách câu hỏi & đáp án ({questions.length} câu)
+                    </span>
+                    <button
+                      onClick={() => {
+                        setIsLecturerPreview(true);
+                        void handleStart();
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 transition text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      Xem trước chế độ sinh viên làm bài
+                    </button>
+                  </div>
 
-                  {questions.length === 0 ? <Empty msg="Chưa có câu hỏi nào trong bài quiz này" /> : (
+                  {questions.length === 0 ? (
+                    <div className="py-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3">
+                      <Sparkles className="w-10 h-10 text-indigo-400 mx-auto opacity-80" />
+                      <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">Bài Quiz chưa có câu hỏi nào</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                        Sử dụng tính năng Tạo tự động bằng AI hoặc Import file câu hỏi từ máy tính để thêm nhanh các câu hỏi trắc nghiệm.
+                      </p>
+                      <div className="flex items-center justify-center gap-2 pt-2">
+                        <button
+                          onClick={() => setShowAiModal(true)}
+                          className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold text-xs hover:bg-indigo-700 transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Wand2 className="w-3.5 h-3.5" />
+                          Tạo tự động bằng AI
+                        </button>
+                        <button
+                          onClick={() => setShowImportModal(true)}
+                          className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-semibold text-xs hover:bg-emerald-700 transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          Import từ file
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
                     <div className="space-y-4">
                       {questions.map((q, idx) => (
-                        <div key={q.id} className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900 space-y-3">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="font-semibold text-slate-800 dark:text-white text-sm">
-                              Câu {idx + 1}: {q.questionText ?? q.content}
+                        <div key={q.id} className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900 space-y-3 shadow-2xs">
+                          <div className="flex items-start justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-2">
+                            <div className="font-semibold text-slate-800 dark:text-white text-sm leading-relaxed">
+                              <span className="text-indigo-600 dark:text-indigo-400 font-bold mr-1">Câu {idx + 1}:</span> 
+                              {q.questionText ?? q.content}
                             </div>
-                            {isLecturer && (
-                              <div className="flex items-center gap-1 shrink-0">
-                                <button onClick={() => startEditQuestion(q)} className="text-slate-400 hover:text-indigo-600 p-1 cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
-                                <button onClick={() => handleDeleteQuestion(q.id)} className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
-                              </div>
-                            )}
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button 
+                                onClick={() => startEditQuestion(q)} 
+                                className="text-slate-500 hover:text-indigo-600 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" 
+                                title="Chỉnh sửa câu hỏi"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteQuestion(q.id)} 
+                                className="text-slate-500 hover:text-rose-600 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" 
+                                title="Xóa câu hỏi"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
-                            {[q.optionA, q.optionB, q.optionC, q.optionD].map((opt, opIdx) => {
-                              const letter = String.fromCharCode(65 + opIdx);
-                              const isSelected = answers[q.id] === opIdx;
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {[
+                              { key: 'A', text: q.optionA },
+                              { key: 'B', text: q.optionB },
+                              { key: 'C', text: q.optionC },
+                              { key: 'D', text: q.optionD },
+                            ].map((opt) => {
+                              const isCorrect = q.correctAnswer === opt.key;
                               return (
-                                <label 
-                                  key={`${q.id}-${opIdx}`} 
-                                  className={`flex items-center gap-3 p-3 rounded-lg border text-xs font-medium cursor-pointer transition ${
-                                    isSelected 
-                                      ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-200 font-semibold ring-1 ring-indigo-600' 
-                                      : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                <div 
+                                  key={`${q.id}-${opt.key}`} 
+                                  className={`flex items-center justify-between p-2.5 rounded-lg border text-xs font-medium transition ${
+                                    isCorrect 
+                                      ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-semibold' 
+                                      : 'border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-800/30 text-slate-700 dark:text-slate-300'
                                   }`}
                                 >
-                                  <input
-                                    type="radio"
-                                    name={`q-${q.id}`}
-                                    checked={isSelected}
-                                    onChange={() => setAnswers((prev) => ({ ...prev, [q.id]: opIdx }))}
-                                    className="text-indigo-600 focus:ring-indigo-500"
-                                  />
-                                  <span>{letter}. {opt}</span>
-                                </label>
+                                  <span><strong className="mr-1">{opt.key}.</strong> {opt.text}</span>
+                                  {isCorrect && (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-200/60 dark:bg-emerald-800/60 px-2 py-0.5 rounded-md">
+                                      <Check className="w-3 h-3" /> Đáp án đúng
+                                    </span>
+                                  )}
+                                </div>
                               );
                             })}
                           </div>
@@ -525,16 +667,103 @@ export default function QuizPage() {
                       ))}
                     </div>
                   )}
+                </div>
+              ) : (
+                /* STUDENT / IN-PROGRESS ATTEMPT VIEW */
+                <div>
+                  {startedQuizId !== selectedQuizId ? (
+                    <div className="py-8 text-center bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-6 space-y-3">
+                      <Timer className="w-12 h-12 text-indigo-500 mx-auto opacity-80" />
+                      <h4 className="text-base font-bold text-slate-800 dark:text-white">Sẵn sàng làm bài trắc nghiệm</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                        Thời gian làm bài sẽ được tính ngược ngay khi bạn bấm nút bắt đầu. Khi hết giờ, bài làm sẽ tự động được gửi lên hệ thống.
+                      </p>
+                      <button 
+                        onClick={() => void handleStart()} 
+                        className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition shadow-md cursor-pointer inline-flex items-center gap-2"
+                      >
+                        <Clock className="w-4 h-4" />
+                        Bắt đầu làm bài ngay
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {/* Countdown Timer Header */}
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 sticky top-2 z-10 shadow-sm">
+                        <div className="flex items-center gap-2">
+                          <Timer className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-pulse" />
+                          <span className="font-semibold text-sm">Thời gian còn lại:</span>
+                          {isLecturerPreview && (
+                            <span className="text-[10px] font-bold bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded-md">
+                              Chế độ xem trước
+                            </span>
+                          )}
+                        </div>
+                        <span className="font-mono text-xl font-bold text-amber-700 dark:text-amber-300 tracking-wider">
+                          {timeLeftSeconds != null ? formatTimer(timeLeftSeconds) : '--:--'}
+                        </span>
+                      </div>
 
-                  <div className="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-800">
-                    <button 
-                      disabled={submitting || questions.length === 0} 
-                      onClick={() => void handleSubmit()} 
-                      className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm disabled:opacity-50 hover:bg-indigo-700 transition shadow-md cursor-pointer"
-                    >
-                      {submitting ? 'Đang nộp bài...' : 'Nộp bài kiểm tra'}
-                    </button>
-                  </div>
+                      {questions.length === 0 ? <Empty msg="Chưa có câu hỏi nào trong bài quiz này" /> : (
+                        <div className="space-y-4">
+                          {questions.map((q, idx) => (
+                            <div key={q.id} className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900 space-y-3">
+                              <div className="font-semibold text-slate-800 dark:text-white text-sm">
+                                Câu {idx + 1}: {q.questionText ?? q.content}
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
+                                {[q.optionA, q.optionB, q.optionC, q.optionD].map((opt, opIdx) => {
+                                  const letter = String.fromCharCode(65 + opIdx);
+                                  const isSelected = answers[q.id] === opIdx;
+                                  return (
+                                    <label 
+                                      key={`${q.id}-${opIdx}`} 
+                                      className={`flex items-center gap-3 p-3 rounded-lg border text-xs font-medium cursor-pointer transition ${
+                                        isSelected 
+                                          ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-200 font-semibold ring-1 ring-indigo-600' 
+                                          : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                      }`}
+                                    >
+                                      <input
+                                        type="radio"
+                                        name={`q-${q.id}`}
+                                        checked={isSelected}
+                                        onChange={() => setAnswers((prev) => ({ ...prev, [q.id]: opIdx }))}
+                                        className="text-indigo-600 focus:ring-indigo-500"
+                                      />
+                                      <span>{letter}. {opt}</span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+                        {isLecturerPreview && (
+                          <button
+                            onClick={() => {
+                              setStartedQuizId(null);
+                              setIsLecturerPreview(false);
+                            }}
+                            className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold cursor-pointer"
+                          >
+                            Thoát xem trước
+                          </button>
+                        )}
+                        <button 
+                          disabled={submitting || questions.length === 0} 
+                          onClick={() => void handleSubmit()} 
+                          className="ml-auto px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold text-sm disabled:opacity-50 hover:bg-indigo-700 transition shadow-md cursor-pointer"
+                        >
+                          {submitting ? 'Đang nộp bài...' : 'Nộp bài kiểm tra'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -605,88 +834,192 @@ export default function QuizPage() {
         </div>
       )}
 
-      {/* Modal Quizlet Import */}
-      {showQuizletModal && (
+      {/* Modern File & Quizlet Import Modal */}
+      {showImportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                 <Upload className="w-5 h-5 text-emerald-600" />
-                Import Định Dạng Quizlet / Text TSV
+                Import File Câu Hỏi Trắc Nghiệm
               </h3>
-              <button onClick={() => setShowQuizletModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
+              <button onClick={() => setShowImportModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-2">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Dán danh sách câu hỏi dạng Tab-separated (Câu hỏi [TAB] Đáp án A [TAB] Đáp án B [TAB] Đáp án C [TAB] Đáp án D)
-              </p>
-              <textarea
-                value={quizletText}
-                onChange={(e) => setQuizletText(e.target.value)}
-                placeholder="Ví dụ: Lập trình Java là gì?	Ngôn ngữ	Hệ điều hành	Cơ sở dữ liệu	Trình duyệt"
-                rows={6}
-                className="w-full px-3 py-2 text-xs font-mono border rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
+            {/* Import Method Tabs */}
+            <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+              <button
+                onClick={() => setImportTab('FILE')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer ${
+                  importTab === 'FILE'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                }`}
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" /> Tải File (.txt, .csv, .json)
+              </button>
+              <button
+                onClick={() => setImportTab('TEXT')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer ${
+                  importTab === 'TEXT'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                }`}
+              >
+                <FileCode className="w-3.5 h-3.5" /> Dán Văn Bản Trực Tiếp
+              </button>
             </div>
+
+            {importTab === 'FILE' ? (
+              <div className="space-y-3">
+                <label className="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 rounded-xl p-6 text-center block cursor-pointer transition bg-slate-50/50 dark:bg-slate-800/40">
+                  <Upload className="w-8 h-8 text-emerald-600 dark:text-emerald-400 mx-auto mb-2 opacity-80" />
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                    {fileName ? `📄 ${fileName}` : 'Bấm vào đây để chọn file câu hỏi từ máy tính'}
+                  </span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-1">
+                    Hỗ trợ file định dạng `.txt`, `.csv`, `.tsv`, `.json`
+                  </span>
+                  <input type="file" accept=".txt,.csv,.tsv,.json" onChange={(e) => handleFileUpload(e, false)} className="hidden" />
+                </label>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Dán định dạng Tab-separated / CSV: (Câu hỏi [TAB] Đáp án A [TAB] Đáp án B [TAB] Đáp án C [TAB] Đáp án D [TAB] Đáp án đúng)
+                </p>
+                <textarea
+                  value={importText}
+                  onChange={(e) => handleTextOrFileParse(e.target.value)}
+                  placeholder="Lập trình Java là gì?	Ngôn ngữ	Hệ điều hành	Cơ sở dữ liệu	Trình duyệt	A"
+                  rows={5}
+                  className="w-full px-3 py-2 text-xs font-mono border rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+            )}
+
+            {/* Live Parsed Preview Badge */}
+            {parsedQuestions.length > 0 && (
+              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  Đã nhận diện {parsedQuestions.length} câu hỏi hợp lệ sẵn sàng import!
+                </span>
+              </div>
+            )}
 
             <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
               <button
-                onClick={() => setShowQuizletModal(false)}
+                onClick={() => setShowImportModal(false)}
                 className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-lg cursor-pointer"
               >
                 Hủy
               </button>
               <button
-                onClick={handleImportQuizlet}
-                disabled={!quizletText.trim()}
-                className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg disabled:opacity-50 cursor-pointer"
+                onClick={handleConfirmImport}
+                disabled={parsedQuestions.length === 0}
+                className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
               >
-                Nhập câu hỏi
+                <Upload className="w-4 h-4" />
+                Nhập {parsedQuestions.length > 0 ? `${parsedQuestions.length} câu hỏi` : ''}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal Auto Question Generator */}
+      {/* Upgraded Modern AI Question Generator Modal */}
       {showAiModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <Wand2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                Tạo câu hỏi trắc nghiệm tự động
+                <Wand2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400 animate-pulse" />
+                Tạo câu hỏi trắc nghiệm tự động bằng AI
               </h3>
               <button onClick={() => setShowAiModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
+              {/* Option to Upload Document for AI context */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nội dung bài giảng / Chủ đề tài liệu</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Đính kèm file tài liệu / bài giảng (Tùy chọn)
+                </label>
+                <label className="border border-dashed border-indigo-200 dark:border-indigo-900/60 hover:border-indigo-500 rounded-xl p-3 text-center block cursor-pointer transition bg-indigo-50/30 dark:bg-indigo-950/20">
+                  <div className="flex items-center justify-center gap-2 text-xs font-medium text-indigo-700 dark:text-indigo-300">
+                    <Upload className="w-4 h-4" />
+                    <span>{aiDocName ? `📄 ${aiDocName}` : 'Tải file bài học (.txt, .md, .csv) để AI đọc nội dung'}</span>
+                  </div>
+                  <input type="file" accept=".txt,.md,.csv,.json" onChange={(e) => handleFileUpload(e, true)} className="hidden" />
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Nội dung bài giảng / Chủ đề trắc nghiệm
+                </label>
                 <textarea
                   value={aiTopic}
                   onChange={(e) => setAiTopic(e.target.value)}
-                  placeholder="Dán nội dung bài học hoặc chủ đề: Tổng quan Lập trình Hướng đối tượng Java, tính kế thừa và đa hình..."
+                  placeholder="Dán nội dung bài học hoặc chủ đề: Tổng quan Lập trình Hướng đối tượng Java, tính kế thừa, đa hình và đóng gói..."
                   rows={4}
                   className="w-full px-3 py-2 text-sm border rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Số lượng câu hỏi cần tạo</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={aiNum}
-                  onChange={(e) => setAiNum(Number(e.target.value) || 5)}
-                  className="w-full px-3 py-2 text-sm border rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Số lượng câu hỏi
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    {[5, 10, 15, 20].map((num) => (
+                      <button
+                        type="button"
+                        key={num}
+                        onClick={() => setAiNum(num)}
+                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg border transition cursor-pointer ${
+                          aiNum === num
+                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                        }`}
+                      >
+                        {num} câu
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Độ khó
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    {[
+                      { key: 'EASY', label: 'Dễ' },
+                      { key: 'MEDIUM', label: 'Vừa' },
+                      { key: 'HARD', label: 'Khó' },
+                    ].map((d) => (
+                      <button
+                        type="button"
+                        key={d.key}
+                        onClick={() => setAiDifficulty(d.key as 'EASY' | 'MEDIUM' | 'HARD')}
+                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg border transition cursor-pointer ${
+                          aiDifficulty === d.key
+                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                        }`}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -700,17 +1033,17 @@ export default function QuizPage() {
               <button
                 onClick={handleGenerateAi}
                 disabled={generatingAi || !aiTopic.trim()}
-                className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+                className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-md"
               >
                 {generatingAi ? (
                   <>
                     <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    <span>Đang khởi tạo câu hỏi...</span>
+                    <span>Đang tạo {aiNum} câu hỏi AI...</span>
                   </>
                 ) : (
                   <>
                     <Wand2 className="w-4 h-4" />
-                    Tạo câu hỏi ngay
+                    Bắt đầu tạo câu hỏi ngay
                   </>
                 )}
               </button>
