@@ -290,16 +290,13 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                             } ${onSelectSchedule ? 'cursor-pointer' : ''}`}
                           >
                             {/* Top Card Header Strip (Solid Theme Color) */}
-                            <div className={`${theme.headerBg} px-2 py-1 text-white flex items-center justify-between gap-1 shrink-0`}>
-                              <span className="font-bold text-xs truncate leading-snug">
-                                {item.courseTitle || item.className || item.classCode}
-                              </span>
-                              <div className="text-[10px] font-mono leading-tight bg-black/25 px-1.5 py-0.5 rounded font-bold shrink-0 text-right flex flex-col items-end justify-center">
-                                <div>{item.startTime} - {item.endTime}</div>
+                            <div className={`${theme.headerBg} px-2 py-1 text-white flex items-center justify-center shrink-0 text-center`}>
+                              <div className="text-[10.5px] font-mono font-bold leading-tight flex items-center gap-1.5 flex-wrap justify-center">
+                                <span>{item.startTime} - {item.endTime}</span>
                                 {item.periodLabel && (
-                                  <div className="text-[9.5px] font-sans font-medium text-white/90">
+                                  <span className="text-[10px] font-sans font-semibold text-white/90">
                                     ({item.periodLabel})
-                                  </div>
+                                  </span>
                                 )}
                               </div>
                             </div>
