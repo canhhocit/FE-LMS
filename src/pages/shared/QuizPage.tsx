@@ -5,7 +5,7 @@ import * as quizService from '../../services/quizService';
 import type { QuestionRequest } from '../../services/quizService';
 import type { Clazz, Quiz, QuizQuestion } from '../../types';
 import { 
-  Wand2, Plus, Clock, CheckCircle2, FileText, 
+  Plus, Clock, CheckCircle2, FileText, 
   Upload, Trash2, Pencil, Timer, HelpCircle, X,
   FileSpreadsheet, Eye, Sparkles, Check, FileCode
 } from 'lucide-react';
@@ -551,9 +551,8 @@ export default function QuizPage() {
                       <div className="flex flex-wrap items-center gap-1.5">
                         <button
                           onClick={() => setShowAiModal(true)}
-                          className="px-2.5 py-1.5 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition cursor-pointer flex items-center gap-1.5"
+                          className="px-2.5 py-1.5 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition cursor-pointer"
                         >
-                          <Wand2 className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
                           Tạo tự động AI
                         </button>
 
@@ -621,7 +620,6 @@ export default function QuizPage() {
                             onClick={() => setShowAiModal(true)}
                             className="px-3 py-1.5 rounded-md bg-slate-900 text-white font-medium text-xs hover:bg-slate-800 transition flex items-center gap-1.5 cursor-pointer"
                           >
-                            <Wand2 className="w-3.5 h-3.5" />
                             Tạo tự động bằng AI
                           </button>
                           <button
@@ -961,8 +959,7 @@ export default function QuizPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-xs p-4">
           <div className="w-full max-w-lg rounded-lg bg-white dark:bg-slate-900 p-5 shadow-lg border border-slate-200 dark:border-slate-800 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Wand2 className="w-4 h-4 text-slate-700 dark:text-slate-300" />
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Tạo câu hỏi trắc nghiệm tự động bằng AI
               </h3>
               <button onClick={() => setShowAiModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
@@ -998,9 +995,9 @@ export default function QuizPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                     Số lượng câu hỏi
                   </label>
                   <div className="flex items-center gap-1">
@@ -1009,20 +1006,33 @@ export default function QuizPage() {
                         type="button"
                         key={num}
                         onClick={() => setAiNum(num)}
-                        className={`flex-1 py-1 text-xs font-medium rounded-md border transition cursor-pointer ${
+                        className={`px-2 py-1 text-xs font-medium rounded-md border transition cursor-pointer ${
                           aiNum === num
                             ? 'bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-900'
                             : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                         }`}
                       >
-                        {num}
+                        {num} câu
                       </button>
                     ))}
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">Tùy chỉnh:</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={50}
+                      value={aiNum || ''}
+                      onChange={(e) => setAiNum(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
+                      placeholder="Số câu (1-50)"
+                      className="w-24 px-2 py-1 text-xs border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400 font-mono"
+                    />
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">câu</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                     Độ khó
                   </label>
                   <div className="flex items-center gap-1">
@@ -1064,13 +1074,10 @@ export default function QuizPage() {
                 {generatingAi ? (
                   <>
                     <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    <span>Đang tạo {aiNum} câu hỏi AI...</span>
+                    <span>Đang tạo {aiNum} câu hỏi...</span>
                   </>
                 ) : (
-                  <>
-                    <Wand2 className="w-3.5 h-3.5" />
-                    Bắt đầu tạo câu hỏi
-                  </>
+                  <span>Bắt đầu tạo câu hỏi</span>
                 )}
               </button>
             </div>
