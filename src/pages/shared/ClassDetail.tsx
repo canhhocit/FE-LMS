@@ -546,7 +546,9 @@ export default function ClassDetail() {
               <div className="mt-1 text-2xl font-bold text-slate-800">{studentProgress?.percentage ?? 0}%</div>
             </div>
             <div className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
-              {studentSummary.completed}/{studentSummary.total} bài học đã hoàn thành
+              {studentSummary.total === 0
+                ? 'Chưa có bài học'
+                : `${studentSummary.completed}/${studentSummary.total} bài học đã hoàn thành`}
             </div>
           </div>
           <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-slate-200">

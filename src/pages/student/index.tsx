@@ -24,7 +24,10 @@ type ClassProgressState = {
   status: 'completed' | 'in-progress' | 'not-started';
 };
 
-const getStatusMeta = (percentage: number) => {
+const getStatusMeta = (percentage: number, totalCount?: number) => {
+  if (totalCount === 0) {
+    return { label: 'Chưa có bài học', badgeColor: 'slate' as const, barClass: 'bg-slate-300 dark:bg-slate-700' };
+  }
   if (percentage >= 100) {
     return { label: 'Đã hoàn thành', badgeColor: 'emerald' as const, barClass: 'bg-emerald-500' };
   }
@@ -128,7 +131,7 @@ export function StudentDashboard() {
     ?? null;
   const continueLearningProgress = continueLearningClass ? classProgress[continueLearningClass.id] : null;
   const continueLearningPercentage = continueLearningProgress?.percentage ?? 0;
-  const continueLearningMeta = getStatusMeta(continueLearningPercentage);
+  const continueLearningMeta = getStatusMeta(continueLearningPercentage, continueLearningProgress?.totalCount);
 
   const recentActivity = [
     ...notifications.slice(0, 3).map((item) => ({
@@ -225,7 +228,11 @@ export function StudentDashboard() {
               />
             </div>
             <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400">
-              <span>{continueLearningProgress?.completedCount ?? 0}/{continueLearningProgress?.totalCount ?? 0} bài học</span>
+              <span>
+                {continueLearningProgress && continueLearningProgress.totalCount === 0
+                  ? 'Chưa có bài học'
+                  : `${continueLearningProgress?.completedCount ?? 0}/${continueLearningProgress?.totalCount ?? 0} bài học`}
+              </span>
               {continueLearningClass && (
                 <Link to={`/student/classes/${continueLearningClass.id}`} className="font-semibold text-accent-400 hover:underline flex items-center gap-1">
                   Vào học <ArrowRight className="w-3 h-3" />
@@ -303,7 +310,7 @@ export function StudentDashboard() {
             {classes.slice(0, 4).map((c: Clazz) => {
               const progress = classProgress[c.id];
               const percentage = progress?.percentage ?? 0;
-              const statusMeta = getStatusMeta(percentage);
+              const statusMeta = getStatusMeta(percentage, progress?.totalCount);
               return (
                 <Link key={c.id} to={`/student/classes/${c.id}`}>
                   <Card className="hover:border-accent-500/50 cursor-pointer h-full flex flex-col justify-between">
@@ -327,6 +334,14 @@ export function StudentDashboard() {
                           className={`h-full ${statusMeta.barClass} transition-all duration-300`}
                           style={{ width: `${Math.min(100, percentage)}%` }}
                         />
+                      </div>
+                      <div className="mt-2 text-[11px] text-slate-400 flex justify-between">
+                        <span>
+                          {progress && progress.totalCount === 0
+                            ? 'Chưa có bài học'
+                            : `${progress?.completedCount ?? 0}/${progress?.totalCount ?? 0} bài học`}
+                        </span>
+                        <span>{c.room ? `Phòng ${c.room}` : ''}</span>
                       </div>
                     </div>
                   </Card>
@@ -420,7 +435,7 @@ export function StudentClasses() {
           {classes.map((c) => {
             const progress = classProgress[c.id];
             const percentage = progress?.percentage ?? 0;
-            const statusMeta = getStatusMeta(percentage);
+            const statusMeta = getStatusMeta(percentage, progress?.totalCount);
             return (
               <Link key={c.id} to={`/student/classes/${c.id}`}>
                 <Card className="hover:border-accent-500/50 cursor-pointer h-full flex flex-col justify-between">
@@ -446,7 +461,11 @@ export function StudentClasses() {
                       />
                     </div>
                     <div className="mt-2 text-[11px] text-slate-400 flex justify-between">
-                      <span>{progress?.completedCount ?? 0}/{progress?.totalCount ?? 0} bài học</span>
+                      <span>
+                        {progress && progress.totalCount === 0
+                          ? 'Chưa có bài học'
+                          : `${progress?.completedCount ?? 0}/${progress?.totalCount ?? 0} bài học`}
+                      </span>
                       <span>{c.room ? `Phòng ${c.room}` : ''}</span>
                     </div>
                   </div>
