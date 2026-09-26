@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Download, Calendar, ExternalLink, ArrowRight, CheckCircle2, CalendarPlus } from 'lucide-react';
+import { Download, Calendar, ExternalLink, CalendarPlus } from 'lucide-react';
 import * as scheduleService from '../../services/scheduleService';
 import { PageHeader, Spinner, ErrorBox, Button, Modal, Toast } from '../../components/ui';
 import TimetableGrid from '../../components/TimetableGrid';
@@ -158,7 +158,7 @@ export default function StudentSchedule() {
       }, idx * 350);
     });
 
-    setToastMsg(`Đã mở ${uniqueSchedules.length} trang Google Calendar để bạn bấm "Lưu" trực tiếp!`);
+    setToastMsg(`Đã mở ${uniqueSchedules.length} trang Google Calendar để lưu trực tiếp!`);
     setTimeout(() => setToastMsg(null), 6000);
   };
 
@@ -175,7 +175,7 @@ export default function StudentSchedule() {
         actions={
           <>
             <Button variant="secondary" size="sm" onClick={() => setShowSyncModal(true)}>
-              <Calendar className="w-3.5 h-3.5 text-accent-600" />
+              <Calendar className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" />
               <span>Đồng bộ Google</span>
             </Button>
             <Button variant="secondary" size="sm" onClick={exportToIcs}>
@@ -192,56 +192,50 @@ export default function StudentSchedule() {
       <Modal
         open={showSyncModal}
         onClose={() => setShowSyncModal(false)}
-        title="Đồng bộ trực tiếp với Google Calendar"
-        maxWidth="max-w-xl"
+        title="Đồng bộ Google Calendar"
+        maxWidth="max-w-lg"
       >
         {schedules.length === 0 ? (
           <div className="py-6 text-center text-xs text-slate-400">Chưa có lịch học để đồng bộ.</div>
         ) : (
           <div className="space-y-4">
-            {/* Primary Direct Google Calendar Sync Card */}
-            <div className="p-4 rounded-xl border border-indigo-200 bg-indigo-50/60 dark:bg-indigo-950/40 dark:border-indigo-900/60 space-y-3 shadow-2xs">
-              <div className="flex items-start gap-3">
-                <CalendarPlus className="w-6 h-6 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-sm text-indigo-900 dark:text-indigo-200">
-                    Đồng bộ trực tiếp vào Google Calendar
-                  </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                    Tự động mở ứng dụng Google Calendar với đầy đủ thông tin môn học, phòng học và thời gian lặp lại theo tuần. Bạn chỉ cần bấm <strong>"Lưu"</strong> trực tiếp trên Google Calendar mà không cần tải file về máy.
-                  </p>
-                </div>
-              </div>
-
-              <Button onClick={handleDirectSyncAllGoogleCalendar} className="w-full justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-xs">
-                <CalendarPlus className="w-4 h-4 mr-1" />
-                Mở Google Calendar & Đồng bộ trực tiếp tất cả môn <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
+            {/* Soft, clean sync banner */}
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40 space-y-3">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Tự động mở Google Calendar với thông tin môn học, thời gian và địa điểm. Bạn chỉ cần bấm <strong>"Lưu"</strong> trực tiếp.
+              </p>
+              <button 
+                onClick={handleDirectSyncAllGoogleCalendar} 
+                className="w-full py-2.5 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-medium text-xs transition cursor-pointer flex items-center justify-center gap-2 shadow-xs"
+              >
+                <CalendarPlus className="w-4 h-4" />
+                <span>Đồng bộ Google Calendar</span>
+              </button>
             </div>
 
-            {/* Individual Course Direct Add List */}
+            {/* Subtle Course List */}
             <div className="space-y-2">
-              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                Thêm trực tiếp từng môn học vào Google Calendar:
+              <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                Thêm từng môn học:
               </h4>
 
-              <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
                 {schedules.map((s, idx) => {
                   const dayName = DAY_NAMES[s.dayOfWeek || 1];
                   const googleUrl = buildGoogleCalendarUrl(s);
                   return (
                     <div
                       key={s.id || idx}
-                      className="p-3 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-3 text-xs hover:border-slate-300 transition shadow-2xs"
+                      className="p-3 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-3 text-xs"
                     >
-                      <div className="space-y-1 min-w-0">
-                        <div className="font-bold text-slate-900 dark:text-white truncate">
+                      <div className="space-y-0.5 min-w-0">
+                        <div className="font-semibold text-slate-800 dark:text-white truncate">
                           {s.courseTitle || s.className || s.classCode}
                         </div>
                         <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-[11px]">
-                          <span className="font-bold text-indigo-600 dark:text-indigo-400">{dayName}</span>
+                          <span className="font-medium text-slate-700 dark:text-slate-300">{dayName}</span>
                           <span>Tiết {s.startPeriod}-{s.endPeriod}</span>
-                          <span>{s.room ? `Phòng ${s.room}` : ''}</span>
+                          {s.room && <span>Phòng {s.room}</span>}
                         </div>
                       </div>
 
@@ -249,10 +243,10 @@ export default function StudentSchedule() {
                         href={googleUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-xs shrink-0 flex items-center gap-1 transition shadow-2xs"
+                        className="px-2.5 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-[11px] shrink-0 flex items-center gap-1 transition"
                       >
-                        <span>Thêm trực tiếp</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Thêm</span>
+                        <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
                   );
@@ -260,14 +254,14 @@ export default function StudentSchedule() {
               </div>
             </div>
 
-            {/* Secondary fallback link */}
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-              <span>Cần dùng cho Outlook hoặc Apple Calendar?</span>
+            {/* Subtle ICS download footer */}
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
+              <span>Outlook / Apple Calendar?</span>
               <button
                 onClick={exportToIcs}
-                className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-medium hover:underline flex items-center gap-1 cursor-pointer"
               >
-                <Download className="w-3.5 h-3.5" /> Tải file .ICS
+                <Download className="w-3 h-3" /> Tải file .ICS
               </button>
             </div>
           </div>
