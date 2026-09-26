@@ -98,7 +98,7 @@ export default function QuizPage() {
       setQuizzes(list);
       if (list.length > 0 && !selectedQuizId) setSelectedQuizId(list[0].id);
     } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'Không tải được danh sách bài trắc nghiệm');
+      setErr((e as { message?: string })?.message ?? 'Không tải được danh sách bài kiểm tra');
     }
   };
 
@@ -156,25 +156,25 @@ export default function QuizPage() {
       });
       setShowCreateQuizModal(false);
       setQuizTitle('');
-      setFlash('Đã tạo Quiz mới thành công!');
+      setFlash('Đã tạo bài kiểm tra mới thành công!');
       await loadQuizzes(selectedClass);
       if (newQuiz?.id) setSelectedQuizId(newQuiz.id);
     } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'Tạo Quiz thất bại');
+      setErr((e as { message?: string })?.message ?? 'Tạo bài kiểm tra thất bại');
     } finally {
       setSavingQuiz(false);
     }
   };
 
   const handleDeleteQuiz = async (quizId: number) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa bài Quiz này không?')) return;
+    if (!confirm('Bạn có chắc chắn muốn xóa bài kiểm tra này không?')) return;
     try {
       await quizService.deleteQuiz(quizId);
-      setFlash('Đã xóa bài Quiz thành công.');
+      setFlash('Đã xóa bài kiểm tra thành công.');
       setSelectedQuizId(null);
       if (selectedClass) await loadQuizzes(selectedClass);
     } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'Xóa Quiz thất bại');
+      setErr((e as { message?: string })?.message ?? 'Xóa bài kiểm tra thất bại');
     }
   };
 
@@ -189,7 +189,7 @@ export default function QuizPage() {
       setTimeLeftSeconds(minutes > 0 ? minutes * 60 : 3600);
       setErr(null);
     } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'Không thể bắt đầu quiz. Có thể quiz chưa mở hoặc đã kết thúc.');
+      setErr((e as { message?: string })?.message ?? 'Không thể bắt đầu làm bài. Có thể bài kiểm tra chưa mở hoặc đã kết thúc.');
     }
   };
 
@@ -234,7 +234,7 @@ export default function QuizPage() {
       setStartedQuizId(null);
       setTimeLeftSeconds(null);
       setIsLecturerPreview(false);
-      setFlash(isLecturerPreview ? 'Đã hoàn thành xem trước bài quiz làm thử.' : 'Chúc mừng! Bạn đã hoàn thành và nộp bài kiểm tra thành công.');
+      setFlash(isLecturerPreview ? 'Đã hoàn thành xem trước bài làm thử.' : 'Chúc mừng! Bạn đã hoàn thành và nộp bài kiểm tra thành công.');
       if (selectedClass) await loadQuizzes(selectedClass);
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Nộp bài thất bại');
@@ -353,7 +353,7 @@ export default function QuizPage() {
       setImportText('');
       setParsedQuestions([]);
       setFileName(null);
-      setFlash(`Đã nhập thành công ${count} câu hỏi vào bài Quiz!`);
+      setFlash(`Đã nhập thành công ${count} câu hỏi vào bài kiểm tra!`);
       const freshQuestions = await quizService.getQuizQuestions(selectedQuizId);
       setQuestions(freshQuestions);
     } catch (e: unknown) {
@@ -427,7 +427,7 @@ export default function QuizPage() {
 
   return (
     <div className="space-y-6">
-      <PageTitle>Quiz & Bài Kiểm Tra Trắc Nghiệm</PageTitle>
+      <PageTitle>Bài Kiểm Tra Trắc Nghiệm</PageTitle>
 
       {/* Class Selector Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs">
@@ -448,7 +448,7 @@ export default function QuizPage() {
             className="px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Tạo Quiz Mới
+            Tạo Bài Kiểm Tra Mới
           </button>
         )}
       </div>
@@ -478,34 +478,49 @@ export default function QuizPage() {
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
             <h3 className="font-bold text-slate-800 dark:text-white text-base flex items-center gap-2">
               <FileText className="w-4 h-4 text-indigo-500" />
-              Danh sách Quiz ({quizzes.length})
+              Danh sách Bài kiểm tra ({quizzes.length})
             </h3>
           </div>
 
-          {quizzes.length === 0 ? <Empty msg="Lớp này chưa có bài quiz trắc nghiệm nào" /> : (
+          {quizzes.length === 0 ? <Empty msg="Lớp này chưa có bài kiểm tra trắc nghiệm nào" /> : (
             <div className="space-y-3 max-h-135 overflow-y-auto pr-1">
               {quizzes.map((q) => (
-                <button 
-                  key={q.id} 
-                  onClick={() => { setSelectedQuizId(q.id); setStartedQuizId(null); setIsLecturerPreview(false); }} 
-                  className={`w-full text-left rounded-xl border p-4 transition cursor-pointer ${
+                <div 
+                  key={q.id}
+                  className={`group relative rounded-xl border p-4 transition cursor-pointer flex items-start justify-between gap-2 ${
                     selectedQuizId === q.id 
                       ? 'border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 shadow-xs ring-1 ring-indigo-500' 
                       : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300'
                   }`}
+                  onClick={() => { setSelectedQuizId(q.id); setStartedQuizId(null); setIsLecturerPreview(false); }} 
                 >
-                  <div className="font-semibold text-slate-800 dark:text-white text-sm">{q.title}</div>
-                  <div className="mt-2 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-slate-400" />
-                      {q.durationMinutes ?? 30} phút
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
-                      Thang {q.totalScore || 10} điểm
-                    </span>
+                  <div className="space-y-2 flex-1 min-w-0">
+                    <div className="font-semibold text-slate-800 dark:text-white text-sm truncate">{q.title}</div>
+                    <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                        {q.durationMinutes ?? 30} phút
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+                        Thang {q.totalScore || 10} điểm
+                      </span>
+                    </div>
                   </div>
-                </button>
+
+                  {isLecturer && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void handleDeleteQuiz(q.id);
+                      }}
+                      className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition opacity-0 group-hover:opacity-100 cursor-pointer shrink-0"
+                      title="Xóa bài kiểm tra này"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           )}
@@ -556,7 +571,7 @@ export default function QuizPage() {
                       <button
                         onClick={() => handleDeleteQuiz(activeQuiz.id)}
                         className="px-2.5 py-1.5 text-xs font-semibold rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900 transition cursor-pointer flex items-center gap-1"
-                        title="Xóa Quiz"
+                        title="Xóa bài kiểm tra này"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -588,7 +603,7 @@ export default function QuizPage() {
                   {questions.length === 0 ? (
                     <div className="py-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3">
                       <Sparkles className="w-10 h-10 text-indigo-400 mx-auto opacity-80" />
-                      <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">Bài Quiz chưa có câu hỏi nào</h4>
+                      <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">Bài kiểm tra chưa có câu hỏi nào</h4>
                       <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
                         Sử dụng tính năng Tạo tự động bằng AI hoặc Import file câu hỏi từ máy tính để thêm nhanh các câu hỏi trắc nghiệm.
                       </p>
@@ -704,7 +719,7 @@ export default function QuizPage() {
                         </span>
                       </div>
 
-                      {questions.length === 0 ? <Empty msg="Chưa có câu hỏi nào trong bài quiz này" /> : (
+                      {questions.length === 0 ? <Empty msg="Chưa có câu hỏi nào trong bài kiểm tra này" /> : (
                         <div className="space-y-4">
                           {questions.map((q, idx) => (
                             <div key={q.id} className="border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-900 space-y-3">
@@ -767,7 +782,7 @@ export default function QuizPage() {
                 </div>
               )}
             </div>
-          ) : <Empty msg="Chọn một Quiz bên danh sách để xem nội dung" />}
+          ) : <Empty msg="Chọn một bài kiểm tra bên danh sách để xem nội dung" />}
         </Card>
       </div>
 
@@ -776,7 +791,7 @@ export default function QuizPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Tạo Quiz Trắc Nghiệm Mới</h3>
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Tạo Bài Kiểm Tra Trắc Nghiệm Mới</h3>
               <button onClick={() => setShowCreateQuizModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
@@ -784,11 +799,11 @@ export default function QuizPage() {
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tiêu đề Quiz</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tiêu đề Bài kiểm tra</label>
                 <input
                   value={quizTitle}
                   onChange={(e) => setQuizTitle(e.target.value)}
-                  placeholder="Kiểm tra giữa kỳ, Quiz chương 1..."
+                  placeholder="Kiểm tra giữa kỳ, Bài kiểm tra 15 phút..."
                   className="w-full px-3 py-2 text-sm border rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
@@ -827,7 +842,7 @@ export default function QuizPage() {
                 disabled={savingQuiz || !quizTitle.trim()}
                 className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 cursor-pointer"
               >
-                {savingQuiz ? 'Đang tạo...' : 'Tạo Quiz'}
+                {savingQuiz ? 'Đang tạo...' : 'Tạo bài kiểm tra'}
               </button>
             </div>
           </div>

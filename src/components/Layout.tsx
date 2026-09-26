@@ -95,7 +95,7 @@ const NAV: Record<Role, NavSection[]> = {
       title: "Quản lý Giảng dạy",
       items: [
         { to: "/lecturer/assignments", label: "Bài tập", icon: FileText },
-        { to: "/lecturer/quizzes", label: "Quiz", icon: Sparkles },
+        { to: "/lecturer/quizzes", label: "Bài kiểm tra", icon: Sparkles },
         { to: "/lecturer/grading", label: "Chấm điểm", icon: CheckCircle2 },
         { to: "/lecturer/homeroom", label: "Điểm rèn luyện (GVCN)", icon: Users },
         { to: "/lecturer/schedule", label: "Lịch dạy", icon: Calendar },
