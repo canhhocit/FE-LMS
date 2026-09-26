@@ -281,6 +281,7 @@ export interface QuizQuestion {
   optionB: string;
   optionC: string;
   optionD: string;
+  correctAnswer?: string;
 }
 export interface QuizAttempt {
   attemptId: number;

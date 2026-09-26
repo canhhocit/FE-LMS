@@ -36,6 +36,7 @@ export interface QuestionRequest {
   optionB: string;
   optionC: string;
   optionD: string;
+  correctAnswer: 'A' | 'B' | 'C' | 'D';
 }
 
 export const createQuestion = async (quizId: number, data: QuestionRequest): Promise<QuizQuestion> =>
@@ -48,13 +49,12 @@ export const deleteQuestion = async (questionId: number): Promise<void> => {
   await apiClient.delete(`/quizzes/questions/${questionId}`);
 };
 
-
 export interface AiGenerateRequest {
-  topic: string;
-  numQuestions?: number;
+  content: string;
+  numberOfQuestions?: number;
   difficulty?: 'EASY' | 'MEDIUM' | 'HARD';
 }
 
-export const generateAiQuestions = async (data: AiGenerateRequest): Promise<QuizQuestion[]> => {
-  return unwrap<QuizQuestion[]>(apiClient.post('/quizzes/generate-ai', data));
+export const generateAiQuestions = async (quizId: number, data: AiGenerateRequest): Promise<QuizQuestion[]> => {
+  return unwrap<QuizQuestion[]>(apiClient.post(`/quizzes/${quizId}/generate-ai`, data));
 };

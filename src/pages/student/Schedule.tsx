@@ -219,7 +219,7 @@ export default function StudentSchedule() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-1.5 font-bold text-sm text-blue-900 dark:text-blue-100">
-                        <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         <span>Đồng bộ tất cả lịch học (Khuyên dùng)</span>
                       </div>
                       <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
