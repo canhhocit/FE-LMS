@@ -39,6 +39,8 @@ import {
   Menu,
   X,
   Search,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 interface NavItem {
@@ -242,9 +244,10 @@ function FirstLoginModal({
               <button
                 type="button"
                 onClick={() => setShowOldPw(!showOldPw)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs cursor-pointer"
+                title={showOldPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition cursor-pointer"
               >
-                {showOldPw ? "Ẩn" : "Hiện"}
+                {showOldPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             {errors.oldPassword && (
@@ -270,9 +273,10 @@ function FirstLoginModal({
               <button
                 type="button"
                 onClick={() => setShowNewPw(!showNewPw)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs cursor-pointer"
+                title={showNewPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition cursor-pointer"
               >
-                {showNewPw ? "Ẩn" : "Hiện"}
+                {showNewPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             {errors.newPassword && (
@@ -298,9 +302,10 @@ function FirstLoginModal({
               <button
                 type="button"
                 onClick={() => setShowConfirmPw(!showConfirmPw)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs cursor-pointer"
+                title={showConfirmPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition cursor-pointer"
               >
-                {showConfirmPw ? "Ẩn" : "Hiện"}
+                {showConfirmPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             {errors.confirmPassword && (
