@@ -263,6 +263,8 @@ export default function TuitionPage() {
 
   const unpaidInvoices = invoices.filter((i) => i.status !== 'PAID');
   const totalUnpaidAmount = unpaidInvoices.reduce((acc, i) => acc + i.amount, 0);
+  const paidInvoices = invoices.filter((i) => i.status === 'PAID');
+  const totalPaidAmount = paidInvoices.reduce((acc, i) => acc + i.amount, 0);
 
   return (
     <div className="space-y-6">
@@ -279,11 +281,16 @@ export default function TuitionPage() {
       )}
 
       {/* Summary Stats Cards */}
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border border-indigo-100 bg-linear-to-br from-indigo-50/70 to-white">
           <div className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Tổng nợ học phí hiện tại</div>
           <div className="mt-2 text-2xl font-black text-indigo-700">{fmtMoney(totalUnpaidAmount)}</div>
           <div className="mt-1 text-xs text-slate-500">{unpaidInvoices.length} hóa đơn chưa thanh toán</div>
+        </Card>
+        <Card className="border border-emerald-100 bg-linear-to-br from-emerald-50/70 to-white">
+          <div className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Tổng số tiền đã đóng</div>
+          <div className="mt-2 text-2xl font-black text-emerald-700">{fmtMoney(totalPaidAmount)}</div>
+          <div className="mt-1 text-xs text-slate-500">{paidInvoices.length} hóa đơn đã thanh toán</div>
         </Card>
         <Card>
           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tổng số hóa đơn</div>
@@ -345,7 +352,7 @@ export default function TuitionPage() {
                         </Pill>
                       </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs mb-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-4">
                         <div>
                           <span className="text-slate-400 block">Số tín chỉ:</span>
                           <span className="font-semibold text-slate-700">
@@ -360,6 +367,12 @@ export default function TuitionPage() {
                           <span className="text-slate-400 block">Hạn nộp:</span>
                           <span className={`font-semibold ${!isPaid ? 'text-rose-600 font-bold' : 'text-slate-700'}`}>
                             {fmtDate(i.dueDate)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block">Ngày nộp:</span>
+                          <span className={`font-semibold ${isPaid ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}>
+                            {isPaid && i.paidAt ? fmtDate(i.paidAt) : 'Chưa nộp'}
                           </span>
                         </div>
                       </div>
