@@ -18,6 +18,10 @@ export const getMyGrades = async (): Promise<Grade[]> =>
 export const publishGrades = async (classId: number): Promise<Grade[]> =>
   unwrap<Grade[]>(apiClient.post(`/classes/${classId}/grades/publish`));
 
+/** Giảng viên/Admin khóa hoặc mở khóa sổ điểm của lớp học phần */
+export const lockGrades = async (classId: number, locked: boolean = true): Promise<Clazz> =>
+  unwrap<Clazz>(apiClient.post(`/classes/${classId}/grades/lock`, null, { params: { locked } }));
+
 // ===== Attendance =====
 export const getAttendance = async (classId: number, date?: string): Promise<AttendanceRecord[]> =>
   unwrap(apiClient.get(`/classes/${classId}/attendance`, { params: date ? { date } : undefined }));

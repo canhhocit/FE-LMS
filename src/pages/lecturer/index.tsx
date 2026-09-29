@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Megaphone, CheckCircle2, XCircle, ClipboardList, CalendarCheck2,
-  Save, ArrowRight
+  Save, ArrowRight, Lock, Unlock
 } from 'lucide-react';
 import * as clazzService from '../../services/clazzService';
 import * as assessmentService from '../../services/assessmentService';
@@ -313,7 +313,10 @@ export function LecturerGrading() {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [loading, setLoading] = useState(true);
   const [publishing, setPublishing] = useState(false);
+  const [locking, setLocking] = useState(false);
   const [publishMsg, setPublishMsg] = useState<string | null>(null);
+
+  const currentClazz = classes.find((c) => c.id === selectedClass);
 
   useEffect(() => {
     let m = true;
@@ -374,22 +377,61 @@ export function LecturerGrading() {
     }
   };
 
+  const handleToggleLockGrades = async () => {
+    if (!selectedClass || !currentClazz) return;
+    const isLocked = !!currentClazz.isGradeLocked;
+    const actionText = isLocked ? 'Mở khóa sổ điểm' : 'Khóa sổ điểm';
+    if (!window.confirm(`${actionText} của lớp học phần này? ${isLocked ? 'Giảng viên sẽ có thể tiếp tục cập nhật điểm.' : 'Khi đã khóa, mọi thao tác chỉnh sửa điểm sẽ bị chặn.'}`)) return;
+    setLocking(true);
+    setPublishMsg(null);
+    try {
+      const updated = await gradingService.lockGrades(selectedClass, !isLocked);
+      setClasses(prev => prev.map(c => c.id === updated.id ? { ...c, isGradeLocked: updated.isGradeLocked } : c));
+      setPublishMsg(isLocked ? 'Đã mở khóa sổ điểm thành công' : 'Đã khóa sổ điểm thành công! Không thể chỉnh sửa điểm cho đến khi mở lại.');
+    } catch (e: unknown) {
+      setPublishMsg((e as { message?: string })?.message ?? 'Khóa sổ điểm thất bại');
+    } finally {
+      setLocking(false);
+    }
+  };
+
   if (loading) return <Spinner />;
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Chấm điểm & Điểm danh"
-        subtitle="Quản lý điểm bài tập, điểm danh theo buổi học và công bố điểm cho sinh viên"
+        subtitle="Quản lý điểm bài tập, điểm danh theo buổi học, khóa sổ điểm và công bố điểm cho sinh viên"
         actions={
-          <Button onClick={handlePublishGrades} loading={publishing} disabled={!selectedClass}>
-            <Megaphone className="w-3.5 h-3.5" />
-            <span>Công bố điểm</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={currentClazz?.isGradeLocked ? 'secondary' : 'danger'}
+              onClick={handleToggleLockGrades}
+              loading={locking}
+              disabled={!selectedClass}
+            >
+              {currentClazz?.isGradeLocked ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+              <span>{currentClazz?.isGradeLocked ? 'Mở sổ điểm' : 'Khóa sổ điểm'}</span>
+            </Button>
+            <Button onClick={handlePublishGrades} loading={publishing} disabled={!selectedClass || currentClazz?.isGradeLocked}>
+              <Megaphone className="w-3.5 h-3.5" />
+              <span>Công bố điểm</span>
+            </Button>
+          </div>
         }
       />
 
       {publishMsg && <Toast message={publishMsg} type="info" onClose={() => setPublishMsg(null)} />}
+
+      {currentClazz?.isGradeLocked && (
+        <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-amber-800 dark:text-amber-300 text-xs font-semibold flex items-center justify-between shadow-2xs">
+          <span className="flex items-center gap-2">
+            <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+            Sổ điểm của lớp học phần này đã được KHÓA. Mọi thao tác nhập/sửa điểm trên hệ thống đang bị khóa.
+          </span>
+          <Badge color="amber">Sổ điểm đã khóa</Badge>
+        </div>
+      )}
 
       <div className="max-w-md">
         <Select
@@ -398,7 +440,9 @@ export function LecturerGrading() {
           onChange={(e) => setSelectedClass(Number(e.target.value))}
         >
           {classes.map((c) => (
-            <option key={c.id} value={c.id}>{c.classCode} — {c.className}</option>
+            <option key={c.id} value={c.id}>
+              {c.classCode} — {c.className} {c.isGradeLocked ? '🔒 (Đã khóa sổ)' : ''}
+            </option>
           ))}
         </Select>
       </div>
