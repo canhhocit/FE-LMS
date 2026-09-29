@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Download, Calendar, ExternalLink, CalendarPlus, Sparkles, Bot, Zap, CheckCircle2 } from 'lucide-react';
 import * as scheduleService from '../../services/scheduleService';
 import * as registrationService from '../../services/registrationService';

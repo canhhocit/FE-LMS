@@ -1,6 +1,6 @@
 // Grading service — grades + attendance
 import { apiClient, unwrap } from './api/client';
-import type { Grade, AttendanceRecord } from '../types';
+import type { Grade, AttendanceRecord, Clazz } from '../types';
 
 // ===== Grades (Lecturer/Admin/Student) =====
 export const getGrades = async (classId: number): Promise<Grade[]> =>
