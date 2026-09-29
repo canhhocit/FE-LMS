@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Download, Calendar, ExternalLink, CalendarPlus } from 'lucide-react';
+import { Download, Calendar, ExternalLink, CalendarPlus, Sparkles, Bot, Zap, CheckCircle2 } from 'lucide-react';
 import * as scheduleService from '../../services/scheduleService';
+import * as registrationService from '../../services/registrationService';
 import { PageHeader, Spinner, ErrorBox, Button, Modal, Toast } from '../../components/ui';
 import TimetableGrid from '../../components/TimetableGrid';
-import type { Schedule } from '../../types';
+import type { Schedule, AiScheduleRecommendResponse, AiScheduleOption } from '../../types';
 
 const DAY_NAMES = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
 
@@ -116,6 +116,15 @@ export default function StudentSchedule() {
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
+  // AI Schedule Modal State
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResponse, setAiResponse] = useState<AiScheduleRecommendResponse | null>(null);
+  const [avoidMorning, setAvoidMorning] = useState(false);
+  const [preferSatSun, setPreferSatSun] = useState(true);
+  const [customPref, setCustomPref] = useState('');
+  const [applyingOptionId, setApplyingOptionId] = useState<string | null>(null);
+
   useEffect(() => {
     let m = true;
     scheduleService.getMySchedule()
@@ -162,6 +171,52 @@ export default function StudentSchedule() {
     setTimeout(() => setToastMsg(null), 6000);
   };
 
+  const handleRunAiRecommend = async () => {
+    setAiLoading(true);
+    try {
+      const preferOffDays: number[] = [];
+      if (preferSatSun) {
+        preferOffDays.push(6, 7);
+      }
+      const res = await scheduleService.getAiScheduleRecommendation({
+        avoidEarlyMorning: avoidMorning,
+        preferOffDays,
+        customPreference: customPref.trim() || undefined,
+      });
+      setAiResponse(res);
+    } catch (e: unknown) {
+      setToastMsg((e as { message?: string })?.message ?? 'Gợi ý AI thất bại');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleApplyAiOption = async (option: AiScheduleOption) => {
+    if (!option.suggestedClasses || option.suggestedClasses.length === 0) return;
+    if (!window.confirm(`Xác nhận đăng ký ${option.suggestedClasses.length} lớp học phần theo phương án "${option.title}"?`)) return;
+
+    setApplyingOptionId(option.optionId);
+    let successCount = 0;
+    try {
+      for (const c of option.suggestedClasses) {
+        try {
+          await registrationService.registerClass(c.id);
+          successCount++;
+        } catch {
+          // Continue registering remaining classes
+        }
+      }
+      const updatedSchedules = await scheduleService.getMySchedule();
+      setSchedules(updatedSchedules);
+      setToastMsg(`Đã đăng ký thành công ${successCount}/${option.suggestedClasses.length} lớp học phần vào Thời khóa biểu!`);
+      setShowAiModal(false);
+    } catch (e: unknown) {
+      setToastMsg((e as { message?: string })?.message ?? 'Đăng ký thời khóa biểu gợi ý thất bại');
+    } finally {
+      setApplyingOptionId(null);
+    }
+  };
+
   if (loading) return <Spinner />;
   if (err) return <ErrorBox msg={err} />;
 
@@ -174,6 +229,17 @@ export default function StudentSchedule() {
         subtitle="Lịch học các môn theo tuần và thời gian chi tiết"
         actions={
           <>
+            <Button
+              className="bg-linear-to-r from-indigo-600 to-purple-600 text-white font-semibold shadow-sm hover:from-indigo-700 hover:to-purple-700 transition"
+              size="sm"
+              onClick={() => {
+                setShowAiModal(true);
+                if (!aiResponse) void handleRunAiRecommend();
+              }}
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>AI Gợi Ý Xếp Lịch</span>
+            </Button>
             <Button variant="secondary" size="sm" onClick={() => setShowSyncModal(true)}>
               <Calendar className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" />
               <span>Đồng bộ Google</span>
@@ -266,6 +332,133 @@ export default function StudentSchedule() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* AI Schedule Recommendation Modal */}
+      <Modal
+        open={showAiModal}
+        onClose={() => setShowAiModal(false)}
+        title="Trợ lý AI Gợi Ý Xếp Lịch Học"
+        maxWidth="max-w-3xl"
+      >
+        <div className="space-y-5">
+          {/* Options & Filters */}
+          <div className="p-4 rounded-xl bg-linear-to-br from-indigo-50/80 to-purple-50/50 dark:from-slate-800/80 dark:to-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                Cấu hình nguyện vọng thời khóa biểu
+              </span>
+              <Button size="sm" onClick={() => void handleRunAiRecommend()} loading={aiLoading}>
+                <Zap className="w-3.5 h-3.5" />
+                <span>Phân tích lại</span>
+              </Button>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3 text-xs">
+              <label className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={preferSatSun}
+                  onChange={(e) => setPreferSatSun(e.target.checked)}
+                  className="rounded text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>Ưu tiên nghỉ Thứ 7 & Chủ Nhật</span>
+              </label>
+
+              <label className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={avoidMorning}
+                  onChange={(e) => setAvoidMorning(e.target.checked)}
+                  className="rounded text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>Tránh tiết 1-2 (sáng sớm)</span>
+              </label>
+            </div>
+
+            <div>
+              <input
+                type="text"
+                value={customPref}
+                onChange={(e) => setCustomPref(e.target.value)}
+                placeholder="Ví dụ: Muốn học gọn vào 3 ngày giữa tuần để đi làm thêm..."
+                className="w-full px-3 py-2 text-xs rounded-lg border border-indigo-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+          </div>
+
+          {/* AI Response Output */}
+          {aiLoading ? (
+            <div className="py-12 text-center space-y-3">
+              <Spinner />
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                AI đang quét các lớp học phần và tính toán phương án xếp lịch tối ưu nhất...
+              </p>
+            </div>
+          ) : aiResponse ? (
+            <div className="space-y-4">
+              {/* Summary Advice */}
+              <div className="p-3.5 rounded-xl bg-slate-900 text-white text-xs leading-relaxed space-y-1 shadow-sm">
+                <div className="flex items-center gap-1.5 font-bold text-indigo-300">
+                  <Bot className="w-4 h-4 text-purple-400" />
+                  Nhận xét & Khuyến nghị từ AI:
+                </div>
+                <p className="text-slate-200">{aiResponse.summaryAdvice}</p>
+              </div>
+
+              {/* Options List */}
+              <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+                {aiResponse.options.map((opt) => (
+                  <div
+                    key={opt.optionId}
+                    className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-300 transition space-y-3 shadow-2xs"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                          <span>{opt.title}</span>
+                          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-900">
+                            {Math.round(opt.matchScore)}% phù hợp
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          {opt.reasoning}
+                        </p>
+                      </div>
+
+                      <Button
+                        size="sm"
+                        loading={applyingOptionId === opt.optionId}
+                        onClick={() => void handleApplyAiOption(opt)}
+                        className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Áp dụng phương án này</span>
+                      </Button>
+                    </div>
+
+                    {/* Classes list inside option */}
+                    <div className="grid sm:grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      {opt.suggestedClasses?.map((c) => (
+                        <div key={c.id} className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 text-xs space-y-0.5">
+                          <div className="font-bold text-slate-800 dark:text-slate-200">{c.className}</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                            Mã: <span className="font-mono">{c.classCode}</span> • GV: {c.lecturerName || 'Chưa xếp'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="py-8 text-center text-xs text-slate-400">
+              Nhấn <strong>"Phân tích lại"</strong> để AI tạo các phương án xếp lịch.
+            </div>
+          )}
+        </div>
       </Modal>
     </div>
   );

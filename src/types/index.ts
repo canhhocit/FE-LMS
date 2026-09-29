@@ -448,3 +448,22 @@ export interface GpaScaleRule {
   gpa4: number;
   sortOrder: number;
 }
+
+// ===== AI Schedule Recommendation =====
+export interface AiScheduleOption {
+  optionId: string;
+  title: string;
+  totalCredits: number;
+  matchScore: number;
+  reasoning: string;
+  suggestedClasses: Clazz[];
+  scheduleDetails: Schedule[];
+}
+
+export interface AiScheduleRecommendResponse {
+  studentName: string;
+  semester: string;
+  academicYear: string;
+  summaryAdvice: string;
+  options: AiScheduleOption[];
+}

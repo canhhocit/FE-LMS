@@ -15,3 +15,14 @@ export const getClazzSchedule = async (clazzId: number): Promise<Schedule[]> => 
 export const createSchedule = async (clazzId: number, payload: { dayOfWeek: number; startPeriod: number; endPeriod: number; room?: string }): Promise<Schedule> => unwrap<Schedule>(apiClient.post(`/clazzes/${clazzId}/schedules`, payload)).then(normalizeSchedule);
 export const updateSchedule = async (scheduleId: number, payload: { dayOfWeek: number; startPeriod: number; endPeriod: number; room?: string }): Promise<Schedule> => unwrap<Schedule>(apiClient.put(`/schedules/${scheduleId}`, payload)).then(normalizeSchedule);
 export const deleteSchedule = async (scheduleId: number): Promise<void> => { await apiClient.delete(`/schedules/${scheduleId}`); };
+
+export const getAiScheduleRecommendation = async (payload?: {
+  semester?: string;
+  academicYear?: string;
+  desiredCourseIds?: number[];
+  maxCredits?: number;
+  preferOffDays?: number[];
+  avoidEarlyMorning?: boolean;
+  customPreference?: string;
+}): Promise<import('../types').AiScheduleRecommendResponse> =>
+  unwrap(apiClient.post('/schedules/ai-recommend', payload || {}));
