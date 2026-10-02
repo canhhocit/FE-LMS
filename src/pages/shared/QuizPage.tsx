@@ -329,22 +329,48 @@ export default function QuizPage() {
     setParsedQuestions(parsed);
   };
 
-  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>, isForAi = false) => {
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>, isForAi = false) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      if (isForAi) {
-        setAiTopic(content);
-        setAiDocName(file.name);
+    if (isForAi) {
+      setAiDocName(file.name);
+      setAiTopic('Đang đọc file...');
+    } else {
+      setFileName(file.name);
+    }
+
+    try {
+      let content = '';
+      if (file.name.endsWith('.pdf')) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdfjs = await import('pdfjs-dist');
+        pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          content += textContent.items.map((item: any) => item.str).join(' ') + '\n';
+        }
+      } else if (file.name.endsWith('.docx')) {
+        const arrayBuffer = await file.arrayBuffer();
+        // @ts-ignore
+        const mammoth = await import('mammoth');
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        content = result.value;
       } else {
-        setFileName(file.name);
+        content = await file.text();
+      }
+
+      if (isForAi) {
+        setAiTopic(content.trim().substring(0, 15000)); // Limit size to avoid too large prompts
+      } else {
         handleTextOrFileParse(content);
       }
-    };
-    reader.readAsText(file);
+    } catch (error) {
+      console.error('File parsing error', error);
+      if (isForAi) setAiTopic('Lỗi khi đọc file. Vui lòng thử lại hoặc copy/paste nội dung.');
+    }
   };
 
   const handleConfirmImport = async () => {
@@ -983,9 +1009,9 @@ export default function QuizPage() {
                 <label className="border border-dashed border-slate-300 dark:border-slate-700 hover:border-slate-500 rounded-md p-2.5 text-center block cursor-pointer transition bg-slate-50/50 dark:bg-slate-800/40">
                   <div className="flex items-center justify-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
                     <Upload className="w-3.5 h-3.5" />
-                    <span>{aiDocName ? `📄 ${aiDocName}` : 'Tải file bài học (.txt, .md, .csv) để AI đọc nội dung'}</span>
+                    <span>{aiDocName ? `📄 ${aiDocName}` : 'Tải file bài học (.pdf, .docx, .txt...) để AI đọc nội dung'}</span>
                   </div>
-                  <input type="file" accept=".txt,.md,.csv,.json" onChange={(e) => handleFileUpload(e, true)} className="hidden" />
+                  <input type="file" accept=".txt,.md,.csv,.json,.pdf,.docx" onChange={(e) => handleFileUpload(e, true)} className="hidden" />
                 </label>
               </div>
 
