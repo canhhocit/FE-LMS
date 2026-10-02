@@ -341,6 +341,8 @@ function FirstLoginModal({
   );
 }
 
+import SmartSearchModal from "./SmartSearchModal";
+
 export default function Layout() {
   const { theme, toggleTheme } = useTheme();
   const darkMode = theme === 'dark';
@@ -348,6 +350,7 @@ export default function Layout() {
   const nav = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showFirstLoginModal, setShowFirstLoginModal] = useState<boolean>(
     () => {
@@ -437,6 +440,12 @@ export default function Layout() {
       );
       clearInterval(interval);
     };
+  }, []);
+
+  useEffect(() => {
+    const handleOpenSearch = () => setIsSearchOpen(true);
+    window.addEventListener("open-smart-search", handleOpenSearch);
+    return () => window.removeEventListener("open-smart-search", handleOpenSearch);
   }, []);
 
   if (!user) return null;
@@ -587,10 +596,19 @@ export default function Layout() {
           </div>
 
           {/* Quick Search */}
-          <div className="hidden max-w-sm flex-1 items-center rounded-lg bg-slate-100/90 border border-slate-200/80 px-3 py-1.5 text-xs text-slate-500 dark:bg-slate-800 dark:border-slate-700/80 dark:text-slate-400 md:flex">
-            <Search className="mr-2 h-3.5 w-3.5 opacity-60 shrink-0" />
-            <span className="truncate">Tìm kiếm thông tin...</span>
-          </div>
+          <button 
+            type="button"
+            onClick={() => setIsSearchOpen(true)}
+            className="hidden max-w-sm flex-1 items-center justify-between rounded-lg bg-slate-100/90 border border-slate-200/80 px-3 py-1.5 text-xs text-slate-500 hover:bg-slate-200/50 hover:text-slate-700 dark:bg-slate-800 dark:border-slate-700/80 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300 md:flex transition cursor-pointer"
+          >
+            <div className="flex items-center">
+              <Search className="mr-2 h-3.5 w-3.5 opacity-60 shrink-0" />
+              <span className="truncate">Tìm kiếm thông tin...</span>
+            </div>
+            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700 shadow-xs">
+              Ctrl K
+            </kbd>
+          </button>
 
           {/* Header Action Items */}
           <div className="relative flex items-center gap-2">
@@ -682,6 +700,8 @@ export default function Layout() {
           onComplete={() => setShowFirstLoginModal(false)}
         />
       )}
+
+      <SmartSearchModal open={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
       <DraggableAiCompanion />
     </div>

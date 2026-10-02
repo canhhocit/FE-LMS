@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Download, Calendar, ExternalLink, CalendarPlus, Sparkles, Bot, Zap, CheckCircle2 } from 'lucide-react';
+import { Download, Calendar, ExternalLink, CalendarPlus, CheckCircle2 } from 'lucide-react';
 import * as scheduleService from '../../services/scheduleService';
 import * as registrationService from '../../services/registrationService';
 import { PageHeader, Spinner, ErrorBox, Button, Modal, Toast } from '../../components/ui';
@@ -198,19 +198,24 @@ export default function StudentSchedule() {
 
     setApplyingOptionId(option.optionId);
     let successCount = 0;
+    const errors: string[] = [];
     try {
       for (const c of option.suggestedClasses) {
         try {
           await registrationService.registerClass(c.id);
           successCount++;
-        } catch {
-          // Continue registering remaining classes
+        } catch (err: any) {
+          errors.push(`${c.className}: ${err.message || 'Lỗi đăng ký'}`);
         }
       }
       const updatedSchedules = await scheduleService.getMySchedule();
       setSchedules(updatedSchedules);
-      setToastMsg(`Đã đăng ký thành công ${successCount}/${option.suggestedClasses.length} lớp học phần vào Thời khóa biểu!`);
-      setShowAiModal(false);
+      if (errors.length > 0) {
+        setToastMsg(`Đăng ký thành công ${successCount}/${option.suggestedClasses.length} lớp. Lỗi: ${errors.join('; ')}`);
+      } else {
+        setToastMsg(`Đã đăng ký thành công ${successCount}/${option.suggestedClasses.length} lớp học phần vào Thời khóa biểu!`);
+        setShowAiModal(false);
+      }
     } catch (e: unknown) {
       setToastMsg((e as { message?: string })?.message ?? 'Đăng ký thời khóa biểu gợi ý thất bại');
     } finally {
@@ -231,15 +236,15 @@ export default function StudentSchedule() {
         actions={
           <>
             <Button
-              className="bg-linear-to-r from-indigo-600 to-purple-600 text-white font-semibold shadow-sm hover:from-indigo-700 hover:to-purple-700 transition"
+              variant="primary"
               size="sm"
               onClick={() => {
                 setShowAiModal(true);
                 if (!aiResponse) void handleRunAiRecommend();
               }}
             >
-              <Sparkles className="w-4 h-4" />
-              <span>AI Gợi Ý Xếp Lịch</span>
+              <CalendarPlus className="w-4 h-4" />
+              <span>Gợi Ý Xếp Lịch</span>
             </Button>
             <Button variant="secondary" size="sm" onClick={() => setShowSyncModal(true)}>
               <Calendar className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" />
@@ -335,24 +340,23 @@ export default function StudentSchedule() {
         )}
       </Modal>
 
-      {/* AI Schedule Recommendation Modal */}
+      {/* Schedule Recommendation Modal */}
       <Modal
         open={showAiModal}
         onClose={() => setShowAiModal(false)}
-        title="Trợ lý AI Gợi Ý Xếp Lịch Học"
+        title="Gợi Ý Xếp Lịch Học"
         maxWidth="max-w-3xl"
       >
         <div className="space-y-5">
           {/* Options & Filters */}
-          <div className="p-4 rounded-xl bg-linear-to-br from-indigo-50/80 to-purple-50/50 dark:from-slate-800/80 dark:to-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 space-y-3">
+          <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <CalendarPlus className="w-4 h-4 text-slate-500" />
                 Cấu hình nguyện vọng thời khóa biểu
               </span>
-              <Button size="sm" onClick={() => void handleRunAiRecommend()} loading={aiLoading}>
-                <Zap className="w-3.5 h-3.5" />
-                <span>Phân tích lại</span>
+              <Button variant="secondary" size="sm" onClick={() => void handleRunAiRecommend()} loading={aiLoading}>
+                <span>Cập nhật</span>
               </Button>
             </div>
 
@@ -389,23 +393,22 @@ export default function StudentSchedule() {
             </div>
           </div>
 
-          {/* AI Response Output */}
+          {/* Response Output */}
           {aiLoading ? (
             <div className="py-12 text-center space-y-3">
               <Spinner />
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                AI đang quét các lớp học phần và tính toán phương án xếp lịch tối ưu nhất...
+                Đang tính toán phương án xếp lịch tối ưu nhất...
               </p>
             </div>
           ) : aiResponse ? (
             <div className="space-y-4">
               {/* Summary Advice */}
-              <div className="p-3.5 rounded-xl bg-slate-900 text-white text-xs leading-relaxed space-y-1 shadow-sm">
-                <div className="flex items-center gap-1.5 font-bold text-indigo-300">
-                  <Bot className="w-4 h-4 text-purple-400" />
-                  Nhận xét & Khuyến nghị từ AI:
+              <div className="p-3.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100 border border-indigo-100 dark:border-indigo-800 text-xs leading-relaxed space-y-1 shadow-sm">
+                <div className="flex items-center gap-1.5 font-bold">
+                  Nhận xét & Khuyến nghị:
                 </div>
-                <p className="text-slate-200">{aiResponse.summaryAdvice}</p>
+                <p>{aiResponse.summaryAdvice}</p>
               </div>
 
               {/* Options List */}
@@ -413,7 +416,7 @@ export default function StudentSchedule() {
                 {aiResponse.options.map((opt) => (
                   <div
                     key={opt.optionId}
-                    className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-300 transition space-y-3 shadow-2xs"
+                    className="p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 transition space-y-3 shadow-sm"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -435,7 +438,7 @@ export default function StudentSchedule() {
                         className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Áp dụng phương án này</span>
+                        <span>Áp dụng</span>
                       </Button>
                     </div>
 
@@ -456,7 +459,7 @@ export default function StudentSchedule() {
             </div>
           ) : (
             <div className="py-8 text-center text-xs text-slate-400">
-              Nhấn <strong>"Phân tích lại"</strong> để AI tạo các phương án xếp lịch.
+              Nhấn <strong>"Cập nhật"</strong> để tạo các phương án xếp lịch.
             </div>
           )}
         </div>
