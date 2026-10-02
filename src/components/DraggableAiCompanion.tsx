@@ -64,8 +64,13 @@ export const DraggableAiCompanion: React.FC = () => {
 
   useEffect(() => {
     const isMobile = window.innerWidth < 640;
-    const initialX = Math.max(10, window.innerWidth - (isMobile ? 160 : 200));
-    const initialY = Math.max(10, window.innerHeight - (isMobile ? 70 : 80));
+    // Set to bottom-right corner with 24px margin (16px on mobile)
+    const buttonWidth = 100; // estimated width of the "Hỏi AI" button
+    const marginX = isMobile ? 16 : 24;
+    const marginY = isMobile ? 16 : 24;
+    
+    const initialX = Math.max(10, window.innerWidth - buttonWidth - marginX);
+    const initialY = Math.max(10, window.innerHeight - 48 - marginY); // 48 is est button height
     setPosition({ x: initialX, y: initialY });
   }, []);
 
@@ -156,6 +161,28 @@ export const DraggableAiCompanion: React.FC = () => {
     return () => window.removeEventListener('lms_open_ai_companion', handleOpenAiEvent);
   }, []);
 
+  // Ensure the widget stays within viewport when toggling open or expanded state
+  useEffect(() => {
+    if (position) {
+      const isMobile = window.innerWidth < 640;
+      const estWidth = isOpenInput ? (isExpanded ? expandedSize.width : (isMobile ? window.innerWidth - 32 : 380)) : 100;
+      const estHeight = isOpenInput ? (isExpanded ? expandedSize.height : 500) : 48;
+      
+      const maxX = Math.max(10, window.innerWidth - estWidth - 10);
+      const maxY = Math.max(10, window.innerHeight - estHeight - 10);
+      
+      let newX = position.x;
+      let newY = position.y;
+      
+      if (newX > maxX) newX = maxX;
+      if (newY > maxY) newY = maxY;
+      
+      if (newX !== position.x || newY !== position.y) {
+        setPosition({ x: newX, y: newY });
+      }
+    }
+  }, [isOpenInput, isExpanded, expandedSize]);
+
   useEffect(() => {
     if (isOpenInput) {
       setTimeout(() => {
@@ -169,8 +196,8 @@ export const DraggableAiCompanion: React.FC = () => {
     hasMovedRef.current = false;
     dragStartPos.current = { x: clientX, y: clientY };
     initialBotPos.current = position || {
-      x: window.innerWidth - 200,
-      y: window.innerHeight - 80,
+      x: window.innerWidth - 124, // fallback for 24px margin
+      y: window.innerHeight - 72,
     };
   };
 
