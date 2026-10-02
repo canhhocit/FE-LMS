@@ -726,7 +726,18 @@ export default function QuizPage() {
                 ) : (
                   /* STUDENT / IN-PROGRESS ATTEMPT VIEW */
                   <div>
-                    {startedQuizId !== selectedQuizId ? (
+                    {activeQuiz?.myAttempt?.submittedAt ? (
+                      <div className="py-8 text-center bg-slate-50/60 dark:bg-slate-800/40 rounded-md border border-slate-200 dark:border-slate-800 p-6 space-y-3">
+                        <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
+                        <h4 className="text-lg font-bold text-slate-800 dark:text-white">Bạn đã hoàn thành bài kiểm tra</h4>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          Điểm của bạn: <span className="font-bold text-slate-900 dark:text-white">{activeQuiz.myAttempt.score}</span> / {activeQuiz.myAttempt.totalScore}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Đã nộp lúc: {new Date(activeQuiz.myAttempt.submittedAt).toLocaleString('vi-VN')}
+                        </p>
+                      </div>
+                    ) : startedQuizId !== selectedQuizId ? (
                       <div className="py-8 text-center bg-slate-50/60 dark:bg-slate-800/40 rounded-md border border-slate-200 dark:border-slate-800 p-6 space-y-3">
                         <Timer className="w-10 h-10 text-slate-500 mx-auto opacity-80" />
                         <h4 className="text-sm font-bold text-slate-800 dark:text-white">Sẵn sàng làm bài trắc nghiệm</h4>

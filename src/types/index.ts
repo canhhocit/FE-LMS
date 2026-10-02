@@ -273,6 +273,7 @@ export interface Quiz {
   endTime?: string;
   status?: string;
   createdAt: string;
+  myAttempt?: QuizAttempt;
 }
 export interface QuizQuestion {
   id: number;
