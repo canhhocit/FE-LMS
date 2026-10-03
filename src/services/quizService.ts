@@ -5,7 +5,7 @@ export type QuizStart = string;
 export type QuizAnswer = { questionId: number; selectedAnswer: 'A' | 'B' | 'C' | 'D' };
 
 export const getQuizzesByClass = async (classId: number): Promise<Quiz[]> =>
-  unwrap<Quiz[]>(apiClient.get(`/quizzes/class/${classId}`));
+  unwrap<Quiz[]>(apiClient.get(`/quizzes/class/${classId}?_t=${Date.now()}`));
 
 export const getQuiz = async (quizId: number): Promise<Quiz> =>
   unwrap<Quiz>(apiClient.get(`/quizzes/${quizId}`));
