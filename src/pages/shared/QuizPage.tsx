@@ -464,15 +464,23 @@ export default function QuizPage() {
 
       {/* Class Selector Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-3.5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-2xs">
-        <div className="flex items-center gap-3">
-          <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Lớp học phần:</label>
-          <select 
-            value={selectedClass ?? ''} 
-            onChange={(e) => setSelectedClass(Number(e.target.value))} 
-            className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-1.5 text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:border-slate-400 cursor-pointer"
-          >
-            {classes.map((c) => <option key={c.id} value={c.id}>{c.classCode} — {c.className}</option>)}
-          </select>
+        <div className="flex items-center gap-3 overflow-x-auto pb-1 max-w-full flex-1" style={{ scrollbarWidth: 'none' }}>
+          <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Lớp học phần:</label>
+          <div className="flex gap-2">
+            {classes.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setSelectedClass(c.id)}
+                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  selectedClass === c.id
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                }`}
+              >
+                {c.classCode} — {c.className}
+              </button>
+            ))}
+          </div>
         </div>
 
         {isLecturer && (
@@ -730,9 +738,14 @@ export default function QuizPage() {
                       <div className="py-8 text-center bg-slate-50/60 dark:bg-slate-800/40 rounded-md border border-slate-200 dark:border-slate-800 p-6 space-y-3">
                         <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
                         <h4 className="text-lg font-bold text-slate-800 dark:text-white">Bạn đã hoàn thành bài kiểm tra</h4>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">
-                          Điểm của bạn: <span className="font-bold text-slate-900 dark:text-white">{activeQuiz.myAttempt.score}</span> / {activeQuiz.myAttempt.totalScore}
-                        </p>
+                        <div className="flex flex-col items-center justify-center gap-1.5 py-2">
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            Điểm của bạn: <span className="font-bold text-slate-900 dark:text-white text-lg">{activeQuiz.myAttempt.score}</span> / {activeQuiz.myAttempt.totalScore}
+                          </p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            Số câu đúng: <span className="font-bold text-slate-900 dark:text-white">{activeQuiz.myAttempt.correctAnswers ?? 0}</span> / {activeQuiz.myAttempt.totalQuestions ?? 0}
+                          </p>
+                        </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           Đã nộp lúc: {new Date(activeQuiz.myAttempt.submittedAt).toLocaleString('vi-VN')}
                         </p>
