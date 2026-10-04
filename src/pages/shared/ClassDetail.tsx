@@ -69,6 +69,7 @@ export default function ClassDetail() {
 
   const [studentProgress, setStudentProgress] = useState<EnrollmentProgress | null>(null);
   const [saving, setSaving] = useState(false);
+  const [savingAnnouncement, setSavingAnnouncement] = useState(false);
   const [uploadingLessonId, setUploadingLessonId] = useState<number | null>(null);
   const [uploadProgress, setUploadProgress] = useState<Record<number, number>>({});
   const [attachmentUploadProgress, setAttachmentUploadProgress] = useState<Record<number, number>>({});
@@ -392,7 +393,7 @@ export default function ClassDetail() {
 
   const handleCreateAnnouncement = async () => {
     if (!isLecturer || !cid || !announcementTitle.trim() || !announcementContent.trim()) return;
-    setSaving(true);
+    setSavingAnnouncement(true);
     setFlash(null);
     try {
       await contentService.createAnnouncement(cid, {
@@ -405,7 +406,7 @@ export default function ClassDetail() {
       setFlash('Đã tạo thông báo mới thành công');
     } catch (e) {
       setFlash((e as { message?: string })?.message ?? 'Tạo thông báo thất bại');
-    } finally { setSaving(false); }
+    } finally { setSavingAnnouncement(false); }
   };
 
   const getLessonStatus = (lessonId: number) => {
@@ -919,11 +920,15 @@ export default function ClassDetail() {
               {isLecturer && (
                 <button 
                   onClick={handleCreateAnnouncement} 
-                  disabled={saving || !announcementTitle.trim() || !announcementContent.trim()} 
-                  className="px-3 py-1 text-xs font-semibold rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition cursor-pointer flex items-center gap-1"
+                  disabled={savingAnnouncement || !announcementTitle.trim() || !announcementContent.trim()} 
+                  className="px-3 py-1 text-xs font-semibold rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-1"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  Thông báo
+                  {savingAnnouncement ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Plus className="w-3.5 h-3.5" />
+                  )}
+                  {savingAnnouncement ? 'Đang gửi...' : 'Thông báo'}
                 </button>
               )}
             </div>
