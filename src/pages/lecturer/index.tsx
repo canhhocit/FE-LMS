@@ -147,7 +147,7 @@ export function LecturerClasses() {
                   </div>
                   <h4 className="font-bold text-slate-900 dark:text-white text-base">{c.className}</h4>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    {c.courseTitle ?? 'Học phần'} · Tối đa {c.maxStudents} sinh viên
+                    {c.courseTitle ?? 'Học phần'} · Tối đa {c.maxStudents} sinh viên · {c.lessonCount || 0} bài học
                   </p>
                 </div>
                 <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
