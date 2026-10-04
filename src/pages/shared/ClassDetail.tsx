@@ -11,7 +11,7 @@ import { PageTitle, PageHeader, Card, Spinner, Empty, ErrorBox, Pill } from "../
 import type { Clazz, User, Chapter, Announcement, Assignment, Lesson, EnrollmentProgress, Submission, SubmissionType } from "../../types";
 import { 
   FileText, Link2, Upload, ArrowUp, ArrowDown, Plus, Pencil, Trash2, 
-  CheckCircle, Clock, Video, File, X, Sparkles, AlertCircle, HelpCircle
+  CheckCircle, Clock, Video, File, X, Sparkles, AlertCircle, HelpCircle, Loader2
 } from "lucide-react";
 
 export default function ClassDetail() {
@@ -757,10 +757,18 @@ export default function ClassDetail() {
                                           type="button"
                                           onClick={() => fileInputRefs.current[lesson.id]?.click()}
                                           disabled={saving || uploadingLessonId === lesson.id}
-                                          className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition cursor-pointer"
+                                          className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                         >
-                                          <Video className="w-3 h-3 text-indigo-500" />
-                                          <span>{lesson.videoUrl ? 'Thay video' : '+ Tải video'}</span>
+                                          {uploadingLessonId === lesson.id ? (
+                                            <Loader2 className="w-3 h-3 text-indigo-500 animate-spin" />
+                                          ) : (
+                                            <Video className="w-3 h-3 text-indigo-500" />
+                                          )}
+                                          <span>
+                                            {uploadingLessonId === lesson.id 
+                                              ? 'Đang tải...' 
+                                              : (lesson.videoUrl ? 'Thay video' : '+ Tải video')}
+                                          </span>
                                         </button>
                                         <input
                                           ref={(el) => { fileInputRefs.current[lesson.id] = el; }}
@@ -779,10 +787,18 @@ export default function ClassDetail() {
                                           type="button"
                                           onClick={() => attachmentFileInputRefs.current[lesson.id]?.click()}
                                           disabled={saving || uploadingAttachmentLessonId === lesson.id}
-                                          className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-emerald-300 hover:text-emerald-600 transition cursor-pointer"
+                                          className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-emerald-300 hover:text-emerald-600 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                         >
-                                          <File className="w-3 h-3 text-emerald-500" />
-                                          <span>{lesson.attachmentUrl ? 'Thay tài liệu' : '+ Tải tài liệu'}</span>
+                                          {uploadingAttachmentLessonId === lesson.id ? (
+                                            <Loader2 className="w-3 h-3 text-emerald-500 animate-spin" />
+                                          ) : (
+                                            <File className="w-3 h-3 text-emerald-500" />
+                                          )}
+                                          <span>
+                                            {uploadingAttachmentLessonId === lesson.id 
+                                              ? 'Đang tải...' 
+                                              : (lesson.attachmentUrl ? 'Thay tài liệu' : '+ Tải tài liệu')}
+                                          </span>
                                         </button>
                                         <input
                                           ref={(el) => { attachmentFileInputRefs.current[lesson.id] = el; }}
