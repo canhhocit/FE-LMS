@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import * as curriculumService from '../../services/curriculumService';
-import { getGradingPolicy, updateGradingPolicy } from '../../services/gradingPolicyService';
+import { getGradingPolicy, updateGradingPolicy, type GradingPolicy } from '../../services/gradingPolicyService';
 import { getDepartments, type DepartmentResponse } from '../../services/departmentService';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import type { Curriculum, Course, CurriculumCourseItem, Prerequisite } from '../../types';
@@ -60,6 +60,7 @@ export default function AdminCurricula() {
     finalWeight: 0.6,
   });
   const [loadingPolicy, setLoadingPolicy] = useState(false);
+  const [gradingPolicies, setGradingPolicies] = useState<Record<number, GradingPolicy>>({});
 
   // Initial Load
   useEffect(() => {
@@ -69,7 +70,7 @@ export default function AdminCurricula() {
       curriculumService.getAllCourses(),
       getDepartments().catch(() => []),
     ])
-      .then(([cuList, coList, depList]) => {
+      .then(async ([cuList, coList, depList]) => {
         if (!mounted) return;
         setCurricula(cuList);
         setCourses(coList);
@@ -77,6 +78,19 @@ export default function AdminCurricula() {
         if (cuList.length > 0) {
           setSelectedCurriculum(cuList[0]);
         }
+        
+        // Fetch grading policies for all curricula
+        const policies: Record<number, GradingPolicy> = {};
+        await Promise.all(
+          cuList.map((c) =>
+            getGradingPolicy(c.id)
+              .then((p) => {
+                policies[c.id] = p;
+              })
+              .catch(() => {})
+          )
+        );
+        if (mounted) setGradingPolicies(policies);
       })
       .catch((e: unknown) => {
         if (!mounted) return;
@@ -190,11 +204,15 @@ export default function AdminCurricula() {
     setSubmittingCurr(true);
     setErr(null);
     try {
-      await updateGradingPolicy(selectedPolicyCurr.id, { 
+      const updatedPolicy = await updateGradingPolicy(selectedPolicyCurr.id, { 
         attendanceWeight: Number(attendanceWeight), 
         midtermWeight: Number(midtermWeight), 
         finalWeight: Number(finalWeight) 
       });
+      setGradingPolicies(prev => ({
+        ...prev,
+        [selectedPolicyCurr.id]: updatedPolicy
+      }));
       setShowGradingModal(false);
     } catch (err: any) {
       setErr(err.message || 'Lỗi cập nhật trọng số');
@@ -536,6 +554,11 @@ export default function AdminCurricula() {
                         <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">{cu.name}</div>
                         <div className="text-xs text-slate-500 mt-0.5">
                           {cu.faculty || 'Chưa xếp Khoa'} · {cu.academicYear || 'Toàn khóa'}
+                          {gradingPolicies[cu.id] && (
+                            <span className="ml-1 text-amber-600 dark:text-amber-500 font-medium">
+                              · Trọng số: {gradingPolicies[cu.id].attendanceWeight * 100}-{gradingPolicies[cu.id].midtermWeight * 100}-{gradingPolicies[cu.id].finalWeight * 100}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
