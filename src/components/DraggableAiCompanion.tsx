@@ -65,7 +65,7 @@ export const DraggableAiCompanion: React.FC = () => {
   useEffect(() => {
     const isMobile = window.innerWidth < 640;
     // Set to bottom-right corner with 24px margin (16px on mobile)
-    const buttonWidth = 100; // estimated width of the "Hỏi AI" button
+    const buttonWidth = 48; // estimated width of the "Hỏi AI" button
     const marginX = isMobile ? 16 : 24;
     const marginY = isMobile ? 16 : 24;
     
@@ -75,6 +75,32 @@ export const DraggableAiCompanion: React.FC = () => {
   }, []);
 
   const [isOpenInput, setIsOpenInput] = useState(false);
+  useEffect(() => {
+    if (isOpenInput && position) {
+      // Save bubble position before expanding
+      savedBubblePos.current = { ...position };
+      const isMobile = window.innerWidth < 640;
+      const estWidth = isExpanded ? expandedSize.width : (isMobile ? window.innerWidth - 32 : 380);
+      const estHeight = isExpanded ? expandedSize.height : 500;
+      
+      let newX = position.x;
+      let newY = position.y;
+      
+      const maxX = Math.max(2, window.innerWidth - estWidth - 2);
+      const maxY = Math.max(2, window.innerHeight - estHeight - 2);
+      
+      if (newX > maxX) newX = maxX;
+      if (newY > maxY) newY = maxY;
+      
+      if (newX !== position.x || newY !== position.y) {
+         setPosition({ x: newX, y: newY });
+      }
+    } else if (!isOpenInput && savedBubblePos.current) {
+      setPosition(savedBubblePos.current);
+      savedBubblePos.current = null;
+    }
+  }, [isOpenInput]);
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -119,6 +145,7 @@ export const DraggableAiCompanion: React.FC = () => {
   const isDraggingRef = useRef(false);
   const hasMovedRef = useRef(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
+  const savedBubblePos = useRef<{ x: number, y: number } | null>(null);
   const initialBotPos = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -194,9 +221,10 @@ export const DraggableAiCompanion: React.FC = () => {
   const handleStartDrag = (clientX: number, clientY: number) => {
     isDraggingRef.current = true;
     hasMovedRef.current = false;
+    if (isOpenInput) savedBubblePos.current = null;
     dragStartPos.current = { x: clientX, y: clientY };
     initialBotPos.current = position || {
-      x: window.innerWidth - 124, // fallback for 24px margin
+      x: window.innerWidth - 72, // fallback for 24px margin
       y: window.innerHeight - 72,
     };
   };
@@ -211,14 +239,14 @@ export const DraggableAiCompanion: React.FC = () => {
     }
 
     const isMobile = window.innerWidth < 640;
-    const estWidth = isOpenInput ? (isExpanded ? expandedSize.width : (isMobile ? window.innerWidth - 32 : 380)) : 140;
+    const estWidth = isOpenInput ? (isExpanded ? expandedSize.width : (isMobile ? window.innerWidth - 32 : 380)) : 48;
     const estHeight = isOpenInput ? (isExpanded ? expandedSize.height : 500) : 48;
 
-    const maxX = Math.max(10, window.innerWidth - estWidth - 10);
-    const maxY = Math.max(10, window.innerHeight - estHeight - 10);
+    const maxX = Math.max(2, window.innerWidth - estWidth - 2);
+    const maxY = Math.max(2, window.innerHeight - estHeight - 2);
 
-    const newX = Math.max(10, Math.min(maxX, initialBotPos.current.x + dx));
-    const newY = Math.max(10, Math.min(maxY, initialBotPos.current.y + dy));
+    const newX = Math.max(2, Math.min(maxX, initialBotPos.current.x + dx));
+    const newY = Math.max(2, Math.min(maxY, initialBotPos.current.y + dy));
 
     setPosition({ x: newX, y: newY });
   };
@@ -682,10 +710,15 @@ export const DraggableAiCompanion: React.FC = () => {
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           onClick={handleMascotClick}
-          className="flex items-center gap-2 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-md border border-slate-700/80 transition-all duration-150 cursor-pointer touch-none select-none text-xs font-semibold"
+          className="group relative flex items-center justify-center w-12 h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-lg border border-slate-700/80 transition-all duration-200 cursor-pointer touch-none select-none hover:scale-105 active:scale-95"
         >
-          <Bot className="w-4 h-4 text-accent-400" />
-          <span>Hỏi AI</span>
+          <Bot className="w-6 h-6 text-accent-400" />
+          
+          {/* Comic Bubble Tooltip */}
+          <div className="absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 px-3 py-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-semibold rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-max pointer-events-none origin-bottom scale-95 group-hover:scale-100 z-50">
+            Bạn cần hỗ trợ gì?
+            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 rotate-45"></div>
+          </div>
         </button>
       )}
 
