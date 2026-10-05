@@ -349,6 +349,16 @@ export default function Layout() {
   const { user, logout, hasPermission } = useAuth();
   const nav = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('lms_sidebar_collapsed') === 'true';
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('lms_sidebar_collapsed', String(isCollapsed));
+  }, [isCollapsed]);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -471,12 +481,12 @@ export default function Layout() {
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex h-full w-64 shrink-0 flex-col border-r border-slate-200/90 bg-white p-4 text-slate-800 shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 lg:static lg:h-screen lg:translate-x-0 lg:shadow-none transition-transform duration-200 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 flex h-full shrink-0 flex-col border-r border-slate-200/90 bg-white p-4 text-slate-800 shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 lg:static lg:h-screen lg:translate-x-0 lg:shadow-none transition-all duration-300 ${
+          sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full w-64"
+        } ${isCollapsed ? "lg:w-[4.5rem] lg:px-2 lg:items-center" : "lg:w-64"}`}
       >
         {/* Sidebar Brand Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4 pt-1 px-1">
+        <div className={`flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4 pt-1 ${isCollapsed ? "px-0 justify-center w-full" : "px-1 w-full"}`}>
           <Link
             to={`/${roleLower}`}
             className="flex items-center gap-3"
@@ -484,7 +494,7 @@ export default function Layout() {
             <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary-600 text-white shadow-xs">
               <GraduationCap className="h-5 w-5 text-white" />
             </span>
-            <div>
+            <div className={`${isCollapsed ? "hidden lg:hidden" : "block"}`}>
               <div className="font-bold tracking-tight text-slate-900 dark:text-white text-base leading-tight">
                 LearningHub
               </div>
@@ -517,13 +527,13 @@ export default function Layout() {
                 <button
                   type="button"
                   onClick={() => toggleSection(section.title)}
-                  className="flex w-full items-center justify-between px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition cursor-pointer"
+                  className={`flex w-full items-center justify-between py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition cursor-pointer ${isCollapsed ? "px-0 justify-center h-0 opacity-0 overflow-hidden" : "px-2"}`}
                 >
-                  <span>{section.title}</span>
+                  <span className={isCollapsed ? "hidden" : "block"}>{section.title}</span>
                   <ChevronDown
                     className={`h-3 w-3 transform transition-transform duration-150 ${
                       isSectionOpen ? "" : "-rotate-90"
-                    }`}
+                    } ${isCollapsed ? "hidden" : "block"}`}
                   />
                 </button>
 
@@ -538,18 +548,21 @@ export default function Layout() {
                           end={it.to === `/${roleLower}`}
                           onClick={() => setSidebarOpen(false)}
                           className={({ isActive }) =>
-                            `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                            `relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-150 ${isCollapsed ? "justify-center px-0 w-full" : ""} ${
                               isActive
                                 ? "bg-primary-600 text-white shadow-2xs"
                                 : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                             }`
                           }
+                          title={isCollapsed ? it.label : undefined}
                         >
-                          <IconComponent className="h-4 w-4 shrink-0" />
-                          <span className="truncate">{it.label}</span>
+                          <div className="relative flex items-center justify-center">
+                            <IconComponent className="h-4 w-4 shrink-0" />
+                          </div>
+                          <span className={`truncate ${isCollapsed ? "hidden" : "block"}`}>{it.label}</span>
                           {it.to.includes("/notifications") && unreadCount > 0 && (
-                            <span className="ml-auto inline-flex items-center justify-center px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-bold">
-                              {unreadCount > 99 ? "99+" : unreadCount}
+                            <span className={isCollapsed ? "absolute top-1 right-1 h-2 w-2 rounded-full bg-rose-500" : "ml-auto inline-flex items-center justify-center px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-bold"}>
+                              {!isCollapsed && (unreadCount > 99 ? "99+" : unreadCount)}
                             </span>
                           )}
                         </NavLink>
@@ -569,10 +582,11 @@ export default function Layout() {
               logout();
               nav("/login");
             }}
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition w-full cursor-pointer"
+            className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition w-full cursor-pointer ${isCollapsed ? "justify-center px-0" : ""}`}
+            title={isCollapsed ? "Đăng xuất" : undefined}
           >
             <LogOut className="h-4 w-4" />
-            <span>Đăng xuất</span>
+            <span className={isCollapsed ? "hidden" : "block"}>Đăng xuất</span>
           </button>
         </div>
       </aside>
@@ -585,8 +599,14 @@ export default function Layout() {
             <button
               type="button"
               aria-label="Mở menu"
-              onClick={() => setSidebarOpen(true)}
-              className="p-1.5 lg:hidden text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 rounded-lg cursor-pointer"
+              onClick={() => {
+                 if (window.innerWidth >= 1024) {
+                    setIsCollapsed(prev => !prev);
+                 } else {
+                    setSidebarOpen(true);
+                 }
+              }}
+              className="p-1.5 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors"
             >
               <Menu className="h-5 w-5" />
             </button>
