@@ -970,6 +970,12 @@ export function AdminClasses() {
         maxStudents: '50',
         semester: 'HK1',
         academicYear: '2026-2027',
+        startDate: '',
+        endDate: '',
+        examDate: '',
+        examRoom: '',
+        examFormat: '',
+        examDuration: '',
       });
       loadData();
     } catch (e: unknown) {
