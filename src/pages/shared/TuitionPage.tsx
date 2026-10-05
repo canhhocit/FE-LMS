@@ -535,7 +535,7 @@ export default function TuitionPage() {
                   disabled={isProcessing}
                   className="px-6 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700"
                 >
-                  Xác nhận thanh toán trực tiếp
+                  Continue / create PayOS payment
                 </button>}
                 {simulationEnabled && (
                   <button onClick={handleSimulatedPay} disabled={isProcessing} className="px-6 py-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 text-xs font-semibold">Simulated payment (no real money)</button>
