@@ -10,6 +10,7 @@ import { uploadCloudFile } from "../../services/storageService";
 import { PageTitle, PageHeader, Card, Spinner, Empty, ErrorBox, Pill } from "../../components/Layout";
 import { Toast } from "../../components/ui";
 import { LessonDiscussion } from "../../components/LessonDiscussion";
+import { ManageMaterialsModal } from "../../components/ManageMaterialsModal";
 import type { Clazz, User, Chapter, Announcement, Assignment, Lesson, EnrollmentProgress, Submission, SubmissionType } from "../../types";
 import { 
   FileText, Link2, Upload, ArrowUp, ArrowDown, Plus, Pencil, Trash2, 
@@ -80,9 +81,21 @@ export default function ClassDetail() {
   const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const attachmentFileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const [uploadingAttachmentLessonId, setUploadingAttachmentLessonId] = useState<number | null>(null);
+  const [manageMaterialsLesson, setManageMaterialsLesson] = useState<Lesson | null>(null);
 
   const isLecturer = user?.role === 'LECTURER';
   const isStudent = user?.role === 'STUDENT';
+
+  useEffect(() => {
+    if (manageMaterialsLesson) {
+       for (const lessons of Object.values(chapterLessons)) {
+          const found = lessons.find(l => l.id === manageMaterialsLesson.id);
+          if (found && (found.videoUrl !== manageMaterialsLesson.videoUrl || found.attachmentUrl !== manageMaterialsLesson.attachmentUrl)) {
+             setManageMaterialsLesson({...found});
+          }
+       }
+    }
+  }, [chapterLessons, manageMaterialsLesson]);
 
   const loadChapters = async () => {
     try { 
@@ -770,99 +783,14 @@ export default function ClassDetail() {
 
                                     {/* Upload Controls for Lecturer */}
                                     {isLecturer && (
-                                      <div className="mt-2 flex flex-col gap-2 w-full max-w-sm">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                          <button
-                                            type="button"
-                                            onClick={() => fileInputRefs.current[lesson.id]?.click()}
-                                            disabled={saving || uploadingLessonId === lesson.id}
-                                            className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                                          >
-                                            {uploadingLessonId === lesson.id ? (
-                                              <Loader2 className="w-3 h-3 text-indigo-500 animate-spin" />
-                                            ) : (
-                                              <Video className="w-3 h-3 text-indigo-500" />
-                                            )}
-                                            <span>
-                                              {uploadingLessonId === lesson.id 
-                                                ? 'Đang tải...' 
-                                                : (lesson.videoUrl ? 'Thay video' : '+ Tải video')}
-                                            </span>
-                                          </button>
-                                          <input
-                                            ref={(el) => { fileInputRefs.current[lesson.id] = el; }}
-                                            type="file"
-                                            accept=".mp4,.webm,.mov,.mkv,.avi"
-                                            className="hidden"
-                                            onChange={(e) => {
-                                              const file = e.target.files?.[0];
-                                              if (!file) return;
-                                              void handleLessonVideoUpload(lesson.id, file);
-                                              e.target.value = '';
-                                            }}
-                                          />
-
-                                          <button
-                                            type="button"
-                                            onClick={() => attachmentFileInputRefs.current[lesson.id]?.click()}
-                                            disabled={saving || uploadingAttachmentLessonId === lesson.id}
-                                            className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-emerald-300 hover:text-emerald-600 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                                          >
-                                            {uploadingAttachmentLessonId === lesson.id ? (
-                                              <Loader2 className="w-3 h-3 text-emerald-500 animate-spin" />
-                                            ) : (
-                                              <File className="w-3 h-3 text-emerald-500" />
-                                            )}
-                                            <span>
-                                              {uploadingAttachmentLessonId === lesson.id 
-                                                ? 'Đang tải...' 
-                                                : (lesson.attachmentUrl ? 'Thay tài liệu' : '+ Tải tài liệu')}
-                                            </span>
-                                          </button>
-                                          <input
-                                            ref={(el) => { attachmentFileInputRefs.current[lesson.id] = el; }}
-                                            type="file"
-                                            accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip,.rar"
-                                            className="hidden"
-                                            onChange={(e) => {
-                                              const file = e.target.files?.[0];
-                                              if (!file) return;
-                                              void handleLessonAttachmentUpload(lesson.id, file);
-                                              e.target.value = '';
-                                            }}
-                                          />
-                                        </div>
-                                        
-                                        {/* Progress bars & Toast */}
-                                        {uploadingLessonId === lesson.id && (
-                                          <div className="w-full text-xs">
-                                            <div className="flex justify-between text-slate-500 mb-1 font-medium text-[10px]">
-                                              <span>Đang tải video...</span>
-                                              <span>{uploadProgress[lesson.id] || 0}%</span>
-                                            </div>
-                                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                              <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${uploadProgress[lesson.id] || 0}%` }} />
-                                            </div>
-                                          </div>
-                                        )}
-                                        {uploadingAttachmentLessonId === lesson.id && (
-                                          <div className="w-full text-xs">
-                                            <div className="flex justify-between text-slate-500 mb-1 font-medium text-[10px]">
-                                              <span>Đang tải tài liệu...</span>
-                                              <span>{attachmentUploadProgress[lesson.id] || 0}%</span>
-                                            </div>
-                                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                              <div className="h-full bg-emerald-500 transition-all duration-300" style={{ width: `${attachmentUploadProgress[lesson.id] || 0}%` }} />
-                                            </div>
-                                          </div>
-                                        )}
-                                        {uploadStatus[lesson.id] && (
-                                          <Toast 
-                                            message={uploadStatus[lesson.id].message} 
-                                            type={uploadStatus[lesson.id].type} 
-                                            onClose={() => setUploadStatus(prev => { const next = {...prev}; delete next[lesson.id]; return next; })} 
-                                          />
-                                        )}
+                                      <div className="mt-2 flex w-full">
+                                        <button
+                                          onClick={() => setManageMaterialsLesson(lesson)}
+                                          className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition cursor-pointer shadow-sm"
+                                        >
+                                          <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                                          Quản lý học liệu (Video / Tài liệu)
+                                        </button>
                                       </div>
                                     )}
 
@@ -1277,6 +1205,22 @@ export default function ClassDetail() {
             </div>
           </div>
         </div>
+      )}
+
+      {manageMaterialsLesson && (
+        <ManageMaterialsModal
+          lesson={manageMaterialsLesson}
+          onClose={() => setManageMaterialsLesson(null)}
+          onUpdated={() => {
+             loadChapters();
+          }}
+          uploadingVideoId={uploadingLessonId}
+          uploadingAttachmentId={uploadingAttachmentLessonId}
+          videoProgress={uploadProgress[manageMaterialsLesson.id] || 0}
+          attachmentProgress={attachmentUploadProgress[manageMaterialsLesson.id] || 0}
+          onUploadVideo={handleLessonVideoUpload}
+          onUploadAttachment={handleLessonAttachmentUpload}
+        />
       )}
     </div>
   );
