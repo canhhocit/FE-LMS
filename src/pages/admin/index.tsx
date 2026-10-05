@@ -788,6 +788,12 @@ export function AdminClasses() {
     maxStudents: '50',
     semester: 'HK1',
     academicYear: '2026-2027',
+    startDate: '',
+    endDate: '',
+    examDate: '',
+    examRoom: '',
+    examFormat: '',
+    examDuration: '',
   });
   const [form, setForm] = useState({
     classCode: '',
@@ -797,6 +803,12 @@ export function AdminClasses() {
     maxStudents: '50',
     semester: 'HK1',
     academicYear: '2026-2027',
+    startDate: '',
+    endDate: '',
+    examDate: '',
+    examRoom: '',
+    examFormat: '',
+    examDuration: '',
   });
 
   // Schedule Modal State
@@ -870,6 +882,12 @@ export function AdminClasses() {
       maxStudents: String(c.maxStudents ?? 50),
       semester: c.semester || 'HK1',
       academicYear: c.academicYear || '2026-2027',
+      startDate: c.startDate || '',
+      endDate: c.endDate || '',
+      examDate: c.examDate ? c.examDate.substring(0, 16) : '',
+      examRoom: c.examRoom || '',
+      examFormat: c.examFormat || '',
+      examDuration: c.examDuration ? String(c.examDuration) : '',
     });
   };
 
@@ -895,6 +913,12 @@ export function AdminClasses() {
         maxStudents: maxStuds,
         semester: editForm.semester,
         academicYear: editForm.academicYear,
+        startDate: editForm.startDate || undefined,
+        endDate: editForm.endDate || undefined,
+        examDate: editForm.examDate ? editForm.examDate + ':00' : undefined,
+        examRoom: editForm.examRoom || undefined,
+        examFormat: editForm.examFormat || undefined,
+        examDuration: editForm.examDuration ? Number(editForm.examDuration) : undefined,
       });
       setEditingClazz(null);
       loadData();
@@ -929,6 +953,12 @@ export function AdminClasses() {
         maxStudents: maxStuds,
         semester: form.semester,
         academicYear: form.academicYear,
+        startDate: form.startDate || undefined,
+        endDate: form.endDate || undefined,
+        examDate: form.examDate ? form.examDate + ':00' : undefined,
+        examRoom: form.examRoom || undefined,
+        examFormat: form.examFormat || undefined,
+        examDuration: form.examDuration ? Number(form.examDuration) : undefined,
         createdAt: new Date().toISOString(),
       });
       setShowForm(false);

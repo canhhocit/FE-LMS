@@ -80,6 +80,12 @@ export interface Clazz {
   lessonCount?: number;
   isGradeLocked?: boolean;
   room?: string;
+  startDate?: string;
+  endDate?: string;
+  examDate?: string;
+  examRoom?: string;
+  examFormat?: string;
+  examDuration?: number;
   createdAt: string;
 }
 
