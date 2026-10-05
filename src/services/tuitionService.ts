@@ -15,7 +15,10 @@ export const deleteTuitionRate = async (id: number): Promise<void> => {
 };
 
 export const payMyInvoice = async (invoiceId: number): Promise<TuitionInvoice> =>
-  unwrap(apiClient.post(`/me/tuition/${invoiceId}/pay`));
+  unwrap(apiClient.post(`/me/tuition/${invoiceId}/simulate-payment`));
+
+export const getPaymentOptions = async (): Promise<{ simulationEnabled: boolean; payOsEnabled: boolean }> =>
+  unwrap(apiClient.get('/public/payment-options'));
 
 export const createPayOSPayment = async (invoiceId: number): Promise<PayOSPaymentResponse> =>
   unwrap(apiClient.post(`/me/tuition/${invoiceId}/payos-create-payment`));

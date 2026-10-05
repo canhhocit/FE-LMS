@@ -193,16 +193,19 @@ function AiSettingsCard() {
 
   const handleSaveConfig = async () => {
     const config = { aiName, toneStyle, customPrompt, targetGoal };
-    localStorage.setItem(configKey, JSON.stringify(config));
-    window.dispatchEvent(new Event('lms_update_ai_config'));
     try {
       await aiAdvisorService.updateMyAiPreference({
         preferredName: aiName,
         toneStyle,
         personalContext: customPrompt,
       });
-    } catch {}
-    setMsg('Đã lưu cấu hình Trợ lý AI thành công!');
+    } catch (error) {
+      alert(`Could not save AI preferences to your account: ${error instanceof Error ? error.message : 'request failed'}`);
+      return;
+    }
+    localStorage.setItem(configKey, JSON.stringify(config));
+    window.dispatchEvent(new Event('lms_update_ai_config'));
+    setMsg('AI preferences saved to your account.');
     setTimeout(() => setMsg(null), 3000);
   };
 

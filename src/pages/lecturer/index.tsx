@@ -10,7 +10,7 @@ import * as assessmentService from '../../services/assessmentService';
 import * as gradingService from '../../services/gradingService';
 import { useAuth } from '../../contexts/useAuth';
 import { PageHeader, Card, StatCard, Spinner, Empty, Badge, Button, Table, Input, Textarea, Select, Toast } from '../../components/ui';
-import type { Clazz, Assignment, Submission, AttendanceRecord } from '../../types';
+import type { Clazz, Assignment, Submission, AttendanceRecord, Grade } from '../../types';
 
 export function LecturerDashboard() {
   const { user } = useAuth();
@@ -308,6 +308,8 @@ export function LecturerAssignments() {
 export function LecturerGrading() {
   const [classes, setClasses] = useState<Clazz[]>([]);
   const [subs, setSubs] = useState<Submission[]>([]);
+  const [courseGrades, setCourseGrades] = useState<Grade[]>([]);
+  const [gradeDrafts, setGradeDrafts] = useState<Record<number, { midtermScore: string; finalScore: string }>>({});
   const [att, setAtt] = useState<AttendanceRecord[]>([]);
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
@@ -339,6 +341,22 @@ export function LecturerGrading() {
   }, [selectedClass]);
 
   useEffect(() => {
+    if (selectedClass == null) {
+      setCourseGrades([]);
+      return;
+    }
+    gradingService.getGrades(selectedClass)
+      .then((grades) => {
+        setCourseGrades(grades);
+        setGradeDrafts(Object.fromEntries(grades.map((grade) => [grade.studentId, {
+          midtermScore: grade.midtermScore?.toString() ?? '',
+          finalScore: grade.finalScore?.toString() ?? '',
+        }])));
+      })
+      .catch((e: unknown) => setPublishMsg((e as { message?: string })?.message ?? 'Không tải được bảng điểm lớp.'));
+  }, [selectedClass]);
+
+  useEffect(() => {
     if (selectedClass == null) return;
     gradingService.getAttendance(selectedClass, date).then((rs) => {
       setAtt(rs.filter((a) => a.attendanceDate === date));
@@ -346,10 +364,48 @@ export function LecturerGrading() {
   }, [selectedClass, date]);
 
   const gradeRow = async (id: number, score: number, feedback?: string) => {
-    await assessmentService.gradeSubmission(id, { score, feedback: feedback?.trim() || undefined });
-    const as = await assessmentService.getAssignments(selectedClass!);
-    const ss = (await Promise.all(as.map((a) => assessmentService.getSubmissions(a.id)))).flat();
-    setSubs(ss);
+    const submission = subs.find((item) => item.id === id);
+    if (!Number.isFinite(score) || score < 0 || (submission?.maxScore != null && score > submission.maxScore)) {
+      setPublishMsg(`Điểm phải từ 0 đến ${submission?.maxScore ?? 'mức tối đa của bài tập'}.`);
+      return;
+    }
+    try {
+      await assessmentService.gradeSubmission(id, { score, feedback: feedback?.trim() || undefined });
+      const assignments = await assessmentService.getAssignments(selectedClass!);
+      const updatedSubs = (await Promise.all(assignments.map((assignment) => assessmentService.getSubmissions(assignment.id)))).flat();
+      setSubs(updatedSubs);
+      setPublishMsg('Đã lưu điểm bài tập.');
+    } catch (e: unknown) {
+      setPublishMsg((e as { message?: string })?.message ?? 'Lưu điểm thất bại. Vui lòng thử lại.');
+    }
+  };
+
+  const saveCourseGrade = async (grade: Grade) => {
+    if (!selectedClass || currentClazz?.isGradeLocked) return;
+    const draft = gradeDrafts[grade.studentId] ?? { midtermScore: '', finalScore: '' };
+    const parseScore = (value: string) => value.trim() ? Number(value) : undefined;
+    const midtermScore = parseScore(draft.midtermScore);
+    const finalScore = parseScore(draft.finalScore);
+    if (midtermScore === undefined && finalScore === undefined) {
+      setPublishMsg('Nhập ít nhất một cột điểm trước khi lưu.');
+      return;
+    }
+    if ([midtermScore, finalScore].some((score) => score !== undefined && (!Number.isFinite(score) || score < 0 || score > 10))) {
+      setPublishMsg('Điểm giữa kỳ và cuối kỳ phải nằm trong khoảng 0–10.');
+      return;
+    }
+    try {
+      await gradingService.createGrade(selectedClass, { studentId: grade.studentId, midtermScore, finalScore });
+      const updated = await gradingService.getGrades(selectedClass);
+      setCourseGrades(updated);
+      setGradeDrafts(Object.fromEntries(updated.map((item) => [item.studentId, {
+        midtermScore: item.midtermScore?.toString() ?? '',
+        finalScore: item.finalScore?.toString() ?? '',
+      }])));
+      setPublishMsg(`Đã lưu điểm cho ${grade.studentName}.`);
+    } catch (e: unknown) {
+      setPublishMsg((e as { message?: string })?.message ?? 'Lưu điểm học phần thất bại.');
+    }
   };
 
   const updateAtt = (studentId: number, status: AttendanceRecord['status']) => {
@@ -488,13 +544,25 @@ export function LecturerGrading() {
                       <input
                         id={`score-${s.id}`}
                         type="number"
-                        defaultValue={s.score ?? 8}
+                        min={0}
+                        max={s.maxScore ?? undefined}
+                        step="0.01"
+                        defaultValue={s.score ?? ''}
                         className="w-20 px-2.5 py-1 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white rounded-lg outline-none"
                         placeholder="Điểm"
                       />
                       <Button
                         size="sm"
-                        onClick={() => gradeRow(s.id, Number((document.getElementById(`score-${s.id}`) as HTMLInputElement).value), (document.getElementById(`feedback-${s.id}`) as HTMLTextAreaElement | null)?.value)}
+                        disabled={currentClazz?.isGradeLocked}
+                        onClick={() => {
+                          const scoreInput = document.getElementById(`score-${s.id}`) as HTMLInputElement | null;
+                          const feedbackInput = document.getElementById(`feedback-${s.id}`) as HTMLTextAreaElement | null;
+                          if (!scoreInput?.value.trim()) {
+                            setPublishMsg('Vui lòng nhập điểm trước khi lưu.');
+                            return;
+                          }
+                          void gradeRow(s.id, Number(scoreInput.value), feedbackInput?.value);
+                        }}
                       >
                         Lưu điểm
                       </Button>
@@ -558,6 +626,49 @@ export function LecturerGrading() {
           )}
         </Card>
       </div>
+
+      <Card>
+        <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+          <h3 className="font-bold text-slate-900 dark:text-white text-sm">Điểm học phần</h3>
+          <p className="text-xs text-slate-500 mt-1">Nhập điểm giữa kỳ và cuối kỳ theo thang 10. Tổng điểm được tính theo chính sách của chương trình.</p>
+        </div>
+        {courseGrades.length === 0 ? (
+          <Empty msg="Lớp chưa có sinh viên đang theo học để nhập điểm." />
+        ) : (
+          <Table headers={['Sinh viên', 'Giữa kỳ', 'Cuối kỳ', 'Tổng kết', 'Thao tác']}>
+            {courseGrades.map((grade) => {
+              const draft = gradeDrafts[grade.studentId] ?? { midtermScore: '', finalScore: '' };
+              return (
+                <tr key={grade.studentId}>
+                  <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200 text-xs">{grade.studentName}</td>
+                  {(['midtermScore', 'finalScore'] as const).map((field) => (
+                    <td key={field} className="px-4 py-3">
+                      <input
+                        type="number"
+                        min={0}
+                        max={10}
+                        step="0.01"
+                        value={draft[field]}
+                        disabled={currentClazz?.isGradeLocked}
+                        onChange={(event) => setGradeDrafts((prev) => ({
+                          ...prev,
+                          [grade.studentId]: { ...draft, [field]: event.target.value },
+                        }))}
+                        className="w-24 px-2 py-1 text-xs border rounded-lg bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700 disabled:opacity-60"
+                        aria-label={`${field === 'midtermScore' ? 'Điểm giữa kỳ' : 'Điểm cuối kỳ'} của ${grade.studentName}`}
+                      />
+                    </td>
+                  ))}
+                  <td className="px-4 py-3 text-center text-xs font-semibold">{grade.totalScore ?? '—'}</td>
+                  <td className="px-4 py-3 text-right">
+                    <Button size="sm" disabled={currentClazz?.isGradeLocked} onClick={() => void saveCourseGrade(grade)}>Lưu điểm</Button>
+                  </td>
+                </tr>
+              );
+            })}
+          </Table>
+        )}
+      </Card>
     </div>
   );
 }

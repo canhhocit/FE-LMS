@@ -11,12 +11,12 @@ import * as gradingService from '../../services/gradingService';
 import type { Clazz, Grade } from '../../types';
 
 export const AnalyticsDashboard: React.FC = () => {
-  const [selectedSemester, setSelectedSemester] = useState('HK1-2026');
+  const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
   const [classes, setClasses] = useState<Clazz[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalStudents, setTotalStudents] = useState(0);
   const [avgScore, setAvgScore] = useState<number | null>(null);
-  const [attendanceRate, setAttendanceRate] = useState<number>(92);
+  const [attendanceRate] = useState<number | null>(null);
   const [warningCount, setWarningCount] = useState<number>(0);
   const [gradeDistribution, setGradeDistribution] = useState([
     { grade: 'A (8.5 - 10)', count: 0 },
@@ -25,12 +25,7 @@ export const AnalyticsDashboard: React.FC = () => {
     { grade: 'D (4.0 - 5.4)', count: 0 },
     { grade: 'F (< 4.0)', count: 0 },
   ]);
-  const [attendanceData, setAttendanceData] = useState([
-    { name: 'Có mặt đúng giờ', value: 85, color: '#10B981' },
-    { name: 'Đi muộn', value: 8, color: '#F59E0B' },
-    { name: 'Vắng có lý do', value: 4, color: '#6366F1' },
-    { name: 'Vắng không lý do', value: 3, color: '#EF4444' },
-  ]);
+  const [attendanceData] = useState<{ name: string; value: number; color: string }[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -40,6 +35,7 @@ export const AnalyticsDashboard: React.FC = () => {
         const myClasses = await clazzService.getMyClasses();
         if (!mounted) return;
         setClasses(myClasses);
+        setSelectedClassId(myClasses[0]?.id ?? null);
 
         let studentSum = 0;
         let totalScoreSum = 0;
@@ -54,7 +50,7 @@ export const AnalyticsDashboard: React.FC = () => {
         ];
 
         for (const c of myClasses) {
-          studentSum += c.maxStudents || 0;
+          studentSum += c.currentStudents || 0;
           try {
             const grades: Grade[] = await gradingService.getGrades(c.id);
             for (const g of grades) {
@@ -78,21 +74,10 @@ export const AnalyticsDashboard: React.FC = () => {
         }
 
         if (mounted) {
-          setTotalStudents(studentSum > 0 ? studentSum : myClasses.length * 40);
+          setTotalStudents(studentSum);
           setAvgScore(scoreCount > 0 ? totalScoreSum / scoreCount : null);
           setWarningCount(warningSum);
-          if (scoreCount > 0) {
-            setGradeDistribution(dist);
-          } else {
-            // Default demo distribution when no scores entered yet
-            setGradeDistribution([
-              { grade: 'A (8.5 - 10)', count: 18 },
-              { grade: 'B (7.0 - 8.4)', count: 25 },
-              { grade: 'C (5.5 - 6.9)', count: 14 },
-              { grade: 'D (4.0 - 5.4)', count: 6 },
-              { grade: 'F (< 4.0)', count: 2 },
-            ]);
-          }
+          setGradeDistribution(dist);
         }
       } catch (e: unknown) {
         console.error('Analytics load error:', e);
@@ -105,8 +90,8 @@ export const AnalyticsDashboard: React.FC = () => {
 
   if (loading) return <Spinner />;
 
-  const displayAvgScore = avgScore != null ? `${avgScore.toFixed(2)} / 10` : '7.85 / 10';
-  const scoreTrendLabel = avgScore != null ? (avgScore >= 8.0 ? 'Xếp loại Giỏi' : avgScore >= 7.0 ? 'Xếp loại Khá' : 'Trung bình') : 'Xếp loại Khá';
+  const displayAvgScore = avgScore != null ? `${avgScore.toFixed(2)} / 10` : 'N/A';
+  const scoreTrendLabel = avgScore != null ? (avgScore >= 8.0 ? 'Excellent' : avgScore >= 7.0 ? 'Good' : 'Average') : 'No published grades';
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -121,18 +106,19 @@ export const AnalyticsDashboard: React.FC = () => {
         actions={
           <div className="flex items-center gap-3">
             <select
-              value={selectedSemester}
-              onChange={(e) => setSelectedSemester(e.target.value)}
-              aria-label="Chọn học kỳ"
+              value={selectedClassId ?? ''}
+              onChange={(event) => setSelectedClassId(event.target.value ? Number(event.target.value) : null)}
+              aria-label="Select class to export"
               className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg px-3 py-2 text-xs font-semibold outline-none cursor-pointer focus:ring-2 focus:ring-accent-500/20 shadow-xs"
             >
-              <option value="HK1-2026">Học kỳ 1 - 2026</option>
-              <option value="HK2-2025">Học kỳ 2 - 2025</option>
+              <option value="">Select a class</option>
+              {classes.map((courseClass) => <option key={courseClass.id} value={courseClass.id}>{courseClass.classCode}</option>)}
             </select>
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => window.open(`${apiClient.defaults.baseURL}/reports/class/1/excel`, '_blank')}
+              onClick={() => selectedClassId != null && window.open(`${apiClient.defaults.baseURL}/reports/class/${selectedClassId}/excel`, '_blank')}
+              disabled={selectedClassId == null}
             >
               <Download className="w-4 h-4" />
               Xuất Excel
@@ -161,7 +147,7 @@ export const AnalyticsDashboard: React.FC = () => {
         />
         <StatCard
           label="Tỷ lệ Chuyên cần"
-          value={`${attendanceRate}%`}
+          value={attendanceRate == null ? 'N/A' : `${attendanceRate}%`}
           icon={<TrendingUp className="w-5 h-5" />}
           trend="Đạt chỉ tiêu"
           trendColor="emerald"
@@ -171,7 +157,7 @@ export const AnalyticsDashboard: React.FC = () => {
           label="Cảnh báo Học tập (AI)"
           value={`${warningCount} SV`}
           icon={<AlertTriangle className="w-5 h-5" />}
-          trend={warningCount > 0 ? "Cần hỗ trợ học bù" : "Học tập ổn định"}
+          trend={avgScore == null ? "No published grade data" : warningCount > 0 ? "Students may need support" : "No students flagged"}
           trendColor={warningCount > 0 ? "rose" : "emerald"}
           color={warningCount > 0 ? "rose" : "emerald"}
         />
@@ -185,7 +171,7 @@ export const AnalyticsDashboard: React.FC = () => {
             <h2 className="text-base font-bold text-slate-900 dark:text-white">Phân bố Phổ điểm Lớp học</h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">Số lượng sinh viên tương ứng theo từng dải điểm chữ</p>
           </div>
-          <div className="h-72 w-full">
+          {avgScore == null ? <p className="text-sm text-slate-500">No published grades are available.</p> : <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={gradeDistribution} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
@@ -197,7 +183,7 @@ export const AnalyticsDashboard: React.FC = () => {
                 <Bar dataKey="count" fill="#4F46E5" radius={[6, 6, 0, 0]} name="Số sinh viên" />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </div>}
         </Card>
 
         {/* Pie Chart - Attendance Breakdown */}
@@ -206,7 +192,7 @@ export const AnalyticsDashboard: React.FC = () => {
             <h2 className="text-base font-bold text-slate-900 dark:text-white">Tỷ lệ Điểm danh QR</h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">Tỷ lệ tham gia các buổi học thực tế</p>
           </div>
-          <div className="h-72 w-full flex items-center justify-center">
+          {attendanceData.length === 0 ? <p className="text-sm text-slate-500">Attendance data is unavailable.</p> : <div className="h-72 w-full flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -228,7 +214,7 @@ export const AnalyticsDashboard: React.FC = () => {
                 <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
               </PieChart>
             </ResponsiveContainer>
-          </div>
+          </div>}
         </Card>
       </div>
     </div>

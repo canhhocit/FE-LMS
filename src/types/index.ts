@@ -133,6 +133,7 @@ export type SubmissionType = 'FILE' | 'IMAGE' | 'GOOGLE_DRIVE_LINK' | 'GITHUB_LI
 export interface Submission {
   id: number;
   assignmentId: number;
+  maxScore?: number | null;
   studentId: number;
   studentName?: string;
   submissionType?: SubmissionType;
@@ -226,6 +227,7 @@ export interface TuitionInvoice {
   status: string;
   paidAt?: string;
   dueDate?: string;
+  paymentMethod?: 'PAYOS' | 'SIMULATED' | 'MANUAL' | null;
 }
 
 export interface TuitionRate {

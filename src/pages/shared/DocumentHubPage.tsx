@@ -73,35 +73,25 @@ export const DocumentHubPage: React.FC = () => {
   }, [documents]);
 
   const handleDownload = (doc: DocumentItem) => {
-    if (doc.downloadUrl) {
-      const link = document.createElement('a');
-      link.href = doc.downloadUrl;
-      link.download = `${doc.title}.${doc.format.toLowerCase()}`;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setMsg(`Đang tải xuống tệp thực tế: "${doc.title}.${doc.format.toLowerCase()}"`);
-    } else {
-      // Create actual sample text/csv file for sample templates
-      const sampleText = `CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\nĐộc lập - Tự do - Hạnh phúc\n\nBIỂU MẪU CHUẨN HỆ THỐNG LMS\nTên biểu mẫu: ${doc.title}\nPhân loại: ${doc.category}\nĐịnh dạng: ${doc.format}\n\n(File mẫu được khởi tạo tự động từ hệ thống LearningHub)`;
-      const blob = new Blob([sampleText], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${doc.title}.txt`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setMsg(`Đã xuất tệp biểu mẫu thực tế: "${doc.title}.txt"`);
+    if (!doc.downloadUrl) {
+      setMsg(`No real file is attached to "${doc.title}" yet. Ask an administrator to upload it.`);
+      return;
     }
+    const link = document.createElement('a');
+    link.href = doc.downloadUrl;
+    link.download = `${doc.title}.${doc.format.toLowerCase()}`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setMsg(`Opened the uploaded file: ${doc.title}`);
     setTimeout(() => setMsg(''), 4000);
   };
 
   const handleDeleteDoc = (id: string) => {
-    if (confirm('Bạn có chắc chắn muốn xóa biểu mẫu này khỏi hệ thống?')) {
+    if (confirm('Remove this entry from this browser?')) {
       setDocuments((prev) => prev.filter((d) => d.id !== id));
-      setMsg('Đã xóa biểu mẫu thành công!');
+      setMsg('Removed this entry from this browser only.');
       setTimeout(() => setMsg(''), 3000);
     }
   };
@@ -112,30 +102,23 @@ export const DocumentHubPage: React.FC = () => {
     try {
       realUrl = await uploadCloudFile(file);
     } catch {
-      // Fallback to local Object URL if backend is unreachable
-      realUrl = URL.createObjectURL(file);
+      setUploadingDocId(null);
+      setMsg('Upload failed. The file was not saved.');
+      return;
     }
 
     const fileExt = file.name.split('.').pop()?.toUpperCase() || 'PDF';
     const fileSizeStr = `${(file.size / 1024).toFixed(0)} KB`;
-
-    setDocuments((prev) =>
-      prev.map((doc) => {
-        if (doc.id === docId) {
-          return {
-            ...doc,
-            format: fileExt,
-            size: fileSizeStr,
-            downloadUrl: realUrl,
-            uploadedBy: user?.fullName || 'Giảng viên / Admin',
-            createdAt: new Date().toLocaleDateString('vi-VN'),
-          };
-        }
-        return doc;
-      })
-    );
+    setDocuments((prev) => prev.map((doc) => doc.id === docId ? {
+      ...doc,
+      format: fileExt,
+      size: fileSizeStr,
+      downloadUrl: realUrl,
+      uploadedBy: user?.fullName || 'Lecturer / Admin',
+      createdAt: new Date().toLocaleDateString('vi-VN'),
+    } : doc));
     setUploadingDocId(null);
-    setMsg(`Đã upload tệp thực tế "${file.name}" và lưu thành công!`);
+    setMsg('File uploaded. Its document entry is stored in this browser only.');
     setTimeout(() => setMsg(''), 4000);
   };
 
@@ -149,12 +132,14 @@ export const DocumentHubPage: React.FC = () => {
       try {
         realUrl = await uploadCloudFile(selectedFile);
       } catch {
-        realUrl = URL.createObjectURL(selectedFile);
+        setIsModalUploading(false);
+            setMsg('Upload failed. The file was not saved.');
+        return;
       }
     }
 
     const fileExt = selectedFile?.name.split('.').pop()?.toUpperCase() || 'PDF';
-    const fileSizeStr = selectedFile ? `${(selectedFile.size / 1024).toFixed(0)} KB` : '150 KB';
+    const fileSizeStr = selectedFile ? `${(selectedFile.size / 1024).toFixed(0)} KB` : 'No file';
 
     const newDoc: DocumentItem = {
       id: `doc-${Date.now()}`,
@@ -173,7 +158,7 @@ export const DocumentHubPage: React.FC = () => {
     setTitleInput('');
     setSelectedFile(null);
 
-    setMsg(`Tải lên & lưu tệp thực tế "${newDoc.title}" thành công!`);
+    setMsg(selectedFile ? 'File uploaded. Its document entry is stored in this browser only.' : 'Entry created in this browser only. No file was uploaded.');
     setTimeout(() => setMsg(''), 4000);
   };
 
@@ -186,8 +171,11 @@ export const DocumentHubPage: React.FC = () => {
     ? 'Danh sách các biểu mẫu import điểm, đề thi và danh sách điểm danh dành cho Giảng viên.'
     : 'Quản lý, tải về và tải lên các mẫu đơn chuẩn cho Sinh viên & Giảng viên (Hỗ trợ upload & lưu tệp thực tế)';
 
+  const messageIsError = /failed|not saved|cannot/i.test(msg);
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">Document entries are stored in this browser. Sample entries without an uploaded file are placeholders and cannot be downloaded.</div>
       {/* Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -212,8 +200,8 @@ export const DocumentHubPage: React.FC = () => {
       </div>
 
       {msg && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center gap-2 animate-in fade-in duration-200">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+        <div className={`p-4 rounded-xl text-sm font-semibold flex items-center gap-2 animate-in fade-in duration-200 ${messageIsError ? 'bg-rose-50 border border-rose-200 text-rose-800' : 'bg-emerald-50 border border-emerald-200 text-emerald-800'}`}>
+          {messageIsError ? <X className="w-5 h-5 text-rose-600 shrink-0" /> : <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />}
           {msg}
         </div>
       )}

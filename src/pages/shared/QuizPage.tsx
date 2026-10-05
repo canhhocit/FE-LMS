@@ -306,7 +306,7 @@ export default function QuizPage() {
     for (const line of lines) {
       const parts = line.includes('\t') ? line.split('\t') : line.split(',');
       const cleanParts = parts.map((p) => p.trim());
-      if (cleanParts.length >= 5) {
+      if (cleanParts.length >= 6) {
         const rawAns = cleanParts[5]?.toUpperCase();
         const correctAnswer = (['A', 'B', 'C', 'D'].includes(rawAns) ? rawAns : 'A') as 'A' | 'B' | 'C' | 'D';
         list.push({

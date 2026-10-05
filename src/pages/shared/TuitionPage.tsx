@@ -170,16 +170,21 @@ export default function TuitionPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [payOSData, setPayOSData] = useState<PayOSPaymentResponse | null>(null);
   const [creatingPayOS, setCreatingPayOS] = useState(false);
+  const [simulationEnabled, setSimulationEnabled] = useState(false);
+  const [payOsEnabled, setPayOsEnabled] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [invs, rts] = await Promise.all([
-        tuitionService.getMyTuition().catch(() => []),
-        tuitionService.getTuitionRates().catch(() => []),
+      const [invs, rts, paymentOptions] = await Promise.all([
+        tuitionService.getMyTuition(),
+        tuitionService.getTuitionRates(),
+        tuitionService.getPaymentOptions().catch(() => ({ simulationEnabled: false, payOsEnabled: false })),
       ]);
       setInvoices(invs);
       setRates(rts);
+      setSimulationEnabled(paymentOptions.simulationEnabled);
+      setPayOsEnabled(paymentOptions.payOsEnabled);
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Lỗi tải dữ liệu học phí');
     } finally {
@@ -189,38 +194,35 @@ export default function TuitionPage() {
 
   useEffect(() => {
     void fetchData();
-
-    // Check if returning from PayOS redirect (query params: ?status=PAID&invoiceId=123)
     const searchParams = new URLSearchParams(window.location.search);
     const status = searchParams.get('status');
     const invoiceId = searchParams.get('invoiceId');
-
-    if (status === 'PAID' && invoiceId) {
+    if (status === 'CANCELLED') {
+      setFlashMsg('Payment was canceled. The invoice remains unpaid.');
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+    if (invoiceId) {
       const invId = Number(invoiceId);
-      if (!isNaN(invId)) {
+      if (Number.isFinite(invId)) {
         tuitionService.verifyPayOSPayment(invId)
           .then((updated) => {
-            setInvoices((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
-            setFlashMsg('Thanh toán thành công qua Cổng PayOS! Hóa đơn đã được gạch nợ.');
+            setInvoices((prev) => prev.map((invoice) => invoice.id === updated.id ? updated : invoice));
+            setFlashMsg(updated.status === 'PAID' ? 'PayOS confirmed payment.' : 'Payment is still pending PayOS confirmation. The invoice remains unpaid.');
           })
-          .catch(() => {
-            // Silence error if already verified
-          })
-          .finally(() => {
-            // Clean up URL query parameters
-            window.history.replaceState({}, document.title, window.location.pathname);
-          });
+          .catch((error: unknown) => setErr((error as { message?: string })?.message ?? 'Could not refresh payment status.'))
+          .finally(() => window.history.replaceState({}, document.title, window.location.pathname));
       }
     }
   }, [fetchData]);
 
-  const handlePay = async () => {
+  const handleSimulatedPay = async () => {
     if (!payingInvoice) return;
     setIsProcessing(true);
     try {
       const updated = await tuitionService.payMyInvoice(payingInvoice.id);
       setInvoices((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
-      setFlashMsg('Thanh toán học phí thành công!');
+      setFlashMsg(`Simulated payment recorded for invoice #${updated.id}. No real money was transferred.`);
       setPayingInvoice(null);
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Thanh toán thất bại');
@@ -248,7 +250,7 @@ export default function TuitionPage() {
     try {
       const updated = await tuitionService.verifyPayOSPayment(payOSData.invoiceId);
       setInvoices((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
-      setFlashMsg('Xác nhận thanh toán PayOS thành công! Hóa đơn đã được gạch nợ.');
+      setFlashMsg(updated.status === 'PAID' ? 'PayOS confirmed payment.' : 'Payment is still pending PayOS confirmation. The invoice remains unpaid.');
       setPayOSData(null);
       setPayingInvoice(null);
     } catch (e: unknown) {
@@ -348,7 +350,7 @@ export default function TuitionPage() {
                           <div className="text-xs text-slate-400 mt-0.5">Mã hóa đơn: #TUITION-{i.id}</div>
                         </div>
                         <Pill color={isPaid ? 'green' : 'amber'}>
-                          {isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                          {isPaid ? (i.paymentMethod === 'SIMULATED' ? 'Paid ? SIMULATION' : 'Paid') : 'Unpaid'}
                         </Pill>
                       </div>
 
@@ -396,13 +398,12 @@ export default function TuitionPage() {
                             <button
                               onClick={() => {
                                 setPayingInvoice(i);
-                                void handleCreatePayOS(i);
                               }}
                               disabled={creatingPayOS}
                               className="rounded-lg bg-linear-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold px-4 py-2 text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                             >
                               <QrCode className="w-4 h-4" />
-                              Thanh toán PayOS VietQR
+                              Choose payment method
                             </button>
                           )}
                         </div>
@@ -444,7 +445,7 @@ export default function TuitionPage() {
         </div>
       </div>
 
-      {/* PayOS VietQR Payment Modal */}
+                              Choose payment method
       {payingInvoice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 space-y-4">
@@ -454,7 +455,7 @@ export default function TuitionPage() {
                   <QrCode className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-base">Thanh toán PayOS (VietQR)</h3>
+                  <h3 className="font-bold text-slate-900 text-base">Choose a payment method</h3>
                   <p className="text-xs text-slate-500">Hóa đơn #{payingInvoice.id} · Kỳ {payingInvoice.semester} ({payingInvoice.academicYear})</p>
                 </div>
               </div>
@@ -529,13 +530,16 @@ export default function TuitionPage() {
             ) : (
               <div className="py-6 text-center space-y-3">
                 <p className="text-sm text-slate-600">Thanh toán hóa đơn qua ngân hàng hoặc ví điện tử.</p>
-                <button
-                  onClick={handlePay}
+                {payOsEnabled && <button
+                  onClick={() => payingInvoice && void handleCreatePayOS(payingInvoice)}
                   disabled={isProcessing}
                   className="px-6 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700"
                 >
                   Xác nhận thanh toán trực tiếp
-                </button>
+                </button>}
+                {simulationEnabled && (
+                  <button onClick={handleSimulatedPay} disabled={isProcessing} className="px-6 py-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 text-xs font-semibold">Simulated payment (no real money)</button>
+                )}
               </div>
             )}
           </div>

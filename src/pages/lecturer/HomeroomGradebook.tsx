@@ -55,7 +55,7 @@ export const HomeroomGradebook: React.FC = () => {
   };
 
   const handleSave = () => {
-    setMsg('Đã lưu bảng Điểm rèn luyện lớp Chủ nhiệm thành công!');
+    setMsg('Demo only: scores stay in this page and were not saved to student records.');
     setTimeout(() => setMsg(''), 4000);
   };
 
@@ -81,7 +81,7 @@ export const HomeroomGradebook: React.FC = () => {
                 type="file"
                 accept=".xlsx, .csv"
                 className="hidden"
-                onChange={() => setMsg('Đã import danh sách Điểm rèn luyện từ file thành công!')}
+                onChange={() => setMsg('Import is not implemented here. No scores were imported.')}
               />
               <span className="inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold px-3 py-2 rounded-lg transition border border-slate-200 dark:border-slate-700 shadow-xs">
                 <Upload className="w-4 h-4 text-slate-500" />
@@ -97,8 +97,10 @@ export const HomeroomGradebook: React.FC = () => {
         }
       />
 
+      <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">Preview data only. Saving and importing scores are not connected to backend student records.</div>
+
       {msg && (
-        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-medium flex items-center gap-2 shadow-xs">
+        <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs font-medium flex items-center gap-2 shadow-xs">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           {msg}
         </div>
