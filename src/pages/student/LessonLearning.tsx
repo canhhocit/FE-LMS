@@ -5,6 +5,7 @@ import {
   Download, FileText, File, Plus, Clock, StickyNote, ExternalLink
 } from 'lucide-react';
 import { PageHeader, Card, Spinner, Empty, ErrorBox, Badge, Button } from '../../components/ui';
+import { LessonDiscussion } from '../../components/LessonDiscussion';
 import * as clazzService from '../../services/clazzService';
 import * as contentService from '../../services/contentService';
 import * as progressService from '../../services/progressService';
@@ -571,6 +572,8 @@ export default function StudentLessonLearning() {
               </div>
             )}
           </Card>
+
+          <LessonDiscussion lessonId={selectedLesson.id} />
         </div>
 
         <div className="space-y-4">

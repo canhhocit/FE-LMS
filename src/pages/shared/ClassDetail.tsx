@@ -9,10 +9,11 @@ import { useAuth } from "../../contexts/useAuth";
 import { uploadCloudFile } from "../../services/storageService";
 import { PageTitle, PageHeader, Card, Spinner, Empty, ErrorBox, Pill } from "../../components/Layout";
 import { Toast } from "../../components/ui";
+import { LessonDiscussion } from "../../components/LessonDiscussion";
 import type { Clazz, User, Chapter, Announcement, Assignment, Lesson, EnrollmentProgress, Submission, SubmissionType } from "../../types";
 import { 
   FileText, Link2, Upload, ArrowUp, ArrowDown, Plus, Pencil, Trash2, 
-  CheckCircle, Clock, Video, File, X, Sparkles, AlertCircle, HelpCircle, Loader2
+  CheckCircle, Clock, Video, File, X, Sparkles, AlertCircle, HelpCircle, Loader2, MessageSquare
 } from "lucide-react";
 
 export default function ClassDetail() {
@@ -70,6 +71,7 @@ export default function ClassDetail() {
   const [studentProgress, setStudentProgress] = useState<EnrollmentProgress | null>(null);
   const [saving, setSaving] = useState(false);
   const [savingAnnouncement, setSavingAnnouncement] = useState(false);
+  const [openDiscussionId, setOpenDiscussionId] = useState<number | null>(null);
   const [uploadingLessonId, setUploadingLessonId] = useState<number | null>(null);
   const [uploadProgress, setUploadProgress] = useState<Record<number, number>>({});
   const [attachmentUploadProgress, setAttachmentUploadProgress] = useState<Record<number, number>>({});
@@ -751,7 +753,20 @@ export default function ClassDetail() {
                                           <span>{lesson.attachmentName || 'Tài liệu đính kèm'}</span>
                                         </a>
                                       )}
+                                      <button
+                                        onClick={() => setOpenDiscussionId(openDiscussionId === lesson.id ? null : lesson.id)}
+                                        className="inline-flex items-center gap-1 text-blue-600 font-medium hover:underline cursor-pointer"
+                                      >
+                                        <MessageSquare className="w-3.5 h-3.5" />
+                                        <span>Thảo luận chung</span>
+                                      </button>
                                     </div>
+
+                                    {openDiscussionId === lesson.id && (
+                                      <div className="mt-3 w-full mb-3">
+                                        <LessonDiscussion lessonId={lesson.id} />
+                                      </div>
+                                    )}
 
                                     {/* Upload Controls for Lecturer */}
                                     {isLecturer && (
@@ -848,7 +863,6 @@ export default function ClassDetail() {
                                             onClose={() => setUploadStatus(prev => { const next = {...prev}; delete next[lesson.id]; return next; })} 
                                           />
                                         )}
-                                      </div>
                                       </div>
                                     )}
 

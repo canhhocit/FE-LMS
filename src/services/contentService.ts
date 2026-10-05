@@ -67,3 +67,18 @@ export interface AiLessonSummaryResponse {
 export const getAiLessonSummary = async (lessonId: number): Promise<AiLessonSummaryResponse> => {
   return unwrap<AiLessonSummaryResponse>(apiClient.get(`/content/lessons/${lessonId}/ai-summary`));
 };
+
+export interface LessonComment {
+  id: number;
+  lessonId: number;
+  userId: number;
+  userName: string;
+  userAvatar: string;
+  content: string;
+  parentId: number | null;
+  createdAt: string;
+}
+
+export const getLessonComments = async (lessonId: number): Promise<LessonComment[]> => unwrap(apiClient.get(`/lessons/${lessonId}/comments`));
+export const createLessonComment = async (lessonId: number, content: string, parentId?: number): Promise<LessonComment> => unwrap(apiClient.post(`/lessons/${lessonId}/comments`, { content, parentId }));
+export const deleteLessonComment = async (commentId: number): Promise<void> => { await apiClient.delete(`/lessons/comments/${commentId}`); };
