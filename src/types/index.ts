@@ -366,6 +366,7 @@ export interface RegistrationPeriod {
   closeAt: string;
   maxCredits: number | null;
   isActive: boolean;
+  classCount?: number;
 }
 
 // ===== Admin Reports =====

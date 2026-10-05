@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Search, Plus, Calendar, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
+import { Search, Plus, Calendar, ToggleLeft, ToggleRight, Trash2, Settings, X } from 'lucide-react';
 import * as registrationService from '../../services/registrationService';
 import { PageHeader, Card, Button, Input, Select, Badge, Spinner, Empty, ErrorBox } from '../../components/ui';
-import type { RegistrationPeriod } from '../../types';
+import type { RegistrationPeriod, Clazz } from '../../types';
 
 const parseDate = (val: unknown): Date | null => {
   if (!val) return null;
@@ -46,6 +46,11 @@ export default function RegistrationPeriods() {
   const [err, setErr] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [showClassesModal, setShowClassesModal] = useState<RegistrationPeriod | null>(null);
+  const [periodClasses, setPeriodClasses] = useState<Clazz[]>([]);
+  const [allClasses, setAllClasses] = useState<Clazz[]>([]);
+  const [loadingClasses, setLoadingClasses] = useState(false);
+
 
   // Search, Filter & Pagination State
   const [searchKw, setSearchKw] = useState('');
@@ -76,6 +81,50 @@ export default function RegistrationPeriods() {
     const cleanup = load();
     return cleanup;
   }, [load]);
+
+
+  const openClassesModal = async (period: RegistrationPeriod) => {
+    setShowClassesModal(period);
+    setLoadingClasses(true);
+    setErr(null);
+    try {
+      const [pClasses, aClasses] = await Promise.all([
+        registrationService.getPeriodClasses(period.id),
+        // we can fetch all classes using a service if available, but let's assume we have it or can fetch from API directly
+        import('../../services/api/client').then(m => m.unwrap(m.apiClient.get<Clazz[]>('/admin/classes')))
+      ]);
+      setPeriodClasses(pClasses);
+      setAllClasses(aClasses as Clazz[]);
+    } catch (e: any) {
+      setErr(e.message || 'Lỗi tải danh sách lớp');
+    } finally {
+      setLoadingClasses(false);
+    }
+  };
+
+  const handleAddClassToPeriod = async (clazzId: number) => {
+    if (!showClassesModal) return;
+    try {
+      await registrationService.addClazzToPeriod(showClassesModal.id, clazzId);
+      const updated = await registrationService.getPeriodClasses(showClassesModal.id);
+      setPeriodClasses(updated);
+      load(); // refresh main list to update count
+    } catch (e: any) {
+      alert(e.message || 'Lỗi thêm lớp');
+    }
+  };
+
+  const handleRemoveClassFromPeriod = async (clazzId: number) => {
+    if (!showClassesModal) return;
+    try {
+      await registrationService.removeClazzFromPeriod(showClassesModal.id, clazzId);
+      const updated = await registrationService.getPeriodClasses(showClassesModal.id);
+      setPeriodClasses(updated);
+      load(); // refresh main list to update count
+    } catch (e: any) {
+      alert(e.message || 'Lỗi xóa lớp');
+    }
+  };
 
   const validateForm = () => {
     if (!form.name.trim()) return 'Vui lòng nhập tên đợt đăng ký';
@@ -368,6 +417,68 @@ export default function RegistrationPeriods() {
           </div>
         )}
       </Card>
+
+      {/* Classes Modal */}
+      {showClassesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                Quản lý lớp học phần: <span className="text-indigo-600">{showClassesModal.name}</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowClassesModal(null)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {loadingClasses ? <Spinner /> : (
+              <div className="flex-1 overflow-auto flex flex-col lg:flex-row gap-6 min-h-0">
+                {/* Left: Available classes */}
+                <div className="flex-1 border rounded-xl overflow-hidden flex flex-col">
+                  <div className="bg-slate-50 dark:bg-slate-900 p-3 font-semibold text-sm border-b">Tất cả lớp học phần</div>
+                  <div className="flex-1 overflow-auto p-2 space-y-2">
+                    {allClasses.filter(c => !periodClasses.find(pc => pc.id === c.id)).map(c => (
+                      <div key={c.id} className="flex items-center justify-between p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded border">
+                        <div className="text-sm">
+                          <div className="font-bold">{c.classCode}</div>
+                          <div className="text-xs text-slate-500">{c.className}</div>
+                        </div>
+                        <Button size="sm" onClick={() => handleAddClassToPeriod(c.id)}>Thêm</Button>
+                      </div>
+                    ))}
+                    {allClasses.filter(c => !periodClasses.find(pc => pc.id === c.id)).length === 0 && (
+                      <div className="p-4 text-center text-sm text-slate-500">Không còn lớp nào để thêm</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right: Added classes */}
+                <div className="flex-1 border rounded-xl overflow-hidden flex flex-col">
+                  <div className="bg-indigo-50 dark:bg-indigo-900/30 p-3 font-semibold text-sm border-b">Đã chọn ({periodClasses.length})</div>
+                  <div className="flex-1 overflow-auto p-2 space-y-2">
+                    {periodClasses.map(c => (
+                      <div key={c.id} className="flex items-center justify-between p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded border border-indigo-100 dark:border-indigo-900/50">
+                        <div className="text-sm">
+                          <div className="font-bold text-indigo-700 dark:text-indigo-400">{c.classCode}</div>
+                          <div className="text-xs text-slate-500">{c.className}</div>
+                        </div>
+                        <Button variant="danger" size="sm" onClick={() => handleRemoveClassFromPeriod(c.id)}>Xóa</Button>
+                      </div>
+                    ))}
+                    {periodClasses.length === 0 && (
+                      <div className="p-4 text-center text-sm text-slate-500">Chưa có lớp nào trong đợt này</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

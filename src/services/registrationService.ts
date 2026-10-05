@@ -15,3 +15,16 @@ export const getActiveRegistrationPeriod = async (): Promise<RegistrationPeriod 
     return null;
   }
 };
+
+// === Quản lý lớp học phần trong đợt đăng ký (Admin) ===
+export const getPeriodClasses = async (periodId: number): Promise<Clazz[]> =>
+  unwrap(apiClient.get(`/admin/registration-periods/${periodId}/classes`));
+
+export const addClazzToPeriod = async (periodId: number, clazzId: number): Promise<void> => {
+  await apiClient.post(`/admin/registration-periods/${periodId}/classes/${clazzId}`);
+};
+
+export const removeClazzFromPeriod = async (periodId: number, clazzId: number): Promise<void> => {
+  await apiClient.delete(`/admin/registration-periods/${periodId}/classes/${clazzId}`);
+};
+
