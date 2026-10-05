@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import * as curriculumService from '../../services/curriculumService';
+import { getGradingPolicy, updateGradingPolicy } from '../../services/gradingPolicyService';
 import { getDepartments, type DepartmentResponse } from '../../services/departmentService';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import type { Curriculum, Course, CurriculumCourseItem, Prerequisite } from '../../types';
@@ -153,6 +154,53 @@ export default function AdminCurricula() {
       description: c.description || '',
     });
     setShowCourseModal(true);
+  };
+
+  const handleOpenGradingPolicy = async (curr: Curriculum) => {
+    setSelectedPolicyCurr(curr);
+    setShowGradingModal(true);
+    setLoadingPolicy(true);
+    try {
+      const p = await getGradingPolicy(curr.id);
+      setGradingPolicyForm({
+        attendanceWeight: p.attendanceWeight,
+        midtermWeight: p.midtermWeight,
+        finalWeight: p.finalWeight,
+      });
+    } catch (err: any) {
+      if (err?.response?.status === 404) {
+        setGradingPolicyForm({ attendanceWeight: 0, midtermWeight: 0.4, finalWeight: 0.6 });
+      } else {
+        setErr(err.message || 'Lỗi tải grading policy');
+      }
+    } finally {
+      setLoadingPolicy(false);
+    }
+  };
+
+  const handleSaveGradingPolicy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedPolicyCurr) return;
+    const { attendanceWeight, midtermWeight, finalWeight } = gradingPolicyForm;
+    const sum = Number(attendanceWeight) + Number(midtermWeight) + Number(finalWeight);
+    if (Math.abs(sum - 1.0) > 0.001) {
+      setErr('Tổng các trọng số phải bằng 1.0 (VD: 0.1 + 0.3 + 0.6)');
+      return;
+    }
+    setSubmittingCurr(true);
+    setErr(null);
+    try {
+      await updateGradingPolicy(selectedPolicyCurr.id, { 
+        attendanceWeight: Number(attendanceWeight), 
+        midtermWeight: Number(midtermWeight), 
+        finalWeight: Number(finalWeight) 
+      });
+      setShowGradingModal(false);
+    } catch (err: any) {
+      setErr(err.message || 'Lỗi cập nhật trọng số');
+    } finally {
+      setSubmittingCurr(false);
+    }
   };
 
   const handleSaveCourse = async (e: React.FormEvent) => {
@@ -493,8 +541,16 @@ export default function AdminCurricula() {
                       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                         <button
                           type="button"
-                          onClick={() => openEditCurr(cu)}
+                          onClick={() => handleOpenGradingPolicy(cu)}
                           className="p-1 text-slate-400 hover:text-amber-600 transition"
+                          title="Cấu hình trọng số điểm"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openEditCurr(cu)}
+                          className="p-1 text-slate-400 hover:text-indigo-600 transition"
                           title="Sửa CTĐT"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
@@ -618,6 +674,95 @@ export default function AdminCurricula() {
               <Card>
                 <Empty msg="Vui lòng chọn một Chương trình đào tạo ở danh sách bên trái" />
               </Card>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Cấu hình trọng số điểm */}
+      {showGradingModal && selectedPolicyCurr && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                Cấu hình trọng số điểm: <span className="text-amber-600">{selectedPolicyCurr.name}</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowGradingModal(false)}
+                className="text-slate-400 hover:text-slate-600 text-xl font-bold"
+              >
+                &times;
+              </button>
+            </div>
+
+            {loadingPolicy ? (
+              <Spinner />
+            ) : (
+              <form onSubmit={handleSaveGradingPolicy} className="mt-4 space-y-4">
+                <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-200 mb-4">
+                  Lưu ý: Tổng của các trọng số phải luôn luôn bằng 1.0 (ví dụ: Chuyên cần 0.1, Giữa kỳ 0.3, Cuối kỳ 0.6)
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Trọng số chuyên cần (0.0 - 1.0)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0" max="1"
+                    required
+                    value={gradingPolicyForm.attendanceWeight}
+                    onChange={(e) => setGradingPolicyForm({ ...gradingPolicyForm, attendanceWeight: Number(e.target.value) })}
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Trọng số giữa kỳ (0.0 - 1.0)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0" max="1"
+                    required
+                    value={gradingPolicyForm.midtermWeight}
+                    onChange={(e) => setGradingPolicyForm({ ...gradingPolicyForm, midtermWeight: Number(e.target.value) })}
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Trọng số cuối kỳ (0.0 - 1.0)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0" max="1"
+                    required
+                    value={gradingPolicyForm.finalWeight}
+                    onChange={(e) => setGradingPolicyForm({ ...gradingPolicyForm, finalWeight: Number(e.target.value) })}
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => setShowGradingModal(false)}
+                    className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingCurr}
+                    className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+                  >
+                    {submittingCurr ? 'Đang lưu...' : 'Lưu cấu hình'}
+                  </button>
+                </div>
+              </form>
             )}
           </div>
         </div>
