@@ -49,6 +49,17 @@ export default function AdminCurricula() {
   const [loadingPrereqs, setLoadingPrereqs] = useState(false);
   const [addPrereqCourseId, setAddPrereqCourseId] = useState<string>('');
 
+  
+  // Grading Policy state
+  const [showGradingModal, setShowGradingModal] = useState(false);
+  const [selectedPolicyCurr, setSelectedPolicyCurr] = useState<Curriculum | null>(null);
+  const [gradingPolicyForm, setGradingPolicyForm] = useState({
+    attendanceWeight: 0,
+    midtermWeight: 0.4,
+    finalWeight: 0.6,
+  });
+  const [loadingPolicy, setLoadingPolicy] = useState(false);
+
   // Initial Load
   useEffect(() => {
     let mounted = true;
