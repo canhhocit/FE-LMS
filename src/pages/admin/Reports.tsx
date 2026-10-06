@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { BarChart3, FileSpreadsheet, FileText, AlertTriangle, Plus, Download, Edit3, Trash2, CheckCircle2 } from 'lucide-react';
+import { BarChart3, FileSpreadsheet, FileText, AlertTriangle, Download } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import * as reportService from '../../services/reportService';
 import { exportClazzScoresExcel, exportStudentTranscriptPdf, scanAcademicProbation } from '../../services/reportService';
 import * as tuitionService from '../../services/tuitionService';
@@ -30,28 +31,6 @@ export default function AdminReports() {
   const [activeTab, setActiveTab] = useState<'reports' | 'tuition'>('reports');
   const [tuitionRates, setTuitionRates] = useState<TuitionRate[]>([]);
   const [loadingTuition, setLoadingTuition] = useState(true);
-  const [editRateId, setEditRateId] = useState<number | null>(null);
-  const [editRateYear, setEditRateYear] = useState('');
-  const [editRatePrice, setEditRatePrice] = useState(0);
-  const [editRateActive, setEditRateActive] = useState(true);
-  const [savingRate, setSavingRate] = useState(false);
-  const [showCreateRate, setShowCreateRate] = useState(false);
-  const [newRateYear, setNewRateYear] = useState('');
-  const [newRatePrice, setNewRatePrice] = useState(0);
-  const [creatingRate, setCreatingRate] = useState(false);
-
-  const loadTuitionRates = async () => {
-    setLoadingTuition(true);
-    try {
-      const rates = await tuitionService.getTuitionRates();
-      setTuitionRates(rates);
-    } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'Không tải được mức học phí');
-    } finally {
-      setLoadingTuition(false);
-    }
-  };
-
   useEffect(() => {
     let m = true;
     Promise.all([
@@ -141,68 +120,6 @@ export default function AdminReports() {
       setScanResult((error as { message?: string })?.message ?? 'Quét thất bại.');
     } finally {
       setScanning(false);
-    }
-  };
-
-  const startEditRate = (rate: TuitionRate) => {
-    setEditRateId(rate.id);
-    setEditRateYear(rate.academicYear);
-    setEditRatePrice(rate.pricePerCredit);
-    setEditRateActive(rate.isActive);
-  };
-
-  const cancelEditRate = () => {
-    setEditRateId(null);
-    setEditRateYear('');
-    setEditRatePrice(0);
-    setEditRateActive(true);
-  };
-
-  const handleSaveEditRate = async () => {
-    if (!editRateId || !editRateYear.trim() || editRatePrice <= 0) return;
-    setSavingRate(true);
-    try {
-      await tuitionService.updateTuitionRate(editRateId, {
-        academicYear: editRateYear,
-        pricePerCredit: editRatePrice,
-        isActive: editRateActive,
-      });
-      cancelEditRate();
-      loadTuitionRates();
-    } catch (e: unknown) {
-      alert((e as { message?: string })?.message ?? 'Cập nhật thất bại');
-    } finally {
-      setSavingRate(false);
-    }
-  };
-
-  const handleDeleteRate = async (id: number) => {
-    if (!confirm('Xoá mức học phí này?')) return;
-    try {
-      await tuitionService.deleteTuitionRate(id);
-      loadTuitionRates();
-    } catch (e: unknown) {
-      alert((e as { message?: string })?.message ?? 'Xoá thất bại');
-    }
-  };
-
-  const handleCreateRate = async () => {
-    if (!newRateYear.trim() || newRatePrice <= 0) return;
-    setCreatingRate(true);
-    try {
-      await tuitionService.createTuitionRate({
-        academicYear: newRateYear,
-        pricePerCredit: newRatePrice,
-        isActive: true,
-      });
-      setShowCreateRate(false);
-      setNewRateYear('');
-      setNewRatePrice(0);
-      loadTuitionRates();
-    } catch (e: unknown) {
-      alert((e as { message?: string })?.message ?? 'Tạo thất bại');
-    } finally {
-      setCreatingRate(false);
     }
   };
 
@@ -378,99 +295,40 @@ export default function AdminReports() {
       ) : (
         /* Tuition Rates Tab */
         <Card padding="none">
-          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-900/50">
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-sm">Định mức Học phí / Tín chỉ theo Năm học</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cấu hình đơn giá 1 tín chỉ cho hệ thống tự động tính học phí sinh viên</p>
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">Mức học phí đã cấu hình</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Xem đơn giá theo năm học, học kỳ và ngày hiệu lực.</p>
             </div>
-            <Button variant="primary" size="sm" onClick={() => setShowCreateRate(true)}>
-              <Plus className="w-4 h-4" /> Thêm định mức mới
-            </Button>
+            <Link to="/admin/tuition">
+              <Button variant="secondary" size="sm">
+                Quản lý mức học phí
+              </Button>
+            </Link>
           </div>
-
-          {showCreateRate && (
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-navy-50/30 dark:bg-navy-950/30 flex flex-wrap items-center gap-3">
-              <Input
-                placeholder="Năm học (VD: 2026-2027)"
-                value={newRateYear}
-                onChange={(e) => setNewRateYear(e.target.value)}
-              />
-              <Input
-                type="number"
-                placeholder="Giá / Tín chỉ (VNĐ)"
-                value={newRatePrice || ''}
-                onChange={(e) => setNewRatePrice(Number(e.target.value))}
-              />
-              <Button variant="primary" size="sm" onClick={handleCreateRate} disabled={creatingRate}>
-                {creatingRate ? 'Đang tạo...' : 'Lưu mức mới'}
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => setShowCreateRate(false)}>
-                Hủy
-              </Button>
-            </div>
-          )}
 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  <th className="py-3.5 px-4">ID</th>
                   <th className="py-3.5 px-4">Năm học</th>
+                  <th className="py-3.5 px-4">Phạm vi</th>
                   <th className="py-3.5 px-4">Đơn giá / Tín chỉ (VNĐ)</th>
+                  <th className="py-3.5 px-4">Ngày hiệu lực</th>
                   <th className="py-3.5 px-4 text-center">Trạng thái</th>
-                  <th className="py-3.5 px-4 text-right">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
                 {tuitionRates.map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3.5 px-4 text-slate-400 font-mono">{r.id}</td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-slate-100">
-                      {editRateId === r.id ? (
-                        <Input value={editRateYear} onChange={(e) => setEditRateYear(e.target.value)} />
-                      ) : (
-                        r.academicYear
-                      )}
-                    </td>
+                    <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-slate-100">{r.academicYear}</td>
+                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">{r.semester || 'Mặc định cả năm'}</td>
                     <td className="py-3.5 px-4 font-bold text-navy-900 dark:text-navy-300">
-                      {editRateId === r.id ? (
-                        <Input type="number" value={editRatePrice} onChange={(e) => setEditRatePrice(Number(e.target.value))} />
-                      ) : (
-                        `${r.pricePerCredit.toLocaleString()} VNĐ`
-                      )}
+                      {r.pricePerCredit.toLocaleString('vi-VN')} VNĐ
                     </td>
+                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">{r.effectiveFrom}</td>
                     <td className="py-3.5 px-4 text-center">
-                      {editRateId === r.id ? (
-                        <label className="inline-flex items-center gap-1.5 cursor-pointer">
-                          <input type="checkbox" checked={editRateActive} onChange={(e) => setEditRateActive(e.target.checked)} />
-                          <span>Active</span>
-                        </label>
-                      ) : (
-                        <Badge variant={r.isActive ? 'success' : 'neutral'}>
-                          {r.isActive ? 'Kích hoạt' : 'Khóa'}
-                        </Badge>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-right space-x-1.5">
-                      {editRateId === r.id ? (
-                        <>
-                          <Button variant="primary" size="sm" onClick={handleSaveEditRate} disabled={savingRate}>
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Lưu
-                          </Button>
-                          <Button variant="secondary" size="sm" onClick={cancelEditRate}>
-                            Hủy
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <Button variant="ghost" size="sm" onClick={() => startEditRate(r)}>
-                            <Edit3 className="w-3.5 h-3.5" /> Sửa
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => void handleDeleteRate(r.id)}>
-                            <Trash2 className="w-3.5 h-3.5 text-rose-600" /> Xóa
-                          </Button>
-                        </>
-                      )}
+                      <Badge variant={r.isActive ? 'success' : 'neutral'}>{r.isActive ? 'Đang áp dụng' : 'Tạm khóa'}</Badge>
                     </td>
                   </tr>
                 ))}

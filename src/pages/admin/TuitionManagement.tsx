@@ -1,245 +1,426 @@
-import { useEffect, useState, useCallback } from 'react';
-import { DollarSign, Plus, Zap, CheckCircle2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, FileText, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { PageHeader, Card, Button, Input, Select, Badge, Spinner, Empty, ErrorBox } from '../../components/ui';
 import * as tuitionService from '../../services/tuitionService';
 import * as adminService from '../../services/adminService';
 import type { TuitionRate, User } from '../../types';
 
+const STUDENT_PAGE_SIZE = 20;
 const fmtMoney = (v: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v);
+const today = () => {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+interface RateForm {
+  academicYear: string;
+  semester: string;
+  effectiveFrom: string;
+  pricePerCredit: number;
+  isActive: boolean;
+}
+
+const emptyRateForm = (): RateForm => ({
+  academicYear: '2026-2027',
+  semester: '',
+  effectiveFrom: today(),
+  pricePerCredit: 350000,
+  isActive: true,
+});
 
 export default function AdminTuitionManagement() {
   const [rates, setRates] = useState<TuitionRate[]>([]);
+  const [ratesLoading, setRatesLoading] = useState(true);
   const [students, setStudents] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [studentPage, setStudentPage] = useState(0);
+  const [studentTotalPages, setStudentTotalPages] = useState(0);
+  const [studentSearch, setStudentSearch] = useState('');
+  const [loadingStudents, setLoadingStudents] = useState(false);
+  const [studentError, setStudentError] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Rate Form
   const [showRateForm, setShowRateForm] = useState(false);
-  const [rateForm, setRateForm] = useState({ academicYear: '2026-2027', pricePerCredit: 350000, isActive: true });
+  const [editingRate, setEditingRate] = useState<TuitionRate | null>(null);
+  const [rateForm, setRateForm] = useState<RateForm>(emptyRateForm);
   const [submittingRate, setSubmittingRate] = useState(false);
 
-  // Invoice Generation Form
   const [showGenForm, setShowGenForm] = useState(false);
-  const [genStudentId, setGenStudentId] = useState<string>('');
-  const [genSemester, setGenSemester] = useState<string>('HK1');
-  const [genYear, setGenYear] = useState<string>('2026-2027');
+  const [genStudentId, setGenStudentId] = useState('');
+  const [genSemester, setGenSemester] = useState('HK1');
+  const [genYear, setGenYear] = useState('2026-2027');
   const [submittingGen, setSubmittingGen] = useState(false);
 
-  const loadData = useCallback(() => {
+  useEffect(() => {
     let mounted = true;
-    Promise.all([
-      tuitionService.getTuitionRates(),
-      adminService.listStudents(''),
-    ])
-      .then(([rateList, studentList]) => {
-        if (!mounted) return;
-        setRates(rateList);
-        setStudents(studentList);
+    tuitionService.getTuitionRates()
+      .then((rateList) => {
+        if (mounted) setRates(rateList);
       })
-      .catch((e: unknown) => {
-        if (!mounted) return;
-        setErr((e as { message?: string })?.message ?? 'Lỗi tải dữ liệu học phí');
+      .catch((loadError: unknown) => {
+        if (mounted) setErr(loadError instanceof Error ? loadError.message : 'Không thể tải cấu hình học phí.');
       })
       .finally(() => {
-        if (mounted) setLoading(false);
+        if (mounted) setRatesLoading(false);
       });
     return () => { mounted = false; };
   }, []);
 
-  useEffect(() => {
-    const cleanup = loadData();
-    return cleanup;
-  }, [loadData]);
+  const reloadRates = async () => {
+    setRatesLoading(true);
+    setErr(null);
+    try {
+      setRates(await tuitionService.getTuitionRates());
+    } catch (loadError: unknown) {
+      setErr(loadError instanceof Error ? loadError.message : 'Không thể tải cấu hình học phí.');
+    } finally {
+      setRatesLoading(false);
+    }
+  };
 
-  const handleCreateRate = async () => {
-    if (!rateForm.academicYear.trim()) {
-      setErr('Vui lòng nhập năm học');
+  const loadStudents = async (page: number, keyword: string) => {
+    setLoadingStudents(true);
+    setStudentError(null);
+    try {
+      const result = await adminService.listStudentsPage(keyword, '', page, STUDENT_PAGE_SIZE);
+      setStudents(result.content);
+      setStudentPage(result.page);
+      setStudentTotalPages(result.totalPages);
+      setGenStudentId((current) =>
+        result.content.some((student) => String(student.id) === current)
+          ? current
+          : result.content.length ? String(result.content[0].id) : '',
+      );
+    } catch (loadError: unknown) {
+      setStudentError(loadError instanceof Error ? loadError.message : 'Không thể tải danh sách sinh viên.');
+    } finally {
+      setLoadingStudents(false);
+    }
+  };
+
+  const openInvoiceForm = () => {
+    const opening = !showGenForm;
+    setShowGenForm(opening);
+    setShowRateForm(false);
+    if (opening && students.length === 0) void loadStudents(0, studentSearch);
+    const years = [...new Set(rates
+      .filter((rate) => rate.isActive && rate.effectiveFrom <= today())
+      .map((rate) => rate.academicYear))];
+    if (years.length && !years.includes(genYear)) setGenYear(years[0]);
+  };
+
+  const openCreateRateForm = () => {
+    setEditingRate(null);
+    setRateForm(emptyRateForm());
+    setShowRateForm((current) => !current);
+    setShowGenForm(false);
+    setErr(null);
+  };
+
+  const openEditRateForm = (rate: TuitionRate) => {
+    setEditingRate(rate);
+    setRateForm({
+      academicYear: rate.academicYear,
+      semester: rate.semester ?? '',
+      effectiveFrom: rate.effectiveFrom,
+      pricePerCredit: rate.pricePerCredit,
+      isActive: rate.isActive,
+    });
+    setShowRateForm(true);
+    setShowGenForm(false);
+    setErr(null);
+  };
+
+  const handleSaveRate = async () => {
+    if (!rateForm.academicYear.trim() || !rateForm.effectiveFrom) {
+      setErr('Vui lòng nhập năm học và ngày bắt đầu áp dụng.');
       return;
     }
-    if (rateForm.pricePerCredit <= 0) {
-      setErr('Đơn giá tín chỉ phải lớn hơn 0');
+    if (!Number.isFinite(rateForm.pricePerCredit) || rateForm.pricePerCredit <= 0) {
+      setErr('Đơn giá tín chỉ phải lớn hơn 0.');
       return;
     }
+
     setSubmittingRate(true);
     setErr(null);
     try {
-      await tuitionService.createTuitionRate(rateForm);
-      setSuccessMsg(`Đã tạo mức học phí cho năm học ${rateForm.academicYear}`);
+      const payload = {
+        ...rateForm,
+        academicYear: rateForm.academicYear.trim(),
+        semester: rateForm.semester || null,
+      };
+      if (editingRate) {
+        await tuitionService.updateTuitionRate(editingRate.id, payload);
+        setSuccessMsg('Đã cập nhật mức học phí.');
+      } else {
+        await tuitionService.createTuitionRate(payload);
+        setSuccessMsg('Đã tạo mức học phí.');
+      }
+      setRates(await tuitionService.getTuitionRates());
       setShowRateForm(false);
-      loadData();
-    } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'Không tạo được mức học phí');
+      setEditingRate(null);
+    } catch (saveError: unknown) {
+      setErr(saveError instanceof Error ? saveError.message : 'Không lưu được mức học phí.');
     } finally {
       setSubmittingRate(false);
     }
   };
 
   const handleGenerateInvoice = async () => {
-    if (!genStudentId) {
-      setErr('Vui lòng chọn sinh viên');
+    if (!genStudentId || !genYear || !genSemester) {
+      setErr('Vui lòng chọn sinh viên, học kỳ và năm học.');
       return;
     }
     setSubmittingGen(true);
     setErr(null);
     try {
-      const inv = await tuitionService.generateInvoice(Number(genStudentId), genSemester, genYear);
-      setSuccessMsg(`Đã sinh hóa đơn cho sinh viên! Tổng tiền: ${fmtMoney(inv.amount)} (${inv.totalCredits} tín chỉ)`);
+      const invoice = await tuitionService.generateInvoice(Number(genStudentId), genSemester, genYear);
+      setSuccessMsg(`Đã sinh hóa đơn. Tổng tiền: ${fmtMoney(invoice.amount)} (${invoice.totalCredits} tín chỉ)`);
       setShowGenForm(false);
-    } catch (e: unknown) {
-      setErr((e as { message?: string })?.message ?? 'Không sinh được hóa đơn học phí');
+    } catch (generateError: unknown) {
+      setErr(generateError instanceof Error ? generateError.message : 'Không sinh được hóa đơn học phí.');
     } finally {
       setSubmittingGen(false);
     }
   };
 
-  if (loading) return <Spinner />;
+  const handleDeleteRate = async (rate: TuitionRate) => {
+    const scope = rate.semester ? `${rate.academicYear} · ${rate.semester}` : `${rate.academicYear} · cả năm`;
+    if (!window.confirm(`Xóa mức giá ${scope}, hiệu lực từ ${rate.effectiveFrom}? Hóa đơn đã tạo sẽ giữ nguyên đơn giá đã chốt.`)) return;
+    setErr(null);
+    try {
+      await tuitionService.deleteTuitionRate(rate.id);
+      setRates(await tuitionService.getTuitionRates());
+      setSuccessMsg('Đã xóa mức học phí.');
+    } catch (deleteError: unknown) {
+      setErr(deleteError instanceof Error ? deleteError.message : 'Không xóa được mức học phí.');
+    }
+  };
+
+  if (ratesLoading) return <Spinner />;
+
+  const activeYears = [...new Set(rates
+    .filter((rate) => rate.isActive && rate.effectiveFrom <= today())
+    .map((rate) => rate.academicYear))].sort();
+  const sortedRates = [...rates].sort((a, b) =>
+    a.academicYear.localeCompare(b.academicYear) ||
+    (a.semester ?? '').localeCompare(b.semester ?? '') ||
+    a.effectiveFrom.localeCompare(b.effectiveFrom),
+  );
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <PageHeader
-        breadcrumbs={[{ label: 'Quản trị hệ thống', to: '/admin' }, { label: 'Quản lý Học phí' }]}
-        title="Quản lý Học phí & Định mức Tín chỉ"
-        subtitle="Thiết lập đơn giá học phí tín chỉ theo năm học và sinh tự động hóa đơn học phí cho sinh viên"
+        breadcrumbs={[{ label: 'Quản trị hệ thống', to: '/admin' }, { label: 'Quản lý học phí' }]}
+        title="Quản lý học phí"
+        subtitle="Thiết lập đơn giá theo năm học, học kỳ và ngày hiệu lực; sinh hóa đơn cho sinh viên."
         actions={
-          <div className="flex items-center gap-3">
-            <Button variant="secondary" size="sm" onClick={() => { setShowGenForm(!showGenForm); setShowRateForm(false); }}>
-              <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
-              {showGenForm ? 'Đóng form' : 'Sinh hóa đơn SV'}
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" size="sm" onClick={openInvoiceForm}>
+              <FileText className="w-4 h-4" />
+              {showGenForm ? 'Đóng' : 'Sinh hóa đơn'}
             </Button>
-            <Button variant="primary" size="sm" onClick={() => { setShowRateForm(!showRateForm); setShowGenForm(false); }}>
+            <Button variant="primary" size="sm" onClick={openCreateRateForm}>
               <Plus className="w-4 h-4" />
-              {showRateForm ? 'Đóng form' : 'Thêm mức học phí'}
+              {showRateForm && !editingRate ? 'Đóng' : 'Thêm mức giá'}
             </Button>
           </div>
         }
       />
 
-      {err && <ErrorBox message={err} />}
-
+      {err && <ErrorBox msg={err} onRetry={rates.length === 0 ? () => void reloadRates() : undefined} />}
       {successMsg && (
-        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-medium flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-medium text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
           {successMsg}
         </div>
       )}
 
       {showRateForm && (
-        <Card className="border border-navy-200 dark:border-navy-800">
-          <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm">Thêm Mức Đơn giá Học phí Tín chỉ Nối tiếp</h3>
-          <div className="grid gap-4 text-xs sm:grid-cols-3">
-            <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Năm học *</label>
-              <Input
-                placeholder="VD: 2026-2027"
-                value={rateForm.academicYear}
-                onChange={(e) => setRateForm({ ...rateForm, academicYear: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Giá mỗi tín chỉ (VNĐ) *</label>
-              <Input
-                type="number"
-                value={rateForm.pricePerCredit}
-                onChange={(e) => setRateForm({ ...rateForm, pricePerCredit: Number(e.target.value) })}
-              />
-            </div>
-            <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Trạng thái</label>
-              <Select
-                value={rateForm.isActive ? 'true' : 'false'}
-                onChange={(e) => setRateForm({ ...rateForm, isActive: e.target.value === 'true' })}
-                options={[
-                  { label: 'Kích hoạt ngay (Active)', value: 'true' },
-                  { label: 'Không kích hoạt (Inactive)', value: 'false' },
-                ]}
-              />
-            </div>
+        <Card>
+          <h3 className="mb-1 text-sm font-bold text-slate-900 dark:text-white">
+            {editingRate ? 'Chỉnh sửa mức học phí' : 'Tạo mức học phí'}
+          </h3>
+          <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
+            Mức theo học kỳ được ưu tiên hơn mức chung của năm học. Hóa đơn lấy mức đang hiệu lực tại ngày tạo.
+          </p>
+          <div className="grid gap-4 text-xs sm:grid-cols-2 lg:grid-cols-5">
+            <Input
+              label="Năm học *"
+              placeholder="2026-2027"
+              value={rateForm.academicYear}
+              onChange={(e) => setRateForm({ ...rateForm, academicYear: e.target.value })}
+            />
+            <Select
+              label="Phạm vi học kỳ"
+              value={rateForm.semester}
+              onChange={(e) => setRateForm({ ...rateForm, semester: e.target.value })}
+              options={[
+                { label: 'Mặc định cả năm', value: '' },
+                { label: 'Học kỳ 1', value: 'HK1' },
+                { label: 'Học kỳ 2', value: 'HK2' },
+                { label: 'Học kỳ 3', value: 'HK3' },
+              ]}
+            />
+            <Input
+              label="Đơn giá / tín chỉ (VNĐ) *"
+              type="number"
+              min="1"
+              value={rateForm.pricePerCredit}
+              onChange={(e) => setRateForm({ ...rateForm, pricePerCredit: Number(e.target.value) })}
+            />
+            <Input
+              label="Bắt đầu áp dụng từ *"
+              type="date"
+              value={rateForm.effectiveFrom}
+              onChange={(e) => setRateForm({ ...rateForm, effectiveFrom: e.target.value })}
+            />
+            <Select
+              label="Trạng thái"
+              value={rateForm.isActive ? 'true' : 'false'}
+              onChange={(e) => setRateForm({ ...rateForm, isActive: e.target.value === 'true' })}
+              options={[
+                { label: 'Đang áp dụng', value: 'true' },
+                { label: 'Tạm khóa', value: 'false' },
+              ]}
+            />
           </div>
           <div className="mt-4 flex justify-end gap-2">
-            <Button variant="secondary" size="sm" onClick={() => setShowRateForm(false)}>Hủy</Button>
-            <Button variant="primary" size="sm" onClick={handleCreateRate} disabled={submittingRate}>
-              {submittingRate ? 'Đang lưu...' : 'Lưu mức học phí'}
+            <Button variant="secondary" size="sm" onClick={() => { setShowRateForm(false); setEditingRate(null); }}>Hủy</Button>
+            <Button variant="primary" size="sm" onClick={() => void handleSaveRate()} disabled={submittingRate}>
+              {submittingRate ? 'Đang lưu...' : editingRate ? 'Lưu thay đổi' : 'Lưu mức giá'}
             </Button>
           </div>
         </Card>
       )}
 
       {showGenForm && (
-        <Card className="border-2 border-amber-200 dark:border-amber-900 bg-amber-50/20 dark:bg-amber-950/20">
-          <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
-            Sinh Tự động Hóa đơn Học phí cho Sinh viên
-          </h3>
-          <div className="grid gap-4 text-xs sm:grid-cols-3">
-            <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Chọn Sinh viên *</label>
+        <Card>
+          <h3 className="mb-1 text-sm font-bold text-slate-900 dark:text-white">Sinh hóa đơn học phí</h3>
+          <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
+            Giá học kỳ sẽ được dùng trước; nếu chưa có giá phù hợp thì dùng giá mặc định của năm học.
+          </p>
+          <form
+            className="grid gap-4 text-xs sm:grid-cols-2 lg:grid-cols-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void handleGenerateInvoice();
+            }}
+          >
+            <div className="sm:col-span-2">
+              <div className="mb-2 flex gap-2">
+                <Input
+                  aria-label="Tìm sinh viên"
+                  placeholder="Tìm theo tên, mã sinh viên hoặc email"
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => void loadStudents(0, studentSearch)}
+                  disabled={loadingStudents}
+                  aria-label="Tìm sinh viên"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+              {studentError && <ErrorBox msg={studentError} onRetry={() => void loadStudents(studentPage, studentSearch)} />}
               <Select
+                label="Sinh viên *"
                 value={genStudentId}
                 onChange={(e) => setGenStudentId(e.target.value)}
+                disabled={loadingStudents || students.length === 0}
                 options={[
-                  { label: '-- Chọn sinh viên --', value: '' },
-                  ...students.map(s => ({ label: `${s.fullName} (${s.studentCode || s.email})`, value: String(s.id) }))
+                  { label: loadingStudents ? 'Đang tải sinh viên...' : '-- Chọn sinh viên --', value: '' },
+                  ...students.map((student) => ({
+                    label: `${student.fullName} (${student.studentCode || student.email})`,
+                    value: String(student.id),
+                  })),
                 ]}
               />
+              {studentTotalPages > 1 && (
+                <div className="mt-2 flex items-center justify-end gap-2">
+                  <Button type="button" variant="ghost" size="sm" disabled={studentPage <= 0 || loadingStudents} onClick={() => void loadStudents(studentPage - 1, studentSearch)}>
+                    <ChevronLeft className="h-4 w-4" /> Trước
+                  </Button>
+                  <span className="text-slate-500">{studentPage + 1}/{studentTotalPages}</span>
+                  <Button type="button" variant="ghost" size="sm" disabled={studentPage + 1 >= studentTotalPages || loadingStudents} onClick={() => void loadStudents(studentPage + 1, studentSearch)}>
+                    Sau <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
-            <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Học kỳ</label>
-              <Input
-                value={genSemester}
-                onChange={(e) => setGenSemester(e.target.value)}
-              />
+            <Select
+              label="Học kỳ *"
+              value={genSemester}
+              onChange={(e) => setGenSemester(e.target.value)}
+              options={[
+                { label: 'Học kỳ 1', value: 'HK1' },
+                { label: 'Học kỳ 2', value: 'HK2' },
+                { label: 'Học kỳ 3', value: 'HK3' },
+              ]}
+            />
+            <Select
+              label="Năm học *"
+              value={genYear}
+              onChange={(e) => setGenYear(e.target.value)}
+              disabled={activeYears.length === 0}
+              options={activeYears.map((year) => ({ label: year, value: year }))}
+            />
+            <div className="flex items-end justify-end gap-2 sm:col-span-2 lg:col-span-4">
+              <Button type="button" variant="secondary" size="sm" onClick={() => setShowGenForm(false)}>Hủy</Button>
+              <Button type="submit" variant="primary" size="sm" disabled={submittingGen || !genStudentId || !activeYears.length}>
+                {submittingGen ? 'Đang sinh...' : 'Sinh hóa đơn'}
+              </Button>
             </div>
-            <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Năm học</label>
-              <Input
-                value={genYear}
-                onChange={(e) => setGenYear(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="mt-4 flex justify-end gap-2">
-            <Button variant="secondary" size="sm" onClick={() => setShowGenForm(false)}>Hủy</Button>
-            <Button variant="warning" size="sm" onClick={handleGenerateInvoice} disabled={submittingGen}>
-              {submittingGen ? 'Đang sinh...' : 'Sinh hóa đơn'}
-            </Button>
-          </div>
+          </form>
         </Card>
       )}
 
       <Card padding="none">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-          <div className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-navy-700 dark:text-navy-300" />
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-              Bảng Đơn giá Tín chỉ đã Cấu hình
-            </h3>
-          </div>
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+            <CalendarDays className="h-4 w-4 text-accent-600 dark:text-accent-400" />
+            Bảng đơn giá học phí
+          </h3>
+          <Button variant="ghost" size="sm" onClick={() => void reloadRates()} disabled={ratesLoading}>Làm mới</Button>
         </div>
-
-        {rates.length === 0 ? (
+        {sortedRates.length === 0 ? (
           <Empty msg="Chưa có định mức học phí nào" />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  <th className="py-3.5 px-4">#</th>
-                  <th className="py-3.5 px-4">Năm học</th>
-                  <th className="py-3.5 px-4">Đơn giá / 1 Tín chỉ (VNĐ)</th>
-                  <th className="py-3.5 px-4 text-center">Trạng thái áp dụng</th>
+                <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-400">
+                  <th className="px-4 py-3.5">Năm học</th>
+                  <th className="px-4 py-3.5">Phạm vi</th>
+                  <th className="px-4 py-3.5">Đơn giá / tín chỉ</th>
+                  <th className="px-4 py-3.5">Ngày hiệu lực</th>
+                  <th className="px-4 py-3.5 text-center">Trạng thái</th>
+                  <th className="px-4 py-3.5 text-right">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
-                {rates.map((r, i) => (
-                  <tr key={r.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3.5 px-4 text-slate-400 font-mono">{i + 1}</td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-slate-100">{r.academicYear}</td>
-                    <td className="py-3.5 px-4 font-mono font-bold text-navy-900 dark:text-navy-300">{fmtMoney(r.pricePerCredit)}</td>
-                    <td className="py-3.5 px-4 text-center">
-                      <Badge variant={r.isActive ? 'success' : 'neutral'}>
-                        {r.isActive ? 'Đang áp dụng' : 'Khóa'}
-                      </Badge>
+              <tbody className="divide-y divide-slate-100 text-xs dark:divide-slate-800/60">
+                {sortedRates.map((rate) => (
+                  <tr key={rate.id} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                    <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-slate-100">{rate.academicYear}</td>
+                    <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300">{rate.semester || 'Mặc định cả năm'}</td>
+                    <td className="px-4 py-3.5 font-mono font-bold text-slate-800 dark:text-slate-200">{fmtMoney(rate.pricePerCredit)}</td>
+                    <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300">{rate.effectiveFrom}</td>
+                    <td className="px-4 py-3.5 text-center">
+                      <Badge color={rate.isActive ? 'emerald' : 'slate'}>{rate.isActive ? 'Đang áp dụng' : 'Tạm khóa'}</Badge>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <div className="inline-flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => openEditRateForm(rate)}>
+                          <Pencil className="h-3.5 w-3.5" /> Sửa
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => void handleDeleteRate(rate)}>
+                          <Trash2 className="h-3.5 w-3.5 text-rose-600" /> Xóa
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -234,6 +234,8 @@ export interface TuitionInvoice {
 export interface TuitionRate {
   id: number;
   academicYear: string;
+  semester: string | null;
+  effectiveFrom: string;
   pricePerCredit: number;
   isActive: boolean;
   createdAt: string;
