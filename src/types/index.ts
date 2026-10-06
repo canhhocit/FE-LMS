@@ -105,6 +105,7 @@ export interface Lesson {
   videoUrl?: string;
   attachmentUrl?: string;
   attachmentName?: string;
+  duration?: number;
   sortOrder?: number;
 }
 export interface Announcement {

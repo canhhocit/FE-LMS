@@ -6,19 +6,34 @@ export interface VideoProgress {
   lessonId: number;
   lastWatchedSeconds: number;
   maxWatchedSeconds: number;
-  completed?: boolean;
+  completed: boolean;
+  updatedAt?: string;
 }
 
-export interface InVideoQuiz {
+export interface StudentInVideoQuiz {
   id?: number;
   lessonId: number;
-  timestampSeconds: number;
+  triggerAtSeconds: number;
   questionText: string;
   optionA: string;
   optionB: string;
-  optionC: string;
-  optionD: string;
-  correctAnswer: string;
+  optionC?: string | null;
+  optionD?: string | null;
+}
+
+export interface ManagedInVideoQuiz extends StudentInVideoQuiz {
+  correctOption: string;
+}
+
+export interface CreateInVideoQuiz {
+  lessonId: number;
+  triggerAtSeconds: number;
+  questionText: string;
+  optionA: string;
+  optionB: string;
+  optionC?: string;
+  optionD?: string;
+  correctOption: string;
 }
 
 export interface StudentVideoNote {
@@ -33,17 +48,13 @@ export const upsertProgress = async (data: { enrollmentId: number; lessonId: num
   unwrap(apiClient.post('/video-learning/progress', data));
 
 export const getProgress = async (lessonId: number, enrollmentId: number): Promise<VideoProgress | null> => {
-  try {
-    return await unwrap(apiClient.get(`/video-learning/progress/lesson/${lessonId}/enrollment/${enrollmentId}`));
-  } catch {
-    return null;
-  }
+  return unwrap(apiClient.get(`/video-learning/progress/lesson/${lessonId}/enrollment/${enrollmentId}`));
 };
 
-export const getQuizzesForLesson = async (lessonId: number): Promise<InVideoQuiz[]> =>
+export const getQuizzesForLesson = async (lessonId: number): Promise<StudentInVideoQuiz[]> =>
   unwrap(apiClient.get(`/video-learning/quizzes/lesson/${lessonId}`));
 
-export const createInVideoQuiz = async (quiz: Omit<InVideoQuiz, 'id'>): Promise<InVideoQuiz> =>
+export const createInVideoQuiz = async (quiz: CreateInVideoQuiz): Promise<ManagedInVideoQuiz> =>
   unwrap(apiClient.post('/video-learning/quizzes', quiz));
 
 export const getNotes = async (lessonId: number): Promise<StudentVideoNote[]> =>

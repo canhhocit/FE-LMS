@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { 
-  Lock, Check, CheckCircle2, AlertCircle, HelpCircle, RotateCcw, ArrowLeft,
-  Download, FileText, File, Plus, Clock, StickyNote, ExternalLink
+  CheckCircle2, RotateCcw, ArrowLeft,
+  Download, FileText, Plus, Clock, StickyNote
 } from 'lucide-react';
 import { PageHeader, Card, Spinner, Empty, ErrorBox, Badge, Button } from '../../components/ui';
 import { LessonDiscussion } from '../../components/LessonDiscussion';
@@ -12,7 +12,7 @@ import * as progressService from '../../services/progressService';
 import * as registrationService from '../../services/registrationService';
 import * as videoLearningService from '../../services/videoLearningService';
 import type { Chapter, Clazz, Lesson, EnrollmentProgress, Registration } from '../../types';
-import type { InVideoQuiz, StudentVideoNote } from '../../services/videoLearningService';
+import type { StudentInVideoQuiz, StudentVideoNote } from '../../services/videoLearningService';
 
 const formatTime = (seconds: number) => {
   if (!Number.isFinite(seconds) || seconds <= 0) return '00:00';
@@ -75,8 +75,9 @@ export default function StudentLessonLearning() {
   const classNum = Number(classId);
   const lessonNum = Number(lessonId);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const lastSavedResumeRef = useRef<number>(0);
   const maxWatchedTimeRef = useRef<number>(0);
+  const lastProgressSyncAtRef = useRef<number>(0);
+  const progressSyncPendingRef = useRef<Promise<videoLearningService.VideoProgress> | null>(null);
 
   const [clazz, setClazz] = useState<Clazz | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -88,7 +89,7 @@ export default function StudentLessonLearning() {
   const [error, setError] = useState<string | null>(null);
   const enrollmentIdRef = useRef<number | null>(null);
 
-  const [quizzes, setQuizzes] = useState<InVideoQuiz[]>([]);
+  const [quizzes, setQuizzes] = useState<StudentInVideoQuiz[]>([]);
   const [notes, setNotes] = useState<StudentVideoNote[]>([]);
   const [noteText, setNoteText] = useState('');
   const [savingNote, setSavingNote] = useState(false);
@@ -109,22 +110,11 @@ export default function StudentLessonLearning() {
       setNotes((prev) => [newNote, ...prev]);
       setNoteText('');
     } catch {
-      // Fail silently or keep draft
+      setError('Không thể lưu ghi chú. Vui lòng thử lại.');
     } finally {
       setSavingNote(false);
     }
   };
-
-  const resumeKey = useMemo(
-    () => `learninghub:resume:${classNum}:${lessonNum}`,
-    [classNum, lessonNum]
-  );
-
-  const getStoredResumeSeconds = useCallback(() => {
-    const saved = Number(localStorage.getItem(resumeKey) ?? '0');
-    if (!Number.isFinite(saved) || saved < 0) return 0;
-    return Math.max(0, Math.floor(saved));
-  }, [resumeKey]);
 
   const isLessonCompleted = selectedLesson
     ? progress?.lessons.some((item) => Number(item.lessonId) === Number(selectedLesson.id) && item.isCompleted)
@@ -136,26 +126,65 @@ export default function StudentLessonLearning() {
   const canMarkComplete = useMemo(() => {
     if (isLessonCompleted) return true;
     if (!selectedLesson?.videoUrl) return true;
-    if (videoDuration <= 0) return false;
-    const targetTime = videoDuration <= 10 ? videoDuration * 0.9 : videoDuration - 10;
+    const duration = videoDuration || Number(selectedLesson.duration ?? 0);
+    if (duration <= 0) return false;
+    const targetTime = duration * 0.8;
     return maxWatchedSec >= targetTime;
-  }, [isLessonCompleted, selectedLesson?.videoUrl, videoDuration, maxWatchedSec]);
+  }, [isLessonCompleted, selectedLesson?.videoUrl, selectedLesson?.duration, videoDuration, maxWatchedSec]);
 
   const saveResumePosition = (seconds: number) => {
     if (!Number.isFinite(seconds) || seconds < 0) return;
     const safeSeconds = Math.max(0, Math.floor(seconds));
-    if (safeSeconds === lastSavedResumeRef.current) return;
-
-    lastSavedResumeRef.current = safeSeconds;
-    localStorage.setItem(resumeKey, String(safeSeconds));
     setResumeSeconds(safeSeconds);
   };
 
   const clearResumePosition = () => {
-    lastSavedResumeRef.current = 0;
-    localStorage.removeItem(resumeKey);
     setResumeSeconds(0);
   };
+
+  const syncVideoProgress = useCallback(async (force = false): Promise<void> => {
+    const lesson = selectedLesson;
+    const enrollmentId = enrollmentIdRef.current;
+    const video = videoRef.current;
+    if (!lesson?.videoUrl || !enrollmentId || !video) return;
+
+    if (progressSyncPendingRef.current) {
+      if (!force) return;
+      await progressSyncPendingRef.current;
+    }
+
+    const now = Date.now();
+    if (!force && now - lastProgressSyncAtRef.current < 15000) return;
+    const lastWatchedSeconds = Math.floor(video.currentTime);
+    const maxWatchedSeconds = Math.max(
+      Math.floor(maxWatchedTimeRef.current),
+      lastWatchedSeconds
+    );
+    const request = videoLearningService.upsertProgress({
+      enrollmentId,
+      lessonId: lesson.id,
+      lastWatchedSeconds,
+      maxWatchedSeconds,
+    });
+    progressSyncPendingRef.current = request;
+    lastProgressSyncAtRef.current = now;
+    try {
+      const saved = await request;
+      const serverLast = Number(saved.lastWatchedSeconds);
+      const serverMax = Number(saved.maxWatchedSeconds);
+      maxWatchedTimeRef.current = serverMax;
+      setResumeSeconds(Math.floor(serverLast));
+      setMaxWatchedSec(serverMax);
+      if (saved.completed && !isLessonCompleted) {
+        setProgress(await progressService.getEnrollmentProgress(enrollmentId));
+      }
+    } catch (syncError) {
+      lastProgressSyncAtRef.current = 0;
+      throw syncError;
+    } finally {
+      progressSyncPendingRef.current = null;
+    }
+  }, [isLessonCompleted, selectedLesson]);
 
   const seekVideo = (deltaSeconds: number) => {
     const video = videoRef.current;
@@ -178,23 +207,19 @@ export default function StudentLessonLearning() {
     const load = async () => {
       try {
         const [classData, chapterList] = await Promise.all([
-          clazzService.getClazzDetail(classNum).catch(() => null),
-          contentService.getChapters(classNum).catch(() => []),
+          clazzService.getClazzDetail(classNum),
+          contentService.getChapters(classNum),
         ]);
 
         if (!mounted) return;
-        if (classData) setClazz(classData);
+        setClazz(classData);
         setChapters(chapterList);
 
         const lessonsByChapter = await Promise.all(
           chapterList.map(async (chapter) => {
             let lessons: Lesson[] = chapter.lessons ?? [];
             if (lessons.length === 0) {
-              try {
-                lessons = await contentService.getLessons(chapter.id);
-              } catch {
-                lessons = [];
-              }
+              lessons = await contentService.getLessons(chapter.id);
             }
             return { chapterId: chapter.id, lessons };
           })
@@ -207,97 +232,54 @@ export default function StudentLessonLearning() {
         setChapterLessons(mapped);
 
         const flatLessons = lessonsByChapter.flatMap(({ lessons }) => lessons);
-        let lesson = flatLessons.find((item) => Number(item.id) === lessonNum) ?? null;
-        if (!lesson) {
-          try {
-            lesson = await contentService.getLessonDetail(lessonNum);
-          } catch {
-            lesson = flatLessons[0] ?? null;
+        const listedLesson = flatLessons.find((item) => Number(item.id) === lessonNum);
+        let lesson: Lesson;
+        if (listedLesson) {
+          lesson = listedLesson;
+        } else {
+          const detail = await contentService.getLessonDetail(lessonNum);
+          if (!chapterList.some((chapter) => Number(chapter.id) === Number(detail.chapterId))) {
+            throw new Error('Bài học không thuộc lớp này.');
           }
-        }
-        if (!lesson) {
-          setError('Bài học không tồn tại trong lớp này.');
-          return;
+          lesson = detail;
         }
         setSelectedLesson(lesson);
+        setVideoDuration(Number(lesson.duration ?? 0));
 
-        const savedResume = getStoredResumeSeconds();
-        setResumeSeconds(savedResume);
-        maxWatchedTimeRef.current = savedResume;
-        setMaxWatchedSec(savedResume);
-
-        const registrations: Registration[] = await registrationService.getMyRegistrations().catch(() => []);
-        let matchedRegistration = registrations.find(
-          (item) => Number(item.clazzId ?? (item as any).classId ?? (item as any).id) === classNum
-        );
-
-        let enrollmentId = matchedRegistration?.enrollmentId ?? (matchedRegistration as any)?.id;
-        if (!enrollmentId) {
-          const myClasses = await clazzService.getMyClasses().catch(() => []);
-          const classMatch = myClasses.find((c) => c.id === classNum);
-          if (classMatch) {
-            enrollmentId = (classMatch as any).enrollmentId ?? (classMatch as any).id ?? classNum;
-          } else {
-            enrollmentId = classNum;
-          }
-        }
-
+        const registrations: Registration[] = await registrationService.getMyRegistrations();
+        const matchedRegistration = registrations.find((item) => Number(item.clazzId) === classNum);
+        const enrollmentId = matchedRegistration?.enrollmentId;
+        if (!enrollmentId) throw new Error('Không tìm thấy đăng ký học của lớp này.');
         enrollmentIdRef.current = enrollmentId;
-
-        if (enrollmentId) {
-          const serverProgress = await videoLearningService.getProgress(lessonNum, enrollmentId).catch(() => null);
-          if (serverProgress) {
-            const serverLast = Number(serverProgress.lastWatchedSeconds || 0);
-            const serverMax = Number(serverProgress.maxWatchedSeconds || 0);
-            const highestServer = Math.max(serverLast, serverMax);
-            if (highestServer > getStoredResumeSeconds()) {
-              localStorage.setItem(resumeKey, String(Math.floor(highestServer)));
-              setResumeSeconds(Math.floor(highestServer));
-            }
-            maxWatchedTimeRef.current = Math.max(maxWatchedTimeRef.current, highestServer);
-          }
-        }
-        setMaxWatchedSec(maxWatchedTimeRef.current);
+        const serverProgress = await videoLearningService.getProgress(lessonNum, enrollmentId);
+        const serverLast = Number(serverProgress?.lastWatchedSeconds ?? 0);
+        const serverMax = Number(serverProgress?.maxWatchedSeconds ?? 0);
+        lastProgressSyncAtRef.current = 0;
+        maxWatchedTimeRef.current = serverMax;
+        setResumeSeconds(serverLast);
+        setMaxWatchedSec(serverMax);
+        setCurrentVideoTime(serverLast);
 
         const [quizData, noteData] = await Promise.all([
-          videoLearningService.getQuizzesForLesson(lessonNum).catch(() => []),
-          videoLearningService.getNotes(lessonNum).catch(() => []),
+          videoLearningService.getQuizzesForLesson(lessonNum),
+          videoLearningService.getNotes(lessonNum),
         ]);
         if (mounted) {
-          setQuizzes(quizData ?? []);
-          setNotes(noteData ?? []);
+          setQuizzes(quizData);
+          setNotes(noteData);
         }
 
-        let progressData = enrollmentId ? await progressService.getEnrollmentProgress(enrollmentId).catch(() => null) : null;
-        if (!progressData) {
-          progressData = {
-            enrollmentId: enrollmentId ?? classNum,
-            clazzId: classNum,
-            completedCount: 0,
-            totalCount: flatLessons.length,
-            percentage: 0,
-            lessons: flatLessons.map((l) => ({
-              lessonId: l.id,
-              lessonTitle: l.title,
-              isCompleted: false,
-              completedAt: null,
-            })),
-          };
-        }
+        let progressData = await progressService.getEnrollmentProgress(enrollmentId);
         if (mounted) setProgress(progressData);
 
-        if (!lesson.videoUrl && enrollmentId) {
-          const isAlreadyCompleted = progressData?.lessons.some(
+        if (!lesson.videoUrl) {
+          const isAlreadyCompleted = progressData.lessons.some(
             (item) => Number(item.lessonId) === Number(lesson.id) && item.isCompleted
           );
           if (!isAlreadyCompleted) {
-            try {
-              await progressService.markLessonComplete(lesson.id, enrollmentId);
-              const updated = await progressService.getEnrollmentProgress(enrollmentId);
-              if (mounted && updated) setProgress(updated);
-            } catch {
-              // Ignore
-            }
+            await progressService.markLessonComplete(lesson.id, enrollmentId);
+            progressData = await progressService.getEnrollmentProgress(enrollmentId);
+            if (mounted) setProgress(progressData);
           }
         }
       } catch (e: unknown) {
@@ -311,20 +293,27 @@ export default function StudentLessonLearning() {
     return () => {
       mounted = false;
     };
-  }, [classNum, lessonNum, getStoredResumeSeconds, resumeKey]);
+  }, [classNum, lessonNum]);
 
-  const orderedLessons = useMemo(
-    () => Object.values(chapterLessons).flat().sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
-    [chapterLessons]
-  );
-
-  const currentIndex = orderedLessons.findIndex((lesson) => lesson.id === selectedLesson?.id);
-  const prevLesson = currentIndex > 0 ? orderedLessons[currentIndex - 1] : null;
-  const nextLesson = currentIndex >= 0 && currentIndex < orderedLessons.length - 1 ? orderedLessons[currentIndex + 1] : null;
+  useEffect(() => () => {
+    const video = videoRef.current;
+    const lesson = selectedLesson;
+    const enrollmentId = enrollmentIdRef.current;
+    if (!video || !lesson?.videoUrl || !enrollmentId) return;
+    void videoLearningService.upsertProgress({
+      enrollmentId,
+      lessonId: lesson.id,
+      lastWatchedSeconds: Math.floor(video.currentTime),
+      maxWatchedSeconds: Math.max(Math.floor(maxWatchedTimeRef.current), Math.floor(video.currentTime)),
+    }).catch((syncError: unknown) => {
+      console.error('Failed to save video progress when leaving the lesson', syncError);
+    });
+  }, [selectedLesson]);
 
   const onMarkCompleted = async () => {
     if (!selectedLesson || !progress) return;
     try {
+      if (selectedLesson.videoUrl) await syncVideoProgress(true);
       await progressService.markLessonComplete(selectedLesson.id, progress.enrollmentId);
       const updated = await progressService.getEnrollmentProgress(progress.enrollmentId);
       setProgress(updated);
@@ -345,7 +334,6 @@ export default function StudentLessonLearning() {
   if (!clazz || !selectedLesson) return <Empty msg="Không có dữ liệu bài học" />;
 
   const percent = progress?.percentage ?? 0;
-  const hasResume = resumeSeconds > 10;
   const currentChapter = chapters.find((chapter) => (chapterLessons[chapter.id] ?? []).some((lesson) => lesson.id === selectedLesson.id));
 
   return (
@@ -404,13 +392,27 @@ export default function StudentLessonLearning() {
                     const video = videoRef.current;
                     if (!video) return;
                     if (video.duration) setVideoDuration(video.duration);
-                    const resumeAt = getStoredResumeSeconds();
+                    const resumeAt = resumeSeconds;
                     if (resumeAt > 0) {
                       video.currentTime = Math.min(resumeAt, video.duration || resumeAt);
-                      setResumeSeconds(resumeAt);
-                      maxWatchedTimeRef.current = Math.max(maxWatchedTimeRef.current, resumeAt);
-                      setMaxWatchedSec(maxWatchedTimeRef.current);
                     }
+                  }}
+                  onSeeking={() => {
+                    const video = videoRef.current;
+                    if (!video || isLessonCompleted) return;
+                    if (video.currentTime > maxWatchedTimeRef.current + 1.5) {
+                      video.currentTime = maxWatchedTimeRef.current;
+                    }
+                  }}
+                  onSeeked={() => {
+                    void syncVideoProgress(true).catch((syncError: unknown) => {
+                      setError((syncError as { message?: string })?.message ?? 'Không thể lưu tiến độ video.');
+                    });
+                  }}
+                  onPause={() => {
+                    void syncVideoProgress(true).catch((syncError: unknown) => {
+                      setError((syncError as { message?: string })?.message ?? 'Không thể lưu tiến độ video.');
+                    });
                   }}
                   onTimeUpdate={() => {
                     const video = videoRef.current;
@@ -432,6 +434,9 @@ export default function StudentLessonLearning() {
                     if (current > 0) {
                       saveResumePosition(current);
                     }
+                    void syncVideoProgress().catch((syncError: unknown) => {
+                      setError((syncError as { message?: string })?.message ?? 'Không thể lưu tiến độ video.');
+                    });
                   }}
                   onEnded={() => void handleVideoEnded()}
                 />
