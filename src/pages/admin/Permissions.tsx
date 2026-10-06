@@ -204,7 +204,7 @@ export default function Permissions() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <PageHeader
-        breadcrumbs={[{ label: 'Quản trị hệ thống', to: '/admin' }, { label: 'Phân quyền tài khoản (RBAC)' }]}
+        breadcrumbs={[{ label: 'Quản trị hệ thống', to: '/admin' }, { label: 'Phân quyền tài khoản' }]}
         title="Phân quyền Quản trị viên & Manager (RBAC)"
         subtitle="Quản lý danh sách tài khoản Admin/Manager, thiết lập phạm vi quyền hạn và xóa tài khoản khi cần"
         actions={
@@ -217,7 +217,7 @@ export default function Permissions() {
             }}
           >
             <UserPlus className="w-4 h-4" />
-            Tạo tài khoản Manager / Admin
+            Tạo tài khoản quản trị
           </Button>
         }
       />
@@ -360,7 +360,7 @@ export default function Permissions() {
 
                 <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
                   <Button variant="primary" size="sm" onClick={handleSavePermissions} disabled={!hasChanges || saving}>
-                    <Save className="w-4 h-4" /> {saving ? 'Đang lưu...' : 'Lưu thay đổi phân quyền'}
+                    <Save className="w-4 h-4" /> {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
                   </Button>
                 </div>
               </div>

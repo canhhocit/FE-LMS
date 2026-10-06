@@ -110,7 +110,7 @@ const NAV: Record<Role, NavSection[]> = {
       title: "Biểu mẫu & Cấp quyền",
       items: [
         { to: "/lecturer/documents", label: "Kho Biểu mẫu & Đơn", icon: FileText },
-        { to: "/lecturer/permission-requests", label: "Yêu cầu Cấp quyền PBAC", icon: Key },
+        { to: "/lecturer/permission-requests", label: "Yêu cầu Cấp quyền", icon: Key },
       ],
     },
     {
@@ -129,7 +129,7 @@ const NAV: Record<Role, NavSection[]> = {
         { to: "/admin/users", label: "Người dùng", icon: Users, permission: "MANAGE_USERS" },
         { to: "/admin/reports", label: "Báo cáo", icon: BarChart3, permission: "VIEW_REPORTS" },
         { to: "/admin/audit-logs", label: "Nhật ký hệ thống", icon: FileText, permissions: ["SYSTEM_CONFIG", "VIEW_SYSTEM_LOGS"] },
-        { to: "/admin/permissions", label: "Phân quyền", icon: Key, permission: "SYSTEM_CONFIG" },
+        { to: "/admin/permissions", label: "Quản trị & Phân quyền", icon: Key, permission: "SYSTEM_CONFIG" },
       ],
     },
     {
@@ -147,7 +147,7 @@ const NAV: Record<Role, NavSection[]> = {
       title: "Biểu mẫu & Phê duyệt",
       items: [
         { to: "/admin/documents", label: "Kho Biểu mẫu & Đơn", icon: FileText },
-        { to: "/admin/pbac-approvals", label: "Phê duyệt PBAC & Logs", icon: Key, permission: "MANAGE_GRADING_POLICY" },
+        { to: "/admin/pbac-approvals", label: "Quyền hạn", icon: Key, permission: "MANAGE_GRADING_POLICY" },
       ],
     },
   ],

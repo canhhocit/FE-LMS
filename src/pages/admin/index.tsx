@@ -67,7 +67,7 @@ export function AdminDashboard() {
     <div className="space-y-6 max-w-7xl mx-auto">
       <PageHeader
         title="Dashboard Quản Trị Hệ Thống"
-        subtitle="Học kỳ hiện tại: HK1 (2026-2027) • Hệ thống LMS LearningHub"
+        subtitle=""
       />
 
       {/* Main Metric Overview Cards */}
@@ -101,7 +101,7 @@ export function AdminDashboard() {
       {/* Quick Access Management Actions */}
       <div>
         <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
-          <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+          {/* <Zap className="w-4 h-4 text-amber-500 fill-amber-500" /> */}
           Phím Tắt & Tác Vụ Quản Trị Nhanh
         </h3>
         <div className="grid md:grid-cols-3 gap-4">

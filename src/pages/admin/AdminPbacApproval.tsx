@@ -207,12 +207,12 @@ export const AdminPbacApproval: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <PageHeader
-        breadcrumbs={[{ label: 'Quản trị hệ thống', to: '/admin' }, { label: 'Phê duyệt PBAC' }]}
-        title="Phê duyệt & Cấp quyền PBAC"
-        subtitle="Quản lý phê duyệt yêu cầu cấp quyền và chủ động cấp quyền sửa điểm tạm thời cho Giảng viên"
+        breadcrumbs={[{ label: 'Quản trị hệ thống', to: '/admin' }, { label: 'Quyền & Logs' }]}
+        title="Phê duyệt, cấp quyền & lịch sử"
+        subtitle="Quản lý phê duyệt yêu cầu cấp quyền"
         actions={
           <Button variant="primary" size="sm" onClick={() => setShowDirectModal(true)}>
-            <PlusCircle className="w-4 h-4" /> Cấp quyền trực tiếp
+            <PlusCircle className="w-4 h-4" /> Cấp quyền
           </Button>
         }
       />
@@ -230,7 +230,7 @@ export const AdminPbacApproval: React.FC = () => {
           label="Tổng yêu cầu"
           value={`${requests.length} yêu cầu`}
           icon={<ShieldCheck className="w-5 h-5" />}
-          trend="PBAC Policy"
+          trend="Policy"
           trendColor="emerald"
           color="accent"
         />
@@ -238,7 +238,7 @@ export const AdminPbacApproval: React.FC = () => {
           label="Lịch sử Audit"
           value={`${auditLogs.length} ghi nhận`}
           icon={<CheckCircle2 className="w-5 h-5" />}
-          trend="Lưu vết hệ thống"
+          trend="Lịch sử hệ thống"
           trendColor="emerald"
           color="emerald"
         />
@@ -260,7 +260,7 @@ export const AdminPbacApproval: React.FC = () => {
         </div>
 
         {filteredRequests.length === 0 ? (
-          <Empty msg="Chưa có yêu cầu cấp quyền PBAC nào" />
+          <Empty msg="Chưa có yêu cầu cấp quyền nào" />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
