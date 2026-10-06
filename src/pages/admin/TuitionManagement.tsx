@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
-import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, FileText, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { CalendarDays, CheckCircle2, Pencil, Plus, Trash2 } from 'lucide-react';
 import { PageHeader, Card, Button, Input, Select, Badge, Spinner, Empty, ErrorBox } from '../../components/ui';
 import * as tuitionService from '../../services/tuitionService';
-import * as adminService from '../../services/adminService';
-import type { TuitionRate, User } from '../../types';
+import type { TuitionRate } from '../../types';
 
-const STUDENT_PAGE_SIZE = 20;
 const fmtMoney = (v: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v);
 const today = () => {
   const date = new Date();
@@ -31,12 +29,6 @@ const emptyRateForm = (): RateForm => ({
 export default function AdminTuitionManagement() {
   const [rates, setRates] = useState<TuitionRate[]>([]);
   const [ratesLoading, setRatesLoading] = useState(true);
-  const [students, setStudents] = useState<User[]>([]);
-  const [studentPage, setStudentPage] = useState(0);
-  const [studentTotalPages, setStudentTotalPages] = useState(0);
-  const [studentSearch, setStudentSearch] = useState('');
-  const [loadingStudents, setLoadingStudents] = useState(false);
-  const [studentError, setStudentError] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
@@ -44,12 +36,6 @@ export default function AdminTuitionManagement() {
   const [editingRate, setEditingRate] = useState<TuitionRate | null>(null);
   const [rateForm, setRateForm] = useState<RateForm>(emptyRateForm);
   const [submittingRate, setSubmittingRate] = useState(false);
-
-  const [showGenForm, setShowGenForm] = useState(false);
-  const [genStudentId, setGenStudentId] = useState('');
-  const [genSemester, setGenSemester] = useState('HK1');
-  const [genYear, setGenYear] = useState('2026-2027');
-  const [submittingGen, setSubmittingGen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -78,42 +64,10 @@ export default function AdminTuitionManagement() {
     }
   };
 
-  const loadStudents = async (page: number, keyword: string) => {
-    setLoadingStudents(true);
-    setStudentError(null);
-    try {
-      const result = await adminService.listStudentsPage(keyword, '', page, STUDENT_PAGE_SIZE);
-      setStudents(result.content);
-      setStudentPage(result.page);
-      setStudentTotalPages(result.totalPages);
-      setGenStudentId((current) =>
-        result.content.some((student) => String(student.id) === current)
-          ? current
-          : result.content.length ? String(result.content[0].id) : '',
-      );
-    } catch (loadError: unknown) {
-      setStudentError(loadError instanceof Error ? loadError.message : 'Không thể tải danh sách sinh viên.');
-    } finally {
-      setLoadingStudents(false);
-    }
-  };
-
-  const openInvoiceForm = () => {
-    const opening = !showGenForm;
-    setShowGenForm(opening);
-    setShowRateForm(false);
-    if (opening && students.length === 0) void loadStudents(0, studentSearch);
-    const years = [...new Set(rates
-      .filter((rate) => rate.isActive && rate.effectiveFrom <= today())
-      .map((rate) => rate.academicYear))];
-    if (years.length && !years.includes(genYear)) setGenYear(years[0]);
-  };
-
   const openCreateRateForm = () => {
     setEditingRate(null);
     setRateForm(emptyRateForm());
     setShowRateForm((current) => !current);
-    setShowGenForm(false);
     setErr(null);
   };
 
@@ -127,7 +81,6 @@ export default function AdminTuitionManagement() {
       isActive: rate.isActive,
     });
     setShowRateForm(true);
-    setShowGenForm(false);
     setErr(null);
   };
 
@@ -166,24 +119,6 @@ export default function AdminTuitionManagement() {
     }
   };
 
-  const handleGenerateInvoice = async () => {
-    if (!genStudentId || !genYear || !genSemester) {
-      setErr('Vui lòng chọn sinh viên, học kỳ và năm học.');
-      return;
-    }
-    setSubmittingGen(true);
-    setErr(null);
-    try {
-      const invoice = await tuitionService.generateInvoice(Number(genStudentId), genSemester, genYear);
-      setSuccessMsg(`Đã sinh hóa đơn. Tổng tiền: ${fmtMoney(invoice.amount)} (${invoice.totalCredits} tín chỉ)`);
-      setShowGenForm(false);
-    } catch (generateError: unknown) {
-      setErr(generateError instanceof Error ? generateError.message : 'Không sinh được hóa đơn học phí.');
-    } finally {
-      setSubmittingGen(false);
-    }
-  };
-
   const handleDeleteRate = async (rate: TuitionRate) => {
     const scope = rate.semester ? `${rate.academicYear} · ${rate.semester}` : `${rate.academicYear} · cả năm`;
     if (!window.confirm(`Xóa mức giá ${scope}, hiệu lực từ ${rate.effectiveFrom}? Hóa đơn đã tạo sẽ giữ nguyên đơn giá đã chốt.`)) return;
@@ -199,9 +134,6 @@ export default function AdminTuitionManagement() {
 
   if (ratesLoading) return <Spinner />;
 
-  const activeYears = [...new Set(rates
-    .filter((rate) => rate.isActive && rate.effectiveFrom <= today())
-    .map((rate) => rate.academicYear))].sort();
   const sortedRates = [...rates].sort((a, b) =>
     a.academicYear.localeCompare(b.academicYear) ||
     (a.semester ?? '').localeCompare(b.semester ?? '') ||
@@ -215,16 +147,10 @@ export default function AdminTuitionManagement() {
         title="Quản lý học phí"
         subtitle="Thiết lập đơn giá theo năm học, học kỳ và ngày hiệu lực; sinh hóa đơn cho sinh viên."
         actions={
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" onClick={openInvoiceForm}>
-              <FileText className="w-4 h-4" />
-              {showGenForm ? 'Đóng' : 'Sinh hóa đơn'}
-            </Button>
-            <Button variant="primary" size="sm" onClick={openCreateRateForm}>
+          <Button variant="primary" size="sm" onClick={openCreateRateForm}>
               <Plus className="w-4 h-4" />
               {showRateForm && !editingRate ? 'Đóng' : 'Thêm mức giá'}
-            </Button>
-          </div>
+          </Button>
         }
       />
 
@@ -291,91 +217,6 @@ export default function AdminTuitionManagement() {
               {submittingRate ? 'Đang lưu...' : editingRate ? 'Lưu thay đổi' : 'Lưu mức giá'}
             </Button>
           </div>
-        </Card>
-      )}
-
-      {showGenForm && (
-        <Card>
-          <h3 className="mb-1 text-sm font-bold text-slate-900 dark:text-white">Sinh hóa đơn học phí</h3>
-          <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
-            Giá học kỳ sẽ được dùng trước; nếu chưa có giá phù hợp thì dùng giá mặc định của năm học.
-          </p>
-          <form
-            className="grid gap-4 text-xs sm:grid-cols-2 lg:grid-cols-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void handleGenerateInvoice();
-            }}
-          >
-            <div className="sm:col-span-2">
-              <div className="mb-2 flex gap-2">
-                <Input
-                  aria-label="Tìm sinh viên"
-                  placeholder="Tìm theo tên, mã sinh viên hoặc email"
-                  value={studentSearch}
-                  onChange={(e) => setStudentSearch(e.target.value)}
-                />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => void loadStudents(0, studentSearch)}
-                  disabled={loadingStudents}
-                  aria-label="Tìm sinh viên"
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
-              </div>
-              {studentError && <ErrorBox msg={studentError} onRetry={() => void loadStudents(studentPage, studentSearch)} />}
-              <Select
-                label="Sinh viên *"
-                value={genStudentId}
-                onChange={(e) => setGenStudentId(e.target.value)}
-                disabled={loadingStudents || students.length === 0}
-                options={[
-                  { label: loadingStudents ? 'Đang tải sinh viên...' : '-- Chọn sinh viên --', value: '' },
-                  ...students.map((student) => ({
-                    label: `${student.fullName} (${student.studentCode || student.email})`,
-                    value: String(student.id),
-                  })),
-                ]}
-              />
-              {studentTotalPages > 1 && (
-                <div className="mt-2 flex items-center justify-end gap-2">
-                  <Button type="button" variant="ghost" size="sm" disabled={studentPage <= 0 || loadingStudents} onClick={() => void loadStudents(studentPage - 1, studentSearch)}>
-                    <ChevronLeft className="h-4 w-4" /> Trước
-                  </Button>
-                  <span className="text-slate-500">{studentPage + 1}/{studentTotalPages}</span>
-                  <Button type="button" variant="ghost" size="sm" disabled={studentPage + 1 >= studentTotalPages || loadingStudents} onClick={() => void loadStudents(studentPage + 1, studentSearch)}>
-                    Sau <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-            <Select
-              label="Học kỳ *"
-              value={genSemester}
-              onChange={(e) => setGenSemester(e.target.value)}
-              options={[
-                { label: 'Học kỳ 1', value: 'HK1' },
-                { label: 'Học kỳ 2', value: 'HK2' },
-                { label: 'Học kỳ 3', value: 'HK3' },
-              ]}
-            />
-            <Select
-              label="Năm học *"
-              value={genYear}
-              onChange={(e) => setGenYear(e.target.value)}
-              disabled={activeYears.length === 0}
-              options={activeYears.map((year) => ({ label: year, value: year }))}
-            />
-            <div className="flex items-end justify-end gap-2 sm:col-span-2 lg:col-span-4">
-              <Button type="button" variant="secondary" size="sm" onClick={() => setShowGenForm(false)}>Hủy</Button>
-              <Button type="submit" variant="primary" size="sm" disabled={submittingGen || !genStudentId || !activeYears.length}>
-                {submittingGen ? 'Đang sinh...' : 'Sinh hóa đơn'}
-              </Button>
-            </div>
-          </form>
         </Card>
       )}
 

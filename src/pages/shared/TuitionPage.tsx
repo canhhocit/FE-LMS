@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Printer, CheckCircle2, QrCode, ExternalLink, RefreshCw } from 'lucide-react';
 import { PageTitle, Card, Spinner, Empty, ErrorBox, Pill } from '../../components/Layout';
 import * as tuitionService from '../../services/tuitionService';
-import type { TuitionInvoice, TuitionRate, PayOSPaymentResponse } from '../../types';
+import type { TuitionInvoice, PayOSPaymentResponse } from '../../types';
 
 const fmtMoney = (v: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v);
@@ -160,10 +160,13 @@ function printInvoice(inv: TuitionInvoice) {
 
 export default function TuitionPage() {
   const [invoices, setInvoices] = useState<TuitionInvoice[]>([]);
-  const [rates, setRates] = useState<TuitionRate[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
-  const [flashMsg, setFlashMsg] = useState<string | null>(null);
+  const [flashMsg, setFlashMsg] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get('status') === 'CANCELLED'
+      ? 'Payment was canceled. The invoice remains unpaid.'
+      : null,
+  );
 
   // Payment states
   const [payingInvoice, setPayingInvoice] = useState<TuitionInvoice | null>(null);
@@ -175,14 +178,11 @@ export default function TuitionPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true);
-      const [invs, rts, paymentOptions] = await Promise.all([
+      const [invs, paymentOptions] = await Promise.all([
         tuitionService.getMyTuition(),
-        tuitionService.getTuitionRates(),
         tuitionService.getPaymentOptions().catch(() => ({ simulationEnabled: false, payOsEnabled: false })),
       ]);
       setInvoices(invs);
-      setRates(rts);
       setSimulationEnabled(paymentOptions.simulationEnabled);
       setPayOsEnabled(paymentOptions.payOsEnabled);
     } catch (e: unknown) {
@@ -193,12 +193,11 @@ export default function TuitionPage() {
   }, []);
 
   useEffect(() => {
-    void fetchData();
+    void Promise.resolve().then(fetchData);
     const searchParams = new URLSearchParams(window.location.search);
     const status = searchParams.get('status');
     const invoiceId = searchParams.get('invoiceId');
     if (status === 'CANCELLED') {
-      setFlashMsg('Payment was canceled. The invoice remains unpaid.');
       window.history.replaceState({}, document.title, window.location.pathname);
       return;
     }
@@ -312,8 +311,8 @@ export default function TuitionPage() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
+      <div className="grid gap-6">
+        <div className="space-y-4">
           <Card>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <h3 className="font-bold text-slate-800 text-base">Danh sách hóa đơn học phí của tôi</h3>
@@ -416,33 +415,6 @@ export default function TuitionPage() {
           </Card>
         </div>
 
-        <div>
-          <Card>
-            <h3 className="font-bold text-slate-800 text-base mb-3">Định mức học phí áp dụng</h3>
-            {rates.length === 0 ? (
-              <Empty msg="Chưa có định mức" />
-            ) : (
-              <div className="space-y-3">
-                {rates.map((r) => (
-                  <div
-                    key={r.id}
-                    className={`rounded-xl border p-3.5 transition ${
-                      r.isActive ? 'border-indigo-300 bg-indigo-50/50' : 'border-slate-200 bg-slate-50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-semibold text-slate-800 text-sm">Năm học {r.academicYear}</span>
-                      {r.isActive && <Pill color="green">ĐANG ÁP DỤNG</Pill>}
-                    </div>
-                    <div className="mt-2 text-lg font-bold text-indigo-600">
-                      {fmtMoney(r.pricePerCredit)} <span className="text-xs font-normal text-slate-500">/ tín chỉ</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-        </div>
       </div>
 
                               Choose payment method
