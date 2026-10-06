@@ -164,7 +164,7 @@ export default function TuitionPage() {
   const [err, setErr] = useState<string | null>(null);
   const [flashMsg, setFlashMsg] = useState<string | null>(() =>
     new URLSearchParams(window.location.search).get('status') === 'CANCELLED'
-      ? 'Payment was canceled. The invoice remains unpaid.'
+      ? 'Thanh toán đã bị hủy. Hóa đơn vẫn chưa được thanh toán.'
       : null,
   );
 
@@ -207,9 +207,11 @@ export default function TuitionPage() {
         tuitionService.verifyPayOSPayment(invId)
           .then((updated) => {
             setInvoices((prev) => prev.map((invoice) => invoice.id === updated.id ? updated : invoice));
-            setFlashMsg(updated.status === 'PAID' ? 'PayOS confirmed payment.' : 'Payment is still pending PayOS confirmation. The invoice remains unpaid.');
+            setFlashMsg(updated.status === 'PAID'
+              ? 'PayOS đã xác nhận thanh toán thành công.'
+              : 'Thanh toán đang chờ xác nhận từ PayOS. Hóa đơn vẫn chưa được thanh toán.');
           })
-          .catch((error: unknown) => setErr((error as { message?: string })?.message ?? 'Could not refresh payment status.'))
+          .catch((error: unknown) => setErr((error as { message?: string })?.message ?? 'Không thể làm mới trạng thái thanh toán.'))
           .finally(() => window.history.replaceState({}, document.title, window.location.pathname));
       }
     }
@@ -221,7 +223,7 @@ export default function TuitionPage() {
     try {
       const updated = await tuitionService.payMyInvoice(payingInvoice.id);
       setInvoices((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
-      setFlashMsg(`Simulated payment recorded for invoice #${updated.id}. No real money was transferred.`);
+      setFlashMsg(`Đã ghi nhận thanh toán mô phỏng cho hóa đơn #${updated.id}. Không có tiền thật nào được chuyển.`);
       setPayingInvoice(null);
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Thanh toán thất bại');
@@ -249,7 +251,9 @@ export default function TuitionPage() {
     try {
       const updated = await tuitionService.verifyPayOSPayment(payOSData.invoiceId);
       setInvoices((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
-      setFlashMsg(updated.status === 'PAID' ? 'PayOS confirmed payment.' : 'Payment is still pending PayOS confirmation. The invoice remains unpaid.');
+      setFlashMsg(updated.status === 'PAID'
+        ? 'PayOS đã xác nhận thanh toán thành công.'
+        : 'Thanh toán đang chờ xác nhận từ PayOS. Hóa đơn vẫn chưa được thanh toán.');
       setPayOSData(null);
       setPayingInvoice(null);
     } catch (e: unknown) {

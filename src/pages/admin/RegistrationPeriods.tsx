@@ -9,11 +9,15 @@ const parseDate = (val: unknown): Date | null => {
   if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
   if (Array.isArray(val)) {
     const [y, m, d, h = 0, min = 0, s = 0] = val;
-    return new Date(y, m - 1, d, h, min, s);
+    return new Date(Date.UTC(y, m - 1, d, h, min, s) - 7 * 60 * 60 * 1000);
   }
   if (typeof val === 'string') {
     const trimmed = val.trim();
     if (!trimmed) return null;
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/.test(trimmed)) {
+      const d = new Date(`${trimmed}+07:00`);
+      return isNaN(d.getTime()) ? null : d;
+    }
     let d = new Date(trimmed);
     if (!isNaN(d.getTime())) return d;
 
@@ -23,12 +27,12 @@ const parseDate = (val: unknown): Date | null => {
     const timeFirstMatch = trimmed.match(/^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?\s+(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     if (timeFirstMatch) {
       const [, h, min, s = '0', day, mon, yr] = timeFirstMatch;
-      return new Date(Number(yr), Number(mon) - 1, Number(day), Number(h), Number(min), Number(s));
+      return new Date(Date.UTC(Number(yr), Number(mon) - 1, Number(day), Number(h), Number(min), Number(s)) - 7 * 60 * 60 * 1000);
     }
     const dateFirstMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/);
     if (dateFirstMatch) {
       const [, day, mon, yr, h = '0', min = '0', s = '0'] = dateFirstMatch;
-      return new Date(Number(yr), Number(mon) - 1, Number(day), Number(h), Number(min), Number(s));
+      return new Date(Date.UTC(Number(yr), Number(mon) - 1, Number(day), Number(h), Number(min), Number(s)) - 7 * 60 * 60 * 1000);
     }
   }
   return null;
@@ -36,7 +40,15 @@ const parseDate = (val: unknown): Date | null => {
 
 const fmt = (s?: unknown) => {
   const d = parseDate(s);
-  return d ? d.toLocaleString('vi-VN') : '—';
+  return d ? new Intl.DateTimeFormat('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).format(d) : '—';
 };
 
 export default function RegistrationPeriods() {
@@ -50,6 +62,7 @@ export default function RegistrationPeriods() {
   const [periodClasses, setPeriodClasses] = useState<Clazz[]>([]);
   const [allClasses, setAllClasses] = useState<Clazz[]>([]);
   const [loadingClasses, setLoadingClasses] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
 
   // Search, Filter & Pagination State
@@ -82,6 +95,19 @@ export default function RegistrationPeriods() {
     return cleanup;
   }, [load]);
 
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(Date.now()), 30000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const getPeriodState = (period: RegistrationPeriod): 'OPEN' | 'SCHEDULED' | 'CLOSED' | 'EXPIRED' => {
+    const openAt = parseDate(period.openAt)?.getTime();
+    const closeAt = parseDate(period.closeAt)?.getTime();
+    if (closeAt !== undefined && now >= closeAt) return 'EXPIRED';
+    if (!period.isActive) return 'CLOSED';
+    if (openAt !== undefined && now < openAt) return 'SCHEDULED';
+    return 'OPEN';
+  };
 
   const openClassesModal = async (period: RegistrationPeriod) => {
     setShowClassesModal(period);
@@ -179,7 +205,8 @@ export default function RegistrationPeriods() {
 
   const toggle = async (p: RegistrationPeriod) => {
     try {
-      await registrationService.updateRegistrationPeriod(p.id, { isActive: !p.isActive });
+      const updated = await registrationService.setRegistrationPeriodActive(p.id, !p.isActive);
+      setPeriods((current) => current.map((period) => period.id === updated.id ? updated : period));
       load();
     } catch (e: unknown) {
       setErr((e as { message?: string })?.message ?? 'Không thể cập nhật trạng thái');
@@ -205,8 +232,8 @@ export default function RegistrationPeriods() {
       p.semester.toLowerCase().includes(searchKw.toLowerCase()) ||
       p.academicYear.toLowerCase().includes(searchKw.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' ||
-      (statusFilter === 'ACTIVE' && p.isActive) ||
-      (statusFilter === 'INACTIVE' && !p.isActive);
+      (statusFilter === 'ACTIVE' && getPeriodState(p) === 'OPEN') ||
+      (statusFilter === 'INACTIVE' && getPeriodState(p) !== 'OPEN');
     return matchesSearch && matchesStatus;
   });
 
@@ -323,13 +350,13 @@ export default function RegistrationPeriods() {
               onClick={() => { setStatusFilter('ACTIVE'); setPage(0); }}
               className={`px-3 py-1.5 rounded-md transition ${statusFilter === 'ACTIVE' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
             >
-              Đang mở (Active)
+              Đang mở
             </button>
             <button
               onClick={() => { setStatusFilter('INACTIVE'); setPage(0); }}
               className={`px-3 py-1.5 rounded-md transition ${statusFilter === 'INACTIVE' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
             >
-              Đã khóa
+              Đã đóng / hết hạn
             </button>
           </div>
         </div>
@@ -362,12 +389,14 @@ export default function RegistrationPeriods() {
                         <Badge variant="info">{p.maxCredits ?? 24} TC</Badge>
                       </td>
                       <td className="py-3.5 px-4 text-center">
-                        <Badge variant={p.isActive ? 'success' : 'neutral'}>
-                          {p.isActive ? 'Mở đăng ký' : 'Đã khóa'}
+                        <Badge variant={getPeriodState(p) === 'OPEN' ? 'success' : getPeriodState(p) === 'SCHEDULED' ? 'info' : 'neutral'}>
+                          {getPeriodState(p) === 'OPEN' ? 'Đang mở' :
+                            getPeriodState(p) === 'SCHEDULED' ? 'Chưa tới giờ' :
+                              getPeriodState(p) === 'EXPIRED' ? 'Đã hết hạn' : 'Đã khóa'}
                         </Badge>
                       </td>
                       <td className="py-3.5 px-4 text-right space-x-1.5">
-                        <Button variant="ghost" size="sm" onClick={() => void toggle(p)}>
+                        <Button variant="ghost" size="sm" onClick={() => void toggle(p)} disabled={!p.isActive && getPeriodState(p) === 'EXPIRED'}>
                           {p.isActive ? (
                             <span className="text-amber-600 flex items-center gap-1"><ToggleLeft className="w-3.5 h-3.5" /> Khóa</span>
                           ) : (
