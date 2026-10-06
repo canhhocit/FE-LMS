@@ -1,5 +1,5 @@
-import { useState, useEffect, type ReactNode } from "react";
-import { NavLink, Outlet, useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, Outlet, useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/useAuth";
 import { useTheme } from "../context/ThemeContext";
 import * as notificationService from "../services/notificationService";
@@ -29,8 +29,10 @@ import {
   Sparkles,
   GraduationCap,
   ClipboardList,
+  ClipboardCheck,
   HelpCircle,
   Key,
+  MessageSquare,
   ChevronDown,
   LogOut,
   Bell,
@@ -62,18 +64,41 @@ const NAV: Record<Role, NavSection[]> = {
       title: "Tổng quan",
       items: [
         { to: "/student", label: "Trang chủ", icon: Home },
-        { to: "/student/notifications", label: "Thông báo", icon: Bell },
-        { to: "/student/classes", label: "Lớp học", icon: BookOpen },
-        { to: "/student/quizzes", label: "Bài kiểm tra", icon: HelpCircle },
-        { to: "/student/schedule", label: "Thời khoá biểu", icon: Calendar },
-        { to: "/student/grades", label: "Kết quả học tập", icon: BarChart3 },
-        { to: "/student/transcript", label: "Bảng điểm", icon: GraduationCap },
-        { to: "/student/tuition", label: "Học phí", icon: FileText },
-        { to: "/student/registration", label: "Đăng ký học", icon: ClipboardList },
       ],
     },
     {
-      title: "Biểu mẫu & AI",
+      title: "Học tập",
+      items: [
+        { to: "/student/classes", label: "Lớp học", icon: BookOpen },
+        { to: "/student/assignments", label: "Bài tập", icon: ClipboardCheck },
+        { to: "/student/quizzes", label: "Bài kiểm tra", icon: HelpCircle },
+      ],
+    },
+    {
+      title: "Học vụ",
+      items: [
+        { to: "/student/registration", label: "Đăng ký học", icon: ClipboardList },
+        { to: "/student/schedule", label: "Thời khóa biểu", icon: Calendar },
+        { to: "/student/tuition", label: "Học phí", icon: FileText },
+      ],
+    },
+    {
+      title: "Kết quả",
+      items: [
+        { to: "/student/grades", label: "Kết quả học tập", icon: BarChart3 },
+        { to: "/student/attendance", label: "Điểm danh", icon: CheckCircle2 },
+        { to: "/student/transcript", label: "Bảng điểm", icon: GraduationCap },
+      ],
+    },
+    {
+      title: "Tương tác",
+      items: [
+        { to: "/student/forum", label: "Diễn đàn", icon: MessageSquare },
+        { to: "/student/notifications", label: "Thông báo", icon: Bell },
+      ],
+    },
+    {
+      title: "Công cụ học tập",
       items: [
         { to: "/student/documents", label: "Kho Biểu mẫu & Đơn", icon: FileText },
         { to: "/student/ai-advisor", label: "Cố vấn học tập AI", icon: Sparkles },
@@ -91,26 +116,32 @@ const NAV: Record<Role, NavSection[]> = {
       title: "Tổng quan",
       items: [
         { to: "/lecturer", label: "Trang chủ", icon: Home },
-        { to: "/lecturer/notifications", label: "Thông báo", icon: Bell },
-        { to: "/lecturer/classes", label: "Lớp giảng dạy", icon: BookOpen },
-        { to: "/lecturer/analytics", label: "Báo cáo Analytics", icon: BarChart3 },
       ],
     },
     {
-      title: "Quản lý Giảng dạy",
+      title: "Giảng dạy",
       items: [
+        { to: "/lecturer/classes", label: "Lớp giảng dạy", icon: BookOpen },
         { to: "/lecturer/assignments", label: "Bài tập", icon: FileText },
         { to: "/lecturer/quizzes", label: "Bài kiểm tra", icon: HelpCircle },
         { to: "/lecturer/grading", label: "Chấm điểm", icon: CheckCircle2 },
         { to: "/lecturer/homeroom", label: "Điểm rèn luyện (GVCN)", icon: Users },
         { to: "/lecturer/schedule", label: "Lịch dạy", icon: Calendar },
+        { to: "/lecturer/analytics", label: "Báo cáo Analytics", icon: BarChart3 },
       ],
     },
     {
-      title: "Biểu mẫu & Cấp quyền",
+      title: "Tương tác & quyền",
+      items: [
+        { to: "/lecturer/forum", label: "Diễn đàn", icon: MessageSquare },
+        { to: "/lecturer/notifications", label: "Thông báo", icon: Bell },
+        { to: "/lecturer/permission-requests", label: "Yêu cầu cấp quyền", icon: Key },
+      ],
+    },
+    {
+      title: "Tài liệu",
       items: [
         { to: "/lecturer/documents", label: "Kho Biểu mẫu & Đơn", icon: FileText },
-        { to: "/lecturer/permission-requests", label: "Yêu cầu Cấp quyền", icon: Key },
       ],
     },
     {
@@ -125,11 +156,6 @@ const NAV: Record<Role, NavSection[]> = {
       title: "Tổng quan",
       items: [
         { to: "/admin", label: "Dashboard", icon: Home },
-        { to: "/admin/notifications", label: "Thông báo", icon: Bell },
-        { to: "/admin/users", label: "Người dùng", icon: Users, permission: "MANAGE_USERS" },
-        { to: "/admin/reports", label: "Báo cáo", icon: BarChart3, permission: "VIEW_REPORTS" },
-        { to: "/admin/audit-logs", label: "Nhật ký hệ thống", icon: FileText, permissions: ["SYSTEM_CONFIG", "VIEW_SYSTEM_LOGS"] },
-        { to: "/admin/permissions", label: "Quản trị & Phân quyền", icon: Key, permission: "SYSTEM_CONFIG" },
       ],
     },
     {
@@ -144,10 +170,21 @@ const NAV: Record<Role, NavSection[]> = {
       ],
     },
     {
-      title: "Biểu mẫu & Phê duyệt",
+      title: "Người dùng & hệ thống",
       items: [
-        { to: "/admin/documents", label: "Kho Biểu mẫu & Đơn", icon: FileText },
+        { to: "/admin/users", label: "Người dùng", icon: Users, permission: "MANAGE_USERS" },
+        { to: "/admin/permissions", label: "Quản trị & Phân quyền", icon: Key, permission: "SYSTEM_CONFIG" },
+        { to: "/admin/clazz-permissions", label: "Phân quyền lớp học", icon: Key },
+        { to: "/admin/audit-logs", label: "Nhật ký hệ thống", icon: FileText, permissions: ["SYSTEM_CONFIG", "VIEW_SYSTEM_LOGS"] },
+      ],
+    },
+    {
+      title: "Báo cáo & phê duyệt",
+      items: [
+        { to: "/admin/reports", label: "Báo cáo", icon: BarChart3, permission: "VIEW_REPORTS" },
         { to: "/admin/pbac-approvals", label: "Quyền hạn", icon: Key, permission: "MANAGE_GRADING_POLICY" },
+        { to: "/admin/documents", label: "Kho Biểu mẫu & Đơn", icon: FileText },
+        { to: "/admin/notifications", label: "Thông báo", icon: Bell },
       ],
     },
   ],
@@ -349,6 +386,7 @@ export default function Layout() {
   const darkMode = theme === 'dark';
   const { user, logout, hasPermission } = useAuth();
   const nav = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -371,25 +409,16 @@ export default function Layout() {
 
   const [isGvcn, setIsGvcn] = useState<boolean>(false);
 
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>(
-    () => ({
-      "Tổng quan": true,
-      "Học tập": true,
-      "Cá nhân": true,
-      "Quản lý": true,
-      "Đào tạo": true,
-      "Biểu mẫu & AI": true,
-      "Biểu mẫu & Cấp quyền": true,
-      "Biểu mẫu & Phê duyệt": true,
-      "Quản lý Giảng dạy": true,
-    }),
-  );
+  const [openSections, setOpenSections] = useState<Record<string, { open: boolean; path: string }>>({});
 
-  const toggleSection = (title: string) => {
-    setOpenSections((prev) => ({
-      ...prev,
-      [title]: !prev[title],
-    }));
+  const toggleSection = (title: string, isActiveSection: boolean) => {
+    setOpenSections((prev) => {
+      const saved = prev[title];
+      const isOpen = saved?.path === location.pathname
+        ? saved.open
+        : isActiveSection || Boolean(saved?.open);
+      return { ...prev, [title]: { open: !isOpen, path: location.pathname } };
+    });
   };
 
   useEffect(() => {
@@ -522,13 +551,21 @@ export default function Layout() {
                 (it.to !== "/lecturer/homeroom" || isGvcn),
             );
             if (filteredItems.length === 0) return null;
-            const isSectionOpen = openSections[section.title] ?? true;
+            const roleRoot = `/${role.toLowerCase()}`;
+            const isActiveSection = filteredItems.some((item) =>
+              location.pathname === item.to ||
+              (item.to !== roleRoot && location.pathname.startsWith(`${item.to}/`)),
+            );
+            const savedSection = openSections[section.title];
+            const isSectionOpen = savedSection?.path === location.pathname
+              ? savedSection.open
+              : isActiveSection || Boolean(savedSection?.open);
 
             return (
               <div key={section.title} className="space-y-1">
                 <button
                   type="button"
-                  onClick={() => toggleSection(section.title)}
+                  onClick={() => toggleSection(section.title, isActiveSection)}
                   className={`flex w-full items-center justify-between py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition cursor-pointer ${isCollapsed ? "px-0 justify-center h-0 opacity-0 overflow-hidden" : "px-2"}`}
                 >
                   <span className={isCollapsed ? "hidden" : "block"}>{section.title}</span>
@@ -539,7 +576,7 @@ export default function Layout() {
                   />
                 </button>
 
-                {isSectionOpen && (
+                {(isSectionOpen || isCollapsed) && (
                   <div className="space-y-0.5 mt-1">
                     {filteredItems.map((it: NavItem) => {
                       const IconComponent = it.icon;

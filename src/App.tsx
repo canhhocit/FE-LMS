@@ -105,7 +105,7 @@ export default function App() {
                   <Route path="/student/classes/:id" element={<ClassDetail />} />
                   <Route path="/student/notifications" element={<NotificationsPage />} />
                   <Route path="/student/registration" element={<StudentRegistrations />} />
-                  <Route path="/student/registrations" element={<StudentRegistrations />} />
+                  <Route path="/student/registrations" element={<Navigate to="/student/registration" replace />} />
                   <Route path="/student/tuition" element={<TuitionPage />} />
                   <Route path="/student/quizzes" element={<QuizPage />} />
                   <Route path="/student/documents" element={<DocumentHubPage />} />
@@ -141,23 +141,23 @@ export default function App() {
                 {/* Admin Routes */}
                 <Route element={<ProtectedRoute allow={['ADMIN']}><Layout /></ProtectedRoute>}>
                   <Route path="/admin" element={<AdminDashboard />} />
-                  <Route path="/admin/users" element={<AdminUsers />} />
-                  <Route path="/admin/classes" element={<AdminClasses />} />
-                  <Route path="/admin/classes/:id" element={<ClassDetail />} />
-                  <Route path="/admin/curricula" element={<AdminCurricula />} />
-                  <Route path="/admin/registration" element={<RegistrationPeriods />} />
+                  <Route path="/admin/users" element={<ProtectedRoute requiredPermission="MANAGE_USERS"><AdminUsers /></ProtectedRoute>} />
+                  <Route path="/admin/classes" element={<ProtectedRoute requiredPermission="MANAGE_REGISTRATION"><AdminClasses /></ProtectedRoute>} />
+                  <Route path="/admin/classes/:id" element={<ProtectedRoute requiredPermission="MANAGE_REGISTRATION"><ClassDetail /></ProtectedRoute>} />
+                  <Route path="/admin/curricula" element={<ProtectedRoute requiredPermission="MANAGE_CURRICULUM"><AdminCurricula /></ProtectedRoute>} />
+                  <Route path="/admin/registration" element={<ProtectedRoute requiredPermission="MANAGE_REGISTRATION"><RegistrationPeriods /></ProtectedRoute>} />
                   <Route path="/admin/registrations" element={<Navigate to="/admin/registration" replace />} />
-                  <Route path="/admin/tuition" element={<AdminTuitionManagement />} />
-                  <Route path="/admin/reports" element={<AdminReports />} />
-                  <Route path="/admin/pbac-approvals" element={<AdminPbacApproval />} />
+                  <Route path="/admin/tuition" element={<ProtectedRoute requiredPermission="MANAGE_TUITION"><AdminTuitionManagement /></ProtectedRoute>} />
+                  <Route path="/admin/reports" element={<ProtectedRoute requiredPermission="VIEW_REPORTS"><AdminReports /></ProtectedRoute>} />
+                  <Route path="/admin/pbac-approvals" element={<ProtectedRoute requiredPermission="MANAGE_GRADING_POLICY"><AdminPbacApproval /></ProtectedRoute>} />
                   <Route path="/admin/pbac-approval" element={<Navigate to="/admin/pbac-approvals" replace />} />
                   <Route path="/admin/documents" element={<DocumentHubPage />} />
-                  <Route path="/admin/permissions" element={<AdminPermissions />} />
-                  <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+                  <Route path="/admin/permissions" element={<ProtectedRoute requiredPermission="SYSTEM_CONFIG"><AdminPermissions /></ProtectedRoute>} />
+                  <Route path="/admin/audit-logs" element={<ProtectedRoute requiredPermission={["SYSTEM_CONFIG", "VIEW_SYSTEM_LOGS"]}><AdminAuditLogs /></ProtectedRoute>} />
                   <Route path="/admin/clazz-permissions" element={<ClazzPermissions />} />
                   <Route path="/admin/class-permissions" element={<Navigate to="/admin/clazz-permissions" replace />} />
-                  <Route path="/admin/departments" element={<AdminDepartments />} />
-                  <Route path="/admin/administrative-classes" element={<AdminAdministrativeClasses />} />
+                  <Route path="/admin/departments" element={<ProtectedRoute requiredPermission="MANAGE_CURRICULUM"><AdminDepartments /></ProtectedRoute>} />
+                  <Route path="/admin/administrative-classes" element={<ProtectedRoute requiredPermission="MANAGE_USERS"><AdminAdministrativeClasses /></ProtectedRoute>} />
                   <Route path="/admin/schedule" element={<Navigate to="/admin/classes" replace />} />
                   <Route path="/admin/notifications" element={<NotificationsPage />} />
                 </Route>

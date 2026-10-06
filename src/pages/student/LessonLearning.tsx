@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { 
-  CheckCircle2, RotateCcw, ArrowLeft,
+  CheckCircle2, RotateCcw, ArrowLeft, ChevronLeft, ChevronRight,
   Download, FileText, Plus, Clock, StickyNote
 } from 'lucide-react';
 import { PageHeader, Card, Spinner, Empty, ErrorBox, Badge, Button } from '../../components/ui';
@@ -87,6 +87,12 @@ export default function StudentLessonLearning() {
   const [resumeSeconds, setResumeSeconds] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [noteError, setNoteError] = useState<string | null>(null);
+  const [supplementaryError, setSupplementaryError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [videoRetryCount, setVideoRetryCount] = useState(0);
+  const [videoError, setVideoError] = useState(false);
   const enrollmentIdRef = useRef<number | null>(null);
 
   const [quizzes, setQuizzes] = useState<StudentInVideoQuiz[]>([]);
@@ -109,8 +115,9 @@ export default function StudentLessonLearning() {
       });
       setNotes((prev) => [newNote, ...prev]);
       setNoteText('');
+      setNoteError(null);
     } catch {
-      setError('Không thể lưu ghi chú. Vui lòng thử lại.');
+      setNoteError('Không thể lưu ghi chú. Vui lòng thử lại.');
     } finally {
       setSavingNote(false);
     }
@@ -175,6 +182,7 @@ export default function StudentLessonLearning() {
       maxWatchedTimeRef.current = serverMax;
       setResumeSeconds(Math.floor(serverLast));
       setMaxWatchedSec(serverMax);
+      setActionError(null);
       if (saved.completed && !isLessonCompleted) {
         setProgress(await progressService.getEnrollmentProgress(enrollmentId));
       }
@@ -202,9 +210,27 @@ export default function StudentLessonLearning() {
 
   useEffect(() => {
     if (!classNum || !lessonNum) return;
-
     let mounted = true;
     const load = async () => {
+      setLoading(true);
+      setError(null);
+      setActionError(null);
+      setNoteError(null);
+      setSupplementaryError(null);
+      setClazz(null);
+      setSelectedLesson(null);
+      setChapters([]);
+      setChapterLessons({});
+      setProgress(null);
+      setQuizzes([]);
+      setNotes([]);
+      setVideoError(false);
+      setVideoDuration(0);
+      setResumeSeconds(0);
+      setMaxWatchedSec(0);
+      setCurrentVideoTime(0);
+      maxWatchedTimeRef.current = 0;
+      enrollmentIdRef.current = null;
       try {
         const [classData, chapterList] = await Promise.all([
           clazzService.getClazzDetail(classNum),
@@ -224,6 +250,7 @@ export default function StudentLessonLearning() {
             return { chapterId: chapter.id, lessons };
           })
         );
+        if (!mounted) return;
 
         const mapped: Record<number, Lesson[]> = {};
         lessonsByChapter.forEach(({ chapterId, lessons }) => {
@@ -243,15 +270,18 @@ export default function StudentLessonLearning() {
           }
           lesson = detail;
         }
+        if (!mounted) return;
         setSelectedLesson(lesson);
         setVideoDuration(Number(lesson.duration ?? 0));
 
         const registrations: Registration[] = await registrationService.getMyRegistrations();
+        if (!mounted) return;
         const matchedRegistration = registrations.find((item) => Number(item.clazzId) === classNum);
         const enrollmentId = matchedRegistration?.enrollmentId;
         if (!enrollmentId) throw new Error('Không tìm thấy đăng ký học của lớp này.');
         enrollmentIdRef.current = enrollmentId;
         const serverProgress = await videoLearningService.getProgress(lessonNum, enrollmentId);
+        if (!mounted) return;
         const serverLast = Number(serverProgress?.lastWatchedSeconds ?? 0);
         const serverMax = Number(serverProgress?.maxWatchedSeconds ?? 0);
         lastProgressSyncAtRef.current = 0;
@@ -260,16 +290,22 @@ export default function StudentLessonLearning() {
         setMaxWatchedSec(serverMax);
         setCurrentVideoTime(serverLast);
 
-        const [quizData, noteData] = await Promise.all([
+        void Promise.allSettled([
           videoLearningService.getQuizzesForLesson(lessonNum),
           videoLearningService.getNotes(lessonNum),
-        ]);
-        if (mounted) {
-          setQuizzes(quizData);
-          setNotes(noteData);
-        }
+        ]).then(([quizResult, noteResult]) => {
+          if (!mounted) return;
+          if (quizResult.status === 'fulfilled') setQuizzes(quizResult.value);
+          if (noteResult.status === 'fulfilled') setNotes(noteResult.value);
+          const errors = [
+            quizResult.status === 'rejected' ? 'Không thể tải câu hỏi video.' : null,
+            noteResult.status === 'rejected' ? 'Không thể tải ghi chú.' : null,
+          ].filter(Boolean);
+          if (errors.length) setSupplementaryError(errors.join(' '));
+        });
 
         let progressData = await progressService.getEnrollmentProgress(enrollmentId);
+        if (!mounted) return;
         if (mounted) setProgress(progressData);
 
         if (!lesson.videoUrl) {
@@ -278,12 +314,13 @@ export default function StudentLessonLearning() {
           );
           if (!isAlreadyCompleted) {
             await progressService.markLessonComplete(lesson.id, enrollmentId);
+            if (!mounted) return;
             progressData = await progressService.getEnrollmentProgress(enrollmentId);
             if (mounted) setProgress(progressData);
           }
         }
       } catch (e: unknown) {
-        setError((e as { message?: string })?.message ?? 'Không thể tải bài học.');
+        if (mounted) setError((e as { message?: string })?.message ?? 'Không thể tải bài học.');
       } finally {
         if (mounted) setLoading(false);
       }
@@ -293,7 +330,7 @@ export default function StudentLessonLearning() {
     return () => {
       mounted = false;
     };
-  }, [classNum, lessonNum]);
+  }, [classNum, lessonNum, retryCount]);
 
   useEffect(() => () => {
     const video = videoRef.current;
@@ -318,8 +355,9 @@ export default function StudentLessonLearning() {
       const updated = await progressService.getEnrollmentProgress(progress.enrollmentId);
       setProgress(updated);
       clearResumePosition();
+      setActionError(null);
     } catch (e: unknown) {
-      setError((e as { message?: string })?.message ?? 'Không thể cập nhật tiến độ.');
+      setActionError((e as { message?: string })?.message ?? 'Không thể cập nhật tiến độ.');
     }
   };
 
@@ -330,10 +368,14 @@ export default function StudentLessonLearning() {
 
   if (!classNum || !lessonNum) return <ErrorBox msg="Thiếu thông tin lớp học hoặc bài học." />;
   if (loading) return <Spinner />;
-  if (error) return <ErrorBox msg={error} />;
+  if (error) return <ErrorBox msg={error} onRetry={() => setRetryCount((count) => count + 1)} />;
   if (!clazz || !selectedLesson) return <Empty msg="Không có dữ liệu bài học" />;
 
   const percent = progress?.percentage ?? 0;
+  const orderedLessons = chapters.flatMap((chapter) => chapterLessons[chapter.id] ?? []);
+  const currentLessonIndex = orderedLessons.findIndex((lesson) => Number(lesson.id) === Number(selectedLesson.id));
+  const previousLesson = currentLessonIndex > 0 ? orderedLessons[currentLessonIndex - 1] : null;
+  const nextLesson = currentLessonIndex >= 0 ? orderedLessons[currentLessonIndex + 1] ?? null : null;
   const currentChapter = chapters.find((chapter) => (chapterLessons[chapter.id] ?? []).some((lesson) => lesson.id === selectedLesson.id));
 
   return (
@@ -350,6 +392,30 @@ export default function StudentLessonLearning() {
           </Link>
         }
       />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={!previousLesson}
+          onClick={() => previousLesson && navigate(`/student/classes/${classNum}/lessons/${previousLesson.id}`)}
+        >
+          <ChevronLeft className="w-4 h-4" /> Bài trước
+        </Button>
+        <span className="text-xs text-slate-500 dark:text-slate-400">
+          {currentLessonIndex >= 0 ? `Bài ${currentLessonIndex + 1}/${orderedLessons.length}` : 'Bài học'}
+          {selectedLesson.videoUrl && Number(selectedLesson.duration) > 0
+            ? ` · ${formatTime(Number(selectedLesson.duration))}`
+            : ''}
+        </span>
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={!nextLesson}
+          onClick={() => nextLesson && navigate(`/student/classes/${classNum}/lessons/${nextLesson.id}`)}
+        >
+          Bài tiếp theo <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-4">
@@ -383,6 +449,7 @@ export default function StudentLessonLearning() {
             <div className="overflow-hidden rounded-xl bg-slate-950 border border-slate-900">
               {selectedLesson.videoUrl ? (
                 <video
+                  key={videoRetryCount}
                   ref={videoRef}
                   className="w-full max-h-[460px] bg-black"
                   controls
@@ -391,12 +458,18 @@ export default function StudentLessonLearning() {
                   onLoadedMetadata={() => {
                     const video = videoRef.current;
                     if (!video) return;
-                    if (video.duration) setVideoDuration(video.duration);
+                    setVideoError(false);
+                    if (Number(selectedLesson.duration) > 0) {
+                      setVideoDuration(Number(selectedLesson.duration));
+                    } else if (video.duration) {
+                      setVideoDuration(video.duration);
+                    }
                     const resumeAt = resumeSeconds;
                     if (resumeAt > 0) {
                       video.currentTime = Math.min(resumeAt, video.duration || resumeAt);
                     }
                   }}
+                  onError={() => setVideoError(true)}
                   onSeeking={() => {
                     const video = videoRef.current;
                     if (!video || isLessonCompleted) return;
@@ -406,12 +479,12 @@ export default function StudentLessonLearning() {
                   }}
                   onSeeked={() => {
                     void syncVideoProgress(true).catch((syncError: unknown) => {
-                      setError((syncError as { message?: string })?.message ?? 'Không thể lưu tiến độ video.');
+                      setActionError((syncError as { message?: string })?.message ?? 'Không thể lưu tiến độ video.');
                     });
                   }}
                   onPause={() => {
                     void syncVideoProgress(true).catch((syncError: unknown) => {
-                      setError((syncError as { message?: string })?.message ?? 'Không thể lưu tiến độ video.');
+                      setActionError((syncError as { message?: string })?.message ?? 'Không thể lưu tiến độ video.');
                     });
                   }}
                   onTimeUpdate={() => {
@@ -435,7 +508,7 @@ export default function StudentLessonLearning() {
                       saveResumePosition(current);
                     }
                     void syncVideoProgress().catch((syncError: unknown) => {
-                      setError((syncError as { message?: string })?.message ?? 'Không thể lưu tiến độ video.');
+                      setActionError((syncError as { message?: string })?.message ?? 'Không thể lưu tiến độ video.');
                     });
                   }}
                   onEnded={() => void handleVideoEnded()}
@@ -448,6 +521,21 @@ export default function StudentLessonLearning() {
             </div>
 
             <div className="mt-4 space-y-3">
+              {videoError && (
+                <ErrorBox
+                  msg="Không thể phát video. Kiểm tra kết nối hoặc thử tải lại video."
+                  onRetry={() => {
+                    setVideoError(false);
+                    setVideoRetryCount((count) => count + 1);
+                  }}
+                />
+              )}
+              {actionError && <ErrorBox msg={actionError} />}
+              {selectedLesson.videoUrl && videoDuration > 0 && (
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  Đã xem {formatTime(maxWatchedSec)} / {formatTime(videoDuration)} · {Math.min(100, Math.floor((maxWatchedSec / videoDuration) * 100))}%
+                </div>
+              )}
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-bold text-slate-900 dark:text-white text-base">{selectedLesson.title}</h3>
                 {selectedLesson.videoUrl && (
@@ -477,6 +565,16 @@ export default function StudentLessonLearning() {
                     {selectedLesson.attachmentName || 'Tài liệu đính kèm bài học'}
                   </h4>
                 </div>
+                {supplementaryError && (
+                  <ErrorBox
+                    msg={supplementaryError}
+                    onRetry={() => setRetryCount((count) => count + 1)}
+                  />
+                )}
+                {noteError && <ErrorBox msg={noteError} onRetry={() => {
+                  setNoteError(null);
+                  void handleAddNote();
+                }} />}
                 <a
                   href={selectedLesson.attachmentUrl}
                   target="_blank"
@@ -615,7 +713,15 @@ export default function StudentLessonLearning() {
                           }`}
                         >
                           <span className="truncate">{lesson.title}</span>
-                          {done && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />}
+                          {done ? (
+                            <span className={`inline-flex items-center gap-1 text-[10px] ${active ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Hoàn thành
+                            </span>
+                          ) : active ? (
+                            <span className="text-[10px] text-white/80">Đang học</span>
+                          ) : (
+                            <span className="text-[10px] text-slate-400">Chưa học</span>
+                          )}
                         </button>
                       );
                     })}
