@@ -48,6 +48,7 @@ interface NavItem {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   permission?: string;
+  permissions?: string[];
 }
 
 interface NavSection {
@@ -127,7 +128,7 @@ const NAV: Record<Role, NavSection[]> = {
         { to: "/admin/notifications", label: "Thông báo", icon: Bell },
         { to: "/admin/users", label: "Người dùng", icon: Users, permission: "MANAGE_USERS" },
         { to: "/admin/reports", label: "Báo cáo", icon: BarChart3, permission: "VIEW_REPORTS" },
-        { to: "/admin/audit-logs", label: "Nhật ký hệ thống", icon: FileText, permission: "SYSTEM_CONFIG" },
+        { to: "/admin/audit-logs", label: "Nhật ký hệ thống", icon: FileText, permissions: ["SYSTEM_CONFIG", "VIEW_SYSTEM_LOGS"] },
         { to: "/admin/permissions", label: "Phân quyền", icon: Key, permission: "SYSTEM_CONFIG" },
       ],
     },
@@ -517,6 +518,7 @@ export default function Layout() {
             const filteredItems = section.items.filter(
               (it) =>
                 (!it.permission || hasPermission(it.permission)) &&
+                (!it.permissions || it.permissions.some(hasPermission)) &&
                 (it.to !== "/lecturer/homeroom" || isGvcn),
             );
             if (filteredItems.length === 0) return null;

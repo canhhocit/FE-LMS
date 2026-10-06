@@ -30,7 +30,7 @@ const ROLE_TEMPLATES = [
   {
     name: 'Quản trị viên Hệ thống (Full Admin)',
     desc: 'Có toàn quyền quản lý mọi phân hệ và cấu hình hệ thống',
-    perms: ['MANAGE_USERS', 'MANAGE_CURRICULUM', 'MANAGE_TUITION', 'MANAGE_GRADING_POLICY', 'VIEW_REPORTS', 'MANAGE_REGISTRATION', 'SYSTEM_CONFIG'],
+    perms: ['MANAGE_USERS', 'MANAGE_CURRICULUM', 'MANAGE_TUITION', 'MANAGE_GRADING_POLICY', 'VIEW_REPORTS', 'VIEW_SYSTEM_LOGS', 'MANAGE_REGISTRATION', 'SYSTEM_CONFIG'],
   },
 ];
 
