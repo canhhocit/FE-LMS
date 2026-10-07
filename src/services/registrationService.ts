@@ -7,6 +7,7 @@ export const setRegistrationPeriodActive = async (id: number, active: boolean): 
   unwrap(apiClient.patch(`/admin/registration-periods/${id}/active`, null, { params: { active } }));
 export const deleteRegistrationPeriod = async (id: number): Promise<void> => { await apiClient.delete(`/admin/registration-periods/${id}`); };
 export const registerClass = async (clazzId: number): Promise<void> => { await apiClient.post(`/registration/${clazzId}`); };
+export const batchRegisterClass = async (clazzIds: number[]): Promise<void> => { await apiClient.post(`/registration/batch`, clazzIds); };
 export const unregisterClass = async (clazzId: number): Promise<void> => { await apiClient.delete(`/registration/${clazzId}`); };
 export const getMyRegistrations = async (): Promise<Registration[]> => unwrap(apiClient.get('/me/registrations'));
 export const getAvailableClassesToRegister = async (): Promise<Clazz[]> => unwrap(apiClient.get('/me/classes/available'));
