@@ -54,6 +54,7 @@ const AdminCurricula = lazy(() => import('./pages/admin/Curricula'));
 const AdminDepartments = lazy(() => import('./pages/admin/Departments'));
 const AdminAdministrativeClasses = lazy(() => import('./pages/admin/AdministrativeClasses'));
 const RegistrationPeriods = lazy(() => import('./pages/admin/RegistrationPeriods'));
+const AdminSchedules = lazy(() => import('./pages/admin/Schedules'));
 const AdminTuitionManagement = lazy(() => import('./pages/admin/TuitionManagement'));
 const AdminPermissions = lazy(() => import('./pages/admin/Permissions'));
 const AdminAuditLogs = lazy(() => import('./pages/admin/AuditLogs'));
@@ -158,7 +159,7 @@ export default function App() {
                   <Route path="/admin/class-permissions" element={<Navigate to="/admin/clazz-permissions" replace />} />
                   <Route path="/admin/departments" element={<ProtectedRoute requiredPermission="MANAGE_CURRICULUM"><AdminDepartments /></ProtectedRoute>} />
                   <Route path="/admin/administrative-classes" element={<ProtectedRoute requiredPermission="MANAGE_USERS"><AdminAdministrativeClasses /></ProtectedRoute>} />
-                  <Route path="/admin/schedule" element={<Navigate to="/admin/classes" replace />} />
+                  <Route path="/admin/schedule" element={<ProtectedRoute requiredPermission="MANAGE_REGISTRATION"><AdminSchedules /></ProtectedRoute>} />
                   <Route path="/admin/notifications" element={<NotificationsPage />} />
                 </Route>
 

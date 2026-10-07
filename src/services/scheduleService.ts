@@ -26,3 +26,5 @@ export const getAiScheduleRecommendation = async (payload?: {
   customPreference?: string;
 }): Promise<import('../types').AiScheduleRecommendResponse> =>
   unwrap(apiClient.post('/schedules/ai-recommend', payload || {}));
+
+export const getAllAdminSchedules = async (): Promise<Schedule[]> => unwrap<Schedule[]>(apiClient.get('/admin/schedules')).then((items) => items.map(normalizeSchedule));
