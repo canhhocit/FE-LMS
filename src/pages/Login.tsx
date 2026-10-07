@@ -8,18 +8,21 @@ const DEMO_ACCOUNTS = [
     role: "Quản trị viên",
     detail: "Toàn quyền hệ thống",
     identifier: "admin@learninghub.edu.vn",
+    password: "password",
     color: "primary",
   },
   {
     role: "Giảng viên",
     detail: "Quản lý lớp học và chấm điểm",
     identifier: "gv.nguyenvana@learninghub.edu.vn",
+    password: "password",
     color: "emerald",
   },
   {
     role: "Sinh viên",
     detail: "Học tập và theo dõi tiến độ",
     identifier: "sv20240001@student.edu.vn",
+    password: "Sv@1234",
     color: "amber",
   },
 ];
@@ -282,7 +285,7 @@ export default function Login() {
                     type="button"
                     onClick={() => {
                       setValue('identifier', acc.identifier);
-                      setValue('password', 'password');
+                      setValue('password', acc.password);
                     }}
                     className="flex w-full items-center justify-between p-2 rounded-lg text-left text-xs bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
                   >
