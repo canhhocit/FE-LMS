@@ -204,7 +204,8 @@ export default function StudentRegistrations() {
           ) : availableClasses.length === 0 ? (
             <Empty msg="Không có lớp học phần nào mở đăng ký trong đợt này" />
           ) : (
-            {selectedClassIds.length > 0 && (
+            <>
+              {selectedClassIds.length > 0 && (
               <div className="mb-4 flex items-center justify-between bg-accent-50/50 dark:bg-accent-900/20 p-3 rounded-lg border border-accent-200 dark:border-accent-800">
                 <span className="text-sm text-accent-700 dark:text-accent-300 font-medium">Đã chọn {selectedClassIds.length} lớp</span>
                 <Button variant="primary" onClick={handleBatchRegister} disabled={isBatchRegistering}>
@@ -254,6 +255,7 @@ export default function StudentRegistrations() {
                 );
               })}
             </Table>
+            </>
           )}
         </div>
       ) : (
