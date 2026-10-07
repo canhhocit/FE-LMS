@@ -209,7 +209,7 @@ export default function StudentRegistrations() {
               <div className="mb-4 flex items-center justify-between bg-accent-50/50 dark:bg-accent-900/20 p-3 rounded-lg border border-accent-200 dark:border-accent-800">
                 <span className="text-sm text-accent-700 dark:text-accent-300 font-medium">Đã chọn {selectedClassIds.length} lớp</span>
                 <Button variant="primary" onClick={handleBatchRegister} disabled={isBatchRegistering}>
-                   {isBatchRegistering ? <Spinner size="sm"/> : 'Đăng ký các môn đã chọn'}
+                   {isBatchRegistering ? <Spinner className="w-4 h-4"/> : 'Đăng ký các môn đã chọn'}
                 </Button>
               </div>
             )}

@@ -36,7 +36,7 @@ export default function AdminSchedules() {
     <div className="space-y-6">
       <PageHeader
         title="Tổng quan Lịch học Toàn trường"
-        description="Xem thời khóa biểu của tất cả các lớp học phần để tránh xếp trùng lịch hoặc dồn cục."
+        subtitle="Xem thời khóa biểu của tất cả các lớp học phần để tránh xếp trùng lịch hoặc dồn cục."
       />
       <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-4">
         <TimetableGrid schedules={schedules} title="Lịch học tổng hợp" />
