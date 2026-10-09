@@ -75,12 +75,12 @@ export default function NotificationsPage() {
       <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <PageTitle>Thông báo</PageTitle>
-          <div className="text-base text-slate-600 dark:text-slate-400">Xin chào, {user?.fullName}</div>
+          <div className="text-sm text-slate-600 dark:text-slate-400">Xin chào, {user?.fullName}</div>
         </div>
         {hasUnread && (
           <button
             onClick={onMarkAllRead}
-            className="flex items-center gap-1.5 self-start sm:self-auto bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 text-sm font-semibold px-4 py-2 rounded-xl transition shadow-xs cursor-pointer"
+            className="flex items-center gap-1.5 self-start sm:self-auto bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold px-4 py-2 rounded-xl transition shadow-xs cursor-pointer"
           >
             <CheckCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             Đánh dấu tất cả là đã đọc
@@ -107,8 +107,8 @@ export default function NotificationsPage() {
                       <span className="font-semibold text-slate-800">{n.title}</span>
                       {!n.isRead && <Pill color="indigo">Mới</Pill>}
                     </div>
-                    <div className="text-base text-slate-600">{n.content}</div>
-                    <div className="mt-2 text-sm text-slate-500">{fmt(n.createdAt)}</div>
+                    <div className="text-sm text-slate-600">{n.content}</div>
+                    <div className="mt-2 text-xs text-slate-500">{fmt(n.createdAt)}</div>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-2">
                     {target && (
@@ -117,7 +117,7 @@ export default function NotificationsPage() {
                         onClick={() => {
                           if (!n.isRead) void onMarkRead(n.id);
                         }}
-                        className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500 cursor-pointer"
+                        className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-500 cursor-pointer"
                       >
                         Xem chi tiết
                       </Link>
@@ -128,7 +128,7 @@ export default function NotificationsPage() {
                           e.stopPropagation();
                           void onMarkRead(n.id);
                         }}
-                        className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 cursor-pointer"
+                        className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 cursor-pointer"
                       >
                         Đánh dấu đọc
                       </button>

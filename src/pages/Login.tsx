@@ -102,21 +102,21 @@ export default function Login() {
             </div>
             <div>
               <div className="text-lg font-bold tracking-tight">LearningHub</div>
-              <div className="text-sm text-primary-200">Nền tảng học tập số</div>
+              <div className="text-xs text-primary-200">Nền tảng học tập số</div>
             </div>
           </div>
           <div className="max-w-xl pb-4">
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-primary-200 flex items-center gap-2">
+            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-primary-200 flex items-center gap-2">
               <Sparkles className="w-4 h-4" /> Learn. Connect. Grow.
             </p>
             <h1 className="text-4xl font-bold leading-tight xl:text-5xl">
               Mở cánh cửa đến hành trình tri thức của bạn.
             </h1>
-            <p className="mt-4 max-w-md text-base leading-relaxed text-slate-300">
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-slate-300">
               Một không gian tập trung cho lớp học, tiến độ và những bước tiến mới mỗi ngày.
             </p>
           </div>
-          <div className="text-sm text-slate-400">
+          <div className="text-xs text-slate-400">
             LearningHub · Hệ thống Quản lý Học tập
           </div>
         </div>
@@ -130,26 +130,26 @@ export default function Login() {
             <div className="mb-3 grid h-11 w-11 place-items-center rounded-xl bg-primary-600 text-xl font-extrabold text-white">
               LH
             </div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-600">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600">
               LearningHub
             </p>
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-primary-600 dark:text-primary-400 uppercase tracking-wider mb-1">
+            <p className="text-xs font-semibold text-primary-600 dark:text-primary-400 uppercase tracking-wider mb-1">
               Chào mừng trở lại
             </p>
             <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Đăng nhập tài khoản
             </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Tiếp tục hành trình học tập của bạn.
             </p>
           </div>
 
           <form onSubmit={handleSubmit(onLoginSubmit)} className="space-y-4" noValidate>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Tài khoản / Email
               </label>
               <div className="relative">
@@ -160,7 +160,7 @@ export default function Login() {
                   autoComplete="username"
                   {...register('identifier')}
                   placeholder="Nhập email tài khoản"
-                  className={`h-11 w-full rounded-xl border bg-white dark:bg-slate-900 pl-10 pr-4 text-base text-slate-900 dark:text-white outline-none transition placeholder:text-slate-400 focus:ring-2 ${
+                  className={`h-11 w-full rounded-xl border bg-white dark:bg-slate-900 pl-10 pr-4 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-400 focus:ring-2 ${
                     errors.identifier
                       ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
                       : 'border-slate-200 dark:border-slate-800 focus:border-accent-500 focus:ring-accent-500/20'
@@ -174,10 +174,10 @@ export default function Login() {
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Mật khẩu
                 </label>
-                <Link to="/forgot-password" className="text-sm text-accent-600 dark:text-accent-400 hover:underline font-medium">
+                <Link to="/forgot-password" className="text-xs text-accent-600 dark:text-accent-400 hover:underline font-medium">
                   Quên mật khẩu?
                 </Link>
               </div>
@@ -189,7 +189,7 @@ export default function Login() {
                   autoComplete="current-password"
                   {...register('password')}
                   placeholder="Nhập mật khẩu"
-                  className={`h-11 w-full rounded-xl border bg-white dark:bg-slate-900 pl-10 pr-10 text-base text-slate-900 dark:text-white outline-none transition placeholder:text-slate-400 focus:ring-2 ${
+                  className={`h-11 w-full rounded-xl border bg-white dark:bg-slate-900 pl-10 pr-10 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-400 focus:ring-2 ${
                     errors.password
                       ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20'
                       : 'border-slate-200 dark:border-slate-800 focus:border-accent-500 focus:ring-accent-500/20'
@@ -210,7 +210,7 @@ export default function Login() {
             </div>
 
             {err && (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300">
+              <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300">
                 {err}
               </div>
             )}
@@ -218,7 +218,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={busy}
-              className="h-11 w-full rounded-xl bg-primary-600 hover:bg-primary-700 font-semibold text-white shadow-card transition disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-base"
+              className="h-11 w-full rounded-xl bg-primary-600 hover:bg-primary-700 font-semibold text-white shadow-card transition disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-sm"
             >
               {busy ? "Đang xử lý..." : "Đăng nhập"}
             </button>
@@ -228,7 +228,7 @@ export default function Login() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-200 dark:border-slate-800" />
             </div>
-            <span className="relative bg-slate-50 dark:bg-slate-950 px-3 text-sm uppercase text-slate-400">
+            <span className="relative bg-slate-50 dark:bg-slate-950 px-3 text-xs uppercase text-slate-400">
               hoặc
             </span>
           </div>
@@ -238,7 +238,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => setShowGoogleModal(true)}
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -251,7 +251,7 @@ export default function Login() {
 
             <a
               href="http://localhost:8080/oauth2/authorization/azure"
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               <svg className="h-4 w-4" viewBox="0 0 23 23">
                 <path fill="#f35325" d="M1 1h10v10H1z" />
@@ -268,7 +268,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => setShowDemoAccounts(!showDemoAccounts)}
-              className="flex w-full items-center justify-between text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+              className="flex w-full items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
             >
               <span className="flex items-center gap-1.5">
                 <GraduationCap className="w-4 h-4 text-primary-600 dark:text-primary-400" />
@@ -287,7 +287,7 @@ export default function Login() {
                       setValue('identifier', acc.identifier);
                       setValue('password', acc.password);
                     }}
-                    className="flex w-full items-center justify-between p-2 rounded-lg text-left text-sm bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                    className="flex w-full items-center justify-between p-2 rounded-lg text-left text-xs bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
                   >
                     <div>
                       <div className="font-semibold text-slate-800 dark:text-slate-200">{acc.role}</div>
@@ -309,7 +309,7 @@ export default function Login() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
             <h3 className="text-base font-bold text-slate-900 dark:text-white">Đăng nhập bằng Google</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Nhập địa chỉ Email Google liên kết với tài khoản hệ thống của bạn:
             </p>
             <form onSubmit={handleGoogleSubmit} className="space-y-3">
@@ -319,20 +319,20 @@ export default function Login() {
                 value={googleEmailInput}
                 onChange={(e) => setGoogleEmailInput(e.target.value)}
                 placeholder="vi-du@student.edu.vn"
-                className="w-full h-10 px-3 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-accent-500/20"
+                className="w-full h-10 px-3 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-accent-500/20"
               />
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowGoogleModal(false)}
-                  className="px-3 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer"
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={busy}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg bg-primary-600 hover:bg-primary-700 text-white cursor-pointer"
+                  className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-primary-600 hover:bg-primary-700 text-white cursor-pointer"
                 >
                   Đăng nhập
                 </button>

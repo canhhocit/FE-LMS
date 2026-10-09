@@ -1,6 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { Bot, Calendar, BookOpen, X, Loader2, Trash2, Send, Maximize2, Minimize2, CreditCard, Copy, Check, Download } from 'lucide-react';
 import { apiClient, unwrap } from '../services/api/client';
 import { useAuth } from '../contexts/useAuth';
@@ -618,20 +616,7 @@ export const DraggableAiCompanion: React.FC = () => {
           ? `${roleContextPrompt} ${noEmojiRule} [Ngữ cảnh: ${lastContextEntity.type} ${lastContextEntity.name}]. Câu hỏi: ${userText.trim()}`
           : `${roleContextPrompt} ${noEmojiRule} Câu hỏi: ${userText.trim()}`;
 
-        const lowerPrompt = userText.trim().toLowerCase();
-        const isRagIntent = lowerPrompt.includes('tài liệu') || lowerPrompt.includes('bài giảng') || lowerPrompt.includes('chương') || lowerPrompt.includes('ôn tập') || lowerPrompt.includes('giáo trình');
-        
-        let res;
-        if (isRagIntent) {
-            try {
-                const ragRes = await unwrap<{ answer: string }>(apiClient.post('/ai/rag/query', { question: userText.trim(), topK: 3 }));
-                res = { reply: ragRes.answer };
-            } catch (e) {
-                res = await unwrap<{ reply: string }>(apiClient.post('/ai/advisor/chat', { prompt: promptToSend }));
-            }
-        } else {
-            res = await unwrap<{ reply: string }>(apiClient.post('/ai/advisor/chat', { prompt: promptToSend }));
-        }
+        const res = await unwrap<{ reply: string }>(apiClient.post('/ai/advisor/chat', { prompt: promptToSend }));
         const cleanedReply = cleanAiResponseText(res.reply, userText.trim());
         const aiMsg: ChatMessage = {
           id: `ai-${Date.now()}`,
@@ -730,7 +715,7 @@ export const DraggableAiCompanion: React.FC = () => {
           <Bot className="w-6 h-6 text-accent-400" />
           
           {/* Comic Bubble Tooltip */}
-          <div className="absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 px-3 py-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-sm font-semibold rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-max pointer-events-none origin-bottom scale-95 group-hover:scale-100 z-50">
+          <div className="absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 px-3 py-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-semibold rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-max pointer-events-none origin-bottom scale-95 group-hover:scale-100 z-50">
             Bạn cần hỗ trợ gì?
             <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 rotate-45"></div>
           </div>
@@ -762,7 +747,7 @@ export const DraggableAiCompanion: React.FC = () => {
                 <Bot className="w-4 h-4 text-accent-400" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white leading-tight">{aiName}</h3>
+                <h3 className="text-xs font-bold text-white leading-tight">{aiName}</h3>
                 <p className="text-[10px] text-slate-400">Trợ lý tra cứu LearningHub</p>
               </div>
             </div>
@@ -808,7 +793,7 @@ export const DraggableAiCompanion: React.FC = () => {
           {/* Conversation Area */}
           <div
             ref={chatScrollRef}
-            className="flex-1 min-h-0 p-4 space-y-3 overflow-y-auto bg-slate-50/70 dark:bg-slate-950/60 text-sm"
+            className="flex-1 min-h-0 p-4 space-y-3 overflow-y-auto bg-slate-50/70 dark:bg-slate-950/60 text-xs"
           >
             {messages.map((msg) => (
               <div
@@ -838,9 +823,7 @@ export const DraggableAiCompanion: React.FC = () => {
                       </button>
                     </div>
                   )}
-                  <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-snug prose-pre:bg-slate-800 prose-pre:text-slate-100 prose-pre:p-2 prose-pre:rounded-lg prose-code:text-accent-600 dark:prose-code:text-accent-400">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
-                  </div>
+                  <p className="whitespace-pre-wrap">{msg.text}</p>
                 </div>
                 <span className="text-[10px] text-slate-400 px-1 font-mono">{msg.timestamp}</span>
               </div>
@@ -855,7 +838,7 @@ export const DraggableAiCompanion: React.FC = () => {
           </div>
 
           {/* Quick Actions */}
-          <div className="px-3 py-2 bg-slate-100 dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto text-[11px]">
+          <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto text-[11px]">
             <button
               onClick={() => handleQuickAsk('thời khóa biểu của tôi')}
               className="px-2 py-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 shrink-0 cursor-pointer flex items-center gap-1"
@@ -886,7 +869,7 @@ export const DraggableAiCompanion: React.FC = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Nhập câu hỏi hoặc từ khóa..."
-              className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-accent-500"
+              className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-accent-500"
             />
             <button
               type="submit"

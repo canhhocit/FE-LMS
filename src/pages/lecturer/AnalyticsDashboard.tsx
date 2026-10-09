@@ -109,7 +109,7 @@ export const AnalyticsDashboard: React.FC = () => {
               value={selectedClassId ?? ''}
               onChange={(event) => setSelectedClassId(event.target.value ? Number(event.target.value) : null)}
               aria-label="Select class to export"
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg px-3 py-2 text-sm font-semibold outline-none cursor-pointer focus:ring-2 focus:ring-accent-500/20 shadow-xs"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg px-3 py-2 text-xs font-semibold outline-none cursor-pointer focus:ring-2 focus:ring-accent-500/20 shadow-xs"
             >
               <option value="">Select a class</option>
               {classes.map((courseClass) => <option key={courseClass.id} value={courseClass.id}>{courseClass.classCode}</option>)}
@@ -169,9 +169,9 @@ export const AnalyticsDashboard: React.FC = () => {
         <Card className="lg:col-span-2">
           <div className="mb-4">
             <h2 className="text-base font-bold text-slate-900 dark:text-white">Phân bố Phổ điểm Lớp học</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Số lượng sinh viên tương ứng theo từng dải điểm chữ</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Số lượng sinh viên tương ứng theo từng dải điểm chữ</p>
           </div>
-          {avgScore == null ? <p className="text-base text-slate-500">No published grades are available.</p> : <div className="h-72 w-full">
+          {avgScore == null ? <p className="text-sm text-slate-500">No published grades are available.</p> : <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={gradeDistribution} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
@@ -190,9 +190,9 @@ export const AnalyticsDashboard: React.FC = () => {
         <Card>
           <div className="mb-4">
             <h2 className="text-base font-bold text-slate-900 dark:text-white">Tỷ lệ Điểm danh QR</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Tỷ lệ tham gia các buổi học thực tế</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Tỷ lệ tham gia các buổi học thực tế</p>
           </div>
-          {attendanceData.length === 0 ? <p className="text-base text-slate-500">Attendance data is unavailable.</p> : <div className="h-72 w-full flex items-center justify-center">
+          {attendanceData.length === 0 ? <p className="text-sm text-slate-500">Attendance data is unavailable.</p> : <div className="h-72 w-full flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie

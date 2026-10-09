@@ -13,7 +13,7 @@ export interface BreadcrumbItem {
 }
 
 export const Breadcrumbs = ({ items }: { items: BreadcrumbItem[] }) => (
-  <nav className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 mb-2.5">
+  <nav className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-2.5">
     <a href="/" className="hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1">
       <Home className="w-3.5 h-3.5" />
       <span>Trang chủ</span>
@@ -61,7 +61,7 @@ export const PageHeader = ({
           {title}
         </h1>
         {subtitle && (
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">{subtitle}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">{subtitle}</p>
         )}
       </div>
       {actions && <div className="flex items-center gap-2.5 shrink-0">{actions}</div>}
@@ -130,7 +130,7 @@ export const StatCard = ({
   return (
     <Card className={`flex items-center justify-between ${className}`}>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 truncate">{label}</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 truncate">{label}</p>
         <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1.5 tracking-tight">{value}</p>
         {trend && (
           <span className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md mt-2 ${trendColors[trendColor]}`}>
@@ -183,7 +183,7 @@ export const Badge = ({
   const key = variant || color || intent || 'slate';
   const style = BADGE_MAP[key] ?? BADGE_MAP.slate;
   return (
-    <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-sm font-semibold ${style} ${className}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${style} ${className}`}>
       {children}
     </span>
   );
@@ -234,7 +234,7 @@ export const Empty = ({
     <div className="rounded-xl border border-slate-200/90 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
       <div className="flex flex-col items-center gap-3">
         {icon || <Inbox className="w-9 h-9 text-slate-300 dark:text-slate-600" />}
-        <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-sm">{displayText}</p>
+        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 max-w-sm">{displayText}</p>
         {action}
       </div>
     </div>
@@ -256,7 +256,7 @@ export const ErrorBox = ({
 }) => {
   const displayText = message || msg || 'Đã xảy ra lỗi khi tải dữ liệu';
   return (
-    <div className="rounded-xl border border-rose-200 bg-rose-50/80 p-4 text-sm dark:border-rose-900/60 dark:bg-rose-950/40">
+    <div className="rounded-xl border border-rose-200 bg-rose-50/80 p-4 text-xs dark:border-rose-900/60 dark:bg-rose-950/40">
       <div className="flex items-start gap-2.5">
         <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 mt-0.5 shrink-0" />
         <div className="flex-1">
@@ -264,7 +264,7 @@ export const ErrorBox = ({
           {onRetry && (
             <button
               onClick={onRetry}
-              className="mt-2 text-sm font-semibold text-rose-700 dark:text-rose-300 hover:underline cursor-pointer"
+              className="mt-2 text-xs font-semibold text-rose-700 dark:text-rose-300 hover:underline cursor-pointer"
             >
               Thử lại
             </button>
@@ -349,7 +349,7 @@ export const Toast = ({
   };
 
   return (
-    <div className={`p-3.5 rounded-xl border text-sm font-medium flex items-center gap-2.5 ${styles[type]}`}>
+    <div className={`p-3.5 rounded-xl border text-xs font-medium flex items-center gap-2.5 ${styles[type]}`}>
       {icons[type]}
       <span className="flex-1">{message}</span>
       {onClose && (
@@ -388,9 +388,9 @@ export const Button = ({
   };
 
   const sizes = {
-    sm: 'text-sm px-3 py-2 rounded-md font-medium',
-    md: 'text-sm px-4 py-2 rounded-lg font-semibold',
-    lg: 'text-base px-5 py-2.5 rounded-lg font-semibold',
+    sm: 'text-xs px-3 py-1.5 rounded-md font-medium',
+    md: 'text-xs px-4 py-2 rounded-lg font-semibold',
+    lg: 'text-sm px-5 py-2.5 rounded-lg font-semibold',
   };
 
   return (
@@ -423,7 +423,7 @@ export const Input = ({
 } & InputHTMLAttributes<HTMLInputElement>) => (
   <div className="space-y-1.5 w-full">
     {label && (
-      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
         {label}
       </label>
     )}
@@ -434,7 +434,7 @@ export const Input = ({
         </div>
       )}
       <input
-        className={`w-full py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border text-slate-900 dark:text-white transition-colors
+        className={`w-full py-2 rounded-lg text-xs bg-white dark:bg-slate-800 border text-slate-900 dark:text-white transition-colors
           outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-600 dark:focus:border-accent-500
           ${leftIcon ? 'pl-9 pr-3.5' : 'px-3.5'}
           ${error ? 'border-rose-300 dark:border-rose-800 focus:ring-rose-500/20' : 'border-slate-200/90 dark:border-slate-700'}
@@ -462,12 +462,12 @@ export const Select = ({
 } & SelectHTMLAttributes<HTMLSelectElement>) => (
   <div className="space-y-1.5 w-full">
     {label && (
-      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
         {label}
       </label>
     )}
     <select
-      className={`w-full px-3.5 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 border text-slate-900 dark:text-white transition-colors
+      className={`w-full px-3.5 py-2 rounded-lg text-xs bg-white dark:bg-slate-800 border text-slate-900 dark:text-white transition-colors
         outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-600 dark:focus:border-accent-500 cursor-pointer
         ${error ? 'border-rose-300 dark:border-rose-800 focus:ring-rose-500/20' : 'border-slate-200/90 dark:border-slate-700'}
         ${className}`}
@@ -496,12 +496,12 @@ export const Textarea = ({
 } & TextareaHTMLAttributes<HTMLTextAreaElement>) => (
   <div className="space-y-1.5 w-full">
     {label && (
-      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
         {label}
       </label>
     )}
     <textarea
-      className={`w-full px-3.5 py-2.5 rounded-lg text-sm bg-white dark:bg-slate-800 border text-slate-900 dark:text-white transition-colors
+      className={`w-full px-3.5 py-2.5 rounded-lg text-xs bg-white dark:bg-slate-800 border text-slate-900 dark:text-white transition-colors
         outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-600 dark:focus:border-accent-500
         ${error ? 'border-rose-300 dark:border-rose-800 focus:ring-rose-500/20' : 'border-slate-200/90 dark:border-slate-700'}
         ${className}`}
@@ -522,7 +522,7 @@ export const Table = ({
   className?: string;
 }) => (
   <div className={`overflow-x-auto rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 ${className}`}>
-    <table className="w-full text-sm">
+    <table className="w-full text-xs">
       <thead>
         <tr className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800">
           {headers.map((h, i) => (
@@ -565,7 +565,7 @@ export const Tabs = ({
         <button
           key={t.id}
           onClick={() => onChange(t.id)}
-          className={`flex items-center gap-2 px-3.5 py-2.5 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
             active
               ? 'border-accent-600 text-accent-600 dark:border-accent-500 dark:text-accent-400'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'

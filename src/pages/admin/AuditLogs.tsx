@@ -161,14 +161,14 @@ export default function AdminAuditLogs() {
               Xóa
             </Button>
           </div>
-          <div className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
             Tổng số: <span className="text-slate-900 dark:text-white font-bold">{totalElements}</span> bản ghi
           </div>
           </div>
         )}
 
         {activeTab === 'errors' && (
-          <div className="flex justify-end border-b border-slate-200 bg-slate-50/50 p-4 text-sm font-semibold text-slate-500 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
+          <div className="flex justify-end border-b border-slate-200 bg-slate-50/50 p-4 text-xs font-semibold text-slate-500 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
             Tổng số: <span className="ml-1 text-slate-900 dark:text-white">{totalElements}</span> lỗi
           </div>
         )}
@@ -196,7 +196,7 @@ export default function AdminAuditLogs() {
                     <th className="py-3.5 px-4 text-center">Kết quả</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
                   {logs.map((log) => (
                     <tr key={log.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="py-3.5 px-4 text-slate-500 font-mono text-[11px]">{new Date(log.createdAt).toLocaleString('vi-VN')}</td>
@@ -217,7 +217,7 @@ export default function AdminAuditLogs() {
             </div>
 
             {totalPages > 1 && (
-              <div className="flex items-center justify-between p-4 border-t border-slate-200 dark:border-slate-800 text-sm">
+              <div className="flex items-center justify-between p-4 border-t border-slate-200 dark:border-slate-800 text-xs">
                 <div className="text-slate-500 dark:text-slate-400">
                   Trang <span className="font-semibold text-slate-900 dark:text-white">{page + 1}</span> / <span className="font-semibold text-slate-900 dark:text-white">{totalPages}</span>
                 </div>
@@ -246,7 +246,7 @@ export default function AdminAuditLogs() {
                     <th className="px-4 py-3.5">Chi tiết lỗi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-sm dark:divide-slate-800/60">
+                <tbody className="divide-y divide-slate-100 text-xs dark:divide-slate-800/60">
                   {systemErrors.map((error) => (
                     <tr key={error.id} className="align-top hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                       <td className="whitespace-nowrap px-4 py-3.5 font-mono text-[11px] text-slate-500">
@@ -272,7 +272,7 @@ export default function AdminAuditLogs() {
               </table>
             </div>
             {totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-slate-200 p-4 text-sm dark:border-slate-800">
+              <div className="flex items-center justify-between border-t border-slate-200 p-4 text-xs dark:border-slate-800">
                 <div className="text-slate-500 dark:text-slate-400">
                   Trang <span className="font-semibold text-slate-900 dark:text-white">{page + 1}</span> / <span className="font-semibold text-slate-900 dark:text-white">{totalPages}</span>
                 </div>

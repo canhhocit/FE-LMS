@@ -268,17 +268,17 @@ export default function StudentSchedule() {
         maxWidth="max-w-lg"
       >
         {schedules.length === 0 ? (
-          <div className="py-6 text-center text-sm text-slate-400">Chưa có lịch học để đồng bộ.</div>
+          <div className="py-6 text-center text-xs text-slate-400">Chưa có lịch học để đồng bộ.</div>
         ) : (
           <div className="space-y-4">
             {/* Soft, clean sync banner */}
             <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40 space-y-3">
-              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 Tự động mở Google Calendar với thông tin môn học, thời gian và địa điểm. Bạn chỉ cần bấm <strong>"Lưu"</strong> trực tiếp.
               </p>
               <button 
                 onClick={handleDirectSyncAllGoogleCalendar} 
-                className="w-full py-2.5 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-medium text-sm transition cursor-pointer flex items-center justify-center gap-2 shadow-xs"
+                className="w-full py-2.5 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-medium text-xs transition cursor-pointer flex items-center justify-center gap-2 shadow-xs"
               >
                 <CalendarPlus className="w-4 h-4" />
                 <span>Đồng bộ Google Calendar</span>
@@ -298,7 +298,7 @@ export default function StudentSchedule() {
                   return (
                     <div
                       key={s.id || idx}
-                      className="p-3 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-3 text-sm"
+                      className="p-3 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-3 text-xs"
                     >
                       <div className="space-y-0.5 min-w-0">
                         <div className="font-semibold text-slate-800 dark:text-white truncate">
@@ -315,7 +315,7 @@ export default function StudentSchedule() {
                         href={googleUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3 py-2 rounded-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-[11px] shrink-0 flex items-center gap-1 transition"
+                        className="px-2.5 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium text-[11px] shrink-0 flex items-center gap-1 transition"
                       >
                         <span>Thêm</span>
                         <ExternalLink className="w-3 h-3" />
@@ -351,7 +351,7 @@ export default function StudentSchedule() {
           {/* Options & Filters */}
           <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <CalendarPlus className="w-4 h-4 text-slate-500" />
                 Cấu hình nguyện vọng thời khóa biểu
               </span>
@@ -360,7 +360,7 @@ export default function StudentSchedule() {
               </Button>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-3 text-sm">
+            <div className="grid sm:grid-cols-2 gap-3 text-xs">
               <label className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
                 <input
                   type="checkbox"
@@ -388,7 +388,7 @@ export default function StudentSchedule() {
                 value={customPref}
                 onChange={(e) => setCustomPref(e.target.value)}
                 placeholder="Ví dụ: Muốn học gọn vào 3 ngày giữa tuần để đi làm thêm..."
-                className="w-full px-3 py-2 text-sm rounded-lg border border-indigo-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-indigo-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           </div>
@@ -397,14 +397,14 @@ export default function StudentSchedule() {
           {aiLoading ? (
             <div className="py-12 text-center space-y-3">
               <Spinner />
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                 Đang tính toán phương án xếp lịch tối ưu nhất...
               </p>
             </div>
           ) : aiResponse ? (
             <div className="space-y-4">
               {/* Summary Advice */}
-              <div className="p-3.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100 border border-indigo-100 dark:border-indigo-800 text-sm leading-relaxed space-y-1 shadow-sm">
+              <div className="p-3.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100 border border-indigo-100 dark:border-indigo-800 text-xs leading-relaxed space-y-1 shadow-sm">
                 <div className="flex items-center gap-1.5 font-bold">
                   Nhận xét & Khuyến nghị:
                 </div>
@@ -420,13 +420,13 @@ export default function StudentSchedule() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <div className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
+                        <div className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
                           <span>{opt.title}</span>
-                          <span className="text-sm font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-900">
+                          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-900">
                             {Math.round(opt.matchScore)}% phù hợp
                           </span>
                         </div>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                           {opt.reasoning}
                         </p>
                       </div>
@@ -435,7 +435,7 @@ export default function StudentSchedule() {
                         size="sm"
                         loading={applyingOptionId === opt.optionId}
                         onClick={() => void handleApplyAiOption(opt)}
-                        className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm"
+                        className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Áp dụng</span>
@@ -445,7 +445,7 @@ export default function StudentSchedule() {
                     {/* Classes list inside option */}
                     <div className="grid sm:grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                       {opt.suggestedClasses?.map((c) => (
-                        <div key={c.id} className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 text-sm space-y-0.5">
+                        <div key={c.id} className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 text-xs space-y-0.5">
                           <div className="font-bold text-slate-800 dark:text-slate-200">{c.className}</div>
                           <div className="text-[11px] text-slate-500 dark:text-slate-400">
                             Mã: <span className="font-mono">{c.classCode}</span> • GV: {c.lecturerName || 'Chưa xếp'}
@@ -458,7 +458,7 @@ export default function StudentSchedule() {
               </div>
             </div>
           ) : (
-            <div className="py-8 text-center text-sm text-slate-400">
+            <div className="py-8 text-center text-xs text-slate-400">
               Nhấn <strong>"Cập nhật"</strong> để tạo các phương án xếp lịch.
             </div>
           )}

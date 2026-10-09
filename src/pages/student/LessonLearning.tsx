@@ -52,7 +52,7 @@ const renderDocumentPreview = (url: string) => {
     );
   }
   return (
-    <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 text-center text-sm text-slate-500 space-y-2">
+    <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 text-center text-xs text-slate-500 space-y-2">
       <FileText className="w-8 h-8 text-indigo-500 mx-auto opacity-80" />
       <p>Tài liệu này không hỗ trợ xem trước trực tiếp.</p>
       <a
@@ -60,7 +60,7 @@ const renderDocumentPreview = (url: string) => {
         target="_blank"
         rel="noopener noreferrer"
         download
-        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition cursor-pointer"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition cursor-pointer"
       >
         <Download className="w-3.5 h-3.5" />
         <span>Tải về máy</span>
@@ -401,7 +401,7 @@ export default function StudentLessonLearning() {
         >
           <ChevronLeft className="w-4 h-4" /> Bài trước
         </Button>
-        <span className="text-sm text-slate-500 dark:text-slate-400">
+        <span className="text-xs text-slate-500 dark:text-slate-400">
           {currentLessonIndex >= 0 ? `Bài ${currentLessonIndex + 1}/${orderedLessons.length}` : 'Bài học'}
           {selectedLesson.videoUrl && Number(selectedLesson.duration) > 0
             ? ` · ${formatTime(Number(selectedLesson.duration))}`
@@ -420,7 +420,7 @@ export default function StudentLessonLearning() {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-4">
           <Card>
-            <div className="mb-3 flex items-center gap-2 overflow-x-auto pb-1 text-sm">
+            <div className="mb-3 flex items-center gap-2 overflow-x-auto pb-1 text-xs">
               {isLessonCompleted ? (
                 <Badge color="emerald">Đã học</Badge>
               ) : isLessonInProgress ? (
@@ -514,7 +514,7 @@ export default function StudentLessonLearning() {
                   onEnded={() => void handleVideoEnded()}
                 />
               ) : (
-                <div className="flex h-48 items-center justify-center text-sm text-slate-400">
+                <div className="flex h-48 items-center justify-center text-xs text-slate-400">
                   Bài học dạng tài liệu đọc
                 </div>
               )}
@@ -532,7 +532,7 @@ export default function StudentLessonLearning() {
               )}
               {actionError && <ErrorBox msg={actionError} />}
               {selectedLesson.videoUrl && videoDuration > 0 && (
-                <div className="text-sm text-slate-500 dark:text-slate-400">
+                <div className="text-xs text-slate-500 dark:text-slate-400">
                   Đã xem {formatTime(maxWatchedSec)} / {formatTime(videoDuration)} · {Math.min(100, Math.floor((maxWatchedSec / videoDuration) * 100))}%
                 </div>
               )}
@@ -549,7 +549,7 @@ export default function StudentLessonLearning() {
                   </Button>
                 )}
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                 {selectedLesson.content || 'Chưa có thông tin mô tả chi tiết cho bài học này.'}
               </p>
             </div>
@@ -561,7 +561,7 @@ export default function StudentLessonLearning() {
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  <h4 className="font-bold text-slate-900 dark:text-white text-base">
+                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">
                     {selectedLesson.attachmentName || 'Tài liệu đính kèm bài học'}
                   </h4>
                 </div>
@@ -580,7 +580,7 @@ export default function StudentLessonLearning() {
                   target="_blank"
                   rel="noopener noreferrer"
                   download
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition shadow-2xs cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 transition shadow-2xs cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Tải xuống</span>
@@ -596,11 +596,11 @@ export default function StudentLessonLearning() {
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <StickyNote className="w-4 h-4 text-amber-500" />
-                <h4 className="font-bold text-slate-900 dark:text-white text-base">Ghi chú cá nhân</h4>
+                <h4 className="font-bold text-slate-900 dark:text-white text-sm">Ghi chú cá nhân</h4>
                 <Badge color="amber">{notes.length}</Badge>
               </div>
               {selectedLesson.videoUrl && (
-                <span className="text-sm text-slate-400">
+                <span className="text-xs text-slate-400">
                   Thời điểm video: <strong className="font-mono text-slate-700 dark:text-slate-300">{formatTime(currentVideoTime)}</strong>
                 </span>
               )}
@@ -622,7 +622,7 @@ export default function StudentLessonLearning() {
                     ? `Thêm ghi chú tại [${formatTime(currentVideoTime)}]...`
                     : "Nhập ghi chú cho bài học..."
                 }
-                className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-600"
+                className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent-600"
               />
               <Button
                 variant="primary"
@@ -636,7 +636,7 @@ export default function StudentLessonLearning() {
             </div>
 
             {notes.length === 0 ? (
-              <div className="text-center py-6 text-sm text-slate-400 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+              <div className="text-center py-6 text-xs text-slate-400 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
                 Chưa có ghi chú nào. Nhập nội dung ở trên để lưu ghi chú bài học.
               </div>
             ) : (
@@ -644,7 +644,7 @@ export default function StudentLessonLearning() {
                 {notes.map((note, idx) => (
                   <div
                     key={note.id ?? idx}
-                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-sm space-y-1.5"
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs space-y-1.5"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <button
@@ -681,8 +681,8 @@ export default function StudentLessonLearning() {
 
         <div className="space-y-4">
           <Card>
-            <h4 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wider mb-2">Tiến độ khóa học</h4>
-            <div className="flex items-center justify-between text-sm mb-1">
+            <h4 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider mb-2">Tiến độ khóa học</h4>
+            <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-slate-500">Bài đã hoàn thành</span>
               <span className="font-semibold">{progress?.completedCount ?? 0}/{progress?.totalCount ?? 0}</span>
             </div>
@@ -692,11 +692,11 @@ export default function StudentLessonLearning() {
           </Card>
 
           <Card>
-            <h4 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wider mb-3">Danh sách bài học</h4>
+            <h4 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider mb-3">Danh sách bài học</h4>
             <div className="space-y-3">
               {chapters.map((chapter) => (
                 <div key={chapter.id} className="space-y-1.5">
-                  <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{chapter.title}</div>
+                  <div className="text-xs font-bold text-slate-700 dark:text-slate-300">{chapter.title}</div>
                   <div className="space-y-1">
                     {(chapterLessons[chapter.id] ?? []).map((lesson) => {
                       const active = lesson.id === selectedLesson.id;
@@ -706,7 +706,7 @@ export default function StudentLessonLearning() {
                           key={lesson.id}
                           type="button"
                           onClick={() => navigate(`/student/classes/${classNum}/lessons/${lesson.id}`)}
-                          className={`flex w-full items-center justify-between gap-2 p-2 rounded-lg text-sm font-semibold transition cursor-pointer ${
+                          className={`flex w-full items-center justify-between gap-2 p-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
                             active
                               ? 'bg-accent-600 text-white'
                               : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100'

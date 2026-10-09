@@ -100,7 +100,7 @@ export function AdminDashboard() {
 
       {/* Quick Access Management Actions */}
       <div>
-        <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
           {/* <Zap className="w-4 h-4 text-amber-500 fill-amber-500" /> */}
           Phím Tắt & Tác Vụ Quản Trị Nhanh
         </h3>
@@ -116,10 +116,10 @@ export function AdminDashboard() {
                     </div>
                     <Badge variant="info">{act.badge}</Badge>
                   </div>
-                  <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-base mt-3 group-hover:text-navy-900 dark:group-hover:text-navy-300 transition-colors">
+                  <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-sm mt-3 group-hover:text-navy-900 dark:group-hover:text-navy-300 transition-colors">
                     {act.title}
                   </h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     {act.desc}
                   </p>
                 </Card>
@@ -390,7 +390,7 @@ export function AdminUsers() {
       />
 
       {importMsg && (
-        <div className={`p-4 rounded-xl border text-sm font-medium flex items-center gap-2 ${
+        <div className={`p-4 rounded-xl border text-xs font-medium flex items-center gap-2 ${
           importMsg.includes('thành công') 
             ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300' 
             : 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300'
@@ -403,16 +403,16 @@ export function AdminUsers() {
       <Card padding="none">
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-lg text-sm font-semibold">
+            <div className="flex bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-semibold">
               <button
                 onClick={() => { setTab('STUDENT'); setSelectedClass(''); setPage(0); }}
-                className={`px-3 py-2 rounded-md transition ${tab === 'STUDENT' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+                className={`px-3 py-1.5 rounded-md transition ${tab === 'STUDENT' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
               >
                 Sinh viên
               </button>
               <button
                 onClick={() => { setTab('LECTURER'); setSelectedClass(''); setPage(0); }}
-                className={`px-3 py-2 rounded-md transition ${tab === 'LECTURER' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+                className={`px-3 py-1.5 rounded-md transition ${tab === 'LECTURER' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
               >
                 Giảng viên
               </button>
@@ -442,7 +442,7 @@ export function AdminUsers() {
 
             <label className="cursor-pointer">
               <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)} />
-              <span className="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition">
+              <span className="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition">
                 <Upload className="w-3.5 h-3.5" />
                 {selectedFile ? selectedFile.name : 'Chọn file Excel'}
               </span>
@@ -479,7 +479,7 @@ export function AdminUsers() {
                     <th className="py-3 px-4 text-right">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
                   {users.map((u, i) => (
                     <tr key={u.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="py-3 px-4 text-slate-400 font-mono">{page * pageSize + i + 1}</td>
@@ -525,7 +525,7 @@ export function AdminUsers() {
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-t border-slate-200 dark:border-slate-800 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-t border-slate-200 dark:border-slate-800 text-xs">
               <div className="text-slate-500 dark:text-slate-400">
                 Hiển thị <span className="font-semibold text-slate-800 dark:text-slate-200">{users.length > 0 ? page * pageSize + 1 : 0}</span> - <span className="font-semibold text-slate-800 dark:text-slate-200">{Math.min((page + 1) * pageSize, totalElements)}</span> trên tổng số <span className="font-semibold text-slate-800 dark:text-slate-200">{totalElements}</span> người dùng
               </div>
@@ -566,12 +566,12 @@ export function AdminUsers() {
         title={modalMode === 'CREATE' ? 'Tạo người dùng mới' : 'Chỉnh sửa người dùng'}
       >
         {formErr && (
-          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
             {formErr}
           </div>
         )}
 
-        <form onSubmit={handleSaveUser} className="space-y-4 text-sm">
+        <form onSubmit={handleSaveUser} className="space-y-4 text-xs">
           {modalMode === 'CREATE' && (
             <div>
               <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
@@ -1062,7 +1062,7 @@ export function AdminClasses() {
       />
 
       {err && (
-        <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-sm font-medium flex items-center gap-2">
+        <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs font-medium flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           {err}
         </div>
@@ -1072,12 +1072,12 @@ export function AdminClasses() {
       {editingClazz && (
         <Card className="border-2 border-navy-300 dark:border-navy-700 bg-navy-50/20 dark:bg-navy-950/20">
           <div className="flex items-center justify-between mb-4 border-b border-navy-100 dark:border-navy-800 pb-2">
-            <h3 className="font-bold text-navy-900 dark:text-navy-200 text-base">
+            <h3 className="font-bold text-navy-900 dark:text-navy-200 text-sm">
               Chỉnh sửa & Phân công Giảng viên: <span className="font-mono">{editingClazz.classCode}</span>
             </h3>
             <Button variant="ghost" size="sm" onClick={() => setEditingClazz(null)}>Hủy</Button>
           </div>
-          <div className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 text-xs sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Mã lớp học phần *</label>
               <Input
@@ -1152,8 +1152,8 @@ export function AdminClasses() {
       {/* Creation Box */}
       {showForm && (
         <Card className="border border-navy-200 dark:border-navy-800">
-          <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-base">Tạo Lớp học phần mới cho sinh viên đăng ký</h3>
-          <div className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
+          <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm">Tạo Lớp học phần mới cho sinh viên đăng ký</h3>
+          <div className="grid gap-4 text-xs sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Mã lớp học phần *</label>
               <Input
@@ -1271,7 +1271,7 @@ export function AdminClasses() {
                     <th className="py-3.5 px-4 text-right">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
                   {paginatedClasses.map((c) => (
                     <tr key={c.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="py-3.5 px-4 font-mono font-semibold text-navy-900 dark:text-navy-300">{c.classCode}</td>
@@ -1310,7 +1310,7 @@ export function AdminClasses() {
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-t border-slate-200 dark:border-slate-800 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-t border-slate-200 dark:border-slate-800 text-xs">
               <div className="text-slate-500 dark:text-slate-400">
                 Hiển thị <span className="font-semibold text-slate-800 dark:text-slate-200">{filteredClasses.length > 0 ? page * pageSize + 1 : 0}</span> - <span className="font-semibold text-slate-800 dark:text-slate-200">{Math.min((page + 1) * pageSize, filteredClasses.length)}</span> trên tổng số <span className="font-semibold text-slate-800 dark:text-slate-200">{filteredClasses.length}</span> lớp
               </div>
@@ -1350,12 +1350,12 @@ export function AdminClasses() {
         title={`Xếp lịch giảng dạy: ${scheduleClazz?.classCode || ''}`}
       >
         {scheduleErr && (
-          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
             {scheduleErr}
           </div>
         )}
 
-        <div className="space-y-4 text-sm">
+        <div className="space-y-4 text-xs">
           <div>
             <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wider text-[11px]">
               Danh sách ca học đã xếp ({classSchedules.length})

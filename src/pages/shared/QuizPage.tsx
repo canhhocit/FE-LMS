@@ -465,13 +465,13 @@ export default function QuizPage() {
       {/* Class Selector Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-3.5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-2xs">
         <div className="flex items-center gap-3 overflow-x-auto pb-1 max-w-full flex-1" style={{ scrollbarWidth: 'none' }}>
-          <label className="text-sm font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Lớp học phần:</label>
+          <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Lớp học phần:</label>
           <div className="flex gap-2">
             {classes.map((c) => (
               <button
                 key={c.id}
                 onClick={() => setSelectedClass(c.id)}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
                   selectedClass === c.id
                     ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
@@ -486,7 +486,7 @@ export default function QuizPage() {
         {isLecturer && (
           <button
             onClick={() => setShowCreateQuizModal(true)}
-            className="px-3.5 py-2 text-sm font-medium rounded-md bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            className="px-3.5 py-1.5 text-xs font-medium rounded-md bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
           >
             <Plus className="w-3.5 h-3.5" />
             Tạo Bài Kiểm Tra Mới
@@ -496,7 +496,7 @@ export default function QuizPage() {
 
       {/* Flash Banner with Close Button & 5s Auto Dismiss */}
       {flash && (
-        <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-sm font-medium flex items-center justify-between gap-2 shadow-2xs transition-all">
+        <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-medium flex items-center justify-between gap-2 shadow-2xs transition-all">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
             <span>{flash}</span>
@@ -519,7 +519,7 @@ export default function QuizPage() {
         <div className="lg:col-span-1 lg:sticky lg:top-4 space-y-3">
           <Card className="rounded-lg border border-slate-200 dark:border-slate-800 p-4 space-y-3 shadow-2xs">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
-              <h3 className="font-semibold text-slate-800 dark:text-white text-sm uppercase tracking-wider flex items-center gap-2">
+              <h3 className="font-semibold text-slate-800 dark:text-white text-xs uppercase tracking-wider flex items-center gap-2">
                 <FileText className="w-3.5 h-3.5 text-slate-500" />
                 Danh sách Bài kiểm tra ({quizzes.length})
               </h3>
@@ -540,7 +540,7 @@ export default function QuizPage() {
                       onClick={() => { setSelectedQuizId(q.id); setStartedQuizId(null); setIsLecturerPreview(false); }} 
                     >
                       <div className="space-y-1.5 flex-1 min-w-0">
-                        <div className="text-sm truncate">{q.title}</div>
+                        <div className="text-xs truncate">{q.title}</div>
                         <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400 font-normal">
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3 text-slate-400" />
@@ -581,25 +581,25 @@ export default function QuizPage() {
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5 mb-4">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white">{activeQuiz.title}</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Bài kiểm tra trắc nghiệm ({questions.length} câu hỏi)</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Bài kiểm tra trắc nghiệm ({questions.length} câu hỏi)</p>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-3 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium border border-slate-200 dark:border-slate-700">
+                    <span className="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium border border-slate-200 dark:border-slate-700">
                       {activeQuiz.durationMinutes ?? 30} phút làm bài
                     </span>
                     {isLecturer && (
                       <div className="flex flex-wrap items-center gap-1.5">
                         <button
                           onClick={() => setShowAiModal(true)}
-                          className="px-3 py-2 text-sm font-medium rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition cursor-pointer"
+                          className="px-2.5 py-1.5 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition cursor-pointer"
                         >
                           Tạo tự động AI
                         </button>
 
                         <button
                           onClick={() => setShowImportModal(true)}
-                          className="px-3 py-2 text-sm font-medium rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition cursor-pointer flex items-center gap-1.5"
+                          className="px-2.5 py-1.5 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition cursor-pointer flex items-center gap-1.5"
                         >
                           <Upload className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
                           Import File
@@ -611,7 +611,7 @@ export default function QuizPage() {
                             setQText(''); setQA(''); setQB(''); setQC(''); setQD(''); setQCorrect('A');
                             setShowQuestionForm(true);
                           }}
-                          className="px-3 py-2 text-sm font-medium rounded-md bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 transition cursor-pointer flex items-center gap-1.5"
+                          className="px-2.5 py-1.5 text-xs font-medium rounded-md bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 transition cursor-pointer flex items-center gap-1.5"
                         >
                           <Plus className="w-3.5 h-3.5" />
                           Thêm câu hỏi
@@ -619,7 +619,7 @@ export default function QuizPage() {
 
                         <button
                           onClick={() => handleDeleteQuiz(activeQuiz.id)}
-                          className="p-1.5 text-sm rounded-md text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                          className="p-1.5 text-xs rounded-md text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
                           title="Xóa bài kiểm tra này"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -633,7 +633,7 @@ export default function QuizPage() {
                 {isLecturer && !isLecturerPreview && startedQuizId !== selectedQuizId ? (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-md border border-slate-200/80 dark:border-slate-800">
-                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                         <HelpCircle className="w-3.5 h-3.5 text-slate-500" />
                         Danh sách câu hỏi & đáp án ({questions.length} câu)
                       </span>
@@ -642,7 +642,7 @@ export default function QuizPage() {
                           setIsLecturerPreview(true);
                           void handleStart();
                         }}
-                        className="px-3 py-1 rounded-md bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition text-sm font-medium flex items-center gap-1.5 cursor-pointer"
+                        className="px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition text-xs font-medium flex items-center gap-1.5 cursor-pointer"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         Xem trước chế độ sinh viên
@@ -652,20 +652,20 @@ export default function QuizPage() {
                     {questions.length === 0 ? (
                       <div className="py-10 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-md p-6 space-y-3">
                         <Sparkles className="w-8 h-8 text-slate-400 mx-auto opacity-80" />
-                        <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">Bài kiểm tra chưa có câu hỏi nào</h4>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
+                        <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300">Bài kiểm tra chưa có câu hỏi nào</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
                           Sử dụng tính năng Tạo tự động bằng AI hoặc Import file để thêm câu hỏi trắc nghiệm.
                         </p>
                         <div className="flex items-center justify-center gap-2 pt-1">
                           <button
                             onClick={() => setShowAiModal(true)}
-                            className="px-3 py-2 rounded-md bg-slate-900 text-white font-medium text-sm hover:bg-slate-800 transition flex items-center gap-1.5 cursor-pointer"
+                            className="px-3 py-1.5 rounded-md bg-slate-900 text-white font-medium text-xs hover:bg-slate-800 transition flex items-center gap-1.5 cursor-pointer"
                           >
                             Tạo tự động bằng AI
                           </button>
                           <button
                             onClick={() => setShowImportModal(true)}
-                            className="px-3 py-2 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-medium text-sm hover:bg-slate-200 transition flex items-center gap-1.5 cursor-pointer"
+                            className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-medium text-xs hover:bg-slate-200 transition flex items-center gap-1.5 cursor-pointer"
                           >
                             <Upload className="w-3.5 h-3.5" />
                             Import từ file
@@ -677,7 +677,7 @@ export default function QuizPage() {
                         {questions.map((q, idx) => (
                           <div key={q.id} className="border border-slate-200 dark:border-slate-800 rounded-md p-3.5 bg-white dark:bg-slate-900 space-y-2.5">
                             <div className="flex items-start justify-between gap-3 border-b border-slate-100 dark:border-slate-800/80 pb-2">
-                              <div className="font-medium text-slate-800 dark:text-white text-sm leading-relaxed">
+                              <div className="font-medium text-slate-800 dark:text-white text-xs leading-relaxed">
                                 <span className="font-bold text-slate-900 dark:text-white mr-1.5">Câu {idx + 1}:</span> 
                                 {q.questionText ?? q.content}
                               </div>
@@ -710,7 +710,7 @@ export default function QuizPage() {
                                 return (
                                   <div 
                                     key={`${q.id}-${opt.key}`} 
-                                    className={`flex items-center justify-between p-2 rounded-md border text-sm transition ${
+                                    className={`flex items-center justify-between p-2 rounded-md border text-xs transition ${
                                       isCorrect 
                                         ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 font-semibold' 
                                         : 'border-slate-200/80 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 text-slate-700 dark:text-slate-300'
@@ -739,27 +739,27 @@ export default function QuizPage() {
                         <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
                         <h4 className="text-lg font-bold text-slate-800 dark:text-white">Bạn đã hoàn thành bài kiểm tra</h4>
                         <div className="flex flex-col items-center justify-center gap-1.5 py-2">
-                          <p className="text-base text-slate-600 dark:text-slate-400">
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
                             Điểm của bạn: <span className="font-bold text-slate-900 dark:text-white text-lg">{activeQuiz.myAttempt.score}</span> / {activeQuiz.myAttempt.totalScore}
                           </p>
-                          <p className="text-base text-slate-600 dark:text-slate-400">
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
                             Số câu đúng: <span className="font-bold text-slate-900 dark:text-white">{activeQuiz.myAttempt.correctAnswers ?? 0}</span> / {activeQuiz.myAttempt.totalQuestions ?? 0}
                           </p>
                         </div>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
                           Đã nộp lúc: {new Date(activeQuiz.myAttempt.submittedAt).toLocaleString('vi-VN')}
                         </p>
                       </div>
                     ) : startedQuizId !== selectedQuizId ? (
                       <div className="py-8 text-center bg-slate-50/60 dark:bg-slate-800/40 rounded-md border border-slate-200 dark:border-slate-800 p-6 space-y-3">
                         <Timer className="w-10 h-10 text-slate-500 mx-auto opacity-80" />
-                        <h4 className="text-base font-bold text-slate-800 dark:text-white">Sẵn sàng làm bài trắc nghiệm</h4>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-white">Sẵn sàng làm bài trắc nghiệm</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
                           Thời gian làm bài sẽ được tính ngược ngay khi bạn bấm nút bắt đầu.
                         </p>
                         <button 
                           onClick={() => void handleStart()} 
-                          className="px-5 py-2 rounded-md bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-medium text-sm transition shadow-2xs cursor-pointer inline-flex items-center gap-1.5"
+                          className="px-5 py-2 rounded-md bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-medium text-xs transition shadow-2xs cursor-pointer inline-flex items-center gap-1.5"
                         >
                           <Clock className="w-3.5 h-3.5" />
                           Bắt đầu làm bài ngay
@@ -771,7 +771,7 @@ export default function QuizPage() {
                         <div className="flex items-center justify-between p-3 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 sticky top-2 z-10">
                           <div className="flex items-center gap-2">
                             <Timer className="w-4 h-4 text-slate-600 dark:text-slate-400 animate-pulse" />
-                            <span className="font-semibold text-sm">Thời gian còn lại:</span>
+                            <span className="font-semibold text-xs">Thời gian còn lại:</span>
                             {isLecturerPreview && (
                               <span className="text-[10px] font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded">
                                 Xem trước
@@ -787,7 +787,7 @@ export default function QuizPage() {
                           <div className="space-y-3">
                             {questions.map((q, idx) => (
                               <div key={q.id} className="border border-slate-200 dark:border-slate-800 rounded-md p-3.5 bg-white dark:bg-slate-900 space-y-2.5">
-                                <div className="font-medium text-slate-800 dark:text-white text-sm">
+                                <div className="font-medium text-slate-800 dark:text-white text-xs">
                                   <span className="font-bold text-slate-900 dark:text-white mr-1.5">Câu {idx + 1}:</span> 
                                   {q.questionText ?? q.content}
                                 </div>
@@ -799,7 +799,7 @@ export default function QuizPage() {
                                     return (
                                       <label 
                                         key={`${q.id}-${opIdx}`} 
-                                        className={`flex items-center gap-2.5 p-2.5 rounded-md border text-sm cursor-pointer transition ${
+                                        className={`flex items-center gap-2.5 p-2.5 rounded-md border text-xs cursor-pointer transition ${
                                           isSelected 
                                             ? 'border-slate-900 bg-slate-100/80 dark:border-slate-500 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' 
                                             : 'border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
@@ -829,7 +829,7 @@ export default function QuizPage() {
                                 setStartedQuizId(null);
                                 setIsLecturerPreview(false);
                               }}
-                              className="px-3 py-2 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium cursor-pointer"
+                              className="px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium cursor-pointer"
                             >
                               Thoát xem trước
                             </button>
@@ -837,7 +837,7 @@ export default function QuizPage() {
                           <button 
                             disabled={submitting || questions.length === 0} 
                             onClick={() => void handleSubmit()} 
-                            className="ml-auto px-5 py-2 rounded-md bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 dark:text-slate-900 text-white font-medium text-sm disabled:opacity-50 transition cursor-pointer"
+                            className="ml-auto px-5 py-2 rounded-md bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 dark:text-slate-900 text-white font-medium text-xs disabled:opacity-50 transition cursor-pointer"
                           >
                             {submitting ? 'Đang nộp bài...' : 'Nộp bài kiểm tra'}
                           </button>
@@ -865,32 +865,32 @@ export default function QuizPage() {
 
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Tiêu đề Bài kiểm tra</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tiêu đề Bài kiểm tra</label>
                 <input
                   value={quizTitle}
                   onChange={(e) => setQuizTitle(e.target.value)}
                   placeholder="Kiểm tra giữa kỳ, Bài kiểm tra 15 phút..."
-                  className="w-full px-3 py-2 text-sm border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400"
+                  className="w-full px-3 py-2 text-xs border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Thời gian làm (Phút)</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Thời gian làm (Phút)</label>
                   <input
                     type="number"
                     value={quizDuration}
                     onChange={(e) => setQuizDuration(Number(e.target.value) || 30)}
-                    className="w-full px-3 py-2 text-sm border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400"
+                    className="w-full px-3 py-2 text-xs border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Thang điểm</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Thang điểm</label>
                   <input
                     type="number"
                     value={quizTotalScore}
                     onChange={(e) => setQuizTotalScore(Number(e.target.value) || 10)}
-                    className="w-full px-3 py-2 text-sm border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400"
+                    className="w-full px-3 py-2 text-xs border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400"
                   />
                 </div>
               </div>
@@ -899,14 +899,14 @@ export default function QuizPage() {
             <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
               <button
                 onClick={() => setShowCreateQuizModal(false)}
-                className="px-3.5 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-md cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-md cursor-pointer"
               >
                 Hủy
               </button>
               <button
                 onClick={handleCreateQuiz}
                 disabled={savingQuiz || !quizTitle.trim()}
-                className="px-3.5 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50 cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50 cursor-pointer"
               >
                 {savingQuiz ? 'Đang tạo...' : 'Tạo bài kiểm tra'}
               </button>
@@ -933,7 +933,7 @@ export default function QuizPage() {
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
               <button
                 onClick={() => setImportTab('FILE')}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1.5 cursor-pointer ${
                   importTab === 'FILE'
                     ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
@@ -943,7 +943,7 @@ export default function QuizPage() {
               </button>
               <button
                 onClick={() => setImportTab('TEXT')}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1.5 cursor-pointer ${
                   importTab === 'TEXT'
                     ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
@@ -957,7 +957,7 @@ export default function QuizPage() {
               <div className="space-y-3">
                 <label className="border border-dashed border-slate-300 dark:border-slate-700 hover:border-slate-500 rounded-md p-5 text-center block cursor-pointer transition bg-slate-50/50 dark:bg-slate-800/40">
                   <Upload className="w-6 h-6 text-slate-500 mx-auto mb-1.5 opacity-80" />
-                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 block">
+                  <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
                     {fileName ? `📄 ${fileName}` : 'Bấm vào đây để chọn file câu hỏi từ máy tính'}
                   </span>
                   <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
@@ -968,7 +968,7 @@ export default function QuizPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                <p className="text-sm text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Dán định dạng Tab-separated / CSV: (Câu hỏi [TAB] Đáp án A [TAB] Đáp án B [TAB] Đáp án C [TAB] Đáp án D [TAB] Đáp án đúng)
                 </p>
                 <textarea
@@ -976,14 +976,14 @@ export default function QuizPage() {
                   onChange={(e) => handleTextOrFileParse(e.target.value)}
                   placeholder="Lập trình Java là gì?	Ngôn ngữ	Hệ điều hành	Cơ sở dữ liệu	Trình duyệt	A"
                   rows={5}
-                  className="w-full px-3 py-2 text-sm font-mono border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400"
+                  className="w-full px-3 py-2 text-xs font-mono border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400"
                 />
               </div>
             )}
 
             {/* Live Parsed Preview Badge */}
             {parsedQuestions.length > 0 && (
-              <div className="p-2.5 rounded-md bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-sm font-medium flex items-center justify-between">
+              <div className="p-2.5 rounded-md bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-medium flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   Đã nhận diện {parsedQuestions.length} câu hỏi hợp lệ!
@@ -994,14 +994,14 @@ export default function QuizPage() {
             <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
               <button
                 onClick={() => setShowImportModal(false)}
-                className="px-3.5 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-md cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-md cursor-pointer"
               >
                 Hủy
               </button>
               <button
                 onClick={handleConfirmImport}
                 disabled={parsedQuestions.length === 0}
-                className="px-3.5 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+                className="px-3.5 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
               >
                 <Upload className="w-3.5 h-3.5" />
                 Nhập {parsedQuestions.length > 0 ? `${parsedQuestions.length} câu hỏi` : ''}
@@ -1027,11 +1027,11 @@ export default function QuizPage() {
             <div className="space-y-3">
               {/* Option to Upload Document for AI context */}
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Đính kèm file tài liệu / bài giảng (Tùy chọn)
                 </label>
                 <label className="border border-dashed border-slate-300 dark:border-slate-700 hover:border-slate-500 rounded-md p-2.5 text-center block cursor-pointer transition bg-slate-50/50 dark:bg-slate-800/40">
-                  <div className="flex items-center justify-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center justify-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
                     <Upload className="w-3.5 h-3.5" />
                     <span>{aiDocName ? `📄 ${aiDocName}` : 'Tải file bài học (.pdf, .docx, .txt...) để AI đọc nội dung'}</span>
                   </div>
@@ -1040,7 +1040,7 @@ export default function QuizPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Nội dung bài giảng / Chủ đề trắc nghiệm
                 </label>
                 <textarea
@@ -1048,13 +1048,13 @@ export default function QuizPage() {
                   onChange={(e) => setAiTopic(e.target.value)}
                   placeholder="Dán nội dung bài học hoặc chủ đề: Tổng quan Lập trình Hướng đối tượng Java, tính kế thừa, đa hình và đóng gói..."
                   rows={4}
-                  className="w-full px-3 py-2 text-sm border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400"
+                  className="w-full px-3 py-2 text-xs border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                     Số lượng câu hỏi
                   </label>
                   <div className="flex items-center gap-1">
@@ -1063,7 +1063,7 @@ export default function QuizPage() {
                         type="button"
                         key={num}
                         onClick={() => setAiNum(num)}
-                        className={`px-2 py-1 text-sm font-medium rounded-md border transition cursor-pointer ${
+                        className={`px-2 py-1 text-xs font-medium rounded-md border transition cursor-pointer ${
                           aiNum === num
                             ? 'bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-900'
                             : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
@@ -1082,14 +1082,14 @@ export default function QuizPage() {
                       value={aiNum || ''}
                       onChange={(e) => setAiNum(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
                       placeholder="Số câu (1-50)"
-                      className="w-24 px-2 py-1 text-sm border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400 font-mono"
+                      className="w-24 px-2 py-1 text-xs border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400 font-mono"
                     />
                     <span className="text-[11px] text-slate-500 dark:text-slate-400">câu</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                     Độ khó
                   </label>
                   <div className="flex items-center gap-1">
@@ -1102,7 +1102,7 @@ export default function QuizPage() {
                         type="button"
                         key={d.key}
                         onClick={() => setAiDifficulty(d.key as 'EASY' | 'MEDIUM' | 'HARD')}
-                        className={`flex-1 py-1 text-sm font-medium rounded-md border transition cursor-pointer ${
+                        className={`flex-1 py-1 text-xs font-medium rounded-md border transition cursor-pointer ${
                           aiDifficulty === d.key
                             ? 'bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-900'
                             : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
@@ -1119,14 +1119,14 @@ export default function QuizPage() {
             <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
               <button
                 onClick={() => setShowAiModal(false)}
-                className="px-3.5 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-md cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-md cursor-pointer"
               >
                 Hủy
               </button>
               <button
                 onClick={handleGenerateAi}
                 disabled={generatingAi || !aiTopic.trim()}
-                className="px-3.5 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+                className="px-3.5 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
               >
                 {generatingAi ? (
                   <>
@@ -1157,44 +1157,44 @@ export default function QuizPage() {
 
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Nội dung câu hỏi</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nội dung câu hỏi</label>
                 <textarea
                   value={qText}
                   onChange={(e) => setQText(e.target.value)}
                   placeholder="Nhập nội dung câu hỏi..."
                   rows={3}
-                  className="w-full px-3 py-2 text-sm border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400"
+                  className="w-full px-3 py-2 text-xs border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-slate-400"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Đáp án A</label>
-                  <input value={qA} onChange={(e) => setQA(e.target.value)} className="w-full px-3 py-2 text-sm border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white" />
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Đáp án A</label>
+                  <input value={qA} onChange={(e) => setQA(e.target.value)} className="w-full px-3 py-1.5 text-xs border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Đáp án B</label>
-                  <input value={qB} onChange={(e) => setQB(e.target.value)} className="w-full px-3 py-2 text-sm border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white" />
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Đáp án B</label>
+                  <input value={qB} onChange={(e) => setQB(e.target.value)} className="w-full px-3 py-1.5 text-xs border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Đáp án C</label>
-                  <input value={qC} onChange={(e) => setQC(e.target.value)} className="w-full px-3 py-2 text-sm border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white" />
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Đáp án C</label>
+                  <input value={qC} onChange={(e) => setQC(e.target.value)} className="w-full px-3 py-1.5 text-xs border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Đáp án D</label>
-                  <input value={qD} onChange={(e) => setQD(e.target.value)} className="w-full px-3 py-2 text-sm border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white" />
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Đáp án D</label>
+                  <input value={qD} onChange={(e) => setQD(e.target.value)} className="w-full px-3 py-1.5 text-xs border rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Đáp án đúng</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Đáp án đúng</label>
                 <div className="flex items-center gap-2">
                   {(['A', 'B', 'C', 'D'] as const).map((letter) => (
                     <button
                       type="button"
                       key={letter}
                       onClick={() => setQCorrect(letter)}
-                      className={`flex-1 py-2 text-sm font-medium rounded-md border transition cursor-pointer ${
+                      className={`flex-1 py-1.5 text-xs font-medium rounded-md border transition cursor-pointer ${
                         qCorrect === letter
                           ? 'bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-900'
                           : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
@@ -1210,14 +1210,14 @@ export default function QuizPage() {
             <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
               <button
                 onClick={() => setShowQuestionForm(false)}
-                className="px-3.5 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-md cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-md cursor-pointer"
               >
                 Hủy
               </button>
               <button
                 onClick={handleSaveQuestion}
                 disabled={savingQ || !qText.trim() || !qA.trim() || !qB.trim() || !qC.trim() || !qD.trim()}
-                className="px-3.5 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50 cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50 cursor-pointer"
               >
                 {savingQ ? 'Đang lưu...' : 'Lưu câu hỏi'}
               </button>

@@ -163,25 +163,25 @@ export default function StudentRegistrations() {
                 {isPeriodExpired && <Badge color="red">Đã hết hạn</Badge>}
                 {isPeriodUpcoming && <Badge color="amber">Sắp mở</Badge>}
               </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 Học kỳ: <span className="font-semibold text-slate-700 dark:text-slate-300">{activePeriod.semester}</span> · Năm học: <span className="font-semibold text-slate-700 dark:text-slate-300">{activePeriod.academicYear}</span>
               </p>
             </div>
 
             <div className="text-right shrink-0">
-              <span className="text-sm font-semibold text-slate-400 uppercase tracking-wider block">Hạn mức tín chỉ</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Hạn mức tín chỉ</span>
               <span className="text-lg font-bold text-accent-600 dark:text-accent-400">{activePeriod.maxCredits ?? 'Không giới hạn'} tín</span>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400">
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-4 text-xs text-slate-500 dark:text-slate-400">
             <div><span className="font-semibold">Mở từ:</span> {fmtDate(activePeriod.openAt)}</div>
             <div><span className="font-semibold">Hạn đến:</span> {fmtDate(activePeriod.closeAt)}</div>
           </div>
         </Card>
       ) : (
         <Card className="border-amber-200 bg-amber-50/40 dark:bg-amber-950/20">
-          <div className="text-sm text-amber-800 dark:text-amber-300 font-medium">
+          <div className="text-xs text-amber-800 dark:text-amber-300 font-medium">
             Hiện tại không có đợt đăng ký tín chỉ nào đang diễn ra. Bạn vẫn có thể xem lại các lớp đã đăng ký.
           </div>
         </Card>
@@ -207,7 +207,7 @@ export default function StudentRegistrations() {
             <>
               {selectedClassIds.length > 0 && (
               <div className="mb-4 flex items-center justify-between bg-accent-50/50 dark:bg-accent-900/20 p-3 rounded-lg border border-accent-200 dark:border-accent-800">
-                <span className="text-base text-accent-700 dark:text-accent-300 font-medium">Đã chọn {selectedClassIds.length} lớp</span>
+                <span className="text-sm text-accent-700 dark:text-accent-300 font-medium">Đã chọn {selectedClassIds.length} lớp</span>
                 <Button variant="primary" onClick={handleBatchRegister} disabled={isBatchRegistering}>
                    {isBatchRegistering ? <Spinner className="w-4 h-4"/> : 'Đăng ký các môn đã chọn'}
                 </Button>
@@ -234,14 +234,14 @@ export default function StudentRegistrations() {
                           }}
                         />
                       </td>
-                      <td className="px-4 py-3 font-mono font-bold text-accent-600 dark:text-accent-400 text-sm">{c.classCode}</td>
-                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white text-sm">{c.className}</td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300 text-sm">{c.courseTitle || '-'}</td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300 text-sm">{c.lecturerName || '-'}</td>
-                    <td className="px-4 py-3 text-center text-sm">
+                      <td className="px-4 py-3 font-mono font-bold text-accent-600 dark:text-accent-400 text-xs">{c.classCode}</td>
+                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white text-xs">{c.className}</td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300 text-xs">{c.courseTitle || '-'}</td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300 text-xs">{c.lecturerName || '-'}</td>
+                    <td className="px-4 py-3 text-center text-xs">
                       <Badge color={isFull ? 'red' : 'slate'}>{cur} / {max > 0 ? max : '∞'}</Badge>
                     </td>
-                    <td className="px-4 py-3 text-center text-sm">{c.semester}</td>
+                    <td className="px-4 py-3 text-center text-xs">{c.semester}</td>
                     <td className="px-4 py-3 text-right">
                       <Button
                         size="sm"
@@ -266,11 +266,11 @@ export default function StudentRegistrations() {
             <Table headers={['Mã lớp HP', 'Mã môn', 'Tên môn học', 'Số tín chỉ', 'Ngày đăng ký', 'Hành động']}>
               {myRegistrations.map((item) => (
                 <tr key={item.enrollmentId} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                  <td className="px-4 py-3 font-mono font-bold text-accent-600 dark:text-accent-400 text-sm">{item.clazzCode ?? '-'}</td>
-                  <td className="px-4 py-3 font-mono text-slate-500 text-sm">{item.courseCode ?? '-'}</td>
-                  <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white text-sm">{item.courseTitle ?? '-'}</td>
-                  <td className="px-4 py-3 text-center font-bold text-slate-900 dark:text-white text-sm">{item.credits ?? '-'}</td>
-                  <td className="px-4 py-3 text-slate-500 text-sm">{new Date(item.enrolledAt).toLocaleDateString('vi-VN')}</td>
+                  <td className="px-4 py-3 font-mono font-bold text-accent-600 dark:text-accent-400 text-xs">{item.clazzCode ?? '-'}</td>
+                  <td className="px-4 py-3 font-mono text-slate-500 text-xs">{item.courseCode ?? '-'}</td>
+                  <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white text-xs">{item.courseTitle ?? '-'}</td>
+                  <td className="px-4 py-3 text-center font-bold text-slate-900 dark:text-white text-xs">{item.credits ?? '-'}</td>
+                  <td className="px-4 py-3 text-slate-500 text-xs">{new Date(item.enrolledAt).toLocaleDateString('vi-VN')}</td>
                   <td className="px-4 py-3 text-right">
                     <Button
                       variant="danger"

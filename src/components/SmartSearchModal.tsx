@@ -178,7 +178,7 @@ export default function SmartSearchModal({ open, onClose }: { open: boolean; onC
           <input
             ref={inputRef}
             type="text"
-            className="flex-1 w-full bg-transparent border-0 outline-none px-4 py-4 text-base text-slate-900 dark:text-white placeholder:text-slate-400"
+            className="flex-1 w-full bg-transparent border-0 outline-none px-4 py-4 text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
             placeholder="Tìm kiếm trang, tính năng hoặc thao tác nhanh..."
             value={query}
             onChange={(e) => {
@@ -195,7 +195,7 @@ export default function SmartSearchModal({ open, onClose }: { open: boolean; onC
         {/* Results list */}
         <div className="max-h-[350px] overflow-y-auto py-2" ref={listRef}>
           {filteredItems.length === 0 ? (
-            <div className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+            <div className="py-10 text-center text-xs text-slate-500 dark:text-slate-400">
               Không tìm thấy kết quả phù hợp cho "{query}"
             </div>
           ) : (
@@ -217,7 +217,7 @@ export default function SmartSearchModal({ open, onClose }: { open: boolean; onC
                     <Icon className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-bold truncate">{item.title}</div>
+                    <div className="text-xs font-bold truncate">{item.title}</div>
                     {item.subtitle && (
                       <div className={`text-[10px] truncate mt-0.5 ${active ? 'text-accent-600/70 dark:text-accent-400/70' : 'text-slate-400'}`}>
                         {item.subtitle}

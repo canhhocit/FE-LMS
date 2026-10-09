@@ -157,7 +157,7 @@ export function StudentDashboard() {
 
       {/* Class Reminder Banner */}
       {continueLearningClass && (
-        <div className="p-4 bg-accent-50/60 dark:bg-accent-950/40 border border-accent-200/80 dark:border-accent-900/60 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm text-slate-700 dark:text-slate-200">
+        <div className="p-4 bg-accent-50/60 dark:bg-accent-950/40 border border-accent-200/80 dark:border-accent-900/60 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-slate-700 dark:text-slate-200">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-accent-600 text-white rounded-lg shrink-0">
               <BellRing className="w-4 h-4" />
@@ -205,19 +205,19 @@ export function StudentDashboard() {
       <Card className="bg-slate-900 text-white dark:bg-slate-900/90 dark:border-slate-800 border border-slate-800 p-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center rounded-md bg-accent-600/20 text-accent-300 px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider border border-accent-500/30">
+            <div className="inline-flex items-center rounded-md bg-accent-600/20 text-accent-300 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider border border-accent-500/30">
               Tiến độ học tập
             </div>
             <h3 className="text-xl font-bold text-white tracking-tight">
               {continueLearningClass ? continueLearningClass.className : 'Chưa có lớp học phần nào'}
             </h3>
-            <p className="text-sm text-slate-400">
+            <p className="text-xs text-slate-400">
               {continueLearningClass ? `${continueLearningClass.classCode} · ${continueLearningClass.courseTitle ?? 'Học phần'}` : 'Vui lòng đăng ký học phần để bắt đầu.'}
             </p>
           </div>
 
           <div className="w-full lg:w-72 shrink-0 bg-slate-800/80 dark:bg-slate-950/50 p-4 rounded-xl border border-slate-700/60">
-            <div className="flex items-center justify-between text-sm mb-2">
+            <div className="flex items-center justify-between text-xs mb-2">
               <Badge color={continueLearningMeta.badgeColor}>{continueLearningMeta.label}</Badge>
               <span className="font-bold text-white">{continueLearningPercentage}%</span>
             </div>
@@ -247,8 +247,8 @@ export function StudentDashboard() {
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
-            <h3 className="font-bold text-slate-900 dark:text-white text-base">Hoạt động gần đây</h3>
-            <Link to="/student/notifications" className="text-sm font-semibold text-accent-600 hover:underline">
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Hoạt động gần đây</h3>
+            <Link to="/student/notifications" className="text-xs font-semibold text-accent-600 hover:underline">
               Xem tất cả
             </Link>
           </div>
@@ -259,7 +259,7 @@ export function StudentDashboard() {
               {recentActivity.map((activity, index) => (
                 <div key={`${activity.title}-${index}`} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
                   <div className="space-y-0.5">
-                    <div className="text-sm font-semibold text-slate-800 dark:text-slate-200">{activity.title}</div>
+                    <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">{activity.title}</div>
                     <div className="text-[11px] text-slate-400">{activity.detail}</div>
                   </div>
                   <span className="text-[11px] text-slate-400 shrink-0">{activity.time}</span>
@@ -271,7 +271,7 @@ export function StudentDashboard() {
 
         <Card>
           <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
-            <h3 className="font-bold text-slate-900 dark:text-white text-base">Tổng quan học kỳ</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Tổng quan học kỳ</h3>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800">
@@ -298,7 +298,7 @@ export function StudentDashboard() {
       <div>
         <div className="mb-4 flex items-center justify-between">
           <h3 className="font-bold text-slate-900 dark:text-white text-base">Lớp học phần của tôi</h3>
-          <Link to="/student/classes" className="text-sm font-semibold text-accent-600 hover:underline">
+          <Link to="/student/classes" className="text-xs font-semibold text-accent-600 hover:underline">
             Xem tất cả ({classes.length})
           </Link>
         </div>
@@ -316,16 +316,16 @@ export function StudentDashboard() {
                   <Card className="hover:border-accent-500/50 cursor-pointer h-full flex flex-col justify-between">
                     <div>
                       <div className="mb-2 flex items-start justify-between gap-2">
-                        <span className="font-mono text-sm font-bold text-accent-600 dark:text-accent-400">{c.classCode}</span>
+                        <span className="font-mono text-xs font-bold text-accent-600 dark:text-accent-400">{c.classCode}</span>
                         <Badge color="indigo">{c.semester}</Badge>
                       </div>
-                      <h4 className="font-bold text-slate-900 dark:text-white text-base">{c.className}</h4>
-                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm">{c.className}</h4>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                         {c.courseTitle ?? 'Học phần'} · {c.lecturerName ?? 'Chưa phân công'}
                       </p>
                     </div>
                     <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center justify-between text-sm mb-1.5">
+                      <div className="flex items-center justify-between text-xs mb-1.5">
                         <Badge color={statusMeta.badgeColor}>{statusMeta.label}</Badge>
                         <span className="font-semibold text-slate-700 dark:text-slate-300">{percentage}%</span>
                       </div>
@@ -441,16 +441,16 @@ export function StudentClasses() {
                 <Card className="hover:border-accent-500/50 cursor-pointer h-full flex flex-col justify-between">
                   <div>
                     <div className="mb-2 flex items-start justify-between gap-2">
-                      <span className="font-mono text-sm font-bold text-accent-600 dark:text-accent-400">{c.classCode}</span>
+                      <span className="font-mono text-xs font-bold text-accent-600 dark:text-accent-400">{c.classCode}</span>
                       <Badge color="indigo">{c.semester}</Badge>
                     </div>
                     <h4 className="font-bold text-slate-900 dark:text-white text-base">{c.className}</h4>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                       {c.courseTitle ?? 'Học phần'} · {c.lecturerName ?? 'Chưa phân công'}
                     </p>
                   </div>
                   <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center justify-between text-sm mb-1.5">
+                    <div className="flex items-center justify-between text-xs mb-1.5">
                       <Badge color={statusMeta.badgeColor}>{statusMeta.label}</Badge>
                       <span className="font-semibold text-slate-700 dark:text-slate-300">{percentage}%</span>
                     </div>
@@ -528,7 +528,7 @@ export function StudentAssignments() {
           {items.map(({ a, sub }) => (
             <tr key={a.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
               <td className="px-4 py-3">
-                <div className="font-semibold text-slate-900 dark:text-white text-sm">{a.title}</div>
+                <div className="font-semibold text-slate-900 dark:text-white text-xs">{a.title}</div>
                 {a.description && <div className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">{a.description}</div>}
               </td>
               <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-mono text-[11px]">
@@ -669,7 +669,7 @@ function SubmitBtn({ assignmentId, disabled }: { assignmentId: number; disabled?
     }
   };
 
-  if (disabled) return <span className="text-sm text-slate-400 font-medium">Đã nộp</span>;
+  if (disabled) return <span className="text-xs text-slate-400 font-medium">Đã nộp</span>;
   return (
     <>
       <Button
@@ -701,7 +701,7 @@ function SubmitBtn({ assignmentId, disabled }: { assignmentId: number; disabled?
                   key={option.value}
                   type="button"
                   onClick={() => setSubmissionType(option.value as SubmissionType)}
-                  className={`rounded-lg border px-3 py-2 text-sm font-semibold transition cursor-pointer ${
+                  className={`rounded-lg border px-3 py-2 text-xs font-semibold transition cursor-pointer ${
                     submissionType === option.value
                       ? 'border-accent-600 bg-accent-600 text-white'
                       : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
@@ -730,7 +730,7 @@ function SubmitBtn({ assignmentId, disabled }: { assignmentId: number; disabled?
                   }}
                 >
                   <Upload className="w-6 h-6 text-slate-400 mx-auto mb-2" />
-                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     {submissionType === 'FILE' ? 'Kéo thả file vào đây hoặc chọn từ máy' : 'Kéo thả ảnh bài làm vào đây'}
                   </p>
 
@@ -743,20 +743,20 @@ function SubmitBtn({ assignmentId, disabled }: { assignmentId: number; disabled?
                       if (files.length > 0) addFilesToSelection(files);
                       event.target.value = '';
                     }}
-                    className="block w-full text-sm text-slate-500 file:mr-3 file:rounded-md file:border-0 file:bg-slate-200 dark:file:bg-slate-700 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-slate-700 dark:file:text-slate-200 cursor-pointer mt-2"
+                    className="block w-full text-xs text-slate-500 file:mr-3 file:rounded-md file:border-0 file:bg-slate-200 dark:file:bg-slate-700 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-slate-700 dark:file:text-slate-200 cursor-pointer mt-2"
                   />
                 </div>
 
                 {selectedFiles.length > 0 && (
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm font-semibold text-slate-500">
+                    <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
                       <span>File đã chọn ({selectedFiles.length})</span>
                       <button type="button" onClick={resetFileSelection} className="text-rose-600 hover:underline">Xóa tất cả</button>
                     </div>
 
                     <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
                       {selectedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm">
+                        <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs">
                           <span className="truncate max-w-[240px] text-slate-800 dark:text-slate-200">{file.name}</span>
                           <button type="button" onClick={() => removeSelectedFile(index)} className="text-slate-400 hover:text-rose-600">
                             <Trash2 className="w-3.5 h-3.5" />
@@ -769,11 +769,11 @@ function SubmitBtn({ assignmentId, disabled }: { assignmentId: number; disabled?
               </div>
             ) : (
               <div className="mb-4">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Link nộp bài</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Link nộp bài</label>
                 <input
                   value={externalLink}
                   onChange={(event) => setExternalLink(event.target.value)}
-                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-accent-600"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-accent-600"
                   placeholder={submissionType === 'GOOGLE_DRIVE_LINK' ? 'https://drive.google.com/...' : 'https://github.com/...'}
                 />
               </div>
@@ -841,7 +841,7 @@ export function StudentGrades() {
       />
 
       {policy && (
-        <div className="p-3 bg-slate-100 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-sm flex justify-between items-center text-slate-700 dark:text-slate-300">
+        <div className="p-3 bg-slate-100 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-center text-slate-700 dark:text-slate-300">
           <span className="font-semibold">Trọng số tính điểm:</span>
           <span>
             {Math.round(policy.attendanceWeight * 100)}% Chuyên cần + {Math.round(policy.midtermWeight * 100)}% Giữa kỳ + {Math.round(policy.finalWeight * 100)}% Cuối kỳ
@@ -860,7 +860,7 @@ export function StudentGrades() {
       ) : (
         Array.from(groupedGrades.entries()).map(([group, groupGrades]) => (
           <div key={group} className="space-y-3">
-            <h4 className="font-bold text-slate-900 dark:text-white text-base">{group}</h4>
+            <h4 className="font-bold text-slate-900 dark:text-white text-sm">{group}</h4>
             <Table headers={['Học phần', 'Mã Lớp HP', 'Giữa kỳ', 'Cuối kỳ', 'Tổng kết', 'Đánh giá']}>
               {groupGrades.map((grade) => {
                 const clazz = classesById.get(grade.classId);
@@ -868,14 +868,14 @@ export function StudentGrades() {
                 return (
                   <tr key={grade.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                     <td className="px-4 py-3">
-                      <div className="font-semibold text-slate-900 dark:text-white text-sm">{clazz?.courseTitle ?? 'Học phần'}</div>
+                      <div className="font-semibold text-slate-900 dark:text-white text-xs">{clazz?.courseTitle ?? 'Học phần'}</div>
                     </td>
-                    <td className="px-4 py-3 font-mono text-sm text-accent-600 dark:text-accent-400">
+                    <td className="px-4 py-3 font-mono text-xs text-accent-600 dark:text-accent-400">
                       {clazz?.classCode ?? `Lớp #${grade.classId}`}
                     </td>
-                    <td className="px-4 py-3 text-center text-sm">{grade.midtermScore ?? '-'}</td>
-                    <td className="px-4 py-3 text-center text-sm">{grade.finalScore ?? '-'}</td>
-                    <td className="px-4 py-3 text-center font-bold text-slate-900 dark:text-white text-sm">
+                    <td className="px-4 py-3 text-center text-xs">{grade.midtermScore ?? '-'}</td>
+                    <td className="px-4 py-3 text-center text-xs">{grade.finalScore ?? '-'}</td>
+                    <td className="px-4 py-3 text-center font-bold text-slate-900 dark:text-white text-xs">
                       {grade.totalScore ?? '-'}
                     </td>
                     <td className="px-4 py-3 text-center">

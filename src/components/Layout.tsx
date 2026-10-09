@@ -253,20 +253,20 @@ function FirstLoginModal({
           <h2 className="text-base font-bold text-slate-900 dark:text-white">
             Đổi mật khẩu lần đầu
           </h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
             Vì lý do an toàn, vui lòng cập nhật mật khẩu mới khi đăng nhập lần đầu.
           </p>
         </div>
 
         {err && (
-          <div className="mb-4 flex items-start gap-2 p-3 rounded-lg bg-rose-50 border border-rose-200 text-sm text-rose-700 dark:bg-rose-950/40 dark:border-rose-900/60 dark:text-rose-300">
+          <div className="mb-4 flex items-start gap-2 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 dark:bg-rose-950/40 dark:border-rose-900/60 dark:text-rose-300">
             <span>{err}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit(onChangePwSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Mật khẩu hiện tại
             </label>
             <div className="relative">
@@ -274,7 +274,7 @@ function FirstLoginModal({
                 type={showOldPw ? "text" : "password"}
                 {...register('oldPassword')}
                 placeholder="Nhập mật khẩu hiện tại"
-                className={`w-full px-3.5 py-2 border rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-white outline-none transition ${
+                className={`w-full px-3.5 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 dark:text-white outline-none transition ${
                   errors.oldPassword
                     ? 'border-rose-300 focus:border-rose-500'
                     : 'border-slate-200 dark:border-slate-700 focus:border-accent-600'
@@ -295,7 +295,7 @@ function FirstLoginModal({
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Mật khẩu mới
             </label>
             <div className="relative">
@@ -303,7 +303,7 @@ function FirstLoginModal({
                 type={showNewPw ? "text" : "password"}
                 {...register('newPassword')}
                 placeholder="Nhập mật khẩu mới"
-                className={`w-full px-3.5 py-2 border rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-white outline-none transition ${
+                className={`w-full px-3.5 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 dark:text-white outline-none transition ${
                   errors.newPassword
                     ? 'border-rose-300 focus:border-rose-500'
                     : 'border-slate-200 dark:border-slate-700 focus:border-accent-600'
@@ -324,7 +324,7 @@ function FirstLoginModal({
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Xác nhận mật khẩu mới
             </label>
             <div className="relative">
@@ -332,7 +332,7 @@ function FirstLoginModal({
                 type={showConfirmPw ? "text" : "password"}
                 {...register('confirmPassword')}
                 placeholder="Xác nhận mật khẩu mới"
-                className={`w-full px-3.5 py-2 border rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-white outline-none transition ${
+                className={`w-full px-3.5 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 dark:text-white outline-none transition ${
                   errors.confirmPassword
                     ? 'border-rose-300 focus:border-rose-500'
                     : 'border-slate-200 dark:border-slate-700 focus:border-accent-600'
@@ -356,7 +356,7 @@ function FirstLoginModal({
             <button
               type="submit"
               disabled={saving}
-              className="w-full py-2 rounded-lg font-semibold text-sm bg-accent-600 text-white hover:bg-accent-700 disabled:opacity-50 transition cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-2 rounded-lg font-semibold text-xs bg-accent-600 text-white hover:bg-accent-700 disabled:opacity-50 transition cursor-pointer flex items-center justify-center gap-2"
             >
               {saving ? "Đang lưu mật khẩu..." : "Cập nhật mật khẩu"}
             </button>
@@ -370,7 +370,7 @@ function FirstLoginModal({
               logout();
               window.location.href = "/login";
             }}
-            className="text-sm text-slate-500 hover:text-rose-600 dark:text-slate-400 font-medium transition cursor-pointer"
+            className="text-xs text-slate-500 hover:text-rose-600 dark:text-slate-400 font-medium transition cursor-pointer"
           >
             Đăng xuất tài khoản
           </button>
@@ -588,7 +588,7 @@ export default function Layout() {
                           end={it.to === `/${roleLower}`}
                           onClick={() => setSidebarOpen(false)}
                           className={({ isActive }) =>
-                            `relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${isCollapsed ? "justify-center px-0 w-full" : ""} ${
+                            `relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-150 ${isCollapsed ? "justify-center px-0 w-full" : ""} ${
                               isActive
                                 ? "bg-primary-600 text-white shadow-2xs"
                                 : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
@@ -622,7 +622,7 @@ export default function Layout() {
               logout();
               nav("/login");
             }}
-            className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition w-full cursor-pointer ${isCollapsed ? "justify-center px-0" : ""}`}
+            className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition w-full cursor-pointer ${isCollapsed ? "justify-center px-0" : ""}`}
             title={isCollapsed ? "Đăng xuất" : undefined}
           >
             <LogOut className="h-4 w-4" />
@@ -650,7 +650,7 @@ export default function Layout() {
             >
               <Menu className="h-5 w-5" />
             </button>
-            <span className="hidden truncate text-sm text-slate-500 dark:text-slate-400 sm:inline">
+            <span className="hidden truncate text-xs text-slate-500 dark:text-slate-400 sm:inline">
               Xin chào, <span className="font-semibold text-slate-900 dark:text-white">{user.fullName}</span>
             </span>
           </div>
@@ -659,7 +659,7 @@ export default function Layout() {
           <button 
             type="button"
             onClick={() => setIsSearchOpen(true)}
-            className="hidden max-w-sm flex-1 items-center justify-between rounded-lg bg-slate-100/90 border border-slate-200/80 px-3 py-2 text-sm text-slate-500 hover:bg-slate-200/50 hover:text-slate-700 dark:bg-slate-800 dark:border-slate-700/80 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300 md:flex transition cursor-pointer"
+            className="hidden max-w-sm flex-1 items-center justify-between rounded-lg bg-slate-100/90 border border-slate-200/80 px-3 py-1.5 text-xs text-slate-500 hover:bg-slate-200/50 hover:text-slate-700 dark:bg-slate-800 dark:border-slate-700/80 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300 md:flex transition cursor-pointer"
           >
             <div className="flex items-center">
               <Search className="mr-2 h-3.5 w-3.5 opacity-60 shrink-0" />
@@ -676,7 +676,7 @@ export default function Layout() {
             <button
               type="button"
               onClick={openAiCompanion}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition cursor-pointer"
               title="Mở Trợ lý AI"
             >
               <Sparkles className="h-3.5 w-3.5 text-accent-600 dark:text-accent-400" />
@@ -712,7 +712,7 @@ export default function Layout() {
               <button
                 type="button"
                 onClick={() => setProfileOpen((open) => !open)}
-                className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-750 transition cursor-pointer"
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-750 transition cursor-pointer"
               >
                 <User className="h-3.5 w-3.5 text-slate-500" />
                 <span className="hidden max-w-28 truncate sm:inline">
@@ -723,7 +723,7 @@ export default function Layout() {
               {profileOpen && (
                 <div className="absolute right-0 top-11 z-50 w-52 rounded-xl border border-slate-200/90 bg-white p-3 text-slate-800 shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
                   <div className="border-b border-slate-100 dark:border-slate-800 pb-2.5">
-                    <div className="font-semibold text-sm text-slate-900 dark:text-white truncate">
+                    <div className="font-semibold text-xs text-slate-900 dark:text-white truncate">
                       {user.fullName}
                     </div>
                     <div className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -735,7 +735,7 @@ export default function Layout() {
                       logout();
                       nav("/login");
                     }}
-                    className="mt-2 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40 transition cursor-pointer"
+                    className="mt-2 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40 transition cursor-pointer"
                   >
                     <LogOut className="h-3.5 w-3.5" />
                     <span>Đăng xuất</span>

@@ -50,13 +50,13 @@ export default function ForgotPassword() {
           <h1 className="text-xl font-bold text-center text-slate-900 dark:text-white mb-1">
             Quên mật khẩu?
           </h1>
-          <p className="text-sm text-center text-slate-500 dark:text-slate-400 mb-6">
+          <p className="text-xs text-center text-slate-500 dark:text-slate-400 mb-6">
             Nhập địa chỉ email đăng ký để nhận liên kết khôi phục mật khẩu.
           </p>
 
           {message && (
             <div
-              className={`mb-4 p-3.5 rounded-xl text-sm font-medium flex items-center gap-2 ${
+              className={`mb-4 p-3.5 rounded-xl text-xs font-medium flex items-center gap-2 ${
                 message.type === 'success'
                   ? 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300'
                   : 'bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300'
@@ -69,7 +69,7 @@ export default function ForgotPassword() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="email" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Email đăng ký
               </label>
               <Input
@@ -94,7 +94,7 @@ export default function ForgotPassword() {
           </form>
 
           <div className="mt-6 text-center">
-            <Link to="/login" className="inline-flex items-center gap-1.5 text-sm text-navy-700 dark:text-navy-300 hover:underline font-semibold">
+            <Link to="/login" className="inline-flex items-center gap-1.5 text-xs text-navy-700 dark:text-navy-300 hover:underline font-semibold">
               <ArrowLeft className="w-3.5 h-3.5" />
               Quay lại đăng nhập
             </Link>

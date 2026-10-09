@@ -274,20 +274,20 @@ export function AvatarUploader({ currentAvatar, onUpload, label = 'Lưu ảnh' }
             ) : (
               <div className="flex h-full w-full flex-col items-center justify-center bg-[#00376f] text-white">
                 <UploadIcon className="h-10 w-10 opacity-80" />
-                <span className="mt-1 text-sm font-semibold">Tải ảnh lên</span>
+                <span className="mt-1 text-xs font-semibold">Tải ảnh lên</span>
               </div>
             )}
 
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/60 text-white opacity-0 transition group-hover:opacity-100">
               <UploadIcon className="h-8 w-8 mb-1" />
-              <span className="text-sm font-bold">Tải ảnh mới</span>
+              <span className="text-xs font-bold">Tải ảnh mới</span>
             </div>
           </div>
 
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-xs transition hover:bg-slate-50 active:scale-95"
+            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-xs transition hover:bg-slate-50 active:scale-95"
           >
             <UploadIcon className="h-4 w-4 text-[#00376f]" />
             <span>Chọn ảnh từ máy tính</span>
@@ -357,11 +357,11 @@ export function AvatarUploader({ currentAvatar, onUpload, label = 'Lưu ảnh' }
               </button>
             </div>
 
-            <div className="flex items-center justify-center gap-3 text-sm font-semibold">
+            <div className="flex items-center justify-center gap-3 text-xs font-semibold">
               <button
                 type="button"
                 onClick={handleRotate}
-                className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-700 shadow-2xs hover:bg-slate-100 transition"
+                className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-slate-700 shadow-2xs hover:bg-slate-100 transition"
               >
                 <RotateIcon className="h-3.5 w-3.5 text-slate-500" />
                 <span>Xoay 90°</span>
@@ -370,7 +370,7 @@ export function AvatarUploader({ currentAvatar, onUpload, label = 'Lưu ảnh' }
               <button
                 type="button"
                 onClick={handleReset}
-                className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-700 shadow-2xs hover:bg-slate-100 transition"
+                className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-slate-700 shadow-2xs hover:bg-slate-100 transition"
               >
                 <CenterIcon className="h-3.5 w-3.5 text-slate-500" />
                 <span>Về giữa</span>
@@ -387,7 +387,7 @@ export function AvatarUploader({ currentAvatar, onUpload, label = 'Lưu ảnh' }
             <button
               type="button"
               onClick={() => setImageSrc(null)}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 shadow-2xs hover:bg-slate-100 transition"
+              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 shadow-2xs hover:bg-slate-100 transition"
             >
               Chọn ảnh khác
             </button>
@@ -395,7 +395,7 @@ export function AvatarUploader({ currentAvatar, onUpload, label = 'Lưu ảnh' }
               type="button"
               onClick={() => void applyCropAndSave()}
               disabled={isSaving}
-              className="flex items-center gap-1.5 rounded-lg bg-[#00376f] px-5 py-2 text-sm font-bold text-white shadow-sm hover:bg-[#002852] active:scale-95 disabled:opacity-50 transition"
+              className="flex items-center gap-1.5 rounded-lg bg-[#00376f] px-5 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#002852] active:scale-95 disabled:opacity-50 transition"
             >
               {isSaving ? (
                 <>

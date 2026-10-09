@@ -412,7 +412,7 @@ export default function AdminCurricula() {
         <button
           type="button"
           onClick={() => setActiveTab('COURSES')}
-          className={`pb-3 text-base font-semibold transition border-b-2 ${
+          className={`pb-3 text-sm font-semibold transition border-b-2 ${
             activeTab === 'COURSES'
               ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
               : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400'
@@ -423,7 +423,7 @@ export default function AdminCurricula() {
         <button
           type="button"
           onClick={() => setActiveTab('CURRICULA')}
-          className={`pb-3 text-base font-semibold transition border-b-2 ${
+          className={`pb-3 text-sm font-semibold transition border-b-2 ${
             activeTab === 'CURRICULA'
               ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
               : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400'
@@ -434,7 +434,7 @@ export default function AdminCurricula() {
       </div>
 
       {msg && (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-base text-emerald-700">
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
           {msg}
         </div>
       )}
@@ -448,12 +448,12 @@ export default function AdminCurricula() {
               value={searchCourse}
               onChange={(e) => setSearchCourse(e.target.value)}
               placeholder="Tìm theo mã hoặc tên môn học..."
-              className="w-full sm:w-72 rounded-lg border border-slate-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+              className="w-full sm:w-72 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
             />
             <button
               type="button"
               onClick={openCreateCourse}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-base font-semibold bg-indigo-600 text-white hover:bg-indigo-500 shadow-sm transition"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 shadow-sm transition"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               Thêm môn học mới
@@ -465,8 +465,8 @@ export default function AdminCurricula() {
               <Empty msg="Chưa có môn học nào" />
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-base">
-                  <thead className="text-sm text-slate-500 border-b border-slate-200 bg-slate-50">
+                <table className="w-full text-sm">
+                  <thead className="text-xs text-slate-500 border-b border-slate-200 bg-slate-50">
                     <tr>
                       <th className="text-left p-3">Mã môn</th>
                       <th className="text-left p-3">Tên môn học</th>
@@ -489,21 +489,21 @@ export default function AdminCurricula() {
                             <button
                               type="button"
                               onClick={() => openPrereqModal(c)}
-                              className="rounded-lg border border-purple-200 bg-purple-50 px-3 py-1 text-sm font-semibold text-purple-700 hover:bg-purple-100 transition"
+                              className="rounded-lg border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition"
                             >
                               Môn tiên quyết
                             </button>
                             <button
                               type="button"
                               onClick={() => openEditCourse(c)}
-                              className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-700 hover:bg-amber-100 transition"
+                              className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100 transition"
                             >
                               Sửa
                             </button>
                             <button
                               type="button"
                               onClick={() => handleDeleteCourse(c)}
-                              className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1 text-sm font-semibold text-rose-700 hover:bg-rose-100 transition"
+                              className="rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition"
                             >
                               Xóa
                             </button>
@@ -529,7 +529,7 @@ export default function AdminCurricula() {
               <button
                 type="button"
                 onClick={openCreateCurr}
-                className="px-3 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 shadow-sm transition"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-500 shadow-sm transition"
               >
                 + Tạo CTĐT
               </button>
@@ -551,8 +551,8 @@ export default function AdminCurricula() {
                       }`}
                     >
                       <div>
-                        <div className="font-semibold text-base text-slate-800 dark:text-slate-100">{cu.name}</div>
-                        <div className="text-sm text-slate-500 mt-0.5">
+                        <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">{cu.name}</div>
+                        <div className="text-xs text-slate-500 mt-0.5">
                           {cu.faculty || 'Chưa xếp Khoa'} · {cu.academicYear || 'Toàn khóa'}
                           {gradingPolicies[cu.id] && (
                             <span className="ml-1 text-amber-600 dark:text-amber-500 font-medium">
@@ -602,7 +602,7 @@ export default function AdminCurricula() {
                   <h3 className="font-bold text-slate-800 dark:text-slate-100">
                     Môn học thuộc: <span className="text-indigo-600">{selectedCurriculum.name}</span>
                   </h3>
-                  <div className="text-sm text-slate-500 mt-1">
+                  <div className="text-xs text-slate-500 mt-1">
                     Khoa: {selectedCurriculum.faculty || '-'} | Niên khóa: {selectedCurriculum.academicYear || '-'}
                   </div>
                 </div>
@@ -612,7 +612,7 @@ export default function AdminCurricula() {
                   <select
                     value={addCourseId}
                     onChange={(e) => setAddCourseId(e.target.value)}
-                    className="flex-1 min-w-[200px] rounded-lg border border-slate-300 px-3 py-2 text-base bg-white focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                    className="flex-1 min-w-[200px] rounded-lg border border-slate-300 px-3 py-1.5 text-sm bg-white focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                   >
                     <option value="">-- Chọn môn học để gán vào CTĐT --</option>
                     {courses
@@ -625,14 +625,14 @@ export default function AdminCurricula() {
                   </select>
 
                   <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Học kỳ:</span>
+                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Học kỳ:</span>
                     <input
                       type="number"
                       min={1}
                       max={20}
                       value={addSemesterNo}
                       onChange={(e) => setAddSemesterNo(Number(e.target.value))}
-                      className="w-16 rounded-lg border border-slate-300 px-2 py-2 text-base text-center bg-white focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                      className="w-16 rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-center bg-white focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                     />
                   </div>
 
@@ -640,7 +640,7 @@ export default function AdminCurricula() {
                     type="button"
                     onClick={handleAddCourseToCurr}
                     disabled={!addCourseId}
-                    className="px-3.5 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 transition"
+                    className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 transition"
                   >
                     + Gán vào CTĐT
                   </button>
@@ -652,8 +652,8 @@ export default function AdminCurricula() {
                   <Empty msg="Chương trình đào tạo này chưa có môn học nào" />
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-base">
-                      <thead className="text-sm text-slate-500 border-b border-slate-200 bg-slate-50">
+                    <table className="w-full text-sm">
+                      <thead className="text-xs text-slate-500 border-b border-slate-200 bg-slate-50">
                         <tr>
                           <th className="text-left p-3">Mã môn</th>
                           <th className="text-left p-3">Tên môn học</th>
@@ -680,7 +680,7 @@ export default function AdminCurricula() {
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveCourseFromCurr(targetCourseId)}
-                                  className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1 text-sm font-semibold text-rose-700 hover:bg-rose-100 transition"
+                                  className="rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition"
                                 >
                                   Gỡ khỏi CTĐT
                                 </button>
@@ -723,11 +723,11 @@ export default function AdminCurricula() {
               <Spinner />
             ) : (
               <form onSubmit={handleSaveGradingPolicy} className="mt-4 space-y-4">
-                <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800 text-sm text-amber-800 dark:text-amber-200 mb-4">
+                <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-200 mb-4">
                   Lưu ý: Tổng của các trọng số phải luôn luôn bằng 1.0 (ví dụ: Chuyên cần 0.1, Giữa kỳ 0.3, Cuối kỳ 0.6)
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Trọng số chuyên cần (0.0 - 1.0)
                   </label>
                   <input
@@ -737,11 +737,11 @@ export default function AdminCurricula() {
                     required
                     value={gradingPolicyForm.attendanceWeight}
                     onChange={(e) => setGradingPolicyForm({ ...gradingPolicyForm, attendanceWeight: Number(e.target.value) })}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Trọng số giữa kỳ (0.0 - 1.0)
                   </label>
                   <input
@@ -751,11 +751,11 @@ export default function AdminCurricula() {
                     required
                     value={gradingPolicyForm.midtermWeight}
                     onChange={(e) => setGradingPolicyForm({ ...gradingPolicyForm, midtermWeight: Number(e.target.value) })}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Trọng số cuối kỳ (0.0 - 1.0)
                   </label>
                   <input
@@ -765,7 +765,7 @@ export default function AdminCurricula() {
                     required
                     value={gradingPolicyForm.finalWeight}
                     onChange={(e) => setGradingPolicyForm({ ...gradingPolicyForm, finalWeight: Number(e.target.value) })}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                   />
                 </div>
 
@@ -773,14 +773,14 @@ export default function AdminCurricula() {
                   <button
                     type="button"
                     onClick={() => setShowGradingModal(false)}
-                    className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
+                    className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
                   >
                     Hủy
                   </button>
                   <button
                     type="submit"
                     disabled={submittingCurr}
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+                    className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
                   >
                     {submittingCurr ? 'Đang lưu...' : 'Lưu cấu hình'}
                   </button>
@@ -810,7 +810,7 @@ export default function AdminCurricula() {
 
             <form onSubmit={handleSaveCourse} className="mt-4 space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Mã môn học <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -819,12 +819,12 @@ export default function AdminCurricula() {
                   value={courseForm.code}
                   onChange={(e) => setCourseForm({ ...courseForm, code: e.target.value })}
                   placeholder="Ví dụ: IT101"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Tên môn học <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -833,12 +833,12 @@ export default function AdminCurricula() {
                   value={courseForm.title}
                   onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
                   placeholder="Ví dụ: Nhập môn lập trình"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Số tín chỉ <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -848,12 +848,12 @@ export default function AdminCurricula() {
                   max={10}
                   value={courseForm.credit}
                   onChange={(e) => setCourseForm({ ...courseForm, credit: Number(e.target.value) })}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Mô tả
                 </label>
                 <textarea
@@ -861,7 +861,7 @@ export default function AdminCurricula() {
                   value={courseForm.description}
                   onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
                   placeholder="Mô tả nội dung môn học..."
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
               </div>
 
@@ -869,14 +869,14 @@ export default function AdminCurricula() {
                 <button
                   type="button"
                   onClick={() => setShowCourseModal(false)}
-                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
+                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={submittingCourse}
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+                  className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
                 >
                   {submittingCourse ? 'Đang lưu...' : courseModalMode === 'CREATE' ? 'Thêm mới' : 'Cập nhật'}
                 </button>
@@ -905,7 +905,7 @@ export default function AdminCurricula() {
 
             <form onSubmit={handleSaveCurr} className="mt-4 space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Tên chương trình đào tạo <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -914,19 +914,19 @@ export default function AdminCurricula() {
                   value={currForm.name}
                   onChange={(e) => setCurrForm({ ...currForm, name: e.target.value })}
                   placeholder="Ví dụ: Công nghệ thông tin 2024"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Khoa / Bộ môn
                 </label>
                 {departments.length > 0 ? (
                   <select
                     value={currForm.faculty}
                     onChange={(e) => setCurrForm({ ...currForm, faculty: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base bg-white focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                   >
                     <option value="">-- Chọn Khoa / Bộ môn --</option>
                     {departments.map((dep) => (
@@ -941,13 +941,13 @@ export default function AdminCurricula() {
                     value={currForm.faculty}
                     onChange={(e) => setCurrForm({ ...currForm, faculty: e.target.value })}
                     placeholder="Ví dụ: Công nghệ thông tin"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                   />
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Khóa / Năm học
                 </label>
                 <input
@@ -955,7 +955,7 @@ export default function AdminCurricula() {
                   value={currForm.academicYear}
                   onChange={(e) => setCurrForm({ ...currForm, academicYear: e.target.value })}
                   placeholder="Ví dụ: 2024-2028"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 />
               </div>
 
@@ -963,14 +963,14 @@ export default function AdminCurricula() {
                 <button
                   type="button"
                   onClick={() => setShowCurrModal(false)}
-                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
+                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={submittingCurr}
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+                  className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
                 >
                   {submittingCurr ? 'Đang lưu...' : currModalMode === 'CREATE' ? 'Tạo mới' : 'Cập nhật'}
                 </button>
@@ -1003,7 +1003,7 @@ export default function AdminCurricula() {
                 <select
                   value={addPrereqCourseId}
                   onChange={(e) => setAddPrereqCourseId(e.target.value)}
-                  className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-base bg-white focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm bg-white focus:border-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                 >
                   <option value="">-- Chọn môn tiên quyết cần có --</option>
                   {courses
@@ -1018,7 +1018,7 @@ export default function AdminCurricula() {
                   type="button"
                   onClick={handleAddPrereq}
                   disabled={!addPrereqCourseId}
-                  className="px-3.5 py-2 rounded-lg text-sm font-semibold bg-purple-600 text-white hover:bg-purple-500 disabled:opacity-50 transition"
+                  className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-purple-600 text-white hover:bg-purple-500 disabled:opacity-50 transition"
                 >
                   + Thêm tiên quyết
                 </button>
@@ -1039,15 +1039,15 @@ export default function AdminCurricula() {
                         className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
                       >
                         <div>
-                          <div className="font-semibold text-base text-slate-800 dark:text-slate-100">
+                          <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">
                             {matchedCourse ? `${matchedCourse.code} - ${matchedCourse.title}` : `Môn học #${p.prerequisiteCourseId}`}
                           </div>
-                          <div className="text-sm text-slate-400">Yêu cầu học xong môn này trước</div>
+                          <div className="text-xs text-slate-400">Yêu cầu học xong môn này trước</div>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleRemovePrereq(p.id)}
-                          className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1 text-sm font-semibold text-rose-700 hover:bg-rose-100 transition"
+                          className="rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition"
                         >
                           Xóa
                         </button>
@@ -1061,7 +1061,7 @@ export default function AdminCurricula() {
                 <button
                   type="button"
                   onClick={() => setPrereqCourse(null)}
-                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
+                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
                 >
                   Đóng
                 </button>

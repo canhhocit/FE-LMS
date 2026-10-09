@@ -104,7 +104,7 @@ export default function LecturerProfile() {
             </div>
             <div>
               <div className="text-lg font-bold text-slate-900 dark:text-white">{profile.fullName}</div>
-              <div className="text-sm text-slate-500 dark:text-slate-400 font-mono">{profile.email}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">{profile.email}</div>
               <div className="mt-1">
                 <Badge color="emerald">{profile.role}</Badge>
               </div>
@@ -116,7 +116,7 @@ export default function LecturerProfile() {
           </Button>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4 text-sm">
+        <div className="grid md:grid-cols-2 gap-4 text-xs">
           <Input label="Mã giảng viên" value={profile.lecturerCode ?? 'Chưa cấp'} disabled />
           <Input label="Email hệ thống" value={profile.email} disabled />
           <Input
@@ -243,7 +243,7 @@ function AiSettingsCard() {
         {msg && <Toast message={msg} type="success" onClose={() => setMsg(null)} />}
 
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-          <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
+          <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
             <Bot className="w-4 h-4 text-accent-600 dark:text-accent-400" />
             <span>Cấu hình Trợ lý AI Giảng dạy</span>
           </h3>
@@ -293,7 +293,7 @@ function AiSettingsCard() {
         </div>
 
         <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Lịch sử trò chuyện</span>
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Lịch sử trò chuyện</span>
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" onClick={handleExportChat}>Xuất JSON</Button>
             <Button variant="danger" size="sm" onClick={handleClear}>Xóa lịch sử</Button>
