@@ -765,10 +765,23 @@ export const DraggableAiCompanion: React.FC = () => {
               <div className="w-7 h-7 rounded-md bg-slate-800 flex items-center justify-center border border-slate-700">
                 <Bot className="w-4 h-4 text-accent-400" />
               </div>
-              <div>
-                <h3 className="text-xs font-bold text-white leading-tight">{aiName}</h3>
-                <p className="text-[10px] text-slate-400">Trợ lý tra cứu LearningHub</p>
-              </div>
+              
+                <div>
+                  <h3 className="text-sm font-bold text-white leading-tight">{aiName}</h3>
+                  <div className="flex items-center gap-1.5 mt-1" data-no-drag="true">
+                    <button 
+                      type="button" 
+                      onClick={(e) => { e.stopPropagation(); setChatMode('advisor'); }}
+                      className={`text-[10px] px-2 py-0.5 rounded-full transition cursor-pointer shadow-sm ${chatMode === 'advisor' ? 'bg-accent-600 text-white font-bold ring-1 ring-accent-700' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'}`}
+                    >Trò chuyện</button>
+                    <button 
+                      type="button" 
+                      onClick={(e) => { e.stopPropagation(); setChatMode('rag'); }}
+                      className={`text-[10px] px-2 py-0.5 rounded-full transition cursor-pointer shadow-sm ${chatMode === 'rag' ? 'bg-accent-600 text-white font-bold ring-1 ring-accent-700' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'}`}
+                    >Tài liệu RAG</button>
+                  </div>
+                </div>
+
             </div>
             <div className="flex items-center gap-1">
               <button
