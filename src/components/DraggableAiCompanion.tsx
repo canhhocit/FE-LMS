@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Bot, Calendar, BookOpen, X, Loader2, Trash2, Send, Maximize2, Minimize2, CreditCard, Copy, Check, Download } from 'lucide-react';
 import { apiClient, unwrap } from '../services/api/client';
 import { useAuth } from '../contexts/useAuth';
@@ -102,6 +104,7 @@ export const DraggableAiCompanion: React.FC = () => {
   }, [isOpenInput]);
 
   const [isExpanded, setIsExpanded] = useState(false);
+  const [chatMode, setChatMode] = useState<'advisor' | 'rag'>('advisor');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -616,7 +619,23 @@ export const DraggableAiCompanion: React.FC = () => {
           ? `${roleContextPrompt} ${noEmojiRule} [Ngữ cảnh: ${lastContextEntity.type} ${lastContextEntity.name}]. Câu hỏi: ${userText.trim()}`
           : `${roleContextPrompt} ${noEmojiRule} Câu hỏi: ${userText.trim()}`;
 
-        const res = await unwrap<{ reply: string }>(apiClient.post('/ai/advisor/chat', { prompt: promptToSend }));
+        
+        let res: { reply: string };
+        if (chatMode === 'rag') {
+            try {
+                const ragRes = await unwrap<{ answer: string }>(apiClient.post('/ai/rag/query', { question: userText.trim(), topK: 3 }));
+                res = { reply: ragRes.answer };
+            } catch (error) {
+                // fallback safely or report error
+                res = { reply: "Lỗi kết nối RAG. Trợ lý chuyển sang trò chuyện thông thường..." };
+                console.error("RAG error:", error);
+                // Call normal chat as fallback
+                res = await unwrap<{ reply: string }>(apiClient.post('/ai/advisor/chat', { prompt: promptToSend }));
+            }
+        } else {
+            res = await unwrap<{ reply: string }>(apiClient.post('/ai/advisor/chat', { prompt: promptToSend }));
+        }
+
         const cleanedReply = cleanAiResponseText(res.reply, userText.trim());
         const aiMsg: ChatMessage = {
           id: `ai-${Date.now()}`,
@@ -823,7 +842,11 @@ export const DraggableAiCompanion: React.FC = () => {
                       </button>
                     </div>
                   )}
-                  <p className="whitespace-pre-wrap">{msg.text}</p>
+                  
+                  <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-snug prose-pre:bg-slate-800 prose-pre:text-slate-100 prose-pre:p-2 prose-pre:rounded-lg prose-code:text-accent-600 dark:prose-code:text-accent-400">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+                  </div>
+    
                 </div>
                 <span className="text-[10px] text-slate-400 px-1 font-mono">{msg.timestamp}</span>
               </div>
