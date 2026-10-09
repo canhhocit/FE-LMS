@@ -136,16 +136,16 @@ export default function AdminReports() {
         title="Báo cáo & Thống kê Hệ thống"
         subtitle="Xuất file báo cáo Excel/PDF, phân tích dữ liệu học tập và quản lý định mức học phí tín chỉ"
         actions={
-          <div className="flex bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-semibold">
+          <div className="flex bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-lg text-sm font-semibold">
             <button
               onClick={() => setActiveTab('reports')}
-              className={`px-3 py-1.5 rounded-md transition ${activeTab === 'reports' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+              className={`px-3 py-2 rounded-md transition ${activeTab === 'reports' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
             >
               Báo cáo hệ thống
             </button>
             <button
               onClick={() => setActiveTab('tuition')}
-              className={`px-3 py-1.5 rounded-md transition ${activeTab === 'tuition' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+              className={`px-3 py-2 rounded-md transition ${activeTab === 'tuition' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
             >
               Quản lý Mức học phí
             </button>
@@ -158,13 +158,13 @@ export default function AdminReports() {
       {activeTab === 'reports' ? (
         <>
           <Card>
-            <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm flex items-center gap-2">
+            <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-base flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-navy-700 dark:text-navy-300" />
               Tác vụ Xuất Báo cáo & Quét nguy cơ học tập
             </h3>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="p-4 bg-slate-50/70 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
-                <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                   <FileSpreadsheet className="w-4 h-4 text-emerald-600" /> Xuất điểm lớp học phần (Excel)
                 </div>
                 <div className="flex gap-2">
@@ -186,7 +186,7 @@ export default function AdminReports() {
               </div>
 
               <div className="p-4 bg-slate-50/70 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
-                <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                   <FileText className="w-4 h-4 text-indigo-600" /> Xuất bảng điểm sinh viên (PDF)
                 </div>
                 <div className="flex gap-2">
@@ -208,7 +208,7 @@ export default function AdminReports() {
               </div>
 
               <div className="p-4 bg-slate-50/70 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
-                <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                   <AlertTriangle className="w-4 h-4 text-amber-500" /> Quét cảnh báo nguy cơ học vụ
                 </div>
                 <div className="flex flex-col gap-2">
@@ -220,7 +220,7 @@ export default function AdminReports() {
                   >
                     {scanning ? 'Đang quét…' : 'Chạy quét nguy cơ'}
                   </Button>
-                  {scanResult && <div className="text-xs font-semibold text-amber-700 dark:text-amber-400">{scanResult}</div>}
+                  {scanResult && <div className="text-sm font-semibold text-amber-700 dark:text-amber-400">{scanResult}</div>}
                 </div>
               </div>
             </div>
@@ -250,12 +250,12 @@ export default function AdminReports() {
           {/* Graphical Distributions */}
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
-              <h3 className="font-bold text-slate-900 dark:text-white mb-2 text-sm">Lượt đăng ký môn học theo Tháng</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Biểu đồ tổng hợp lưu lượng đăng ký học phần</p>
+              <h3 className="font-bold text-slate-900 dark:text-white mb-2 text-base">Lượt đăng ký môn học theo Tháng</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Biểu đồ tổng hợp lưu lượng đăng ký học phần</p>
               <div className="space-y-3">
                 {enrolls.map((item) => (
                   <div key={item.month}>
-                    <div className="flex justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                       <span>{item.month}</span>
                       <span className="font-bold text-navy-900 dark:text-navy-300">{item.count} lượt</span>
                     </div>
@@ -271,12 +271,12 @@ export default function AdminReports() {
             </Card>
 
             <Card>
-              <h3 className="font-bold text-slate-900 dark:text-white mb-2 text-sm">Điểm trung bình theo Lớp học phần</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Đánh giá phổ điểm chung giữa các môn học</p>
+              <h3 className="font-bold text-slate-900 dark:text-white mb-2 text-base">Điểm trung bình theo Lớp học phần</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Đánh giá phổ điểm chung giữa các môn học</p>
               <div className="space-y-3">
                 {scores.map((item, idx) => (
                   <div key={item.classCode || idx}>
-                    <div className="flex justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                       <span className="truncate max-w-[200px]">{item.className || item.classCode}</span>
                       <span className="font-bold text-emerald-600 dark:text-emerald-400">{item.averageScore.toFixed(2)} / 10</span>
                     </div>
@@ -297,8 +297,8 @@ export default function AdminReports() {
         <Card padding="none">
           <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-900/50">
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-sm">Mức học phí đã cấu hình</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Xem đơn giá theo năm học, học kỳ và ngày hiệu lực.</p>
+              <h3 className="font-bold text-slate-900 dark:text-white text-base">Mức học phí đã cấu hình</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Xem đơn giá theo năm học, học kỳ và ngày hiệu lực.</p>
             </div>
             <Link to="/admin/tuition">
               <Button variant="secondary" size="sm">
@@ -318,7 +318,7 @@ export default function AdminReports() {
                   <th className="py-3.5 px-4 text-center">Trạng thái</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
                 {tuitionRates.map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-slate-100">{r.academicYear}</td>

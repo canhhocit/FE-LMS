@@ -11,7 +11,7 @@ function Field({ label, value, editing, onChange, type = 'text', options }:
   const displayVal = value && value.trim() !== '' ? value : null;
   return (
     <div className="p-3.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40">
-      <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{label}</div>
+      <div className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">{label}</div>
       {editing && onChange ? (
         type === 'select' ? (
           <Select value={value ?? ''} onChange={(e) => onChange(e.target.value)}>
@@ -21,7 +21,7 @@ function Field({ label, value, editing, onChange, type = 'text', options }:
           <Input type={type} value={value ?? ''} onChange={(e) => onChange(e.target.value)} placeholder="Nhập thông tin..." />
         )
       ) : (
-        <div className={`text-xs font-semibold ${displayVal ? 'text-slate-900 dark:text-white' : 'text-slate-400 italic'}`}>
+        <div className={`text-sm font-semibold ${displayVal ? 'text-slate-900 dark:text-white' : 'text-slate-400 italic'}`}>
           {displayVal ?? 'Chưa cập nhật'}
         </div>
       )}
@@ -106,7 +106,7 @@ export default function StudentProfile() {
       <Card>
         {editing && (
           <div className="mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
-            <h4 className="font-bold text-xs text-slate-900 dark:text-white mb-3">Đổi ảnh đại diện</h4>
+            <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-3">Đổi ảnh đại diện</h4>
             <AvatarUploader
               currentAvatar={profile.avatarUrl ?? undefined}
               onUpload={handleAvatarUpload}
@@ -126,7 +126,7 @@ export default function StudentProfile() {
             </div>
             <div>
               <div className="text-lg font-bold text-slate-900 dark:text-white">{profile.fullName}</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">{profile.email}</div>
+              <div className="text-sm text-slate-500 dark:text-slate-400 font-mono">{profile.email}</div>
               <div className="mt-1">
                 <Badge color="indigo">{profile.role}</Badge>
               </div>
@@ -138,7 +138,7 @@ export default function StudentProfile() {
           </Button>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-3 text-xs">
+        <div className="grid md:grid-cols-2 gap-3 text-sm">
           <Field label="Mã sinh viên" value={profile.studentCode} />
           <Field label="Lớp hành chính" value={profile.adminClassName ?? 'Chưa phân lớp'} />
           <Field label="Chương trình đào tạo" value={profile.curriculumName ?? profile.major ?? 'Chưa cập nhật'} />
@@ -263,7 +263,7 @@ function AiSettingsCard() {
         {msg && <Toast message={msg} type="success" onClose={() => setMsg(null)} />}
 
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-          <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+          <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
             <Bot className="w-4 h-4 text-accent-600 dark:text-accent-400" />
             <span>Cấu hình Trợ lý AI</span>
           </h3>
@@ -314,7 +314,7 @@ function AiSettingsCard() {
         </div>
 
         <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Quản lý dữ liệu hội thoại</span>
+          <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Quản lý dữ liệu hội thoại</span>
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" onClick={handleExportChat}>Xuất JSON</Button>
             <Button variant="danger" size="sm" onClick={handleClear}>Xóa lịch sử</Button>
@@ -345,7 +345,7 @@ function ChangePasswordCard() {
 
   return (
     <Card>
-      <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Đổi mật khẩu</h3>
+      <h3 className="font-bold text-slate-900 dark:text-white text-base mb-4">Đổi mật khẩu</h3>
       <div className="grid md:grid-cols-2 gap-4 mb-4">
         <Input
           type="password"

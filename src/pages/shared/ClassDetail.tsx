@@ -529,7 +529,7 @@ export default function ClassDetail() {
         actions={
           <Link
             to={`${rolePath}/quizzes?classId=${cid}`}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-2xs cursor-pointer"
           >
             <HelpCircle className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span>Bài kiểm tra môn học</span>
@@ -540,17 +540,17 @@ export default function ClassDetail() {
       {/* Overview Metadata Cards */}
       <div className="grid md:grid-cols-3 gap-4">
         <Card>
-          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">Giảng viên phụ trách</div>
+          <div className="text-sm font-medium text-slate-400 uppercase tracking-wider">Giảng viên phụ trách</div>
           <div className="mt-1 text-base font-semibold text-slate-800">{clazz.lecturerName ?? "Chưa phân công"}</div>
         </Card>
         <Card>
-          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">Sĩ số</div>
+          <div className="text-sm font-medium text-slate-400 uppercase tracking-wider">Sĩ số</div>
           <div className="mt-1 text-base font-semibold text-slate-800">
             {clazz.currentStudents ?? students.length}/{clazz.maxStudents || '∞'} sinh viên
           </div>
         </Card>
         <Card>
-          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">Học kỳ / Năm học</div>
+          <div className="text-sm font-medium text-slate-400 uppercase tracking-wider">Học kỳ / Năm học</div>
           <div className="mt-1"><Pill color="indigo">{clazz.semester} · Năm học {clazz.academicYear}</Pill></div>
         </Card>
       </div>
@@ -563,7 +563,7 @@ export default function ClassDetail() {
               <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-indigo-600">Tiến độ học tập môn học</div>
               <div className="mt-1 text-2xl font-bold text-slate-800">{studentProgress?.percentage ?? 0}%</div>
             </div>
-            <div className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+            <div className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700">
               {studentSummary.total === 0
                 ? 'Chưa có bài học'
                 : `${studentSummary.completed}/${studentSummary.total} bài học đã hoàn thành`}
@@ -582,7 +582,7 @@ export default function ClassDetail() {
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
               <h3 className="text-lg font-bold text-slate-800">Chương trình bài giảng</h3>
-              <p className="text-xs text-slate-500">Quản lý bài học, thứ tự chương và bài tập học phần</p>
+              <p className="text-sm text-slate-500">Quản lý bài học, thứ tự chương và bài tập học phần</p>
             </div>
             {isLecturer && (
               <div className="flex items-center gap-2">
@@ -590,20 +590,20 @@ export default function ClassDetail() {
                   value={chapterTitle} 
                   onChange={(e) => setChapterTitle(e.target.value)} 
                   placeholder="Tên chương mới..." 
-                  className="w-44 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                  className="w-44 px-3 py-2 rounded-lg border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-indigo-500" 
                 />
                 <input 
                   type="number" 
                   value={chapterOrder} 
                   min={1} 
                   onChange={(e) => setChapterOrder(Number(e.target.value) || 1)} 
-                  className="w-16 px-2 py-1.5 rounded-lg border border-slate-200 bg-white text-sm text-center" 
+                  className="w-16 px-2 py-2 rounded-lg border border-slate-200 bg-white text-base text-center" 
                   title="Số thứ tự chương (# STT)"
                 />
                 <button 
                   onClick={handleCreateChapter} 
                   disabled={saving || !chapterTitle.trim()} 
-                  className="px-3.5 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition cursor-pointer flex items-center gap-1"
+                  className="px-3.5 py-2 text-base font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition cursor-pointer flex items-center gap-1"
                 >
                   <Plus className="w-4 h-4" />
                   Chương
@@ -623,30 +623,30 @@ export default function ClassDetail() {
                     <div className="flex items-center justify-between gap-3">
                       {editChapterId === c.id ? (
                         <div className="flex items-center gap-2 flex-1">
-                          <span className="text-xs font-semibold text-indigo-600"># STT:</span>
+                          <span className="text-sm font-semibold text-indigo-600"># STT:</span>
                           <input
                             type="number"
                             value={editChapterOrder}
                             onChange={(e) => setEditChapterOrder(Number(e.target.value) || 1)}
-                            className="w-16 px-2 py-1 text-sm border rounded-md border-slate-300 text-center"
+                            className="w-16 px-2 py-1 text-base border rounded-md border-slate-300 text-center"
                           />
                           <input
                             value={editChapterTitle}
                             onChange={(e) => setEditChapterTitle(e.target.value)}
-                            className="px-3 py-1 text-sm border rounded-md border-slate-300 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="px-3 py-1 text-base border rounded-md border-slate-300 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                           />
-                          <button onClick={saveEditChapter} className="px-3 py-1 text-xs font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Lưu</button>
-                          <button onClick={() => setEditChapterId(null)} className="px-3 py-1 text-xs font-medium rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300">Hủy</button>
+                          <button onClick={saveEditChapter} className="px-3 py-1 text-sm font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Lưu</button>
+                          <button onClick={() => setEditChapterId(null)} className="px-3 py-1 text-sm font-medium rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300">Hủy</button>
                         </div>
                       ) : (
                         <>
                           <div className="flex items-center gap-3">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700 font-mono font-bold text-xs border border-indigo-100">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700 font-mono font-bold text-sm border border-indigo-100">
                               #{c.sortOrder ?? idx + 1}
                             </span>
                             <div>
                               <div className="font-semibold text-slate-800 text-base">{c.title}</div>
-                              <div className="text-xs text-slate-500">{(chapterLessons[c.id]?.length ?? 0)} bài học</div>
+                              <div className="text-sm text-slate-500">{(chapterLessons[c.id]?.length ?? 0)} bài học</div>
                             </div>
                           </div>
                           {isLecturer && (
@@ -675,7 +675,7 @@ export default function ClassDetail() {
                                   setAssignTargetChapterId(c.id);
                                   setShowAssignModal(true);
                                 }}
-                                className="px-2.5 py-1 text-xs font-medium rounded-md border border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100 flex items-center gap-1 cursor-pointer"
+                                className="px-3 py-1 text-sm font-medium rounded-md border border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100 flex items-center gap-1 cursor-pointer"
                                 title="Tạo bài tập cho chương này"
                               >
                                 <FileText className="w-3.5 h-3.5" />
@@ -718,24 +718,24 @@ export default function ClassDetail() {
                                       value={editLessonTitle}
                                       onChange={(e) => setEditLessonTitle(e.target.value)}
                                       placeholder="Tên bài học"
-                                      className="w-full px-3 py-1.5 text-sm border rounded-md border-slate-300"
+                                      className="w-full px-3 py-2 text-base border rounded-md border-slate-300"
                                     />
                                     <textarea
                                       value={editLessonContent}
                                       onChange={(e) => setEditLessonContent(e.target.value)}
                                       placeholder="Nội dung/mô tả bài học"
                                       rows={2}
-                                      className="w-full px-3 py-1.5 text-xs border rounded-md border-slate-300"
+                                      className="w-full px-3 py-2 text-sm border rounded-md border-slate-300"
                                     />
                                     <div className="flex gap-2">
-                                      <button onClick={saveEditLesson} className="px-3 py-1 text-xs font-medium rounded bg-indigo-600 text-white">Lưu</button>
-                                      <button onClick={() => setEditLessonId(null)} className="px-3 py-1 text-xs font-medium rounded bg-slate-200 text-slate-700">Hủy</button>
+                                      <button onClick={saveEditLesson} className="px-3 py-1 text-sm font-medium rounded bg-indigo-600 text-white">Lưu</button>
+                                      <button onClick={() => setEditLessonId(null)} className="px-3 py-1 text-sm font-medium rounded bg-slate-200 text-slate-700">Hủy</button>
                                     </div>
                                   </div>
                                 ) : (
                                   <div>
                                     <div className="flex items-center gap-2">
-                                      <span className="text-xs text-slate-400 font-mono">#{lIdx + 1}</span>
+                                      <span className="text-sm text-slate-400 font-mono">#{lIdx + 1}</span>
                                       {isStudent ? (
                                         <Link to={`/student/classes/${cid}/lessons/${lesson.id}`} className="font-semibold text-slate-800 hover:text-indigo-600 hover:underline">{lesson.title}</Link>
                                       ) : (
@@ -753,7 +753,7 @@ export default function ClassDetail() {
                                       )}
                                     </div>
 
-                                    <div className="mt-1 flex flex-wrap items-center gap-3 text-xs">
+                                    <div className="mt-1 flex flex-wrap items-center gap-3 text-sm">
                                       {lesson.videoUrl && (
                                         <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-indigo-600 font-medium hover:underline">
                                           <Video className="w-3.5 h-3.5" />
@@ -786,7 +786,7 @@ export default function ClassDetail() {
                                       <div className="mt-2 flex w-full">
                                         <button
                                           onClick={() => setManageMaterialsLesson(lesson)}
-                                          className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition cursor-pointer shadow-sm"
+                                          className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition cursor-pointer shadow-sm"
                                         >
                                           <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
                                           Quản lý học liệu (Video / Tài liệu)
@@ -797,7 +797,7 @@ export default function ClassDetail() {
                                     {isStudent && (
                                       <div className="mt-1.5 flex flex-wrap items-center gap-2">
                                         {status && (
-                                          <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${status.className}`}>
+                                          <span className={`rounded-full px-3 py-0.5 text-[10px] font-semibold ${status.className}`}>
                                             {status.label}
                                           </span>
                                         )}
@@ -810,7 +810,7 @@ export default function ClassDetail() {
                               {isStudent && (
                                 <Link
                                   to={`/student/classes/${cid}/lessons/${lesson.id}`}
-                                  className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${lessonProgress?.isCompleted ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                                  className={`shrink-0 rounded-lg px-3 py-2 text-sm font-semibold transition ${lessonProgress?.isCompleted ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
                                 >
                                   {lessonProgress?.isCompleted ? 'Ôn tập' : 'Vào học'}
                                 </Link>
@@ -828,18 +828,18 @@ export default function ClassDetail() {
                           value={selectedChapterId === c.id ? lessonTitle : ''}
                           onChange={(e) => { setSelectedChapterId(c.id); setLessonTitle(e.target.value); }}
                           placeholder="Tên bài học mới..."
-                          className="w-44 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-44 px-3 py-2 rounded-lg border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                         <input
                           value={selectedChapterId === c.id ? lessonContent : ''}
                           onChange={(e) => { setSelectedChapterId(c.id); setLessonContent(e.target.value); }}
                           placeholder="Mô tả ngắn..."
-                          className="w-48 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-48 px-3 py-2 rounded-lg border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                         <button
                           onClick={handleCreateLesson}
                           disabled={saving || !lessonTitle.trim() || selectedChapterId !== c.id}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition cursor-pointer"
+                          className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5" />
                           Tạo bài học
@@ -863,7 +863,7 @@ export default function ClassDetail() {
                 <button 
                   onClick={handleCreateAnnouncement} 
                   disabled={savingAnnouncement || !announcementTitle.trim() || !announcementContent.trim()} 
-                  className="px-3 py-1 text-xs font-semibold rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-1"
+                  className="px-3 py-1 text-sm font-semibold rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-1"
                 >
                   {savingAnnouncement ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -881,14 +881,14 @@ export default function ClassDetail() {
                   value={announcementTitle} 
                   onChange={(e) => setAnnouncementTitle(e.target.value)} 
                   placeholder="Tiêu đề thông báo..." 
-                  className="w-full px-3 py-1.5 rounded-md border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                  className="w-full px-3 py-2 rounded-md border border-slate-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-indigo-500" 
                 />
                 <textarea 
                   value={announcementContent} 
                   onChange={(e) => setAnnouncementContent(e.target.value)} 
                   placeholder="Nội dung thông báo chi tiết..." 
                   rows={2} 
-                  className="w-full px-3 py-1.5 rounded-md border border-slate-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                  className="w-full px-3 py-2 rounded-md border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
                 />
               </div>
             )}
@@ -902,23 +902,23 @@ export default function ClassDetail() {
                         <input
                           value={editAnnTitle}
                           onChange={(e) => setEditAnnTitle(e.target.value)}
-                          className="w-full px-2 py-1 text-xs border rounded border-slate-300 font-medium"
+                          className="w-full px-2 py-1 text-sm border rounded border-slate-300 font-medium"
                         />
                         <textarea
                           value={editAnnContent}
                           onChange={(e) => setEditAnnContent(e.target.value)}
                           rows={2}
-                          className="w-full px-2 py-1 text-xs border rounded border-slate-300"
+                          className="w-full px-2 py-1 text-sm border rounded border-slate-300"
                         />
                         <div className="flex gap-2">
-                          <button onClick={saveEditAnn} className="px-2.5 py-0.5 text-xs rounded bg-indigo-600 text-white">Lưu</button>
-                          <button onClick={() => setEditAnnId(null)} className="px-2.5 py-0.5 text-xs rounded bg-slate-200 text-slate-700">Hủy</button>
+                          <button onClick={saveEditAnn} className="px-3 py-0.5 text-sm rounded bg-indigo-600 text-white">Lưu</button>
+                          <button onClick={() => setEditAnnId(null)} className="px-3 py-0.5 text-sm rounded bg-slate-200 text-slate-700">Hủy</button>
                         </div>
                       </div>
                     ) : (
                       <div>
                         <div className="flex items-center justify-between gap-2">
-                          <div className="font-semibold text-slate-800 text-sm">{a.title}</div>
+                          <div className="font-semibold text-slate-800 text-base">{a.title}</div>
                           {isLecturer && (
                             <div className="flex items-center gap-1 shrink-0">
                               <button onClick={() => startEditAnn(a)} className="text-slate-400 hover:text-indigo-600 p-0.5"><Pencil className="w-3 h-3" /></button>
@@ -926,7 +926,7 @@ export default function ClassDetail() {
                             </div>
                           )}
                         </div>
-                        <div className="mt-1 text-xs text-slate-600 leading-relaxed whitespace-pre-line">{a.content}</div>
+                        <div className="mt-1 text-sm text-slate-600 leading-relaxed whitespace-pre-line">{a.content}</div>
                       </div>
                     )}
                   </li>
@@ -948,7 +948,7 @@ export default function ClassDetail() {
                     setAssignTargetChapterId(null);
                     setShowAssignModal(true);
                   }}
-                  className="px-3 py-1 text-xs font-semibold rounded-md bg-amber-600 text-white hover:bg-amber-700 transition cursor-pointer flex items-center gap-1"
+                  className="px-3 py-1 text-sm font-semibold rounded-md bg-amber-600 text-white hover:bg-amber-700 transition cursor-pointer flex items-center gap-1"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Bài tập
@@ -964,15 +964,15 @@ export default function ClassDetail() {
                     <li key={a.id} className="border border-slate-200 rounded-xl p-3 bg-slate-50/60 hover:bg-white transition space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <div className="font-semibold text-slate-800 text-sm">{a.title}</div>
-                          <div className="text-xs text-slate-500 line-clamp-2 mt-0.5">{a.description}</div>
+                          <div className="font-semibold text-slate-800 text-base">{a.title}</div>
+                          <div className="text-sm text-slate-500 line-clamp-2 mt-0.5">{a.description}</div>
                         </div>
-                        <span className="shrink-0 font-semibold text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        <span className="shrink-0 font-semibold text-sm text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                           {a.maxScore} điểm
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100">
+                      <div className="flex items-center justify-between text-sm text-slate-500 pt-1 border-t border-slate-100">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5 text-slate-400" />
                           Hạn: {new Date(a.dueDate).toLocaleDateString('vi-VN')}
@@ -987,7 +987,7 @@ export default function ClassDetail() {
                           ) : (
                             <button
                               onClick={() => setActiveSubmitAssignment(a)}
-                              className="px-2.5 py-1 font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer text-[11px]"
+                              className="px-3 py-1 font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer text-[11px]"
                             >
                               Nộp bài
                             </button>
@@ -1008,8 +1008,8 @@ export default function ClassDetail() {
         <h3 className="font-bold text-slate-800 text-base mb-3">Danh sách sinh viên lớp học phần ({students.length})</h3>
         {students.length === 0 ? <Empty msg="Lớp chưa có sinh viên nào đăng ký" /> : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-xs text-slate-400 uppercase tracking-wider border-b border-slate-200 bg-slate-50">
+            <table className="w-full text-base">
+              <thead className="text-sm text-slate-400 uppercase tracking-wider border-b border-slate-200 bg-slate-50">
                 <tr>
                   <th className="py-2.5 px-3 text-left"># STT</th>
                   <th className="py-2.5 px-3 text-left">Mã sinh viên</th>
@@ -1020,7 +1020,7 @@ export default function ClassDetail() {
               <tbody className="divide-y divide-slate-100">
                 {students.map((s: User, i: number) => (
                   <tr key={s.id} className="hover:bg-slate-50/70 transition">
-                    <td className="py-2.5 px-3 text-slate-500 font-mono text-xs">{i + 1}</td>
+                    <td className="py-2.5 px-3 text-slate-500 font-mono text-sm">{i + 1}</td>
                     <td className="py-2.5 px-3 font-mono font-semibold text-indigo-700">{s.studentCode || `SV${s.id}`}</td>
                     <td className="py-2.5 px-3 font-medium text-slate-800">{s.fullName}</td>
                     <td className="py-2.5 px-3 text-slate-500">{s.email}</td>
@@ -1048,35 +1048,35 @@ export default function ClassDetail() {
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Tên bài tập</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Tên bài tập</label>
                 <input
                   value={assignTitle}
                   onChange={(e) => setAssignTitle(e.target.value)}
                   placeholder="Nhập tiêu đề bài tập..."
-                  className="w-full px-3 py-2 text-sm border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 text-base border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Mô tả bài tập & yêu cầu nộp</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Mô tả bài tập & yêu cầu nộp</label>
                 <textarea
                   value={assignDesc}
                   onChange={(e) => setAssignDesc(e.target.value)}
                   placeholder="Yêu cầu đề bài, định dạng nộp bài (file, link github, google drive...)"
                   rows={3}
-                  className="w-full px-3 py-2 text-sm border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 text-base border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Upload File Đề Bài / Tài Liệu Đính Kèm (PDF, Word, Zip, Ảnh...)</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Upload File Đề Bài / Tài Liệu Đính Kèm (PDF, Word, Zip, Ảnh...)</label>
                 <input
                   type="file"
                   onChange={(e) => setAssignFile(e.target.files?.[0] || null)}
-                  className="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 cursor-pointer"
+                  className="w-full text-sm text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 cursor-pointer"
                 />
                 {assignFile && (
-                  <div className="mt-1 text-xs text-emerald-600 font-medium">
+                  <div className="mt-1 text-sm text-emerald-600 font-medium">
                     Đã chọn file đề bài: {assignFile.name} ({(assignFile.size / 1024).toFixed(1)} KB)
                   </div>
                 )}
@@ -1084,21 +1084,21 @@ export default function ClassDetail() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Hạn nộp bài</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Hạn nộp bài</label>
                   <input
                     type="datetime-local"
                     value={assignDueDate}
                     onChange={(e) => setAssignDueDate(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 text-base border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Thang điểm tối đa</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Thang điểm tối đa</label>
                   <input
                     type="number"
                     value={assignMaxScore}
                     onChange={(e) => setAssignMaxScore(Number(e.target.value) || 10)}
-                    className="w-full px-3 py-2 text-sm border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 text-base border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
               </div>
@@ -1107,14 +1107,14 @@ export default function ClassDetail() {
             <div className="flex justify-end gap-2 border-t border-slate-100 pt-3">
               <button
                 onClick={() => setShowAssignModal(false)}
-                className="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer"
+                className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer"
               >
                 Hủy
               </button>
               <button
                 onClick={handleCreateAssignment}
                 disabled={saving || !assignTitle.trim() || !assignDueDate}
-                className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 cursor-pointer"
+                className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 cursor-pointer"
               >
                 {saving ? 'Đang tạo...' : 'Tạo bài tập'}
               </button>
@@ -1130,7 +1130,7 @@ export default function ClassDetail() {
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="text-lg font-bold text-slate-800">Nộp bài tập: {activeSubmitAssignment.title}</h3>
-                <p className="text-xs text-slate-500">Hạn nộp: {new Date(activeSubmitAssignment.dueDate).toLocaleString('vi-VN')}</p>
+                <p className="text-sm text-slate-500">Hạn nộp: {new Date(activeSubmitAssignment.dueDate).toLocaleString('vi-VN')}</p>
               </div>
               <button onClick={() => setActiveSubmitAssignment(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                 <X className="w-5 h-5" />
@@ -1139,12 +1139,12 @@ export default function ClassDetail() {
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Hình thức nộp bài</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Hình thức nộp bài</label>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setSubType('FILE')}
-                    className={`flex-1 py-2 px-3 text-xs font-medium rounded-lg border transition flex items-center justify-center gap-1.5 cursor-pointer ${subType === 'FILE' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600'}`}
+                    className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg border transition flex items-center justify-center gap-1.5 cursor-pointer ${subType === 'FILE' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600'}`}
                   >
                     <Upload className="w-3.5 h-3.5" />
                     Upload File (Multi-file)
@@ -1152,7 +1152,7 @@ export default function ClassDetail() {
                   <button
                     type="button"
                     onClick={() => setSubType('GITHUB_LINK')}
-                    className={`flex-1 py-2 px-3 text-xs font-medium rounded-lg border transition flex items-center justify-center gap-1.5 cursor-pointer ${subType !== 'FILE' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600'}`}
+                    className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg border transition flex items-center justify-center gap-1.5 cursor-pointer ${subType !== 'FILE' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600'}`}
                   >
                     <Link2 className="w-3.5 h-3.5" />
                     Đường link (Drive / Git)
@@ -1162,27 +1162,27 @@ export default function ClassDetail() {
 
               {subType === 'FILE' ? (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Chọn file bài làm</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Chọn file bài làm</label>
                   <input
                     type="file"
                     multiple
                     onChange={(e) => setSubSelectedFiles(Array.from(e.target.files || []))}
-                    className="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    className="w-full text-sm text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                   />
                   {subSelectedFiles.length > 0 && (
-                    <div className="mt-2 text-xs text-emerald-600 font-medium">
+                    <div className="mt-2 text-sm text-emerald-600 font-medium">
                       Đã chọn {subSelectedFiles.length} file: {subSelectedFiles.map(f => f.name).join(', ')}
                     </div>
                   )}
                 </div>
               ) : (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Nhập đường link nộp bài (URL)</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Nhập đường link nộp bài (URL)</label>
                   <input
                     value={subExternalLink}
                     onChange={(e) => setSubExternalLink(e.target.value)}
                     placeholder="https://github.com/... hoặc https://drive.google.com/..."
-                    className="w-full px-3 py-2 text-sm border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 text-base border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
               )}
@@ -1191,14 +1191,14 @@ export default function ClassDetail() {
             <div className="flex justify-end gap-2 border-t border-slate-100 pt-3">
               <button
                 onClick={() => setActiveSubmitAssignment(null)}
-                className="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer"
+                className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer"
               >
                 Hủy
               </button>
               <button
                 onClick={handleStudentSubmit}
                 disabled={submitting || (subType === 'FILE' ? subSelectedFiles.length === 0 : !subExternalLink.trim())}
-                className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 cursor-pointer"
+                className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? 'Đang nộp...' : 'Xác nhận nộp bài'}
               </button>

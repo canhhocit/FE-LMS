@@ -170,7 +170,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={resetToToday}
-              className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-300 transition cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-2 text-sm font-semibold rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-300 transition cursor-pointer flex items-center gap-1.5"
             >
               <RefreshCw className="w-3.5 h-3.5" /> Hôm nay
             </button>
@@ -217,7 +217,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                         }`}>
                           {date.getDate()}
                         </span>
-                        <span className={`text-xs font-bold ${
+                        <span className={`text-sm font-bold ${
                           isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-400'
                         }`}>
                           {['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'][idx]}
@@ -302,7 +302,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                             </div>
 
                             {/* Card Body Info */}
-                            <div className="p-2 flex-1 flex flex-col justify-between text-xs text-slate-800 dark:text-slate-100 leading-relaxed font-medium space-y-1">
+                            <div className="p-2 flex-1 flex flex-col justify-between text-sm text-slate-800 dark:text-slate-100 leading-relaxed font-medium space-y-1">
                               <div>
                                 <div className="text-[11px] font-bold text-slate-900 dark:text-white line-clamp-2">
                                   {item.className || item.courseTitle}
@@ -364,7 +364,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
         <div className="bg-indigo-50/70 dark:bg-slate-800/90 border border-indigo-100 dark:border-slate-700/80 rounded-2xl p-4 shadow-xs">
           {/* Header Month Nav */}
           <div className="flex items-center justify-between mb-3 px-1">
-            <span className="text-sm font-bold text-indigo-950 dark:text-white">
+            <span className="text-base font-bold text-indigo-950 dark:text-white">
               Tháng {calendarMonthDate.getMonth() + 1}-{calendarMonthDate.getFullYear()}
             </span>
             <div className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
@@ -388,12 +388,12 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
           </div>
 
           {/* Days Header */}
-          <div className="grid grid-cols-7 text-center text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
+          <div className="grid grid-cols-7 text-center text-sm font-bold text-slate-500 dark:text-slate-400 mb-2">
             <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>Cn</span>
           </div>
 
           {/* Days Grid */}
-          <div className="grid grid-cols-7 gap-1 text-center text-xs">
+          <div className="grid grid-cols-7 gap-1 text-center text-sm">
             {calendarDays.map((cd, idx) => {
               const isSelected = cd.date.toDateString() === currentDate.toDateString();
               const isToday = cd.date.toDateString() === new Date().toDateString();
@@ -403,7 +403,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                   key={idx}
                   type="button"
                   onClick={() => setCurrentDate(cd.date)}
-                  className={`h-7 w-7 mx-auto flex items-center justify-center rounded-full transition font-semibold text-xs cursor-pointer ${
+                  className={`h-7 w-7 mx-auto flex items-center justify-center rounded-full transition font-semibold text-sm cursor-pointer ${
                     isSelected
                       ? 'bg-amber-600 text-white font-bold shadow-xs'
                       : isToday
@@ -424,7 +424,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
             <button
               type="button"
               onClick={resetToToday}
-              className="text-xs font-bold text-indigo-700 dark:text-indigo-400 hover:underline flex items-center gap-1.5 cursor-pointer"
+              className="text-sm font-bold text-indigo-700 dark:text-indigo-400 hover:underline flex items-center gap-1.5 cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Về ngày hôm nay</span>
@@ -435,7 +435,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
         {/* Selected Day Agenda Panel */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs space-y-3">
           <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
+            <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-sm">
               <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               <span>Lịch học {selectedDayName} ({currentDate.getDate()}/{currentDate.getMonth() + 1})</span>
             </div>
@@ -445,7 +445,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
           </div>
 
           {selectedDaySchedules.length === 0 ? (
-            <div className="py-6 text-center text-xs text-slate-400 dark:text-slate-500 font-medium italic">
+            <div className="py-6 text-center text-sm text-slate-400 dark:text-slate-500 font-medium italic">
               Không có lịch học vào {selectedDayName}
             </div>
           ) : (
@@ -454,9 +454,9 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                 const theme = CARD_THEMES[(item.clazzId || item.id || idx) % CARD_THEMES.length];
 
                 return (
-                  <div key={item.id || idx} className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 hover:bg-indigo-50/40 dark:hover:bg-slate-800 transition text-xs space-y-1.5 shadow-2xs">
+                  <div key={item.id || idx} className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 hover:bg-indigo-50/40 dark:hover:bg-slate-800 transition text-sm space-y-1.5 shadow-2xs">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="font-bold text-slate-900 dark:text-white text-xs leading-snug">
+                      <div className="font-bold text-slate-900 dark:text-white text-sm leading-snug">
                         {item.className || item.courseTitle}
                       </div>
                       <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold text-white shrink-0 ${theme.headerBg}`}>

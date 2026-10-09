@@ -60,7 +60,7 @@ export const LessonDiscussion: React.FC<LessonDiscussionProps> = ({ lessonId }) 
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
         <div className="flex items-center gap-2">
           <MessageSquare className="w-4 h-4 text-blue-500" />
-          <h4 className="font-bold text-slate-900 dark:text-white text-sm">Thảo luận chung</h4>
+          <h4 className="font-bold text-slate-900 dark:text-white text-base">Thảo luận chung</h4>
           <Badge color="blue">{comments.length}</Badge>
         </div>
       </div>
@@ -77,7 +77,7 @@ export const LessonDiscussion: React.FC<LessonDiscussionProps> = ({ lessonId }) 
             }
           }}
           placeholder="Viết bình luận, thắc mắc về bài giảng này..."
-          className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <Button
           variant="primary"
@@ -93,7 +93,7 @@ export const LessonDiscussion: React.FC<LessonDiscussionProps> = ({ lessonId }) 
       {loading ? (
         <div className="py-4 flex justify-center"><Spinner /></div>
       ) : comments.length === 0 ? (
-        <div className="text-center py-6 text-xs text-slate-400 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+        <div className="text-center py-6 text-sm text-slate-400 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
           Chưa có bình luận nào.
         </div>
       ) : (
@@ -110,7 +110,7 @@ export const LessonDiscussion: React.FC<LessonDiscussionProps> = ({ lessonId }) 
               <div className="flex-1 space-y-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-xs text-slate-800 dark:text-slate-200">{cmt.userName}</span>
+                    <span className="font-semibold text-sm text-slate-800 dark:text-slate-200">{cmt.userName}</span>
                     <span className="text-[10px] text-slate-400">
                       {new Date(cmt.createdAt).toLocaleString('vi-VN')}
                     </span>
@@ -121,7 +121,7 @@ export const LessonDiscussion: React.FC<LessonDiscussionProps> = ({ lessonId }) 
                     </button>
                   )}
                 </div>
-                <p className="text-xs text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{cmt.content}</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{cmt.content}</p>
               </div>
             </div>
           ))}

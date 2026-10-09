@@ -100,10 +100,10 @@ export default function AdminDepartments() {
 
       {showForm && (
         <Card>
-          <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm">
+          <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-base">
             {editId ? 'Sửa thông tin Khoa / Bộ môn' : 'Thêm Khoa / Bộ môn mới'}
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-sm">
             <div>
               <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Mã khoa *</label>
               <Input
@@ -121,7 +121,7 @@ export default function AdminDepartments() {
               />
             </div>
           </div>
-          <div className="mb-4 text-xs">
+          <div className="mb-4 text-sm">
             <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Mô tả</label>
             <Textarea
               value={description}
@@ -143,7 +143,7 @@ export default function AdminDepartments() {
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-2">
             <Building2 className="w-5 h-5 text-navy-700 dark:text-navy-300" />
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white">
               Danh sách Khoa / Bộ môn ({filteredDepts.length})
             </h3>
           </div>
@@ -171,7 +171,7 @@ export default function AdminDepartments() {
                   <th className="py-3.5 px-4 text-right">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
                 {filteredDepts.map((d) => (
                   <tr key={d.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="py-3.5 px-4 font-mono font-semibold text-navy-900 dark:text-navy-300">{d.code}</td>

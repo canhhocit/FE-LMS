@@ -258,18 +258,18 @@ export default function RegistrationPeriods() {
 
       {showForm && (
         <Card className="border border-navy-200 dark:border-navy-800">
-          <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm flex items-center gap-2">
+          <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-base flex items-center gap-2">
             <Calendar className="w-4 h-4 text-navy-700 dark:text-navy-300" />
             Cấu hình Đợt Đăng ký Môn học phần Mới
           </h3>
 
           {formError && (
-            <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+            <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
               {formError}
             </div>
           )}
 
-          <div className="grid gap-4 text-xs sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tên đợt đăng ký *</label>
               <Input
@@ -339,22 +339,22 @@ export default function RegistrationPeriods() {
             />
           </div>
 
-          <div className="flex bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-semibold">
+          <div className="flex bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-lg text-sm font-semibold">
             <button
               onClick={() => { setStatusFilter('ALL'); setPage(0); }}
-              className={`px-3 py-1.5 rounded-md transition ${statusFilter === 'ALL' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+              className={`px-3 py-2 rounded-md transition ${statusFilter === 'ALL' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
             >
               Tất cả
             </button>
             <button
               onClick={() => { setStatusFilter('ACTIVE'); setPage(0); }}
-              className={`px-3 py-1.5 rounded-md transition ${statusFilter === 'ACTIVE' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+              className={`px-3 py-2 rounded-md transition ${statusFilter === 'ACTIVE' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
             >
               Đang mở
             </button>
             <button
               onClick={() => { setStatusFilter('INACTIVE'); setPage(0); }}
-              className={`px-3 py-1.5 rounded-md transition ${statusFilter === 'INACTIVE' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+              className={`px-3 py-2 rounded-md transition ${statusFilter === 'INACTIVE' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
             >
               Đã đóng / hết hạn
             </button>
@@ -378,7 +378,7 @@ export default function RegistrationPeriods() {
                     <th className="py-3.5 px-4 text-right">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
                   {paginatedPeriods.map((p) => (
                     <tr key={p.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-slate-100">{p.name}</td>
@@ -414,7 +414,7 @@ export default function RegistrationPeriods() {
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-t border-slate-200 dark:border-slate-800 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-t border-slate-200 dark:border-slate-800 text-sm">
               <div className="text-slate-500 dark:text-slate-400">
                 Hiển thị <span className="font-semibold text-slate-800 dark:text-slate-200">{filteredPeriods.length > 0 ? page * pageSize + 1 : 0}</span> - <span className="font-semibold text-slate-800 dark:text-slate-200">{Math.min((page + 1) * pageSize, filteredPeriods.length)}</span> trên tổng số <span className="font-semibold text-slate-800 dark:text-slate-200">{filteredPeriods.length}</span> đợt
               </div>
@@ -468,38 +468,38 @@ export default function RegistrationPeriods() {
               <div className="flex-1 overflow-auto flex flex-col lg:flex-row gap-6 min-h-0">
                 {/* Left: Available classes */}
                 <div className="flex-1 border rounded-xl overflow-hidden flex flex-col">
-                  <div className="bg-slate-50 dark:bg-slate-900 p-3 font-semibold text-sm border-b">Tất cả lớp học phần</div>
+                  <div className="bg-slate-50 dark:bg-slate-900 p-3 font-semibold text-base border-b">Tất cả lớp học phần</div>
                   <div className="flex-1 overflow-auto p-2 space-y-2">
                     {allClasses.filter(c => !periodClasses.find(pc => pc.id === c.id)).map(c => (
                       <div key={c.id} className="flex items-center justify-between p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded border">
-                        <div className="text-sm">
+                        <div className="text-base">
                           <div className="font-bold">{c.classCode}</div>
-                          <div className="text-xs text-slate-500">{c.className}</div>
+                          <div className="text-sm text-slate-500">{c.className}</div>
                         </div>
                         <Button size="sm" onClick={() => handleAddClassToPeriod(c.id)}>Thêm</Button>
                       </div>
                     ))}
                     {allClasses.filter(c => !periodClasses.find(pc => pc.id === c.id)).length === 0 && (
-                      <div className="p-4 text-center text-sm text-slate-500">Không còn lớp nào để thêm</div>
+                      <div className="p-4 text-center text-base text-slate-500">Không còn lớp nào để thêm</div>
                     )}
                   </div>
                 </div>
 
                 {/* Right: Added classes */}
                 <div className="flex-1 border rounded-xl overflow-hidden flex flex-col">
-                  <div className="bg-indigo-50 dark:bg-indigo-900/30 p-3 font-semibold text-sm border-b">Đã chọn ({periodClasses.length})</div>
+                  <div className="bg-indigo-50 dark:bg-indigo-900/30 p-3 font-semibold text-base border-b">Đã chọn ({periodClasses.length})</div>
                   <div className="flex-1 overflow-auto p-2 space-y-2">
                     {periodClasses.map(c => (
                       <div key={c.id} className="flex items-center justify-between p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded border border-indigo-100 dark:border-indigo-900/50">
-                        <div className="text-sm">
+                        <div className="text-base">
                           <div className="font-bold text-indigo-700 dark:text-indigo-400">{c.classCode}</div>
-                          <div className="text-xs text-slate-500">{c.className}</div>
+                          <div className="text-sm text-slate-500">{c.className}</div>
                         </div>
                         <Button variant="danger" size="sm" onClick={() => handleRemoveClassFromPeriod(c.id)}>Xóa</Button>
                       </div>
                     ))}
                     {periodClasses.length === 0 && (
-                      <div className="p-4 text-center text-sm text-slate-500">Chưa có lớp nào trong đợt này</div>
+                      <div className="p-4 text-center text-base text-slate-500">Chưa có lớp nào trong đợt này</div>
                     )}
                   </div>
                 </div>

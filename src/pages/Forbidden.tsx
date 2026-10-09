@@ -13,7 +13,7 @@ export default function ForbiddenPage() {
         </div>
         <h1 className="mb-1 text-4xl font-extrabold text-navy-900 dark:text-navy-300">403</h1>
         <h2 className="mb-2 text-lg font-bold">Không có quyền truy cập</h2>
-        <p className="mb-6 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+        <p className="mb-6 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
           Trang bạn đang truy cập yêu cầu quyền hạn đặc biệt khác với tài khoản của bạn. Vui lòng quay lại trang chủ.
         </p>
         <Link to="/">

@@ -145,7 +145,7 @@ export default function Forum() {
         {/* Class Selection Combobox */}
         {classes.length > 0 && (
           <div className="flex items-center gap-2">
-            <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Chọn lớp học phần:</label>
+            <label className="text-sm font-semibold text-slate-600 dark:text-slate-400">Chọn lớp học phần:</label>
             <select
               value={selectedClassId}
               onChange={(e) => {
@@ -154,7 +154,7 @@ export default function Forum() {
                 setSelectedPost(null);
                 setParams({ classId: String(newId) });
               }}
-              className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-2xs outline-none focus:ring-2 focus:ring-accent-500/20"
+              className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-800 dark:text-slate-200 shadow-2xs outline-none focus:ring-2 focus:ring-accent-500/20"
             >
               {classes.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -178,19 +178,19 @@ export default function Forum() {
             value={newPostTitle}
             onChange={(e) => setNewPostTitle(e.target.value)}
             placeholder="Tiêu đề bài viết"
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-white text-sm"
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-white text-base"
           />
           <textarea
             value={newPostContent}
             onChange={(e) => setNewPostContent(e.target.value)}
             placeholder="Nội dung bài viết"
             rows={4}
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-white text-sm"
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-white text-base"
           />
           <button
             onClick={handleCreatePost}
             disabled={saving || !newPostTitle.trim() || !newPostContent.trim()}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm disabled:opacity-50 hover:bg-indigo-500"
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-base disabled:opacity-50 hover:bg-indigo-500"
           >
             {saving ? 'Đang đăng...' : 'Đăng bài viết'}
           </button>
@@ -198,7 +198,7 @@ export default function Forum() {
       </Card>
 
       {flash && (
-        <div className="mb-4 rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+        <div className="mb-4 rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-base text-emerald-700">
           {flash}
         </div>
       )}
@@ -221,8 +221,8 @@ export default function Forum() {
                       : 'border-slate-200 hover:bg-slate-50'
                   }`}
                 >
-                  <div className="font-medium text-sm line-clamp-2">{post.title}</div>
-                  <div className="text-xs text-slate-500">
+                  <div className="font-medium text-base line-clamp-2">{post.title}</div>
+                  <div className="text-sm text-slate-500">
                     {post.authorName} · {post.commentCount ?? 0} bình luận
                   </div>
                 </li>
@@ -237,7 +237,7 @@ export default function Forum() {
             <div className="flex items-start justify-between gap-4 mb-4 pb-4 border-b border-slate-200">
               <div className="flex-1">
                 <h3 className="font-semibold text-lg mb-1">{selectedPost.title}</h3>
-                <div className="text-xs text-slate-500">
+                <div className="text-sm text-slate-500">
                   {selectedPost.authorName} · {new Date(selectedPost.createdAt).toLocaleString('vi-VN')}
                 </div>
               </div>
@@ -245,29 +245,29 @@ export default function Forum() {
                 <button
                   onClick={() => handleDeletePost(selectedPost.id)}
                   disabled={saving}
-                  className="px-2 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50"
+                  className="px-2 py-1 text-sm rounded bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50"
                 >
                   Xóa
                 </button>
               )}
             </div>
 
-            <div className="mb-6 p-3 rounded-lg bg-slate-50 text-sm">{selectedPost.content}</div>
+            <div className="mb-6 p-3 rounded-lg bg-slate-50 text-base">{selectedPost.content}</div>
 
             {/* Danh sách bình luận */}
             <div className="mb-6">
               <h4 className="font-semibold mb-3">Bình luận ({comments.length})</h4>
               {comments.length === 0 ? (
-                <div className="text-sm text-slate-500">Chưa có bình luận</div>
+                <div className="text-base text-slate-500">Chưa có bình luận</div>
               ) : (
                 <ul className="space-y-3 mb-4 max-h-60 overflow-y-auto">
                   {comments.map((comment) => (
                     <li key={comment.id} className="p-2 border-l-2 border-slate-300 pl-3">
-                      <div className="text-xs text-slate-500">
+                      <div className="text-sm text-slate-500">
                         <span className="font-medium text-slate-700">{comment.authorName}</span> ·{' '}
                         {new Date(comment.createdAt).toLocaleString('vi-VN')}
                       </div>
-                      <div className="text-sm text-slate-700 mt-1">{comment.content}</div>
+                      <div className="text-base text-slate-700 mt-1">{comment.content}</div>
                     </li>
                   ))}
                 </ul>
@@ -282,12 +282,12 @@ export default function Forum() {
                   onChange={(e) => setNewCommentContent(e.target.value)}
                   placeholder="Viết bình luận của bạn"
                   rows={3}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-white text-sm"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-white text-base"
                 />
                 <button
                   onClick={handleAddComment}
                   disabled={saving || !newCommentContent.trim()}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm disabled:opacity-50 hover:bg-emerald-500"
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-base disabled:opacity-50 hover:bg-emerald-500"
                 >
                   {saving ? 'Đang gửi...' : 'Gửi bình luận'}
                 </button>

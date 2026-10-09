@@ -57,7 +57,7 @@ export function LecturerDashboard() {
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+            <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
               <Megaphone className="w-4 h-4 text-accent-600 dark:text-accent-400" />
               Hoạt động nộp bài gần đây
             </h3>
@@ -71,7 +71,7 @@ export function LecturerDashboard() {
               {recentActivity.map((item, i) => (
                 <div key={i} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
                   <div>
-                    <div className="font-semibold text-slate-900 dark:text-white text-xs">{item.title}</div>
+                    <div className="font-semibold text-slate-900 dark:text-white text-sm">{item.title}</div>
                     <div className="text-[11px] text-slate-400 mt-0.5">{item.detail}</div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -88,8 +88,8 @@ export function LecturerDashboard() {
 
         <Card>
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Lớp giảng dạy</h3>
-            <Link to="/lecturer/classes" className="text-xs font-semibold text-accent-600 hover:underline">
+            <h3 className="font-bold text-slate-900 dark:text-white text-base">Lớp giảng dạy</h3>
+            <Link to="/lecturer/classes" className="text-sm font-semibold text-accent-600 hover:underline">
               Xem tất cả
             </Link>
           </div>
@@ -99,10 +99,10 @@ export function LecturerDashboard() {
               <Link key={c.id} to={`/lecturer/classes/${c.id}`}>
                 <div className="p-3 rounded-lg border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:border-accent-500/50 transition cursor-pointer">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-mono text-xs font-bold text-accent-600 dark:text-accent-400">{c.classCode}</span>
+                    <span className="font-mono text-sm font-bold text-accent-600 dark:text-accent-400">{c.classCode}</span>
                     <Badge color="indigo">{c.semester}</Badge>
                   </div>
-                  <div className="font-bold text-slate-900 dark:text-white text-xs truncate">{c.className}</div>
+                  <div className="font-bold text-slate-900 dark:text-white text-sm truncate">{c.className}</div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{c.courseTitle ?? 'Học phần'}</div>
                 </div>
               </Link>
@@ -142,15 +142,15 @@ export function LecturerClasses() {
               <Card className="hover:border-accent-500/50 cursor-pointer h-full flex flex-col justify-between">
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <span className="font-mono text-xs font-bold text-accent-600 dark:text-accent-400">{c.classCode}</span>
+                    <span className="font-mono text-sm font-bold text-accent-600 dark:text-accent-400">{c.classCode}</span>
                     <Badge color="indigo">{c.semester}</Badge>
                   </div>
                   <h4 className="font-bold text-slate-900 dark:text-white text-base">{c.className}</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     {c.courseTitle ?? 'Học phần'} · Tối đa {c.maxStudents} sinh viên · {c.lessonCount || 0} bài học
                   </p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-sm text-slate-500">
                   <span>{c.academicYear}</span>
                   <span className="font-semibold text-accent-600 dark:text-accent-400">Xem chi tiết lớp →</span>
                 </div>
@@ -234,7 +234,7 @@ export function LecturerAssignments() {
         data.map(({ clazz, assigns }) => (
           <Card key={clazz.id}>
             <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+              <h3 className="font-bold text-slate-900 dark:text-white text-base">
                 {clazz.classCode} — {clazz.className}
               </h3>
               <Badge color="indigo">{assigns.length} bài tập</Badge>
@@ -242,7 +242,7 @@ export function LecturerAssignments() {
 
             {/* Create Assignment Form */}
             <div className="p-4 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 mb-5 space-y-3">
-              <h4 className="font-bold text-slate-800 dark:text-slate-200 text-xs">Tạo bài tập mới</h4>
+              <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">Tạo bài tập mới</h4>
               <div className="grid gap-3 sm:grid-cols-3">
                 <Input
                   label="Tên bài tập"
@@ -284,11 +284,11 @@ export function LecturerAssignments() {
               <Table headers={['Tên bài tập', 'Hạn nộp', 'Điểm tối đa', 'Thao tác']}>
                 {assigns.map((a) => (
                   <tr key={a.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white text-xs">{a.title}</td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-mono text-xs">
+                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white text-sm">{a.title}</td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-mono text-sm">
                       {new Date(a.dueDate).toLocaleDateString('vi-VN')}
                     </td>
-                    <td className="px-4 py-3 text-center font-semibold text-xs">{a.maxScore}</td>
+                    <td className="px-4 py-3 text-center font-semibold text-sm">{a.maxScore}</td>
                     <td className="px-4 py-3 text-right">
                       <Link to={`/lecturer/grading?assignmentId=${a.id}`}>
                         <Button variant="ghost" size="sm">Xem bài nộp →</Button>
@@ -480,7 +480,7 @@ export function LecturerGrading() {
       {publishMsg && <Toast message={publishMsg} type="info" onClose={() => setPublishMsg(null)} />}
 
       {currentClazz?.isGradeLocked && (
-        <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-amber-800 dark:text-amber-300 text-xs font-semibold flex items-center justify-between shadow-2xs">
+        <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-amber-800 dark:text-amber-300 text-sm font-semibold flex items-center justify-between shadow-2xs">
           <span className="flex items-center gap-2">
             <Lock className="w-4 h-4 text-amber-600 shrink-0" />
             Sổ điểm của lớp học phần này đã được KHÓA. Mọi thao tác nhập/sửa điểm trên hệ thống đang bị khóa.
@@ -507,7 +507,7 @@ export function LecturerGrading() {
         {/* Submissions Grading */}
         <Card>
           <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 flex items-center justify-between">
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+            <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
               <ClipboardList className="w-4 h-4 text-accent-600" />
               Bài nộp cần chấm ({subs.filter(s => s.score == null).length})
             </h3>
@@ -521,7 +521,7 @@ export function LecturerGrading() {
                 <div key={s.id} className="p-3.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-semibold text-slate-900 dark:text-white text-xs">{s.studentName ?? `SV #${s.studentId}`}</div>
+                      <div className="font-semibold text-slate-900 dark:text-white text-sm">{s.studentName ?? `SV #${s.studentId}`}</div>
                       <div className="text-[11px] text-slate-400 font-mono">{new Date(s.submittedAt).toLocaleString('vi-VN')}</div>
                     </div>
                     <Badge color={s.score != null ? 'emerald' : s.isLate ? 'red' : 'amber'}>
@@ -532,7 +532,7 @@ export function LecturerGrading() {
                   {((s.fileUrls && s.fileUrls.length > 0) || s.fileUrl) && (
                     <div className="space-y-1">
                       {((s.fileUrls && s.fileUrls.length > 0) ? s.fileUrls : [s.fileUrl]).filter(Boolean).map((url, idx) => (
-                        <a key={`${url}-${idx}`} href={url} target="_blank" rel="noreferrer" className="block text-xs font-semibold text-accent-600 hover:underline truncate">
+                        <a key={`${url}-${idx}`} href={url} target="_blank" rel="noreferrer" className="block text-sm font-semibold text-accent-600 hover:underline truncate">
                           Mở file đính kèm {idx + 1} →
                         </a>
                       ))}
@@ -548,7 +548,7 @@ export function LecturerGrading() {
                         max={s.maxScore ?? undefined}
                         step="0.01"
                         defaultValue={s.score ?? ''}
-                        className="w-20 px-2.5 py-1 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white rounded-lg outline-none"
+                        className="w-20 px-3 py-1 text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white rounded-lg outline-none"
                         placeholder="Điểm"
                       />
                       <Button
@@ -572,7 +572,7 @@ export function LecturerGrading() {
                       defaultValue={s.feedback ?? ''}
                       rows={2}
                       placeholder="Nhập lời nhận xét..."
-                      className="w-full px-2.5 py-1.5 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white rounded-lg outline-none"
+                      className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white rounded-lg outline-none"
                     />
                   </div>
                 </div>
@@ -584,7 +584,7 @@ export function LecturerGrading() {
         {/* Attendance */}
         <Card>
           <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 flex items-center justify-between gap-2">
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+            <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
               <CalendarCheck2 className="w-4 h-4 text-accent-600" />
               Điểm danh theo buổi
             </h3>
@@ -592,7 +592,7 @@ export function LecturerGrading() {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="px-2.5 py-1 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white rounded-lg outline-none"
+              className="px-3 py-1 text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white rounded-lg outline-none"
             />
           </div>
 
@@ -603,12 +603,12 @@ export function LecturerGrading() {
               <Table headers={['Sinh viên', 'Trạng thái điểm danh']}>
                 {att.map((r) => (
                   <tr key={r.studentId} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                    <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200 text-xs">{r.studentName}</td>
+                    <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200 text-sm">{r.studentName}</td>
                     <td className="px-4 py-3 text-right">
                       <select
                         value={r.status}
                         onChange={(e) => updateAtt(r.studentId, e.target.value as AttendanceRecord['status'])}
-                        className="px-2.5 py-1 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white rounded-lg outline-none"
+                        className="px-3 py-1 text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white rounded-lg outline-none"
                       >
                         <option value="PRESENT">Có mặt</option>
                         <option value="LATE">Đi trễ</option>
@@ -629,8 +629,8 @@ export function LecturerGrading() {
 
       <Card>
         <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
-          <h3 className="font-bold text-slate-900 dark:text-white text-sm">Điểm học phần</h3>
-          <p className="text-xs text-slate-500 mt-1">Nhập điểm giữa kỳ và cuối kỳ theo thang 10. Tổng điểm được tính theo chính sách của chương trình.</p>
+          <h3 className="font-bold text-slate-900 dark:text-white text-base">Điểm học phần</h3>
+          <p className="text-sm text-slate-500 mt-1">Nhập điểm giữa kỳ và cuối kỳ theo thang 10. Tổng điểm được tính theo chính sách của chương trình.</p>
         </div>
         {courseGrades.length === 0 ? (
           <Empty msg="Lớp chưa có sinh viên đang theo học để nhập điểm." />
@@ -640,7 +640,7 @@ export function LecturerGrading() {
               const draft = gradeDrafts[grade.studentId] ?? { midtermScore: '', finalScore: '' };
               return (
                 <tr key={grade.studentId}>
-                  <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200 text-xs">{grade.studentName}</td>
+                  <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200 text-sm">{grade.studentName}</td>
                   {(['midtermScore', 'finalScore'] as const).map((field) => (
                     <td key={field} className="px-4 py-3">
                       <input
@@ -654,12 +654,12 @@ export function LecturerGrading() {
                           ...prev,
                           [grade.studentId]: { ...draft, [field]: event.target.value },
                         }))}
-                        className="w-24 px-2 py-1 text-xs border rounded-lg bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700 disabled:opacity-60"
+                        className="w-24 px-2 py-1 text-sm border rounded-lg bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700 disabled:opacity-60"
                         aria-label={`${field === 'midtermScore' ? 'Điểm giữa kỳ' : 'Điểm cuối kỳ'} của ${grade.studentName}`}
                       />
                     </td>
                   ))}
-                  <td className="px-4 py-3 text-center text-xs font-semibold">{grade.totalScore ?? '—'}</td>
+                  <td className="px-4 py-3 text-center text-sm font-semibold">{grade.totalScore ?? '—'}</td>
                   <td className="px-4 py-3 text-right">
                     <Button size="sm" disabled={currentClazz?.isGradeLocked} onClick={() => void saveCourseGrade(grade)}>Lưu điểm</Button>
                   </td>

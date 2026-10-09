@@ -246,12 +246,12 @@ export const AdminPbacApproval: React.FC = () => {
 
       <Card padding="none">
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-          <div className="flex bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-semibold">
+          <div className="flex bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-lg text-sm font-semibold">
             {(['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'REVOKED'] as const).map((st) => (
               <button
                 key={st}
                 onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1.5 rounded-md transition ${statusFilter === st ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+                className={`px-3 py-2 rounded-md transition ${statusFilter === st ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
               >
                 {st === 'ALL' ? 'Tất cả' : st === 'PENDING' ? 'Chờ duyệt' : st === 'APPROVED' ? 'Đã cấp' : st === 'REJECTED' ? 'Từ chối' : 'Thu hồi'}
               </button>
@@ -274,7 +274,7 @@ export const AdminPbacApproval: React.FC = () => {
                   <th className="py-3.5 px-4 text-right">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
                 {filteredRequests.map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-slate-100">{r.lecturerName}</td>
@@ -309,7 +309,7 @@ export const AdminPbacApproval: React.FC = () => {
         onClose={() => setShowDirectModal(false)}
         title="Gán quyền PBAC Trực tiếp cho Giảng viên"
       >
-        <form onSubmit={handleDirectGrantSubmit} className="space-y-4 text-xs">
+        <form onSubmit={handleDirectGrantSubmit} className="space-y-4 text-sm">
           <div>
             <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Giảng viên được cấp quyền *

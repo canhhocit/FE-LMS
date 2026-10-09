@@ -83,7 +83,7 @@ export const HomeroomGradebook: React.FC = () => {
                 className="hidden"
                 onChange={() => setMsg('Import is not implemented here. No scores were imported.')}
               />
-              <span className="inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold px-3 py-2 rounded-lg transition border border-slate-200 dark:border-slate-700 shadow-xs">
+              <span className="inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-sm font-semibold px-3 py-2 rounded-lg transition border border-slate-200 dark:border-slate-700 shadow-xs">
                 <Upload className="w-4 h-4 text-slate-500" />
                 Import Excel/CSV
               </span>
@@ -97,10 +97,10 @@ export const HomeroomGradebook: React.FC = () => {
         }
       />
 
-      <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">Preview data only. Saving and importing scores are not connected to backend student records.</div>
+      <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-base text-amber-900">Preview data only. Saving and importing scores are not connected to backend student records.</div>
 
       {msg && (
-        <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs font-medium flex items-center gap-2 shadow-xs">
+        <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm font-medium flex items-center gap-2 shadow-xs">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           {msg}
         </div>
@@ -110,7 +110,7 @@ export const HomeroomGradebook: React.FC = () => {
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5 text-navy-700 dark:text-navy-300" />
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">
               Danh sách Sinh viên Lớp 62PM1 ({filteredStudents.length} SV)
             </h2>
           </div>
@@ -136,7 +136,7 @@ export const HomeroomGradebook: React.FC = () => {
                 <th className="py-3 px-4">Xếp loại Rèn luyện</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-sm">
               {filteredStudents.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-slate-500 dark:text-slate-400">
@@ -157,7 +157,7 @@ export const HomeroomGradebook: React.FC = () => {
                         max={100}
                         value={s.trainingScore}
                         onChange={(e) => handleScoreChange(s.id, Number(e.target.value))}
-                        className="w-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500"
+                        className="w-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500"
                       />
                     </td>
                     <td className="py-3 px-4">

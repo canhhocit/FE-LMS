@@ -276,34 +276,34 @@ export default function TuitionPage() {
       <PageTitle>Học Phí & Nghĩa Vụ Tài Chính</PageTitle>
 
       {flashMsg && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center justify-between shadow-xs">
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-base font-medium flex items-center justify-between shadow-xs">
           <span className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
             {flashMsg}
           </span>
-          <button onClick={() => setFlashMsg(null)} className="text-xs font-bold hover:underline">Đóng</button>
+          <button onClick={() => setFlashMsg(null)} className="text-sm font-bold hover:underline">Đóng</button>
         </div>
       )}
 
       {/* Summary Stats Cards */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border border-indigo-100 bg-linear-to-br from-indigo-50/70 to-white">
-          <div className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Tổng nợ học phí hiện tại</div>
+          <div className="text-sm font-semibold text-indigo-600 uppercase tracking-wider">Tổng nợ học phí hiện tại</div>
           <div className="mt-2 text-2xl font-black text-indigo-700">{fmtMoney(totalUnpaidAmount)}</div>
-          <div className="mt-1 text-xs text-slate-500">{unpaidInvoices.length} hóa đơn chưa thanh toán</div>
+          <div className="mt-1 text-sm text-slate-500">{unpaidInvoices.length} hóa đơn chưa thanh toán</div>
         </Card>
         <Card className="border border-emerald-100 bg-linear-to-br from-emerald-50/70 to-white">
-          <div className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Tổng số tiền đã đóng</div>
+          <div className="text-sm font-semibold text-emerald-600 uppercase tracking-wider">Tổng số tiền đã đóng</div>
           <div className="mt-2 text-2xl font-black text-emerald-700">{fmtMoney(totalPaidAmount)}</div>
-          <div className="mt-1 text-xs text-slate-500">{paidInvoices.length} hóa đơn đã thanh toán</div>
+          <div className="mt-1 text-sm text-slate-500">{paidInvoices.length} hóa đơn đã thanh toán</div>
         </Card>
         <Card>
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tổng số hóa đơn</div>
+          <div className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Tổng số hóa đơn</div>
           <div className="mt-2 text-2xl font-bold text-slate-800">{invoices.length} hóa đơn</div>
-          <div className="mt-1 text-xs text-slate-500">Kỳ học 2024-2026</div>
+          <div className="mt-1 text-sm text-slate-500">Kỳ học 2024-2026</div>
         </Card>
         <Card>
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Trạng thái nghĩa vụ tài chính</div>
+          <div className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Trạng thái nghĩa vụ tài chính</div>
           <div className="mt-2 flex items-center gap-2">
             {unpaidInvoices.length === 0 ? (
               <Pill color="green">Đã hoàn thành 100%</Pill>
@@ -322,7 +322,7 @@ export default function TuitionPage() {
               <h3 className="font-bold text-slate-800 text-base">Danh sách hóa đơn học phí của tôi</h3>
               <button 
                 onClick={() => void fetchData()} 
-                className="text-xs font-medium text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+                className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Làm mới
@@ -348,16 +348,16 @@ export default function TuitionPage() {
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-slate-800 text-base">Học kỳ {i.semester}</span>
-                            <span className="text-xs text-slate-500">• Năm học {i.academicYear}</span>
+                            <span className="text-sm text-slate-500">• Năm học {i.academicYear}</span>
                           </div>
-                          <div className="text-xs text-slate-400 mt-0.5">Mã hóa đơn: #TUITION-{i.id}</div>
+                          <div className="text-sm text-slate-400 mt-0.5">Mã hóa đơn: #TUITION-{i.id}</div>
                         </div>
                         <Pill color={isPaid ? 'green' : 'amber'}>
                           {isPaid ? (i.paymentMethod === 'SIMULATED' ? 'Paid ? SIMULATION' : 'Paid') : 'Unpaid'}
                         </Pill>
                       </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm mb-4">
                         <div>
                           <span className="text-slate-400 block">Số tín chỉ:</span>
                           <span className="font-semibold text-slate-700">
@@ -384,14 +384,14 @@ export default function TuitionPage() {
 
                       <div className="flex items-center justify-between pt-2 gap-3 flex-wrap border-t border-slate-100">
                         <div>
-                          <span className="text-xs text-slate-500 block">Số tiền thanh toán:</span>
+                          <span className="text-sm text-slate-500 block">Số tiền thanh toán:</span>
                           <span className="text-xl font-black text-indigo-600">{fmtMoney(i.amount)}</span>
                         </div>
 
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => printInvoice(i)}
-                            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium px-3 py-1.5 text-xs shadow-2xs transition cursor-pointer"
+                            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium px-3 py-2 text-sm shadow-2xs transition cursor-pointer"
                           >
                             <Printer className="w-3.5 h-3.5" />
                             In hóa đơn
@@ -403,7 +403,7 @@ export default function TuitionPage() {
                                 setPayingInvoice(i);
                               }}
                               disabled={creatingPayOS}
-                              className="rounded-lg bg-linear-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold px-4 py-2 text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                              className="rounded-lg bg-linear-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold px-4 py-2 text-sm shadow-sm transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                             >
                               <QrCode className="w-4 h-4" />
                               Choose payment method
@@ -432,7 +432,7 @@ export default function TuitionPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 text-base">Choose a payment method</h3>
-                  <p className="text-xs text-slate-500">Hóa đơn #{payingInvoice.id} · Kỳ {payingInvoice.semester} ({payingInvoice.academicYear})</p>
+                  <p className="text-sm text-slate-500">Hóa đơn #{payingInvoice.id} · Kỳ {payingInvoice.semester} ({payingInvoice.academicYear})</p>
                 </div>
               </div>
               <button 
@@ -446,7 +446,7 @@ export default function TuitionPage() {
             {creatingPayOS ? (
               <div className="py-12 text-center space-y-3">
                 <Spinner />
-                <p className="text-xs text-slate-600 font-medium">Đang khởi tạo mã VietQR từ Cổng PayOS...</p>
+                <p className="text-sm text-slate-600 font-medium">Đang khởi tạo mã VietQR từ Cổng PayOS...</p>
               </div>
             ) : payOSData ? (
               <div className="space-y-4">
@@ -457,14 +457,14 @@ export default function TuitionPage() {
                     alt="VietQR PayOS"
                     className="w-40 h-40 object-contain rounded-lg border border-white shadow-xs shrink-0"
                   />
-                  <div className="space-y-1.5 text-xs text-slate-700 flex-1">
+                  <div className="space-y-1.5 text-sm text-slate-700 flex-1">
                     <div>
                       <span className="text-slate-400 block">Ngân hàng thụ hưởng:</span>
-                      <span className="font-bold text-indigo-900 text-sm">{payOSData.bankName}</span>
+                      <span className="font-bold text-indigo-900 text-base">{payOSData.bankName}</span>
                     </div>
                     <div>
                       <span className="text-slate-400 block">Số tài khoản:</span>
-                      <span className="font-mono font-bold text-slate-900 text-sm">{payOSData.accountNumber}</span>
+                      <span className="font-mono font-bold text-slate-900 text-base">{payOSData.accountNumber}</span>
                     </div>
                     <div>
                       <span className="text-slate-400 block">Tên chủ tài khoản:</span>
@@ -480,14 +480,14 @@ export default function TuitionPage() {
                 </div>
 
                 <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
-                  <span className="text-xs font-semibold text-slate-600">Số tiền cần chuyển:</span>
+                  <span className="text-sm font-semibold text-slate-600">Số tiền cần chuyển:</span>
                   <span className="text-2xl font-black text-indigo-600">{fmtMoney(payOSData.amount)}</span>
                 </div>
 
                 <div className="flex flex-col gap-2">
                   <button
                     onClick={() => window.open(payOSData.checkoutUrl, '_blank')}
-                    className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition cursor-pointer"
+                    className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-xs transition cursor-pointer"
                   >
                     <ExternalLink className="w-4 h-4" />
                     Mở trang thanh toán bảo mật PayOS
@@ -496,7 +496,7 @@ export default function TuitionPage() {
                   <button
                     onClick={handleVerifyPayOS}
                     disabled={isProcessing}
-                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition cursor-pointer disabled:opacity-50"
+                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-xs transition cursor-pointer disabled:opacity-50"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     {isProcessing ? 'Đang xác minh...' : 'Tôi đã chuyển khoản - Xác minh ngay'}
@@ -505,16 +505,16 @@ export default function TuitionPage() {
               </div>
             ) : (
               <div className="py-6 text-center space-y-3">
-                <p className="text-sm text-slate-600">Thanh toán hóa đơn qua ngân hàng hoặc ví điện tử.</p>
+                <p className="text-base text-slate-600">Thanh toán hóa đơn qua ngân hàng hoặc ví điện tử.</p>
                 {payOsEnabled && <button
                   onClick={() => payingInvoice && void handleCreatePayOS(payingInvoice)}
                   disabled={isProcessing}
-                  className="px-6 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700"
+                  className="px-6 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700"
                 >
                   Continue / create PayOS payment
                 </button>}
                 {simulationEnabled && (
-                  <button onClick={handleSimulatedPay} disabled={isProcessing} className="px-6 py-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 text-xs font-semibold">Simulated payment (no real money)</button>
+                  <button onClick={handleSimulatedPay} disabled={isProcessing} className="px-6 py-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 text-sm font-semibold">Simulated payment (no real money)</button>
                 )}
               </div>
             )}

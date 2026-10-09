@@ -156,7 +156,7 @@ export default function AdminTuitionManagement() {
 
       {err && <ErrorBox msg={err} onRetry={rates.length === 0 ? () => void reloadRates() : undefined} />}
       {successMsg && (
-        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-medium text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
           {successMsg}
         </div>
@@ -164,13 +164,13 @@ export default function AdminTuitionManagement() {
 
       {showRateForm && (
         <Card>
-          <h3 className="mb-1 text-sm font-bold text-slate-900 dark:text-white">
+          <h3 className="mb-1 text-base font-bold text-slate-900 dark:text-white">
             {editingRate ? 'Chỉnh sửa mức học phí' : 'Tạo mức học phí'}
           </h3>
-          <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
+          <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
             Mức theo học kỳ được ưu tiên hơn mức chung của năm học. Hóa đơn lấy mức đang hiệu lực tại ngày tạo.
           </p>
-          <div className="grid gap-4 text-xs sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-5">
             <Input
               label="Năm học *"
               placeholder="2026-2027"
@@ -222,7 +222,7 @@ export default function AdminTuitionManagement() {
 
       <Card padding="none">
         <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+          <h3 className="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-white">
             <CalendarDays className="h-4 w-4 text-accent-600 dark:text-accent-400" />
             Bảng đơn giá học phí
           </h3>
@@ -243,7 +243,7 @@ export default function AdminTuitionManagement() {
                   <th className="px-4 py-3.5 text-right">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-xs dark:divide-slate-800/60">
+              <tbody className="divide-y divide-slate-100 text-sm dark:divide-slate-800/60">
                 {sortedRates.map((rate) => (
                   <tr key={rate.id} className="transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                     <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-slate-100">{rate.academicYear}</td>

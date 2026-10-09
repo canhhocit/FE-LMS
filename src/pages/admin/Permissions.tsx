@@ -223,7 +223,7 @@ export default function Permissions() {
       />
 
       {msg && (
-        <div className={`p-4 rounded-xl text-xs font-semibold border flex items-center justify-between ${
+        <div className={`p-4 rounded-xl text-sm font-semibold border flex items-center justify-between ${
           msg.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300' : 'bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-300'
         }`}>
           <span>{msg.text}</span>
@@ -238,7 +238,7 @@ export default function Permissions() {
         <div className="md:col-span-1 space-y-4">
           <Card>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                 <Shield className="w-4 h-4 text-navy-700 dark:text-navy-300" />
                 Quản trị viên ({admins.length})
               </h3>
@@ -255,7 +255,7 @@ export default function Permissions() {
 
             <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[460px] overflow-y-auto pr-1 space-y-1">
               {filteredAdmins.length === 0 ? (
-                <div className="p-4 text-center text-xs text-slate-400">Không tìm thấy quản trị viên</div>
+                <div className="p-4 text-center text-sm text-slate-400">Không tìm thấy quản trị viên</div>
               ) : (
                 filteredAdmins.map((adm) => {
                   const isSelected = selectedAdmin?.id === adm.id;
@@ -267,7 +267,7 @@ export default function Permissions() {
                         setSelectedAdmin(adm);
                         setMsg(null);
                       }}
-                      className={`w-full text-left p-3 rounded-xl text-xs transition cursor-pointer flex flex-col gap-1 ${
+                      className={`w-full text-left p-3 rounded-xl text-sm transition cursor-pointer flex flex-col gap-1 ${
                         isSelected
                           ? 'bg-navy-50 text-navy-900 border border-navy-300 dark:bg-navy-950/40 dark:text-white dark:border-navy-800 font-semibold'
                           : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
@@ -298,7 +298,7 @@ export default function Permissions() {
                     </h3>
                     <Badge variant="purple">{selectedAdmin.role}</Badge>
                   </div>
-                  <p className="text-xs text-slate-400 font-mono mt-0.5">{selectedAdmin.email}</p>
+                  <p className="text-sm text-slate-400 font-mono mt-0.5">{selectedAdmin.email}</p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -315,7 +315,7 @@ export default function Permissions() {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <h4 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     Danh sách quyền hạn chức năng ({userPermissions.length} / {allPermissions.length})
                   </h4>
                   {hasChanges && (
@@ -336,7 +336,7 @@ export default function Permissions() {
                     return (
                       <label
                         key={p.code}
-                        className={`flex items-start gap-3 p-3 rounded-xl border text-xs cursor-pointer transition ${
+                        className={`flex items-start gap-3 p-3 rounded-xl border text-sm cursor-pointer transition ${
                           isChecked
                             ? 'bg-navy-50/50 border-navy-200 dark:bg-navy-950/30 dark:border-navy-800'
                             : 'bg-white dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 opacity-70 hover:opacity-100'
@@ -367,7 +367,7 @@ export default function Permissions() {
             </Card>
           ) : (
             <Card>
-              <div className="p-8 text-center text-slate-400 text-xs">Vui lòng chọn một quản trị viên từ danh sách bên trái</div>
+              <div className="p-8 text-center text-slate-400 text-sm">Vui lòng chọn một quản trị viên từ danh sách bên trái</div>
             </Card>
           )}
         </div>
@@ -380,13 +380,13 @@ export default function Permissions() {
         title="Tạo mới Tài khoản Manager / Admin & Cấp quyền"
       >
         {createErr && (
-          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 flex items-center gap-2">
+          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             {createErr}
           </div>
         )}
 
-        <form onSubmit={handleCreateAdminSubmit} className="space-y-4 text-xs">
+        <form onSubmit={handleCreateAdminSubmit} className="space-y-4 text-sm">
           <div>
             <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Họ và tên Quản trị viên *
@@ -433,7 +433,7 @@ export default function Permissions() {
                   onClick={() => applyTemplate(tmpl.perms)}
                   className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-navy-500 text-left bg-slate-50 dark:bg-slate-900 transition"
                 >
-                  <div className="font-bold text-slate-800 dark:text-slate-200 text-xs">{tmpl.name}</div>
+                  <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">{tmpl.name}</div>
                   <div className="text-[10px] text-slate-500 line-clamp-2 mt-0.5">{tmpl.desc}</div>
                 </button>
               ))}
